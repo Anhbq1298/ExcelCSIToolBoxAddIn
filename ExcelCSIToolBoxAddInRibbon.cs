@@ -11,7 +11,7 @@ namespace ExcelCSIToolBoxAddIn
         private void buttonEtabs_Click(object sender, RibbonControlEventArgs e)
         {
             // Ribbon click only delegates to launcher; no ETABS or UI business logic here.
-            Globals.ThisAddIn.EtabsWindowLauncher?.OpenWindow();
+            Globals.ExcelCSIToolBoxAddin.EtabsWindowLauncher?.OpenWindow();
         }
     }
 }

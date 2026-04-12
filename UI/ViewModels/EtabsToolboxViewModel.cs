@@ -7,8 +7,8 @@ using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
     /// <summary>
-    /// ViewModel for ETABS toolbox shell (phase 1).
-    /// Exposes status, model name, and placeholder commands for Point/Frame tools.
+    /// ViewModel for ETABS toolbox shell.
+    /// Exposes connection state, model name, and point/frame placeholder commands.
     /// </summary>
     public class EtabsToolboxViewModel : ViewModelBase
     {
@@ -21,6 +21,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public EtabsToolboxViewModel(IEtabsConnectionService etabsConnectionService)
         {
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
+
+            AttachToRunningEtabsCommand = new RelayCommand(LoadConnectionState);
 
             AddPointsCommand = new RelayCommand(() => ShowPlaceholder("Add Points"));
             SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"));
@@ -68,6 +70,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public string ModelDisplayText => $"ETABS Model: {ModelName}";
 
+        public ICommand AttachToRunningEtabsCommand { get; }
+
         public ICommand AddPointsCommand { get; }
         public ICommand SetPointsCommand { get; }
         public ICommand RenamePointsCommand { get; }
@@ -90,15 +94,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     : result.Data.ModelFileName;
 
                 StatusText = "Connected to running ETABS instance.";
+                return;
             }
-            else
-            {
-                IsConnected = false;
-                ModelName = "Not connected";
-                StatusText = string.IsNullOrWhiteSpace(result.Message)
-                    ? "ETABS connection unavailable."
-                    : result.Message;
-            }
+
+            IsConnected = false;
+            ModelName = "Not connected";
+            StatusText = string.IsNullOrWhiteSpace(result.Message)
+                ? "ETABS connection unavailable."
+                : result.Message;
         }
 
         private static void ShowPlaceholder(string featureName)
