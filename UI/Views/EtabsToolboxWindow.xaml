@@ -1,0 +1,73 @@
+<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.EtabsToolboxWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ETABS Toolbox"
+        Height="500"
+        Width="700"
+        MinHeight="420"
+        MinWidth="620"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Top area: model connection display -->
+        <Border Grid.Row="0" Padding="10" BorderBrush="#DDDDDD" BorderThickness="1" CornerRadius="4" Background="#FAFAFA">
+            <StackPanel>
+                <TextBlock Text="{Binding ModelDisplayText}" FontSize="14" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding StatusText}" Margin="0,4,0,0" Foreground="#666666" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Grid.Row="1"
+                   Margin="0,10,0,10"
+                   Text="Tool Categories"
+                   FontWeight="SemiBold"
+                   FontSize="13" />
+
+        <!-- Main tab shell for future ETABS tools -->
+        <TabControl Grid.Row="2">
+            <TabItem Header="Point">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Point tools (phase 1 placeholders)" FontWeight="SemiBold" Margin="0,0,0,10" />
+
+                    <UniformGrid Grid.Row="1" Rows="2" Columns="2" Margin="0,4,0,0">
+                        <Button Content="Add Points" Margin="4" Padding="8,6" Command="{Binding AddPointsCommand}" />
+                        <Button Content="Set Points" Margin="4" Padding="8,6" Command="{Binding SetPointsCommand}" />
+                        <Button Content="Rename Points" Margin="4" Padding="8,6" Command="{Binding RenamePointsCommand}" />
+                        <Button Content="Get Points" Margin="4" Padding="8,6" Command="{Binding GetPointsCommand}" />
+                    </UniformGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Frame">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Frame tools (phase 1 placeholders)" FontWeight="SemiBold" Margin="0,0,0,10" />
+
+                    <UniformGrid Grid.Row="1" Rows="2" Columns="2" Margin="0,4,0,0">
+                        <Button Content="Add Frames" Margin="4" Padding="8,6" Command="{Binding AddFramesCommand}" />
+                        <Button Content="Set Frames" Margin="4" Padding="8,6" Command="{Binding SetFramesCommand}" />
+                        <Button Content="Rename Frames" Margin="4" Padding="8,6" Command="{Binding RenameFramesCommand}" />
+                        <Button Content="Get Frames" Margin="4" Padding="8,6" Command="{Binding GetFramesCommand}" />
+                    </UniformGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
