@@ -110,6 +110,10 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -224,6 +228,23 @@
     <Compile Include="ThisAddIn.Designer.cs">
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
+    <Compile Include="AddIn\EtabsToolboxWindowLauncher.cs" />
+    <Compile Include="Common\Commands\RelayCommand.cs" />
+    <Compile Include="Common\Results\OperationResult.cs" />
+    <Compile Include="Core\Application\LoadEtabsConnectionUseCase.cs" />
+    <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
+    <Compile Include="Infrastructure\Etabs\EtabsConnectionService.cs" />
+    <Compile Include="Infrastructure\Etabs\IEtabsConnectionService.cs" />
+    <Compile Include="UI\ViewModels\EtabsToolboxViewModel.cs" />
+    <Compile Include="UI\ViewModels\ViewModelBase.cs" />
+    <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
+      <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="UI\Views\EtabsToolboxWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <PropertyGroup>
@@ -241,6 +262,7 @@
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.WinFX.targets" />
   <!-- Include additional build rules for an Office application add-in. -->
   <Import Project="$(VSToolsPath)\OfficeTools\Microsoft.VisualStudio.Tools.Office.targets" Condition="'$(VSToolsPath)' != ''" />
   <!-- This section defines VSTO properties that describe the host-changeable project properties. -->
