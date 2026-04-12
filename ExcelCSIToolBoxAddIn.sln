@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36511.14 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBoxAddIn", "ExcelCSIToolBoxAddIn.csproj", "{CDD86528-0232-488F-853C-908F41C4C3DD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CDD86528-0232-488F-853C-908F41C4C3DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDD86528-0232-488F-853C-908F41C4C3DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDD86528-0232-488F-853C-908F41C4C3DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDD86528-0232-488F-853C-908F41C4C3DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A1762B48-8F9A-4EE6-BB68-973A940DD1EA}
+	EndGlobalSection
+EndGlobal
