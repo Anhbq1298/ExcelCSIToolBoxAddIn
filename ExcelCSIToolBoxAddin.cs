@@ -1,5 +1,6 @@
 ﻿using ExcelCSIToolBoxAddIn.AddIn;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn
 {
@@ -11,7 +12,8 @@ namespace ExcelCSIToolBoxAddIn
         {
             // Lightweight composition root for phase 1.
             var etabsConnectionService = new EtabsConnectionService();
-            EtabsWindowLauncher = new EtabsToolboxWindowLauncher(etabsConnectionService);
+            var excelOutputService = new ExcelOutputService();
+            EtabsWindowLauncher = new EtabsToolboxWindowLauncher(etabsConnectionService, excelOutputService);
         }
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)
