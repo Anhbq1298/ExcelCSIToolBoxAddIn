@@ -3,18 +3,18 @@ using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 
 namespace ExcelCSIToolBoxAddIn
 {
-    public partial class ThisAddIn
+    public partial class ExcelCSIToolBoxAddin
     {
         internal EtabsToolboxWindowLauncher EtabsWindowLauncher { get; private set; }
 
-        private void ThisAddIn_Startup(object sender, System.EventArgs e)
+        private void ExcelCSIToolBoxAddin_Startup(object sender, System.EventArgs e)
         {
             // Lightweight composition root for phase 1.
             var etabsConnectionService = new EtabsConnectionService();
             EtabsWindowLauncher = new EtabsToolboxWindowLauncher(etabsConnectionService);
         }
 
-        private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
+        private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)
         {
         }
 
@@ -26,8 +26,8 @@ namespace ExcelCSIToolBoxAddIn
         /// </summary>
         private void InternalStartup()
         {
-            this.Startup += new System.EventHandler(ThisAddIn_Startup);
-            this.Shutdown += new System.EventHandler(ThisAddIn_Shutdown);
+            this.Startup += new System.EventHandler(ExcelCSIToolBoxAddin_Startup);
+            this.Shutdown += new System.EventHandler(ExcelCSIToolBoxAddin_Shutdown);
         }
 
         #endregion
