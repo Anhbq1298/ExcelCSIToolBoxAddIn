@@ -233,9 +233,13 @@
     <Compile Include="Common\Commands\RelayCommand.cs" />
     <Compile Include="Common\Results\OperationResult.cs" />
     <Compile Include="Core\Application\LoadEtabsConnectionUseCase.cs" />
+    <Compile Include="Core\Application\GetSelectedEtabsPointsUseCase.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
+    <Compile Include="Infrastructure\Etabs\EtabsPointData.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionService.cs" />
     <Compile Include="Infrastructure\Etabs\IEtabsConnectionService.cs" />
+    <Compile Include="Infrastructure\Excel\ExcelOutputService.cs" />
+    <Compile Include="Infrastructure\Excel\IExcelOutputService.cs" />
     <Compile Include="UI\ViewModels\EtabsToolboxViewModel.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">

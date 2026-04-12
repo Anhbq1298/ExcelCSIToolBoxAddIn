@@ -3,6 +3,7 @@ using System.Windows.Input;
 using ExcelCSIToolBoxAddIn.Common.Commands;
 using ExcelCSIToolBoxAddIn.Core.Application;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -13,28 +14,32 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class EtabsToolboxViewModel : ViewModelBase
     {
         private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
+        private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
 
         private string _modelName;
         private bool _isConnected;
         private string _statusText;
 
-        public EtabsToolboxViewModel(IEtabsConnectionService etabsConnectionService)
+        public EtabsToolboxViewModel(
+            IEtabsConnectionService etabsConnectionService,
+            IExcelOutputService excelOutputService)
         {
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
+            _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
 
-            AttachToRunningEtabsCommand = new RelayCommand(LoadConnectionState);
+            AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
 
             AddPointsCommand = new RelayCommand(() => ShowPlaceholder("Add Points"));
             SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"));
-            RenamePointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Points"));
-            GetPointsCommand = new RelayCommand(() => ShowPlaceholder("Get Points"));
+            RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"));
+            GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints);
 
             AddFramesCommand = new RelayCommand(() => ShowPlaceholder("Add Frames"));
             SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"));
             RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
             GetFramesCommand = new RelayCommand(() => ShowPlaceholder("Get Frames"));
 
-            LoadConnectionState();
+            LoadConnectionState(showMessage: false);
         }
 
         public string ModelName
@@ -74,15 +79,15 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ICommand AddPointsCommand { get; }
         public ICommand SetPointsCommand { get; }
-        public ICommand RenamePointsCommand { get; }
-        public ICommand GetPointsCommand { get; }
+        public ICommand RenameSelectedPointsCommand { get; }
+        public ICommand GetSelectedPointsCommand { get; }
 
         public ICommand AddFramesCommand { get; }
         public ICommand SetFramesCommand { get; }
         public ICommand RenameFramesCommand { get; }
         public ICommand GetFramesCommand { get; }
 
-        private void LoadConnectionState()
+        private void LoadConnectionState(bool showMessage)
         {
             var result = _loadEtabsConnectionUseCase.Execute();
 
@@ -94,6 +99,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     : result.Data.ModelFileName;
 
                 StatusText = "Connected to running ETABS instance.";
+
+                if (showMessage)
+                {
+                    MessageBox.Show(
+                        "Successfully attached to running ETABS.",
+                        "ETABS Toolbox",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+
                 return;
             }
 
@@ -102,6 +117,36 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             StatusText = string.IsNullOrWhiteSpace(result.Message)
                 ? "ETABS connection unavailable."
                 : result.Message;
+
+            if (showMessage)
+            {
+                MessageBox.Show(
+                    StatusText,
+                    "ETABS Toolbox",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+        }
+
+        private void GetSelectedPoints()
+        {
+            var result = _getSelectedEtabsPointsUseCase.Execute();
+
+            if (result.IsSuccess)
+            {
+                MessageBox.Show(
+                    "Successfully exported selected ETABS points to Excel.",
+                    "ETABS Toolbox",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            MessageBox.Show(
+                result.Message,
+                "ETABS Toolbox",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
         }
 
         private static void ShowPlaceholder(string featureName)
