@@ -50,11 +50,11 @@
 
                     <TextBlock Text="Point tools (phase 1 placeholders)" FontWeight="SemiBold" Margin="0,0,0,10" />
 
-                    <UniformGrid Grid.Row="1" Rows="2" Columns="2" Margin="0,4,0,0">
+                    <UniformGrid Grid.Row="1" Rows="2" Columns="3" Margin="0,4,0,0">
+                        <Button Content="Get Selected Points" Margin="4" Padding="8,6" Command="{Binding GetSelectedPointsCommand}" />
+                        <Button Content="Rename Selected Points" Margin="4" Padding="8,6" Command="{Binding RenameSelectedPointsCommand}" />
                         <Button Content="Add Points" Margin="4" Padding="8,6" Command="{Binding AddPointsCommand}" />
                         <Button Content="Set Points" Margin="4" Padding="8,6" Command="{Binding SetPointsCommand}" />
-                        <Button Content="Rename Points" Margin="4" Padding="8,6" Command="{Binding RenamePointsCommand}" />
-                        <Button Content="Get Points" Margin="4" Padding="8,6" Command="{Binding GetPointsCommand}" />
                     </UniformGrid>
                 </Grid>
             </TabItem>

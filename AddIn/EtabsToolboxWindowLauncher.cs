@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
@@ -13,15 +14,19 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     public class EtabsToolboxWindowLauncher
     {
         private readonly IEtabsConnectionService _etabsConnectionService;
+        private readonly IExcelOutputService _excelOutputService;
 
-        public EtabsToolboxWindowLauncher(IEtabsConnectionService etabsConnectionService)
+        public EtabsToolboxWindowLauncher(
+            IEtabsConnectionService etabsConnectionService,
+            IExcelOutputService excelOutputService)
         {
             _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
+            _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
         }
 
         public void OpenWindow()
         {
-            var viewModel = new EtabsToolboxViewModel(_etabsConnectionService);
+            var viewModel = new EtabsToolboxViewModel(_etabsConnectionService, _excelOutputService);
             var window = new EtabsToolboxWindow
             {
                 DataContext = viewModel
