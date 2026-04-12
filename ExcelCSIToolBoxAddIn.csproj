@@ -241,6 +241,7 @@
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <None Include="CSI API ETABS v1.chm" />
     <Page Include="UI\Views\EtabsToolboxWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
