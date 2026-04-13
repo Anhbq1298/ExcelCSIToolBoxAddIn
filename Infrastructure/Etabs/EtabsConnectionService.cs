@@ -236,7 +236,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var successCount = 0;
 
                 // Process each row exactly as provided by Excel parsing:
-                // no grouping, no merging, and no de-duplication.
+                // no grouping and no de-duplication.
+                // IMPORTANT: PointObj.AddCartesian is called with MergeOff = true so ETABS
+                // does NOT merge points even when multiple rows share identical coordinates.
                 foreach (var pointInput in pointInputs)
                 {
                     string assignedName = string.Empty;
@@ -249,7 +251,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         ref assignedName,
                         requestedUniqueName,
                         "Global",
-                        false,
+                        true,
                         0);
                     if (addResult != 0)
                     {
