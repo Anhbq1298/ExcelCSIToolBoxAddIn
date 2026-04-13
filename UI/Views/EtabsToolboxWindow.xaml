@@ -18,50 +18,77 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Top area -->
         <Border Grid.Row="0"
-                Padding="10"
-                Margin="0,0,0,10"
-                BorderBrush="#DDDDDD"
-                BorderThickness="1"
-                CornerRadius="4"
-                Background="#FAFAFA">
+        Padding="10"
+        Margin="0,0,0,10"
+        BorderBrush="#DDDDDD"
+        BorderThickness="1"
+        CornerRadius="4"
+        Background="#FAFAFA">
             <StackPanel>
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="95"/>
+                        <ColumnDefinition Width="160"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Column="0"
-                               Text="Model Name:"
-                               VerticalAlignment="Center"
-                               FontWeight="SemiBold"
-                               Foreground="Black"/>
+                    <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Text="Model Name:"
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"
+                       Foreground="Black"
+                       Margin="0,0,8,0"/>
 
-                    <TextBox Grid.Column="1"
-                             Margin="12,0,0,0"
-                             Text="{Binding ModelDisplayText, Mode=OneWay}"
-                             IsReadOnly="True"
-                             BorderThickness="1"
-                             Background="White"
-                             VerticalContentAlignment="Center"
-                             Height="26"/>
+                    <TextBox Grid.Row="0"
+                     Grid.Column="1"
+                     Text="{Binding ModelDisplayText, Mode=OneWay}"
+                     IsReadOnly="True"
+                     BorderThickness="1"
+                     Background="White"
+                     VerticalContentAlignment="Center"
+                     FontWeight="Bold"
+                     Height="26"/>
+
+                    <TextBlock Grid.Row="2"
+                       Grid.Column="0"
+                       Text="Current Model Unit:"
+                       VerticalAlignment="Center"
+                       FontWeight="Bold"
+                       Foreground="Black"
+                       Margin="0,0,8,0"/>
+
+                    <TextBox Grid.Row="2"
+                     Grid.Column="1"
+                     Text="{Binding CurrentModelUnitText, Mode=OneWay}"
+                     IsReadOnly="True"
+                     BorderThickness="1"
+                     Background="White"
+                     VerticalContentAlignment="Center"
+                     FontWeight="Bold"
+                     Height="26"/>
                 </Grid>
 
                 <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Left">
+                    HorizontalAlignment="Left">
                     <Button Content="Attach"
-                            Width="70"
-                            Height="30"
-                            Padding="10,4"
-                            Margin="0,0,8,0"
-                            Command="{Binding AttachToRunningEtabsCommand}"/>
+                    Width="70"
+                    Height="30"
+                    Padding="10,4"
+                    Margin="0,0,8,0"
+                    Command="{Binding AttachToRunningEtabsCommand}"/>
 
                     <Button Content="Close"
-                            Width="70"
-                            Height="30"
-                            Padding="10,4"
-                            Command="{Binding CloseCurrentEtabsInstanceCommand}"/>
+                    Width="70"
+                    Height="30"
+                    Padding="10,4"
+                    Command="{Binding CloseCurrentEtabsInstanceCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
