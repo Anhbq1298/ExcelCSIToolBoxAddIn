@@ -136,10 +136,10 @@
                             Height="30"
                             Margin="6,0,6,0"
                             Padding="12,4"
-                            Content="By Pair of Points"
+                            Content="By Cartesian"
                             HorizontalAlignment="Stretch"
                             Foreground="Blue"
-                            Command="{Binding AddPointByPairCommand}"/>
+                            Command="{Binding AddPointByCartesianCommand}"/>
 
                     <!-- Row 4 -->
                     <TextBlock Grid.Row="4"
