@@ -1,4 +1,5 @@
-﻿using Microsoft.Office.Tools.Ribbon;
+﻿using ExcelCSIToolBoxAddIn.AddIn;
+using Microsoft.Office.Tools.Ribbon;
 
 namespace ExcelCSIToolBoxAddIn
 {
@@ -10,8 +11,7 @@ namespace ExcelCSIToolBoxAddIn
 
         private void buttonEtabs_Click(object sender, RibbonControlEventArgs e)
         {
-            // Ribbon click only delegates to launcher; no ETABS or UI business logic here.
-            Globals.ExcelCSIToolBoxAddin.EtabsWindowLauncher?.OpenWindow();
+            WindowManager.ShowEtabsWindow();
         }
     }
 }

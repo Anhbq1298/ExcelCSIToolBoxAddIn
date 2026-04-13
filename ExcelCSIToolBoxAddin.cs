@@ -6,14 +6,12 @@ namespace ExcelCSIToolBoxAddIn
 {
     public partial class ExcelCSIToolBoxAddin
     {
-        internal EtabsToolboxWindowLauncher EtabsWindowLauncher { get; private set; }
-
         private void ExcelCSIToolBoxAddin_Startup(object sender, System.EventArgs e)
         {
             // Lightweight composition root for phase 1.
             var etabsConnectionService = new EtabsConnectionService();
             var excelOutputService = new ExcelOutputService();
-            EtabsWindowLauncher = new EtabsToolboxWindowLauncher(etabsConnectionService, excelOutputService);
+            WindowManager.Configure(etabsConnectionService, excelOutputService);
         }
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)

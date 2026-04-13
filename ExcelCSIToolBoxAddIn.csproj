@@ -230,6 +230,7 @@
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="AddIn\EtabsToolboxWindowLauncher.cs" />
+    <Compile Include="AddIn\WindowManager.cs" />
     <Compile Include="Common\Commands\RelayCommand.cs" />
     <Compile Include="Common\Results\OperationResult.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />
