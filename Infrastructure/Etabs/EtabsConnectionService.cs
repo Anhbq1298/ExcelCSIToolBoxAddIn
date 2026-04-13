@@ -394,7 +394,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 }
 
                 string displayText =
-                    $"{ToDisplayUnitToken(forceUnits)}-{ToDisplayUnitToken(lengthUnits)}-{ToDisplayUnitToken(temperatureUnits)}";
+                    $"{GetEnumKeyName(forceUnits)}-{GetEnumKeyName(lengthUnits)}-{GetEnumKeyName(temperatureUnits)}";
 
                 return OperationResult<string>.Success(displayText);
             }
@@ -454,17 +454,21 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        private static string ToDisplayUnitToken<TEnum>(TEnum enumValue)
+        private static string GetEnumKeyName<TEnum>(TEnum enumValue) where TEnum : struct
         {
-            var rawValue = enumValue.ToString();
-            if (string.IsNullOrWhiteSpace(rawValue))
+            var enumType = typeof(TEnum);
+            var enumName = Enum.GetName(enumType, enumValue);
+            if (!string.IsNullOrWhiteSpace(enumName))
+            {
+                return enumName;
+            }
+
+            if (!enumType.IsEnum)
             {
                 return "?";
             }
 
-            return rawValue
-                .Replace("_", string.Empty)
-                .Replace("NotApplicable", "NA");
+            return Convert.ToInt32(enumValue).ToString();
         }
     }
 }

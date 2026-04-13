@@ -141,7 +141,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             IsConnected = false;
-            ModelName = "Not connected";
+            ModelName = "Not yet attached";
             CurrentModelUnitText = "Not yet attached";
             StatusText = string.IsNullOrWhiteSpace(result.Message)
                 ? "ETABS connection unavailable."
