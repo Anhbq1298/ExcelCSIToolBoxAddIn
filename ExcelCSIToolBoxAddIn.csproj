@@ -232,7 +232,9 @@
     <Compile Include="AddIn\EtabsToolboxWindowLauncher.cs" />
     <Compile Include="Common\Commands\RelayCommand.cs" />
     <Compile Include="Common\Results\OperationResult.cs" />
+    <Compile Include="Core\Tabular\DataFrame.cs" />
     <Compile Include="Core\Application\LoadEtabsConnectionUseCase.cs" />
+    <Compile Include="Core\Application\EtabsPointDataDataFrameMapper.cs" />
     <Compile Include="Core\Application\GetSelectedEtabsPointsUseCase.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsPointData.cs" />

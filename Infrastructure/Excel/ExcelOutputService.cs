@@ -1,17 +1,17 @@
 using System;
+using ExcelCSIToolBoxAddIn.Core.Tabular;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using Microsoft.Office.Interop.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 {
     public class ExcelOutputService : IExcelOutputService
     {
-        public OperationResult WritePointsToActiveCell(System.Collections.Generic.IReadOnlyList<EtabsPointData> points)
+        public OperationResult WriteDataFrameToActiveCell(DataFrame dataFrame)
         {
-            if (points == null || points.Count == 0)
+            if (dataFrame == null || dataFrame.Columns == null || dataFrame.Columns.Count == 0)
             {
-                return OperationResult.Failure("There are no points to export.");
+                return OperationResult.Failure("There is no tabular data to export.");
             }
 
             try
@@ -32,25 +32,33 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
                 int startRow = activeCell.Row;
                 int startCol = activeCell.Column;
 
-                sheet.Cells[startRow, startCol] = "PointUniqueName";
-                sheet.Cells[startRow, startCol + 1] = "X";
-                sheet.Cells[startRow, startCol + 2] = "Y";
-                sheet.Cells[startRow, startCol + 3] = "Z";
-
-                for (int i = 0; i < points.Count; i++)
+                for (int col = 0; col < dataFrame.Columns.Count; col++)
                 {
-                    int row = startRow + i + 1;
-                    sheet.Cells[row, startCol] = points[i].PointUniqueName;
-                    sheet.Cells[row, startCol + 1] = points[i].X;
-                    sheet.Cells[row, startCol + 2] = points[i].Y;
-                    sheet.Cells[row, startCol + 3] = points[i].Z;
+                    sheet.Cells[startRow, startCol + col] = dataFrame.Columns[col];
+                }
+
+                for (int rowIndex = 0; rowIndex < dataFrame.Rows.Count; rowIndex++)
+                {
+                    var row = dataFrame.Rows[rowIndex];
+
+                    if (row == null)
+                    {
+                        continue;
+                    }
+
+                    int maxCol = row.Count < dataFrame.Columns.Count ? row.Count : dataFrame.Columns.Count;
+
+                    for (int col = 0; col < maxCol; col++)
+                    {
+                        sheet.Cells[startRow + rowIndex + 1, startCol + col] = row[col];
+                    }
                 }
 
                 return OperationResult.Success();
             }
             catch (Exception)
             {
-                return OperationResult.Failure("Failed to write selected points to Excel.");
+                return OperationResult.Failure("Failed to write table data to Excel.");
             }
         }
     }

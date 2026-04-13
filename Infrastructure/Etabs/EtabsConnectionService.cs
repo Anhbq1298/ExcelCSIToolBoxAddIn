@@ -69,6 +69,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             var connectionResult = GetCurrentConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
+                connectionResult = TryAttachToRunningInstance();
+            }
+
+            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            {
                 return OperationResult<IReadOnlyList<EtabsPointData>>.Failure(connectionResult.Message);
             }
 

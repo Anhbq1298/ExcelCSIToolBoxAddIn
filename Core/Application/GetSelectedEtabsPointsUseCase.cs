@@ -1,5 +1,4 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
@@ -25,7 +24,8 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(pointsResult.Message);
             }
 
-            return _excelOutputService.WritePointsToActiveCell(pointsResult.Data);
+            var dataFrame = EtabsPointDataDataFrameMapper.Map(pointsResult.Data);
+            return _excelOutputService.WriteDataFrameToActiveCell(dataFrame);
         }
     }
 }
