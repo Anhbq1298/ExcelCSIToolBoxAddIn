@@ -121,10 +121,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess && result.Data != null)
             {
                 IsConnected = true;
-                ModelName = string.IsNullOrWhiteSpace(result.Data.ModelFileName)
-                    ? "Unknown model"
-                    : result.Data.ModelFileName;
-                CurrentModelUnitText = GetCurrentModelUnitsTextOrFallback();
+                RefreshAttachedModelInfo(result.Data);
 
                 StatusText = "Connected to running ETABS instance.";
 
@@ -141,8 +138,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             IsConnected = false;
-            ModelName = "Not yet attached";
-            CurrentModelUnitText = "Not yet attached";
+            SetDetachedModelInfo("Not yet attached");
             StatusText = string.IsNullOrWhiteSpace(result.Message)
                 ? "ETABS connection unavailable."
                 : result.Message;
@@ -164,8 +160,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess)
             {
                 IsConnected = false;
-                ModelName = "Not connected";
-                CurrentModelUnitText = "Not yet attached";
+                SetDetachedModelInfo("Not connected");
                 StatusText = result.Message;
 
                 MessageBox.Show(
@@ -183,6 +178,20 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 MessageBoxImage.Warning);
 
             StatusText = result.Message;
+        }
+
+        private void RefreshAttachedModelInfo(EtabsConnectionInfo connectionInfo)
+        {
+            ModelName = string.IsNullOrWhiteSpace(connectionInfo.ModelFileName)
+                ? "Unknown model"
+                : connectionInfo.ModelFileName;
+            CurrentModelUnitText = GetCurrentModelUnitsTextOrFallback();
+        }
+
+        private void SetDetachedModelInfo(string modelNameText)
+        {
+            ModelName = modelNameText;
+            CurrentModelUnitText = "Not yet attached";
         }
 
         private string GetCurrentModelUnitsTextOrFallback()
