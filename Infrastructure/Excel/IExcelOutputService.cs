@@ -1,11 +1,10 @@
-using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Core.Tabular;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 {
     public interface IExcelOutputService
     {
-        OperationResult WritePointsToActiveCell(IReadOnlyList<EtabsPointData> points);
+        OperationResult WriteDataFrameToActiveCell(DataFrame dataFrame);
     }
 }
