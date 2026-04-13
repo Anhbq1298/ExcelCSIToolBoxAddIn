@@ -34,19 +34,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.tab1 = this.Factory.CreateRibbonTab();
+            this.tabExcelCSIToolBox = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.buttonEtabs = this.Factory.CreateRibbonButton();
-            this.tab1.SuspendLayout();
+            this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // tab1
+            // tabExcelCSIToolBox
             // 
-            this.tab1.ControlId.ControlIdType = Microsoft.Office.Tools.Ribbon.RibbonControlIdType.Office;
-            this.tab1.Groups.Add(this.group1);
-            this.tab1.Label = "TabAddIns";
-            this.tab1.Name = "tab1";
+            this.tabExcelCSIToolBox.Groups.Add(this.group1);
+            this.tabExcelCSIToolBox.Label = "ExcelCSIToolBox";
+            this.tabExcelCSIToolBox.Name = "tabExcelCSIToolBox";
             // 
             // group1
             // 
@@ -66,10 +65,10 @@
             // 
             this.Name = "ExcelCSIToolBoxAddInRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
-            this.Tabs.Add(this.tab1);
+            this.Tabs.Add(this.tabExcelCSIToolBox);
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.Ribbon1_Load);
-            this.tab1.ResumeLayout(false);
-            this.tab1.PerformLayout();
+            this.tabExcelCSIToolBox.ResumeLayout(false);
+            this.tabExcelCSIToolBox.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
             this.ResumeLayout(false);
@@ -78,7 +77,7 @@
 
         #endregion
 
-        internal Microsoft.Office.Tools.Ribbon.RibbonTab tab1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonTab tabExcelCSIToolBox;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonEtabs;
     }

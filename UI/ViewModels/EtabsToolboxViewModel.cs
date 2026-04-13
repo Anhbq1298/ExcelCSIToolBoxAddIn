@@ -73,7 +73,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
-        public string ModelDisplayText => $"ETABS Model: {ModelName}";
+        public string ModelDisplayText => $"{ModelName}";
 
         public ICommand AttachToRunningEtabsCommand { get; }
 
