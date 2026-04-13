@@ -225,7 +225,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
+                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
@@ -245,7 +245,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         0);
                     if (addResult != 0)
                     {
-                        failedRowMessages.Add($"Row {pointInput.ExcelRowNumber}: ETABS add-by-Cartesian failed (code {addResult}).");
+                        failedRowMessages.Add(
+                            $"Row {pointInput.ExcelRowNumber}: ETABS API call PointObj.AddCartesian failed (return code {addResult}).");
                         continue;
                     }
 
@@ -271,9 +272,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             {
                 return OperationResult<EtabsAddPointsResult>.Failure($"ETABS COM error while adding points by Cartesian coordinates: {ex.Message}");
             }
-            catch
+            catch (Exception ex)
             {
-                return OperationResult<EtabsAddPointsResult>.Failure("Failed to add ETABS points by Cartesian coordinates from the selected Excel range.");
+                return OperationResult<EtabsAddPointsResult>.Failure(
+                    $"ETABS add-by-Cartesian failed unexpectedly: {ex.Message}");
             }
         }
 
