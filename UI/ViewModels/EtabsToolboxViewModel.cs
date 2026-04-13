@@ -40,7 +40,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
 
             SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName);
-            AddPointByPairCommand = new RelayCommand(AddPointByPair);
+            AddPointByCartesianCommand = new RelayCommand(AddPointByCartesian);
             SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"));
             RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"));
             GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints);
@@ -90,7 +90,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand CloseCurrentEtabsInstanceCommand { get; }
 
         public ICommand SelectPointsByUniqueNameCommand { get; }
-        public ICommand AddPointByPairCommand { get; }
+        public ICommand AddPointByCartesianCommand { get; }
         public ICommand SetPointsCommand { get; }
         public ICommand RenameSelectedPointsCommand { get; }
         public ICommand GetSelectedPointsCommand { get; }
@@ -173,7 +173,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ShowOperationResult(_selectPointsFromExcelRangeByUniqueNameUseCase.Execute());
         }
 
-        private void AddPointByPair()
+        private void AddPointByCartesian()
         {
             ShowOperationResult(_addPointsFromExcelRangeUseCase.Execute());
         }

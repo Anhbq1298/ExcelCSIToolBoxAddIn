@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
@@ -20,57 +21,59 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 
         public OperationResult Execute()
         {
-            var rowResult = _excelSelectionService.ReadFrameByPointRows();
+            var rowResult = _excelSelectionService.ReadPointCartesianRows();
             if (!rowResult.IsSuccess)
             {
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var validFrames = new List<EtabsFrameByPointInput>();
+            var validPoints = new List<EtabsPointCartesianInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
             {
-                var uniqueName = Normalize(row.UniqueNameText);
-                var section = Normalize(row.SectionText);
-                var pointIName = Normalize(row.PointINameText);
-                var pointJName = Normalize(row.PointJNameText);
+                var name = Normalize(row.NameText);
+                var xText = Normalize(row.XText);
+                var yText = Normalize(row.YText);
+                var zText = Normalize(row.ZText);
 
-                if (string.IsNullOrWhiteSpace(uniqueName) &&
-                    string.IsNullOrWhiteSpace(section) &&
-                    string.IsNullOrWhiteSpace(pointIName) &&
-                    string.IsNullOrWhiteSpace(pointJName))
+                if (string.IsNullOrWhiteSpace(name) &&
+                    string.IsNullOrWhiteSpace(xText) &&
+                    string.IsNullOrWhiteSpace(yText) &&
+                    string.IsNullOrWhiteSpace(zText))
                 {
                     continue;
                 }
 
-                if (string.IsNullOrWhiteSpace(pointIName) || string.IsNullOrWhiteSpace(pointJName))
+                if (!TryParseDouble(xText, out double x) ||
+                    !TryParseDouble(yText, out double y) ||
+                    !TryParseDouble(zText, out double z))
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: PointIName and PointJName are required.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: X, Y, and Z must be valid numbers.");
                     continue;
                 }
 
-                validFrames.Add(new EtabsFrameByPointInput
+                validPoints.Add(new EtabsPointCartesianInput
                 {
                     ExcelRowNumber = row.ExcelRowNumber,
-                    UniqueName = uniqueName,
-                    Section = section,
-                    PointIName = pointIName,
-                    PointJName = pointJName
+                    Name = name,
+                    X = x,
+                    Y = y,
+                    Z = z
                 });
             }
 
-            if (validFrames.Count == 0)
+            if (validPoints.Count == 0)
             {
                 if (failedRowMessages.Count > 0)
                 {
-                    return OperationResult.Failure($"0 object(s) added successfully, {failedRowMessages.Count} row(s) failed. {string.Join(" ", failedRowMessages)}");
+                    return OperationResult.Failure($"0 point(s) added successfully, {failedRowMessages.Count} row(s) failed. {string.Join(" ", failedRowMessages)}");
                 }
 
                 return OperationResult.Failure("No valid rows were found in the selected range.");
             }
 
-            var addResult = _connectionService.AddFramesByPointPairs(validFrames);
+            var addResult = _connectionService.AddPointsByCartesian(validPoints);
             if (!addResult.IsSuccess || addResult.Data == null)
             {
                 return OperationResult.Failure(addResult.Message);
@@ -81,7 +84,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 failedRowMessages.Add(failedMessage);
             }
 
-            var message = $"{addResult.Data.AddedCount} object(s) added successfully, {failedRowMessages.Count} row(s) failed.";
+            var message = $"{addResult.Data.AddedCount} point(s) added successfully, {failedRowMessages.Count} row(s) failed.";
             if (failedRowMessages.Count > 0)
             {
                 message += " " + string.Join(" ", failedRowMessages);
@@ -93,6 +96,12 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
         private static string Normalize(string value)
         {
             return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static bool TryParseDouble(string value, out double result)
+        {
+            return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out result)
+                || double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
         }
     }
 }

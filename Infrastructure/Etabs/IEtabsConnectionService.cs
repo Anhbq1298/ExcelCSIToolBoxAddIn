@@ -13,7 +13,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames);
 
-        OperationResult<EtabsAddFramesByPointResult> AddFramesByPointPairs(IReadOnlyList<EtabsFrameByPointInput> frameInputs);
+        OperationResult<EtabsAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs);
 
         OperationResult<IReadOnlyList<EtabsPointData>> GetSelectedPointsFromActiveModel();
     }

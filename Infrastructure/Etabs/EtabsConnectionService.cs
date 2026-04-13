@@ -210,17 +210,17 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return uniqueNames;
         }
 
-        public OperationResult<EtabsAddFramesByPointResult> AddFramesByPointPairs(IReadOnlyList<EtabsFrameByPointInput> frameInputs)
+        public OperationResult<EtabsAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs)
         {
-            if (frameInputs == null || frameInputs.Count == 0)
+            if (pointInputs == null || pointInputs.Count == 0)
             {
-                return OperationResult<EtabsAddFramesByPointResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<EtabsAddPointsResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<EtabsAddFramesByPointResult>.Failure(connectionResult.Message);
+                return OperationResult<EtabsAddPointsResult>.Failure(connectionResult.Message);
             }
 
             try
@@ -229,37 +229,44 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
-                foreach (var frameInput in frameInputs)
+                foreach (var pointInput in pointInputs)
                 {
-                    string objectName = string.Empty;
-                    string section = string.IsNullOrWhiteSpace(frameInput.Section) ? "Default" : frameInput.Section;
-                    string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
+                    string assignedName = string.Empty;
+                    string userName = string.IsNullOrWhiteSpace(pointInput.Name) ? string.Empty : pointInput.Name;
 
-                    int addResult = sapModel.FrameObj.AddByPoint(frameInput.PointIName, frameInput.PointJName, ref objectName, section, userName);
+                    int addResult = sapModel.PointObj.AddCartesian(
+                        pointInput.X,
+                        pointInput.Y,
+                        pointInput.Z,
+                        ref assignedName,
+                        userName,
+                        "Global",
+                        false,
+                        0);
                     if (addResult != 0)
                     {
-                        failedRowMessages.Add($"Row {frameInput.ExcelRowNumber}: ETABS add-by-point failed (code {addResult}).");
+                        failedRowMessages.Add($"Row {pointInput.ExcelRowNumber}: ETABS add-by-Cartesian failed (code {addResult}).");
                         continue;
                     }
 
                     successCount++;
                 }
 
-                var data = new EtabsAddFramesByPointResult
+                var data = new EtabsAddPointsResult
                 {
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
                 };
 
-                return OperationResult<EtabsAddFramesByPointResult>.Success(data);
+                return OperationResult<EtabsAddPointsResult>.Success(data);
             }
             catch (COMException ex)
             {
-                return OperationResult<EtabsAddFramesByPointResult>.Failure($"ETABS COM error while adding objects by pair of points: {ex.Message}");
+                return OperationResult<EtabsAddPointsResult>.Failure($"ETABS COM error while adding points by Cartesian coordinates: {ex.Message}");
             }
             catch
             {
-                return OperationResult<EtabsAddFramesByPointResult>.Failure("Failed to add ETABS objects by pair of points from the selected Excel range.");
+                return OperationResult<EtabsAddPointsResult>.Failure("Failed to add ETABS points by Cartesian coordinates from the selected Excel range.");
             }
         }
 
