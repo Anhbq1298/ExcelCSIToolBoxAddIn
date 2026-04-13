@@ -171,7 +171,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                 foreach (var label in labels.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase))
                 {
-                    if (!labelsByUniqueName.TryGetValue(label, out var pointUniqueName))
+                    string pointUniqueName;
+                    if (!labelsByUniqueName.TryGetValue(label, out pointUniqueName))
                     {
                         unresolvedLabels.Add(label);
                         continue;
