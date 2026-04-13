@@ -235,6 +235,7 @@
     <Compile Include="Common\Results\OperationResult.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />
     <Compile Include="Core\Application\LoadEtabsConnectionUseCase.cs" />
+    <Compile Include="Core\Application\GetCurrentEtabsModelUnitsUseCase.cs" />
     <Compile Include="Core\Application\EtabsPointDataDataFrameMapper.cs" />
     <Compile Include="Core\Application\GetSelectedEtabsPointsUseCase.cs" />
     <Compile Include="Core\Application\CloseCurrentEtabsInstanceUseCase.cs" />

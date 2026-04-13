@@ -15,6 +15,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class EtabsToolboxViewModel : ViewModelBase
     {
         private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
+        private readonly GetCurrentEtabsModelUnitsUseCase _getCurrentEtabsModelUnitsUseCase;
         private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
         private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
@@ -23,6 +24,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private string _modelName;
         private bool _isConnected;
         private string _statusText;
+        private string _currentModelUnitText;
 
         public EtabsToolboxViewModel(
             IEtabsConnectionService etabsConnectionService,
@@ -31,6 +33,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var excelSelectionService = new ExcelSelectionService();
 
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
+            _getCurrentEtabsModelUnitsUseCase = new GetCurrentEtabsModelUnitsUseCase(etabsConnectionService);
             _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
@@ -50,6 +53,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
             GetFramesCommand = new RelayCommand(() => ShowPlaceholder("Get Frames"));
 
+            CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
         }
 
@@ -84,6 +88,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        public string CurrentModelUnitText
+        {
+            get { return _currentModelUnitText; }
+            private set
+            {
+                _currentModelUnitText = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string ModelDisplayText => $"{ModelName}";
 
         public ICommand AttachToRunningEtabsCommand { get; }
@@ -110,6 +124,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ModelName = string.IsNullOrWhiteSpace(result.Data.ModelFileName)
                     ? "Unknown model"
                     : result.Data.ModelFileName;
+                CurrentModelUnitText = GetCurrentModelUnitsTextOrFallback();
 
                 StatusText = "Connected to running ETABS instance.";
 
@@ -127,6 +142,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             IsConnected = false;
             ModelName = "Not connected";
+            CurrentModelUnitText = "Not yet attached";
             StatusText = string.IsNullOrWhiteSpace(result.Message)
                 ? "ETABS connection unavailable."
                 : result.Message;
@@ -149,6 +165,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 IsConnected = false;
                 ModelName = "Not connected";
+                CurrentModelUnitText = "Not yet attached";
                 StatusText = result.Message;
 
                 MessageBox.Show(
@@ -166,6 +183,17 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 MessageBoxImage.Warning);
 
             StatusText = result.Message;
+        }
+
+        private string GetCurrentModelUnitsTextOrFallback()
+        {
+            var unitResult = _getCurrentEtabsModelUnitsUseCase.Execute();
+            if (unitResult.IsSuccess && !string.IsNullOrWhiteSpace(unitResult.Data))
+            {
+                return unitResult.Data;
+            }
+
+            return "Units unavailable";
         }
 
         private void SelectPointsByUniqueName()

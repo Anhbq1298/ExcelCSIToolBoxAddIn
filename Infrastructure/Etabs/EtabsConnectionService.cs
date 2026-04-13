@@ -371,6 +371,43 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
+        public OperationResult<string> GetCurrentModelUnitsDisplayText()
+        {
+            var connectionResult = EnsureConnection();
+            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            {
+                return OperationResult<string>.Failure(connectionResult.Message);
+            }
+
+            try
+            {
+                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
+                ETABSv1.eForce forceUnits = default(ETABSv1.eForce);
+                ETABSv1.eLength lengthUnits = default(ETABSv1.eLength);
+                ETABSv1.eTemperature temperatureUnits = default(ETABSv1.eTemperature);
+
+                int getUnitsResult = sapModel.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
+                if (getUnitsResult != 0)
+                {
+                    return OperationResult<string>.Failure(
+                        $"Connected to ETABS, but failed to read current model units (GetPresentUnits_2 returned {getUnitsResult}).");
+                }
+
+                string displayText =
+                    $"{ToDisplayUnitToken(forceUnits)}-{ToDisplayUnitToken(lengthUnits)}-{ToDisplayUnitToken(temperatureUnits)}";
+
+                return OperationResult<string>.Success(displayText);
+            }
+            catch (COMException ex)
+            {
+                return OperationResult<string>.Failure($"Connected to ETABS, but failed to read current model units: {ex.Message}");
+            }
+            catch
+            {
+                return OperationResult<string>.Failure("Connected to ETABS, but failed to read current model units.");
+            }
+        }
+
         private OperationResult<EtabsConnectionInfo> EnsureConnection()
         {
             var connectionResult = GetCurrentConnection();
@@ -415,6 +452,19 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     return null;
                 }
             }
+        }
+
+        private static string ToDisplayUnitToken<TEnum>(TEnum enumValue)
+        {
+            var rawValue = enumValue.ToString();
+            if (string.IsNullOrWhiteSpace(rawValue))
+            {
+                return "?";
+            }
+
+            return rawValue
+                .Replace("_", string.Empty)
+                .Replace("NotApplicable", "NA");
         }
     }
 }
