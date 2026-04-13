@@ -136,7 +136,7 @@
                             Height="30"
                             Margin="6,0,6,0"
                             Padding="12,4"
-                            Content="Run"
+                            Content="By Pair of Points"
                             HorizontalAlignment="Stretch"
                             Foreground="Blue"
                             Command="{Binding AddPointsCommand}"/>
@@ -187,6 +187,14 @@
                             Content="Set"
                             HorizontalAlignment="Stretch"
                             Foreground="Blue"/>
+                    <Button Grid.Row="2"
+                        Grid.Column="4"
+                        Height="30"
+                        Margin="6,0,6,0"
+                        Padding="12,4"
+                        Content="By Cartesian"
+                        Foreground="Blue"
+                        Command="{Binding AddPointsCommand}"/>
                 </Grid>
             </TabItem>
 
