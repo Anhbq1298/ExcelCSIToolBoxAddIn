@@ -27,7 +27,9 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var validPoints = new List<EtabsPointCartesianInput>();
+            // Intentionally preserve Excel selection order and duplicates.
+            // Each valid row becomes one independent ETABS PointObj.AddCartesian call later in the ETABS service.
+            var orderedPointCalls = new List<EtabsPointCartesianInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -69,7 +71,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                validPoints.Add(new EtabsPointCartesianInput
+                orderedPointCalls.Add(new EtabsPointCartesianInput
                 {
                     ExcelRowNumber = row.ExcelRowNumber,
                     UniqueName = uniqueName,
@@ -79,7 +81,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 });
             }
 
-            if (validPoints.Count == 0)
+            if (orderedPointCalls.Count == 0)
             {
                 if (failedRowMessages.Count > 0)
                 {
@@ -90,7 +92,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure("Excel parsing failed: no valid rows were found in the selected range.");
             }
 
-            var addResult = _connectionService.AddPointsByCartesian(validPoints);
+            var addResult = _connectionService.AddPointsByCartesian(orderedPointCalls);
             if (!addResult.IsSuccess || addResult.Data == null)
             {
                 return OperationResult.Failure(addResult.Message);
