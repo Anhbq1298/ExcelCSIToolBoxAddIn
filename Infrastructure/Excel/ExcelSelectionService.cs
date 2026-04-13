@@ -52,7 +52,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
             var selection = selectionResult.Data;
             if (selection.Columns.Count != 4)
             {
-                return OperationResult<IReadOnlyList<ExcelPointCartesianRow>>.Failure("Please select exactly 4 columns in this order: Name, X, Y, Z.");
+                return OperationResult<IReadOnlyList<ExcelPointCartesianRow>>.Failure("Please select exactly 4 columns in this order: UniqueName, X, Y, Z.");
             }
 
             var rows = new List<ExcelPointCartesianRow>();
@@ -63,7 +63,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
                 rows.Add(new ExcelPointCartesianRow
                 {
                     ExcelRowNumber = selection.Row + row - 1,
-                    NameText = ReadCellText(selection, row, 1),
+                    UniqueNameText = ReadCellText(selection, row, 1),
                     XText = ReadCellText(selection, row, 2),
                     YText = ReadCellText(selection, row, 3),
                     ZText = ReadCellText(selection, row, 4)

@@ -4,7 +4,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
     {
         public int ExcelRowNumber { get; set; }
 
-        public string NameText { get; set; }
+        public string UniqueNameText { get; set; }
 
         public string XText { get; set; }
 
