@@ -139,6 +139,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
             }
 
+            var orderedUniqueNames = GetOrderedDistinctNames(uniqueNames);
+            if (orderedUniqueNames.Count == 0)
+            {
+                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
+            }
+
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
@@ -147,15 +153,20 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
-                sapModel.SelectObj.ClearSelection();
+                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
+
+                int clearSelectionResult = sapModel.SelectObj.ClearSelection();
+                if (clearSelectionResult != 0)
+                {
+                    return OperationResult.Failure("Failed to clear ETABS selection before selecting points by UniqueName.");
+                }
 
                 var unresolved = new List<string>();
                 var selectedCount = 0;
 
-                foreach (var uniqueName in uniqueNames.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase))
+                foreach (var uniqueName in orderedUniqueNames)
                 {
-                    int result = sapModel.PointObj.SetSelected(uniqueName, true);
+                    int result = sapModel.PointObj.SetSelected(uniqueName, true, ETABSv1.eItemType.Objects);
                     if (result == 0)
                     {
                         selectedCount++;
@@ -178,6 +189,26 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             {
                 return OperationResult.Failure("Failed to select ETABS points by UniqueName.");
             }
+        }
+
+        private static IReadOnlyList<string> GetOrderedDistinctNames(IReadOnlyList<string> names)
+        {
+            var uniqueNames = new List<string>();
+            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var rawName in names)
+            {
+                var name = string.IsNullOrWhiteSpace(rawName) ? null : rawName.Trim();
+                if (string.IsNullOrWhiteSpace(name) || seenNames.Contains(name))
+                {
+                    continue;
+                }
+
+                seenNames.Add(name);
+                uniqueNames.Add(name);
+            }
+
+            return uniqueNames;
         }
 
         public OperationResult SelectPointsByLabels(IReadOnlyList<string> labels)
