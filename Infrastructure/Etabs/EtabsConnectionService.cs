@@ -253,6 +253,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         "Global",
                         true,
                         0);
+
                     if (addResult != 0)
                     {
                         failedRowMessages.Add(
