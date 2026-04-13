@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Common.Results;
 
@@ -211,68 +210,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return uniqueNames;
         }
 
-        public OperationResult SelectPointsByLabels(IReadOnlyList<string> labels)
-        {
-            if (labels == null || labels.Count == 0)
-            {
-                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
-            }
-
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult.Failure(connectionResult.Message);
-            }
-
-            try
-            {
-                dynamic sapModel = connectionResult.Data.SapModel;
-                sapModel.SelectObj.ClearSelection();
-
-                var pointLookupResult = BuildPointLookupByLabel(sapModel);
-                if (!pointLookupResult.IsSuccess)
-                {
-                    return OperationResult.Failure(pointLookupResult.Message);
-                }
-
-                var labelsByUniqueName = pointLookupResult.Data;
-                var unresolvedLabels = new List<string>();
-                var selectedCount = 0;
-
-                foreach (var label in labels.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(StringComparer.OrdinalIgnoreCase))
-                {
-                    string pointUniqueName;
-                    if (!labelsByUniqueName.TryGetValue(label, out pointUniqueName))
-                    {
-                        unresolvedLabels.Add(label);
-                        continue;
-                    }
-
-                    int result = sapModel.PointObj.SetSelected(pointUniqueName, true);
-                    if (result == 0)
-                    {
-                        selectedCount++;
-                    }
-                    else
-                    {
-                        unresolvedLabels.Add(label);
-                    }
-                }
-
-                var message = $"Selected {selectedCount} point(s) by Label.";
-                if (unresolvedLabels.Count > 0)
-                {
-                    message += $" Not found: {string.Join(", ", unresolvedLabels)}.";
-                }
-
-                return OperationResult.Success(message);
-            }
-            catch
-            {
-                return OperationResult.Failure("Failed to select ETABS points by Label.");
-            }
-        }
-
         public OperationResult<EtabsAddPointsResult> AddPointsCartesian(IReadOnlyList<EtabsPointCartesianInput> points)
         {
             if (points == null || points.Count == 0)
@@ -402,40 +339,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
 
             return connectionResult;
-        }
-
-        private static OperationResult<Dictionary<string, string>> BuildPointLookupByLabel(dynamic sapModel)
-        {
-            // Label-based API calls may require story context, so we map labels by reading all point names
-            // and their labels from the active model to stay consistent and predictable.
-            int pointCount = 0;
-            string[] pointNames = null;
-            int namesResult = sapModel.PointObj.GetNameList(ref pointCount, ref pointNames);
-
-            if (namesResult != 0)
-            {
-                return OperationResult<Dictionary<string, string>>.Failure("Failed to read ETABS point names for label selection.");
-            }
-
-            var labelsByUniqueName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            for (int i = 0; i < pointCount; i++)
-            {
-                if (pointNames == null || i >= pointNames.Length || string.IsNullOrWhiteSpace(pointNames[i]))
-                {
-                    continue;
-                }
-
-                string label = string.Empty;
-                string story = string.Empty;
-                int labelResult = sapModel.PointObj.GetLabelFromName(pointNames[i], ref label, ref story);
-                if (labelResult == 0 && !string.IsNullOrWhiteSpace(label) && !labelsByUniqueName.ContainsKey(label))
-                {
-                    labelsByUniqueName[label] = pointNames[i];
-                }
-            }
-
-            return OperationResult<Dictionary<string, string>>.Success(labelsByUniqueName);
         }
 
         private static string GetModelFileNameSafely(ETABSv1.cSapModel sapModel)

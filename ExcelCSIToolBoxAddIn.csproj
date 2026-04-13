@@ -239,7 +239,6 @@
     <Compile Include="Core\Application\GetSelectedEtabsPointsUseCase.cs" />
     <Compile Include="Core\Application\CloseCurrentEtabsInstanceUseCase.cs" />
     <Compile Include="Core\Application\SelectPointsFromExcelRangeByUniqueNameUseCase.cs" />
-    <Compile Include="Core\Application\SelectPointsFromExcelRangeByLabelUseCase.cs" />
     <Compile Include="Core\Application\AddPointsFromExcelRangeUseCase.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsPointData.cs" />

@@ -18,7 +18,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
         private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
-        private readonly SelectPointsFromExcelRangeByLabelUseCase _selectPointsFromExcelRangeByLabelUseCase;
         private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
 
         private string _modelName;
@@ -35,14 +34,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
-            _selectPointsFromExcelRangeByLabelUseCase = new SelectPointsFromExcelRangeByLabelUseCase(etabsConnectionService, excelSelectionService);
             _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
 
             AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
 
             SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName);
-            SelectPointsByLabelCommand = new RelayCommand(SelectPointsByLabel);
             AddPointsCommand = new RelayCommand(AddPointsFromExcelRange);
             SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"));
             RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"));
@@ -93,7 +90,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand CloseCurrentEtabsInstanceCommand { get; }
 
         public ICommand SelectPointsByUniqueNameCommand { get; }
-        public ICommand SelectPointsByLabelCommand { get; }
         public ICommand AddPointsCommand { get; }
         public ICommand SetPointsCommand { get; }
         public ICommand RenameSelectedPointsCommand { get; }
@@ -175,11 +171,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private void SelectPointsByUniqueName()
         {
             ShowOperationResult(_selectPointsFromExcelRangeByUniqueNameUseCase.Execute());
-        }
-
-        private void SelectPointsByLabel()
-        {
-            ShowOperationResult(_selectPointsFromExcelRangeByLabelUseCase.Execute());
         }
 
         private void AddPointsFromExcelRange()

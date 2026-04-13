@@ -114,6 +114,7 @@
 
                     <Button Grid.Row="0"
                             Grid.Column="2"
+                            Grid.ColumnSpan="3"
                             Height="30"
                             Margin="6,0,6,0"
                             Padding="12,4"
@@ -121,16 +122,6 @@
                             HorizontalAlignment="Stretch"
                             Foreground="Blue"
                             Command="{Binding SelectPointsByUniqueNameCommand}"/>
-
-                    <Button Grid.Row="0"
-                            Grid.Column="4"
-                            Height="30"
-                            Margin="6,0,6,0"
-                            Padding="12,4"
-                            Content="By Label"
-                            HorizontalAlignment="Stretch"
-                            Foreground="Blue"
-                            Command="{Binding SelectPointsByLabelCommand}"/>
 
                     <!-- Row 2 -->
                     <TextBlock Grid.Row="2"
