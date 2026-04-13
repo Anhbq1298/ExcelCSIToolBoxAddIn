@@ -168,6 +168,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 "ETABS Toolbox",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
+
+            StatusText = result.Message;
         }
 
         private void SelectPointsByUniqueName()

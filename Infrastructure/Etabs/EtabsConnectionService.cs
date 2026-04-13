@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Common.Results;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
@@ -74,22 +75,60 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic etabsObject = _currentConnection.EtabsObject;
-                int result = etabsObject.ApplicationExit(false);
-
-                _currentConnection = null;
-
-                if (result != 0)
+                var etabsApplication = _currentConnection.EtabsObject as ETABSv1.cOAPI;
+                if (etabsApplication == null)
                 {
-                    return OperationResult.Failure("Failed to close the attached ETABS instance.");
+                    return OperationResult.Failure("The attached ETABS instance is invalid. Please reattach and try again.");
                 }
 
+                int result = etabsApplication.ApplicationExit(false);
+                if (result != 0)
+                {
+                    return OperationResult.Failure($"ETABS failed to close the attached instance (ApplicationExit returned {result}).");
+                }
+
+                ResetCurrentConnection();
                 return OperationResult.Success("Successfully closed the attached ETABS instance.");
+            }
+            catch (COMException ex)
+            {
+                return OperationResult.Failure($"ETABS COM error while closing attached instance: {ex.Message}");
             }
             catch
             {
-                _currentConnection = null;
                 return OperationResult.Failure("Failed to close the attached ETABS instance.");
+            }
+        }
+
+        private void ResetCurrentConnection()
+        {
+            if (_currentConnection == null)
+            {
+                return;
+            }
+
+            ReleaseComReference(_currentConnection.SapModel);
+            ReleaseComReference(_currentConnection.EtabsObject);
+
+            _currentConnection.SapModel = null;
+            _currentConnection.EtabsObject = null;
+            _currentConnection = null;
+        }
+
+        private static void ReleaseComReference(object comReference)
+        {
+            if (comReference == null || !Marshal.IsComObject(comReference))
+            {
+                return;
+            }
+
+            try
+            {
+                Marshal.FinalReleaseComObject(comReference);
+            }
+            catch
+            {
+                // Ignored to avoid masking the primary ETABS operation result.
             }
         }
 
