@@ -51,11 +51,21 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                if (!TryParseDouble(xText, out double x) ||
-                    !TryParseDouble(yText, out double y) ||
-                    !TryParseDouble(zText, out double z))
+                if (!TryParseDouble(xText, out double x))
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: X, Y, and Z must be valid numbers.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: X value '{row.XText}' is not a valid number.");
+                    continue;
+                }
+
+                if (!TryParseDouble(yText, out double y))
+                {
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: Y value '{row.YText}' is not a valid number.");
+                    continue;
+                }
+
+                if (!TryParseDouble(zText, out double z))
+                {
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: Z value '{row.ZText}' is not a valid number.");
                     continue;
                 }
 
@@ -73,10 +83,11 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
             {
                 if (failedRowMessages.Count > 0)
                 {
-                    return OperationResult.Failure($"0 point(s) added successfully, {failedRowMessages.Count} row(s) failed. {string.Join(" ", failedRowMessages)}");
+                    return OperationResult.Failure(
+                        $"Excel parsing failed: 0 point(s) added successfully, {failedRowMessages.Count} row(s) failed. {string.Join(" ", failedRowMessages)}");
                 }
 
-                return OperationResult.Failure("No valid rows were found in the selected range.");
+                return OperationResult.Failure("Excel parsing failed: no valid rows were found in the selected range.");
             }
 
             var addResult = _connectionService.AddPointsByCartesian(validPoints);
