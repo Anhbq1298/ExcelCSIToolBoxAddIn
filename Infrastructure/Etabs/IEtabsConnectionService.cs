@@ -13,6 +13,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames);
 
+        // pointInputs must be executed exactly in the given order.
+        // Duplicate rows are valid and must not be merged or de-duplicated.
         OperationResult<EtabsAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs);
 
         OperationResult<IReadOnlyList<EtabsPointData>> GetSelectedPointsFromActiveModel();

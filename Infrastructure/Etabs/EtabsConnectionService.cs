@@ -235,6 +235,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
+                // Process each row exactly as provided by Excel parsing:
+                // no grouping, no merging, and no de-duplication.
                 foreach (var pointInput in pointInputs)
                 {
                     string assignedName = string.Empty;
