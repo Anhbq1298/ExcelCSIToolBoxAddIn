@@ -17,6 +17,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     rows.Add(new object[]
                     {
                         point.PointUniqueName,
+                        point.PointLabel,
                         point.X,
                         point.Y,
                         point.Z
@@ -25,7 +26,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
             }
 
             return new DataFrame(
-                new[] { "PointUniqueName", "X", "Y", "Z" },
+                new[] { "UniqueName", "Point Label", "X", "Y", "Z" },
                 rows);
         }
     }

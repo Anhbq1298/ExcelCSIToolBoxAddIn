@@ -360,12 +360,18 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     double y = 0;
                     double z = 0;
                     int pointResult = sapModel.PointObj.GetCoordCartesian(objectNames[i], ref x, ref y, ref z, "Global");
+                    string pointLabel = string.Empty;
+                    string pointStory = string.Empty;
+                    int pointLabelResult = sapModel.PointObj.GetLabelFromName(objectNames[i], ref pointLabel, ref pointStory);
 
                     if (pointResult == 0)
                     {
                         points.Add(new EtabsPointData
                         {
                             PointUniqueName = objectNames[i],
+                            PointLabel = pointLabelResult == 0 && !string.IsNullOrWhiteSpace(pointLabel)
+                                ? pointLabel
+                                : "(Unresolved)",
                             X = x,
                             Y = y,
                             Z = z
