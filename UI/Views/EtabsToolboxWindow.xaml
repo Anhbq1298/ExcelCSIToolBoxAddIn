@@ -114,12 +114,10 @@
 
                     <Button Grid.Row="0"
                             Grid.Column="2"
-                            Grid.ColumnSpan="3"
                             Height="30"
                             Margin="6,0,6,0"
                             Padding="12,4"
                             Content="By UniqueName"
-                            HorizontalAlignment="Stretch"
                             Foreground="Blue"
                             Command="{Binding SelectPointsByUniqueNameCommand}"/>
 
