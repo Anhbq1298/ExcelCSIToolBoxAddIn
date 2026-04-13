@@ -182,6 +182,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     message += $" Not found: {string.Join(", ", unresolved)}.";
                 }
 
+                var refreshResult = RefreshView(sapModel);
+                if (!refreshResult.IsSuccess)
+                {
+                    return refreshResult;
+                }
+
                 return OperationResult.Success(message);
             }
             catch
@@ -265,6 +271,15 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
                 };
+
+                if (successCount > 0)
+                {
+                    var refreshResult = RefreshView(sapModel);
+                    if (!refreshResult.IsSuccess)
+                    {
+                        return OperationResult<EtabsAddPointsResult>.Failure(refreshResult.Message);
+                    }
+                }
 
                 return OperationResult<EtabsAddPointsResult>.Success(data);
             }
@@ -360,6 +375,17 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
 
             return connectionResult;
+        }
+
+        private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)
+        {
+            int refreshResult = sapModel.View.RefreshView(0, false);
+            if (refreshResult != 0)
+            {
+                return OperationResult.Failure($"ETABS model changed successfully, but View.RefreshView failed (return code {refreshResult}).");
+            }
+
+            return OperationResult.Success();
         }
 
         private static string GetModelFileNameSafely(ETABSv1.cSapModel sapModel)
