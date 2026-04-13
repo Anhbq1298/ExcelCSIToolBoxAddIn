@@ -1,15 +1,15 @@
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 {
-    public class EtabsPointCartesianInput
+    public class EtabsFrameByPointInput
     {
         public int ExcelRowNumber { get; set; }
 
-        public string Name { get; set; }
+        public string UniqueName { get; set; }
 
-        public double X { get; set; }
+        public string Section { get; set; }
 
-        public double Y { get; set; }
+        public string PointIName { get; set; }
 
-        public double Z { get; set; }
+        public string PointJName { get; set; }
     }
 }

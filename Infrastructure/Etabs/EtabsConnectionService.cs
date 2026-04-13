@@ -210,51 +210,56 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return uniqueNames;
         }
 
-        public OperationResult<EtabsAddPointsResult> AddPointsCartesian(IReadOnlyList<EtabsPointCartesianInput> points)
+        public OperationResult<EtabsAddFramesByPointResult> AddFramesByPointPairs(IReadOnlyList<EtabsFrameByPointInput> frameInputs)
         {
-            if (points == null || points.Count == 0)
+            if (frameInputs == null || frameInputs.Count == 0)
             {
-                return OperationResult<EtabsAddPointsResult>.Failure("No valid rows were found. Please verify X, Y, Z are numeric.");
+                return OperationResult<EtabsAddFramesByPointResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<EtabsAddPointsResult>.Failure(connectionResult.Message);
+                return OperationResult<EtabsAddFramesByPointResult>.Failure(connectionResult.Message);
             }
 
             try
             {
                 dynamic sapModel = connectionResult.Data.SapModel;
-                var failedRows = new List<int>();
+                var failedRowMessages = new List<string>();
                 var successCount = 0;
 
-                foreach (var point in points)
+                foreach (var frameInput in frameInputs)
                 {
-                    string pointName = string.IsNullOrWhiteSpace(point.Name) ? string.Empty : point.Name;
-                    int result = sapModel.PointObj.AddCartesian(point.X, point.Y, point.Z, ref pointName, pointName, "Global");
+                    string objectName = string.Empty;
+                    string section = string.IsNullOrWhiteSpace(frameInput.Section) ? "Default" : frameInput.Section;
+                    string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
 
-                    if (result == 0)
+                    int addResult = sapModel.FrameObj.AddByPoint(frameInput.PointIName, frameInput.PointJName, ref objectName, section, userName);
+                    if (addResult != 0)
                     {
-                        successCount++;
+                        failedRowMessages.Add($"Row {frameInput.ExcelRowNumber}: ETABS add-by-point failed (code {addResult}).");
+                        continue;
                     }
-                    else
-                    {
-                        failedRows.Add(point.ExcelRowNumber);
-                    }
+
+                    successCount++;
                 }
 
-                var data = new EtabsAddPointsResult
+                var data = new EtabsAddFramesByPointResult
                 {
                     AddedCount = successCount,
-                    FailedRows = failedRows
+                    FailedRowMessages = failedRowMessages
                 };
 
-                return OperationResult<EtabsAddPointsResult>.Success(data);
+                return OperationResult<EtabsAddFramesByPointResult>.Success(data);
+            }
+            catch (COMException ex)
+            {
+                return OperationResult<EtabsAddFramesByPointResult>.Failure($"ETABS COM error while adding objects by pair of points: {ex.Message}");
             }
             catch
             {
-                return OperationResult<EtabsAddPointsResult>.Failure("Failed to add points to ETABS from the selected Excel range.");
+                return OperationResult<EtabsAddFramesByPointResult>.Failure("Failed to add ETABS objects by pair of points from the selected Excel range.");
             }
         }
 

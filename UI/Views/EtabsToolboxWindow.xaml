@@ -139,7 +139,7 @@
                             Content="By Pair of Points"
                             HorizontalAlignment="Stretch"
                             Foreground="Blue"
-                            Command="{Binding AddPointsCommand}"/>
+                            Command="{Binding AddPointByPairCommand}"/>
 
                     <!-- Row 4 -->
                     <TextBlock Grid.Row="4"
