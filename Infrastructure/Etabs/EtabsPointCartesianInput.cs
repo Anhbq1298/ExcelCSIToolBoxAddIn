@@ -4,7 +4,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     {
         public int ExcelRowNumber { get; set; }
 
-        public string Name { get; set; }
+        public string UniqueName { get; set; }
 
         public double X { get; set; }
 

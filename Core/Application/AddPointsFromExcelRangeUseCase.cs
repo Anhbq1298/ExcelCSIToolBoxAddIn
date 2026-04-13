@@ -32,16 +32,22 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 
             foreach (var row in rowResult.Data)
             {
-                var name = Normalize(row.NameText);
+                var uniqueName = Normalize(row.UniqueNameText);
                 var xText = Normalize(row.XText);
                 var yText = Normalize(row.YText);
                 var zText = Normalize(row.ZText);
 
-                if (string.IsNullOrWhiteSpace(name) &&
+                if (string.IsNullOrWhiteSpace(uniqueName) &&
                     string.IsNullOrWhiteSpace(xText) &&
                     string.IsNullOrWhiteSpace(yText) &&
                     string.IsNullOrWhiteSpace(zText))
                 {
+                    continue;
+                }
+
+                if (string.IsNullOrWhiteSpace(uniqueName))
+                {
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: UniqueName is required.");
                     continue;
                 }
 
@@ -56,7 +62,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 validPoints.Add(new EtabsPointCartesianInput
                 {
                     ExcelRowNumber = row.ExcelRowNumber,
-                    Name = name,
+                    UniqueName = uniqueName,
                     X = x,
                     Y = y,
                     Z = z

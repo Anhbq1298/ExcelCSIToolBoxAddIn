@@ -232,14 +232,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 foreach (var pointInput in pointInputs)
                 {
                     string assignedName = string.Empty;
-                    string userName = string.IsNullOrWhiteSpace(pointInput.Name) ? string.Empty : pointInput.Name;
+                    string requestedUniqueName = string.IsNullOrWhiteSpace(pointInput.UniqueName) ? string.Empty : pointInput.UniqueName;
 
                     int addResult = sapModel.PointObj.AddCartesian(
                         pointInput.X,
                         pointInput.Y,
                         pointInput.Z,
                         ref assignedName,
-                        userName,
+                        requestedUniqueName,
                         "Global",
                         false,
                         0);
@@ -250,6 +250,13 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     }
 
                     successCount++;
+
+                    if (!string.IsNullOrWhiteSpace(requestedUniqueName) &&
+                        !string.Equals(assignedName, requestedUniqueName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        failedRowMessages.Add(
+                            $"Row {pointInput.ExcelRowNumber}: Point was created, but ETABS assigned UniqueName '{assignedName}' instead of requested '{requestedUniqueName}'.");
+                    }
                 }
 
                 var data = new EtabsAddPointsResult
