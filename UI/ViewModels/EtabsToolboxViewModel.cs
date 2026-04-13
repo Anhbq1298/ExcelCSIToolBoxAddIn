@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBoxAddIn.Common.Commands;
+using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Application;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
@@ -14,7 +15,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class EtabsToolboxViewModel : ViewModelBase
     {
         private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
+        private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
         private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
+        private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
+        private readonly SelectPointsFromExcelRangeByLabelUseCase _selectPointsFromExcelRangeByLabelUseCase;
+        private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
 
         private string _modelName;
         private bool _isConnected;
@@ -24,12 +29,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             IEtabsConnectionService etabsConnectionService,
             IExcelOutputService excelOutputService)
         {
+            var excelSelectionService = new ExcelSelectionService();
+
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
+            _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
+            _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
+            _selectPointsFromExcelRangeByLabelUseCase = new SelectPointsFromExcelRangeByLabelUseCase(etabsConnectionService, excelSelectionService);
+            _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
 
             AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
+            CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
 
-            AddPointsCommand = new RelayCommand(() => ShowPlaceholder("Add Points"));
+            SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName);
+            SelectPointsByLabelCommand = new RelayCommand(SelectPointsByLabel);
+            AddPointsCommand = new RelayCommand(AddPointsFromExcelRange);
             SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"));
             RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"));
             GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints);
@@ -76,7 +90,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public string ModelDisplayText => $"{ModelName}";
 
         public ICommand AttachToRunningEtabsCommand { get; }
+        public ICommand CloseCurrentEtabsInstanceCommand { get; }
 
+        public ICommand SelectPointsByUniqueNameCommand { get; }
+        public ICommand SelectPointsByLabelCommand { get; }
         public ICommand AddPointsCommand { get; }
         public ICommand SetPointsCommand { get; }
         public ICommand RenameSelectedPointsCommand { get; }
@@ -128,6 +145,46 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        private void CloseCurrentEtabsInstance()
+        {
+            var result = _closeCurrentEtabsInstanceUseCase.Execute();
+
+            if (result.IsSuccess)
+            {
+                IsConnected = false;
+                ModelName = "Not connected";
+                StatusText = result.Message;
+
+                MessageBox.Show(
+                    result.Message,
+                    "ETABS Toolbox",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            MessageBox.Show(
+                result.Message,
+                "ETABS Toolbox",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+
+        private void SelectPointsByUniqueName()
+        {
+            ShowOperationResult(_selectPointsFromExcelRangeByUniqueNameUseCase.Execute());
+        }
+
+        private void SelectPointsByLabel()
+        {
+            ShowOperationResult(_selectPointsFromExcelRangeByLabelUseCase.Execute());
+        }
+
+        private void AddPointsFromExcelRange()
+        {
+            ShowOperationResult(_addPointsFromExcelRangeUseCase.Execute());
+        }
+
         private void GetSelectedPoints()
         {
             var result = _getSelectedEtabsPointsUseCase.Execute();
@@ -147,6 +204,15 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 "ETABS Toolbox",
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
+        }
+
+        private static void ShowOperationResult(OperationResult result)
+        {
+            MessageBox.Show(
+                result.Message,
+                "ETABS Toolbox",
+                MessageBoxButton.OK,
+                result.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
         private static void ShowPlaceholder(string featureName)
