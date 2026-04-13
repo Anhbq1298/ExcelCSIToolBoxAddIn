@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
@@ -21,71 +20,79 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 
         public OperationResult Execute()
         {
-            var rowResult = _excelSelectionService.ReadPointCartesianRows();
+            var rowResult = _excelSelectionService.ReadFrameByPointRows();
             if (!rowResult.IsSuccess)
             {
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var validPoints = new List<EtabsPointCartesianInput>();
-            var failedRows = new List<int>();
+            var validFrames = new List<EtabsFrameByPointInput>();
+            var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
             {
-                if (!TryParseDouble(row.XText, out var x) ||
-                    !TryParseDouble(row.YText, out var y) ||
-                    !TryParseDouble(row.ZText, out var z))
+                var uniqueName = Normalize(row.UniqueNameText);
+                var section = Normalize(row.SectionText);
+                var pointIName = Normalize(row.PointINameText);
+                var pointJName = Normalize(row.PointJNameText);
+
+                if (string.IsNullOrWhiteSpace(uniqueName) &&
+                    string.IsNullOrWhiteSpace(section) &&
+                    string.IsNullOrWhiteSpace(pointIName) &&
+                    string.IsNullOrWhiteSpace(pointJName))
                 {
-                    failedRows.Add(row.ExcelRowNumber);
                     continue;
                 }
 
-                validPoints.Add(new EtabsPointCartesianInput
+                if (string.IsNullOrWhiteSpace(pointIName) || string.IsNullOrWhiteSpace(pointJName))
+                {
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: PointIName and PointJName are required.");
+                    continue;
+                }
+
+                validFrames.Add(new EtabsFrameByPointInput
                 {
                     ExcelRowNumber = row.ExcelRowNumber,
-                    Name = row.NameText,
-                    X = x,
-                    Y = y,
-                    Z = z
+                    UniqueName = uniqueName,
+                    Section = section,
+                    PointIName = pointIName,
+                    PointJName = pointJName
                 });
             }
 
-            if (validPoints.Count == 0)
+            if (validFrames.Count == 0)
             {
-                return OperationResult.Failure("No valid rows were found. Please verify X, Y, Z are numeric.");
+                if (failedRowMessages.Count > 0)
+                {
+                    return OperationResult.Failure($"0 object(s) added successfully, {failedRowMessages.Count} row(s) failed. {string.Join(" ", failedRowMessages)}");
+                }
+
+                return OperationResult.Failure("No valid rows were found in the selected range.");
             }
 
-            var addResult = _connectionService.AddPointsCartesian(validPoints);
+            var addResult = _connectionService.AddFramesByPointPairs(validFrames);
             if (!addResult.IsSuccess || addResult.Data == null)
             {
                 return OperationResult.Failure(addResult.Message);
             }
 
-            foreach (var failedRow in addResult.Data.FailedRows)
+            foreach (var failedMessage in addResult.Data.FailedRowMessages)
             {
-                if (!failedRows.Contains(failedRow))
-                {
-                    failedRows.Add(failedRow);
-                }
+                failedRowMessages.Add(failedMessage);
             }
 
-            var message = $"{addResult.Data.AddedCount} point(s) added successfully, {failedRows.Count} row(s) failed.";
-            if (failedRows.Count > 0)
+            var message = $"{addResult.Data.AddedCount} object(s) added successfully, {failedRowMessages.Count} row(s) failed.";
+            if (failedRowMessages.Count > 0)
             {
-                message += $" Failed Excel row(s): {string.Join(", ", failedRows)}.";
+                message += " " + string.Join(" ", failedRowMessages);
             }
 
             return OperationResult.Success(message);
         }
 
-        private static bool TryParseDouble(string text, out double value)
+        private static string Normalize(string value)
         {
-            if (double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out value))
-            {
-                return true;
-            }
-
-            return double.TryParse(text, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out value);
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
     }
 }
