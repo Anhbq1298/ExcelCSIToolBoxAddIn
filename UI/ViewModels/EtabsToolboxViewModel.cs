@@ -25,6 +25,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool _isConnected;
         private string _statusText;
         private string _currentModelUnitText;
+        private string _modelPath;
 
         public EtabsToolboxViewModel(
             IEtabsConnectionService etabsConnectionService,
@@ -94,6 +95,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             private set
             {
                 _currentModelUnitText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ModelPath
+        {
+            get { return _modelPath; }
+            private set
+            {
+                _modelPath = value;
                 OnPropertyChanged();
             }
         }
@@ -179,11 +190,29 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             StatusText = result.Message;
         }
 
+        private void RefreshAttachedModelInfo()
+        {
+            var modelInfoResult = _getAttachedEtabsModelInfoUseCase.Execute();
+            if (modelInfoResult.IsSuccess && modelInfoResult.Data != null)
+            {
+                ModelName = string.IsNullOrWhiteSpace(modelInfoResult.Data.ModelDisplayText)
+                    ? "Unknown model"
+                    : modelInfoResult.Data.ModelDisplayText;
+                ModelPath = modelInfoResult.Data.ModelPath ?? string.Empty;
+                CurrentModelUnitText = string.IsNullOrWhiteSpace(modelInfoResult.Data.CurrentModelUnitText)
+                    ? "Units unavailable"
+                    : modelInfoResult.Data.CurrentModelUnitText;
+                return;
+            }
 
+            ModelName = "Unknown model";
+            CurrentModelUnitText = "Units unavailable";
+        }
 
         private void SetDetachedModelInfo(string modelNameText)
         {
             ModelName = modelNameText;
+            ModelPath = string.Empty;
             CurrentModelUnitText = "Not yet attached";
         }
 
