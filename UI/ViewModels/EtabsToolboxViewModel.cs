@@ -195,26 +195,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             StatusText = result.Message;
         }
 
-        private void RefreshAttachedModelInfo()
-        {
-            var modelInfoResult = _getAttachedEtabsModelInfoUseCase.Execute();
-            if (modelInfoResult.IsSuccess && modelInfoResult.Data != null)
-            {
-                ModelName = string.IsNullOrWhiteSpace(modelInfoResult.Data.ModelDisplayText)
-                    ? "Unknown model"
-                    : modelInfoResult.Data.ModelDisplayText;
-                ModelPath = modelInfoResult.Data.ModelPath ?? string.Empty;
-                CurrentModelUnitText = string.IsNullOrWhiteSpace(modelInfoResult.Data.CurrentModelUnitText)
-                    ? "Units unavailable"
-                    : modelInfoResult.Data.CurrentModelUnitText;
-                return;
-            }
-
-            ModelName = "Unknown model";
-            ModelPath = string.Empty;
-            CurrentModelUnitText = "Units unavailable";
-        }
-
         private void SetDetachedModelInfo(string modelNameText)
         {
             ModelName = modelNameText;
