@@ -6,7 +6,7 @@
         mc:Ignorable="d"
         Title="ETABS Toolbox"
         Height="400"
-        Width="500"
+        Width="600"
         MinHeight="400"
         MinWidth="500"
         WindowStartupLocation="CenterScreen"
@@ -253,7 +253,7 @@
                     Padding="12,4"
                     Content="Run"
                     Foreground="Blue"
-                    Command="{Binding GetFrameUniqueNamesFromCurrentSelectionCommand}"/>
+                    Command="{Binding GetSelectedFramesCommand}"/>
 
                         <TextBlock Grid.Row="2"
                        Grid.Column="1"
