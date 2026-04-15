@@ -237,7 +237,9 @@
     <Compile Include="Core\Application\LoadEtabsConnectionUseCase.cs" />
     <Compile Include="Core\Application\GetCurrentEtabsModelUnitsUseCase.cs" />
     <Compile Include="Core\Application\EtabsPointDataDataFrameMapper.cs" />
+    <Compile Include="Core\Application\EtabsFrameDataDataFrameMapper.cs" />
     <Compile Include="Core\Application\GetSelectedEtabsPointsUseCase.cs" />
+    <Compile Include="Core\Application\GetSelectedEtabsFramesUseCase.cs" />
     <Compile Include="Core\Application\CloseCurrentEtabsInstanceUseCase.cs" />
     <Compile Include="Core\Application\SelectPointsFromExcelRangeByUniqueNameUseCase.cs" />
     <Compile Include="Core\Application\SelectFramesFromExcelRangeByUniqueNameUseCase.cs" />

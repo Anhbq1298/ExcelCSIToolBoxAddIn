@@ -14,6 +14,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     {
         private const string EtabsComProgId = "CSI.ETABS.API.ETABSObject";
         private const int PointObjectType = 1;
+        private const int FrameObjectType = 2;
 
         private EtabsConnectionInfo _currentConnection;
 
@@ -486,6 +487,58 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             catch
             {
                 return OperationResult<IReadOnlyList<EtabsPointData>>.Failure("Unable to read selected ETABS points.");
+            }
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel()
+        {
+            var connectionResult = EnsureConnection();
+            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(connectionResult.Message);
+            }
+
+            try
+            {
+                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
+
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int selectedResult = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
+                if (selectedResult != 0)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure("Failed to read selected objects from ETABS.");
+                }
+
+                var frameUniqueNames = new List<string>();
+
+                for (int i = 0; i < numberItems; i++)
+                {
+                    if (objectTypes == null || objectNames == null || i >= objectTypes.Length || i >= objectNames.Length)
+                    {
+                        continue;
+                    }
+
+                    var frameUniqueName = objectNames[i];
+                    if (objectTypes[i] != FrameObjectType || string.IsNullOrWhiteSpace(frameUniqueName))
+                    {
+                        continue;
+                    }
+
+                    frameUniqueNames.Add(frameUniqueName);
+                }
+
+                if (frameUniqueNames.Count == 0)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure("No frame objects are selected in ETABS.");
+                }
+
+                return OperationResult<IReadOnlyList<string>>.Success(frameUniqueNames);
+            }
+            catch
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure("Unable to read selected ETABS frames.");
             }
         }
 
