@@ -138,6 +138,52 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
             return OperationResult<IReadOnlyList<ExcelFrameByCoordRow>>.Success(rows);
         }
 
+        public OperationResult<IReadOnlyList<ExcelFrameByPointRow>> ReadFrameByPointRows()
+        {
+            var selectionResult = GetActiveSelection();
+            if (!selectionResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByPointRow>>.Failure(selectionResult.Message);
+            }
+
+            var selection = selectionResult.Data;
+            int rowCount = selection.Rows.Count;
+            int columnCount = selection.Columns.Count;
+
+            if (rowCount < 1)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByPointRow>>.Failure("Excel range validation failed: please select at least 1 row.");
+            }
+
+            if (columnCount < 4)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByPointRow>>.Failure(
+                    $"Excel range validation failed: expected at least 4 columns (UniqueName, Section, Point1, Point2), but found {columnCount}.");
+            }
+
+            var rows = new List<ExcelFrameByPointRow>();
+            object rawValues = selection.Value2;
+
+            for (int row = 1; row <= rowCount; row++)
+            {
+                rows.Add(new ExcelFrameByPointRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    UniqueNameText = ReadCellText(rawValues, selection, row, 1),
+                    SectionText = ReadCellText(rawValues, selection, row, 2),
+                    Point1Text = ReadCellText(rawValues, selection, row, 3),
+                    Point2Text = ReadCellText(rawValues, selection, row, 4)
+                });
+            }
+
+            if (rows.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByPointRow>>.Failure("Excel range validation failed: please select at least one row.");
+            }
+
+            return OperationResult<IReadOnlyList<ExcelFrameByPointRow>>.Success(rows);
+        }
+
         private static OperationResult<Range> GetActiveSelection()
         {
             try

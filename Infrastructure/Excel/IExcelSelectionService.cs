@@ -10,5 +10,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
         OperationResult<IReadOnlyList<ExcelPointCartesianRow>> ReadPointCartesianRows();
 
         OperationResult<IReadOnlyList<ExcelFrameByCoordRow>> ReadFrameByCoordRows();
+
+        OperationResult<IReadOnlyList<ExcelFrameByPointRow>> ReadFrameByPointRows();
     }
 }
