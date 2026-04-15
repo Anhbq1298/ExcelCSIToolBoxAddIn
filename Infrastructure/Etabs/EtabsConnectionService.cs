@@ -33,16 +33,18 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 }
 
                 ETABSv1.cSapModel sapModel = myETABSObject.SapModel;
-                string modelPath = string.Empty;
-                int getPathResult = sapModel.GetFilePath(ref modelPath);
-                string modelName = getPathResult != 0 || string.IsNullOrWhiteSpace(modelPath)
-                    ? "Unknown model"
+                string modelPath = sapModel.GetModelFilename(true);
+                string modelName = string.IsNullOrWhiteSpace(modelPath)
+                    ? "Unsaved Model"
                     : Path.GetFileName(modelPath);
+                string modelCurrentUnit = GetPresentUnitsText(sapModel);
 
                 _currentConnection = new EtabsConnectionInfo
                 {
                     IsConnected = true,
+                    ModelPath = modelPath,
                     ModelFileName = modelName,
+                    ModelCurrentUnit = modelCurrentUnit,
                     EtabsObject = myETABSObject,
                     SapModel = sapModel
                 };
@@ -386,16 +388,19 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult<EtabsAttachedModelInfo>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
             }
 
-            string modelPath = string.Empty;
-            int getPathResult = sapModel.GetFilePath(ref modelPath);
-            string modelDisplayText = getPathResult != 0 || string.IsNullOrWhiteSpace(modelPath)
-                ? "Unknown model"
-                : Path.GetFileName(modelPath);
+            string modelDisplayText = string.IsNullOrWhiteSpace(connectionResult.Data.ModelFileName)
+                ? "Unsaved Model"
+                : connectionResult.Data.ModelFileName;
+            string modelPath = connectionResult.Data.ModelPath;
+            string modelCurrentUnit = string.IsNullOrWhiteSpace(connectionResult.Data.ModelCurrentUnit)
+                ? GetCurrentModelUnitsDisplayTextOrFallback(sapModel)
+                : connectionResult.Data.ModelCurrentUnit;
 
             var modelInfo = new EtabsAttachedModelInfo
             {
+                ModelPath = modelPath,
                 ModelDisplayText = modelDisplayText,
-                CurrentModelUnitText = GetCurrentModelUnitsDisplayTextOrFallback(sapModel)
+                CurrentModelUnitText = modelCurrentUnit
             };
 
             return OperationResult<EtabsAttachedModelInfo>.Success(modelInfo);
@@ -456,6 +461,59 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             {
                 return "Units unavailable";
             }
+        }
+
+        private static string GetPresentUnitsText(ETABSv1.cSapModel sapModel)
+        {
+            try
+            {
+                ETABSv1.eUnits presentUnits = sapModel.GetPresentUnits();
+                return FormatPresentUnits(presentUnits);
+            }
+            catch
+            {
+                return "Units unavailable";
+            }
+        }
+
+        private static string FormatPresentUnits(ETABSv1.eUnits presentUnits)
+        {
+            string[] tokens = GetEnumKeyName(presentUnits).Split('_');
+            if (tokens.Length < 3)
+            {
+                return "Units unavailable";
+            }
+
+            string forceToken = tokens[0];
+            string lengthToken = tokens[1];
+            string temperatureToken = tokens[2];
+
+            string forceUnit;
+            switch (forceToken)
+            {
+                case "KN":
+                    forceUnit = "kN";
+                    break;
+                case "KIP":
+                    forceUnit = "kip";
+                    break;
+                case "LB":
+                    forceUnit = "lb";
+                    break;
+                case "KGF":
+                    forceUnit = "kgf";
+                    break;
+                case "TONF":
+                    forceUnit = "tonf";
+                    break;
+                default:
+                    forceUnit = forceToken;
+                    break;
+            }
+
+            string lengthUnit = lengthToken.ToLowerInvariant();
+            string temperatureUnit = temperatureToken.ToUpperInvariant();
+            return $"{forceUnit}-{lengthUnit}-{temperatureUnit}";
         }
 
         private OperationResult<EtabsConnectionInfo> EnsureConnection()

@@ -7,7 +7,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     {
         public bool IsConnected { get; set; }
 
+        public string ModelPath { get; set; }
+
         public string ModelFileName { get; set; }
+
+        public string ModelCurrentUnit { get; set; }
 
         /// <summary>
         /// Optional COM object references for future ETABS operations.
