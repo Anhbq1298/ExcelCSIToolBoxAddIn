@@ -88,6 +88,56 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
             return OperationResult<IReadOnlyList<ExcelPointCartesianRow>>.Success(rows);
         }
 
+        public OperationResult<IReadOnlyList<ExcelFrameByCoordRow>> ReadFrameByCoordRows()
+        {
+            var selectionResult = GetActiveSelection();
+            if (!selectionResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByCoordRow>>.Failure(selectionResult.Message);
+            }
+
+            var selection = selectionResult.Data;
+            int rowCount = selection.Rows.Count;
+            int columnCount = selection.Columns.Count;
+
+            if (rowCount < 1)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByCoordRow>>.Failure("Excel range validation failed: please select at least 1 row.");
+            }
+
+            if (columnCount < 8)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByCoordRow>>.Failure(
+                    $"Excel range validation failed: expected at least 8 columns (UniqueName, Section, Xi, Yi, Zi, Xj, Yj, Zj), but found {columnCount}.");
+            }
+
+            var rows = new List<ExcelFrameByCoordRow>();
+            object rawValues = selection.Value2;
+
+            for (int row = 1; row <= rowCount; row++)
+            {
+                rows.Add(new ExcelFrameByCoordRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    UniqueNameText = ReadCellText(rawValues, selection, row, 1),
+                    SectionText = ReadCellText(rawValues, selection, row, 2),
+                    XiText = ReadCellText(rawValues, selection, row, 3),
+                    YiText = ReadCellText(rawValues, selection, row, 4),
+                    ZiText = ReadCellText(rawValues, selection, row, 5),
+                    XjText = ReadCellText(rawValues, selection, row, 6),
+                    YjText = ReadCellText(rawValues, selection, row, 7),
+                    ZjText = ReadCellText(rawValues, selection, row, 8)
+                });
+            }
+
+            if (rows.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<ExcelFrameByCoordRow>>.Failure("Excel range validation failed: please select at least one row.");
+            }
+
+            return OperationResult<IReadOnlyList<ExcelFrameByCoordRow>>.Success(rows);
+        }
+
         private static OperationResult<Range> GetActiveSelection()
         {
             try
