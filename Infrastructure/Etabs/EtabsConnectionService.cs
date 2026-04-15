@@ -534,6 +534,83 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
+        public OperationResult<EtabsAddFramesResult> AddFramesByPoint(IReadOnlyList<EtabsFrameByPointInput> frameInputs)
+        {
+            if (frameInputs == null || frameInputs.Count == 0)
+            {
+                return OperationResult<EtabsAddFramesResult>.Failure("No valid rows were found in the selected range.");
+            }
+
+            var connectionResult = EnsureConnection();
+            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            {
+                return OperationResult<EtabsAddFramesResult>.Failure(connectionResult.Message);
+            }
+
+            try
+            {
+                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
+                var failedRowMessages = new List<string>();
+                var successCount = 0;
+
+                foreach (var frameInput in frameInputs)
+                {
+                    string createdName = string.Empty;
+                    string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
+                    string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
+
+                    int addResult = sapModel.FrameObj.AddByPoint(
+                        frameInput.Point1Name,
+                        frameInput.Point2Name,
+                        ref createdName,
+                        sectionName,
+                        userName);
+
+                    if (addResult != 0)
+                    {
+                        failedRowMessages.Add(
+                            $"Row {frameInput.ExcelRowNumber}: ETABS API call FrameObj.AddByPoint failed (return code {addResult}).");
+                        continue;
+                    }
+
+                    successCount++;
+
+                    if (!string.IsNullOrWhiteSpace(userName) &&
+                        !string.Equals(createdName, userName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        failedRowMessages.Add(
+                            $"Row {frameInput.ExcelRowNumber}: Frame was created, but ETABS assigned UniqueName '{createdName}' instead of requested '{userName}'.");
+                    }
+                }
+
+                var data = new EtabsAddFramesResult
+                {
+                    AddedCount = successCount,
+                    FailedRowMessages = failedRowMessages
+                };
+
+                if (successCount > 0)
+                {
+                    var refreshResult = RefreshView(sapModel);
+                    if (!refreshResult.IsSuccess)
+                    {
+                        return OperationResult<EtabsAddFramesResult>.Failure(refreshResult.Message);
+                    }
+                }
+
+                return OperationResult<EtabsAddFramesResult>.Success(data);
+            }
+            catch (COMException ex)
+            {
+                return OperationResult<EtabsAddFramesResult>.Failure($"ETABS COM error while adding frames by point names: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<EtabsAddFramesResult>.Failure(
+                    $"ETABS add-by-point failed unexpectedly: {ex.Message}");
+            }
+        }
+
         public OperationResult<IReadOnlyList<EtabsPointData>> GetSelectedPointsFromActiveModel()
         {
             var connectionResult = EnsureConnection();

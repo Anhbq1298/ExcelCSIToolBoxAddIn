@@ -300,7 +300,7 @@
                                     Padding="12,4"
                                     Content="By Coor"
                                     Foreground="Blue"
-                                    Command="{Binding AddFramesByPointNamesCommand}"/>
+                                    Command="{Binding AddFramesByCoordinatesCommand}"/>
 
                             <Button Grid.Row="4"
                                     Grid.Column="4"
@@ -309,7 +309,7 @@
                                     Padding="12,4"
                                     Content="By Point"
                                     Foreground="Blue"
-                                    Command="{Binding AddFrameByPointCommand}"/>
+                                    Command="{Binding AddFramesByPointNamesCommand}"/>
 
                             <TextBlock Grid.Row="6"
                                        Grid.Column="1"
