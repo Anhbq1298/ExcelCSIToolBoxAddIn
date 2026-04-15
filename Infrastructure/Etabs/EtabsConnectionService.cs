@@ -249,6 +249,71 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
+        public OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames)
+        {
+            if (uniqueNames == null || uniqueNames.Count == 0)
+            {
+                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
+            }
+
+            var orderedUniqueNames = GetOrderedDistinctNames(uniqueNames);
+            if (orderedUniqueNames.Count == 0)
+            {
+                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
+            }
+
+            var connectionResult = EnsureConnection();
+            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            {
+                return OperationResult.Failure(connectionResult.Message);
+            }
+
+            try
+            {
+                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
+
+                int clearSelectionResult = sapModel.SelectObj.ClearSelection();
+                if (clearSelectionResult != 0)
+                {
+                    return OperationResult.Failure("Failed to clear ETABS selection before selecting frames by UniqueName.");
+                }
+
+                var unresolved = new List<string>();
+                var selectedCount = 0;
+
+                foreach (var uniqueName in orderedUniqueNames)
+                {
+                    int result = sapModel.FrameObj.SetSelected(uniqueName, true, ETABSv1.eItemType.Objects);
+                    if (result == 0)
+                    {
+                        selectedCount++;
+                    }
+                    else
+                    {
+                        unresolved.Add(uniqueName);
+                    }
+                }
+
+                var message = $"Selected {selectedCount} frame(s) by UniqueName.";
+                if (unresolved.Count > 0)
+                {
+                    message += $" Not found: {string.Join(", ", unresolved)}.";
+                }
+
+                var refreshResult = RefreshView(sapModel);
+                if (!refreshResult.IsSuccess)
+                {
+                    return refreshResult;
+                }
+
+                return OperationResult.Success(message);
+            }
+            catch
+            {
+                return OperationResult.Failure("Failed to select ETABS frames by UniqueName.");
+            }
+        }
+
         private static IReadOnlyList<string> GetOrderedDistinctNames(IReadOnlyList<string> names)
         {
             var uniqueNames = new List<string>();

@@ -12,6 +12,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         OperationResult CloseCurrentEtabsInstance();
 
         OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames);
+        OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames);
 
         // pointInputs must be executed exactly in the given order.
         // Duplicate rows are valid and must not be merged or de-duplicated.
