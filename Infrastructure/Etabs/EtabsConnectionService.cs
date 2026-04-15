@@ -592,55 +592,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult<string> GetCurrentModelUnitsDisplayText()
-        {
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data == null)
-            {
-                return OperationResult<string>.Failure(connectionResult.Message);
-            }
-
-            try
-            {
-                ETABSv1.cSapModel sapModel = GetActiveSapModel(connectionResult.Data);
-                if (sapModel == null)
-                {
-                    return OperationResult<string>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
-                }
-
-                string unitDisplayText = GetCurrentModelUnitsDisplayTextOrFallback(sapModel);
-
-                if (unitDisplayText == "Units unavailable")
-                {
-                    return OperationResult<string>.Failure("Connected to ETABS, but failed to read current model units.");
-                }
-
-                return OperationResult<string>.Success(unitDisplayText);
-            }
-            catch (COMException ex)
-            {
-                return OperationResult<string>.Failure($"Connected to ETABS, but failed to read current model units: {ex.Message}");
-            }
-            catch
-            {
-                return OperationResult<string>.Failure("Connected to ETABS, but failed to read current model units.");
-            }
-        }
-
-        private static string GetCurrentModelUnitsDisplayTextOrFallback(ETABSv1.cSapModel sapModel)
-        {
-            try
-            {
-                ETABSv1.eForce forceUnits = default(ETABSv1.eForce);
-                ETABSv1.eLength lengthUnits = default(ETABSv1.eLength);
-                ETABSv1.eTemperature temperatureUnits = default(ETABSv1.eTemperature);
-
-                int getUnitsResult = sapModel.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
-                if (getUnitsResult != 0)
-                {
-                    return "Units unavailable";
-                }
-
 
         private OperationResult<EtabsConnectionInfo> EnsureConnection()
         {
