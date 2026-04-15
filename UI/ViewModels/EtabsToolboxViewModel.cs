@@ -121,7 +121,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess && result.Data != null)
             {
                 IsConnected = true;
-                RefreshAttachedModelInfo();
 
                 StatusText = "Connected to running ETABS instance.";
 
@@ -180,23 +179,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             StatusText = result.Message;
         }
 
-        private void RefreshAttachedModelInfo()
-        {
-            var modelInfoResult = _getAttachedEtabsModelInfoUseCase.Execute();
-            if (modelInfoResult.IsSuccess && modelInfoResult.Data != null)
-            {
-                ModelName = string.IsNullOrWhiteSpace(modelInfoResult.Data.ModelDisplayText)
-                    ? "Unknown model"
-                    : modelInfoResult.Data.ModelDisplayText;
-                CurrentModelUnitText = string.IsNullOrWhiteSpace(modelInfoResult.Data.CurrentModelUnitText)
-                    ? "Units unavailable"
-                    : modelInfoResult.Data.CurrentModelUnitText;
-                return;
-            }
 
-            ModelName = "Unknown model";
-            CurrentModelUnitText = "Units unavailable";
-        }
 
         private void SetDetachedModelInfo(string modelNameText)
         {

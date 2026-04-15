@@ -15,9 +15,5 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
             _connectionService = connectionService;
         }
 
-        public OperationResult<EtabsAttachedModelInfo> Execute()
-        {
-            return _connectionService.GetAttachedModelInfo();
-        }
     }
 }

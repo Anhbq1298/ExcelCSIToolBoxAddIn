@@ -21,6 +21,5 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         OperationResult<string> GetCurrentModelUnitsDisplayText();
 
-        OperationResult<EtabsAttachedModelInfo> GetAttachedModelInfo();
     }
 }

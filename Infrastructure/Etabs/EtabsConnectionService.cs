@@ -31,13 +31,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     _currentConnection = null;
                     return OperationResult<EtabsConnectionInfo>.Failure("ETABS is not running.");
                 }
-
                 ETABSv1.cSapModel sapModel = myETABSObject.SapModel;
-                string modelPath = string.Empty;
-                int getPathResult = sapModel.GetFilePath(ref modelPath);
-                string modelName = getPathResult != 0 || string.IsNullOrWhiteSpace(modelPath)
-                    ? "Unknown model"
-                    : Path.GetFileName(modelPath);
+
+                string modelPath = sapModel.GetModelFilename(true);
+                string modelName = !string.IsNullOrWhiteSpace(modelPath)
+                    ? Path.GetFileName(modelPath)
+                    : "Unknown model";
 
                 _currentConnection = new EtabsConnectionInfo
                 {
@@ -372,35 +371,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult<EtabsAttachedModelInfo> GetAttachedModelInfo()
-        {
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data == null)
-            {
-                return OperationResult<EtabsAttachedModelInfo>.Failure(connectionResult.Message);
-            }
-
-            ETABSv1.cSapModel sapModel = GetActiveSapModel(connectionResult.Data);
-            if (sapModel == null)
-            {
-                return OperationResult<EtabsAttachedModelInfo>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
-            }
-
-            string modelPath = string.Empty;
-            int getPathResult = sapModel.GetFilePath(ref modelPath);
-            string modelDisplayText = getPathResult != 0 || string.IsNullOrWhiteSpace(modelPath)
-                ? "Unknown model"
-                : Path.GetFileName(modelPath);
-
-            var modelInfo = new EtabsAttachedModelInfo
-            {
-                ModelDisplayText = modelDisplayText,
-                CurrentModelUnitText = GetCurrentModelUnitsDisplayTextOrFallback(sapModel)
-            };
-
-            return OperationResult<EtabsAttachedModelInfo>.Success(modelInfo);
-        }
-
         public OperationResult<string> GetCurrentModelUnitsDisplayText()
         {
             var connectionResult = EnsureConnection();
@@ -440,21 +410,41 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         {
             try
             {
-                ETABSv1.eForce forceUnits = default(ETABSv1.eForce);
-                ETABSv1.eLength lengthUnits = default(ETABSv1.eLength);
-                ETABSv1.eTemperature temperatureUnits = default(ETABSv1.eTemperature);
-
-                int getUnitsResult = sapModel.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
-                if (getUnitsResult != 0)
-                {
-                    return "Units unavailable";
-                }
-
-                return $"{GetEnumKeyName(forceUnits)}-{GetEnumKeyName(lengthUnits)}-{GetEnumKeyName(temperatureUnits)}";
+                ETABSv1.eUnits presentUnits = sapModel.GetPresentUnits();
+                return GetPresentUnitsDisplayText(presentUnits);
             }
             catch
             {
                 return "Units unavailable";
+            }
+        }
+        private static string GetPresentUnitsDisplayText(ETABSv1.eUnits units)
+        {
+            switch (units)
+            {
+                case ETABSv1.eUnits.lb_in_F:
+                    return "lb-inch-F";
+                case ETABSv1.eUnits.lb_ft_F:
+                    return "lb-ft-F";
+                case ETABSv1.eUnits.kip_in_F:
+                    return "kip-inch-F";
+                case ETABSv1.eUnits.kip_ft_F:
+                    return "kip-ft-F";
+                case ETABSv1.eUnits.kN_mm_C:
+                    return "kN-mm-C";
+                case ETABSv1.eUnits.kN_m_C:
+                    return "kN-m-C";
+                case ETABSv1.eUnits.kgf_mm_C:
+                    return "kgf-mm-C";
+                case ETABSv1.eUnits.kgf_m_C:
+                    return "kgf-m-C";
+                case ETABSv1.eUnits.N_mm_C:
+                    return "N-mm-C";
+                case ETABSv1.eUnits.N_m_C:
+                    return "N-m-C";
+
+                default:
+                    return units.ToString();
             }
         }
 
