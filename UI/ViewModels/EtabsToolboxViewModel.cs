@@ -15,7 +15,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class EtabsToolboxViewModel : ViewModelBase
     {
         private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
-        private readonly GetAttachedEtabsModelInfoUseCase _getAttachedEtabsModelInfoUseCase;
         private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
         private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
@@ -34,7 +33,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var excelSelectionService = new ExcelSelectionService();
 
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
-            _getAttachedEtabsModelInfoUseCase = new GetAttachedEtabsModelInfoUseCase(etabsConnectionService);
             _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
@@ -132,6 +130,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess && result.Data != null)
             {
                 IsConnected = true;
+                ModelName = string.IsNullOrWhiteSpace(result.Data.ModelFileName)
+                    ? "Unknown model"
+                    : result.Data.ModelFileName;
+                ModelPath = result.Data.ModelPath ?? string.Empty;
+                CurrentModelUnitText = string.IsNullOrWhiteSpace(result.Data.ModelCurrentUnit)
+                    ? "Units unavailable"
+                    : result.Data.ModelCurrentUnit;
 
                 StatusText = "Connected to running ETABS instance.";
 
@@ -206,6 +211,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             ModelName = "Unknown model";
+            ModelPath = string.Empty;
             CurrentModelUnitText = "Units unavailable";
         }
 

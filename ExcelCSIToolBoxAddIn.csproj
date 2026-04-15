@@ -236,14 +236,12 @@
     <Compile Include="Core\Tabular\DataFrame.cs" />
     <Compile Include="Core\Application\LoadEtabsConnectionUseCase.cs" />
     <Compile Include="Core\Application\GetCurrentEtabsModelUnitsUseCase.cs" />
-    <Compile Include="Core\Application\GetAttachedEtabsModelInfoUseCase.cs" />
     <Compile Include="Core\Application\EtabsPointDataDataFrameMapper.cs" />
     <Compile Include="Core\Application\GetSelectedEtabsPointsUseCase.cs" />
     <Compile Include="Core\Application\CloseCurrentEtabsInstanceUseCase.cs" />
     <Compile Include="Core\Application\SelectPointsFromExcelRangeByUniqueNameUseCase.cs" />
     <Compile Include="Core\Application\AddPointsFromExcelRangeUseCase.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsAttachedModelInfo.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsPointData.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsPointCartesianInput.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsAddPointsResult.cs" />

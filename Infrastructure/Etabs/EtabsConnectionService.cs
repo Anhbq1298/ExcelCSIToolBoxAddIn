@@ -32,11 +32,61 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     return OperationResult<EtabsConnectionInfo>.Failure("ETABS is not running.");
                 }
                 ETABSv1.cSapModel sapModel = myETABSObject.SapModel;
-                string modelPath = sapModel.GetModelFilename(true);
-                string modelName = string.IsNullOrWhiteSpace(modelPath)
-                    ? "Unsaved Model"
-                    : Path.GetFileName(modelPath);
-                string modelCurrentUnit = GetPresentUnitsText(sapModel);
+
+                string modelPath = string.Empty;
+                string modelName = "Unsaved Model";
+                try
+                {
+                    modelPath = sapModel.GetModelFilename(true);
+                    modelName = string.IsNullOrWhiteSpace(modelPath)
+                        ? "Unsaved Model"
+                        : Path.GetFileName(modelPath);
+                }
+                catch
+                {
+                    // Keep attach successful when model metadata retrieval fails.
+                }
+
+                string modelCurrentUnit = "Units unavailable";
+                try
+                {
+                    ETABSv1.eUnits presentUnits = sapModel.GetPresentUnits();
+                    string[] tokens = GetEnumKeyName(presentUnits).Split('_');
+                    if (tokens.Length >= 3)
+                    {
+                        string forceToken = tokens[0];
+                        string forceUnit;
+                        switch (forceToken)
+                        {
+                            case "KN":
+                                forceUnit = "kN";
+                                break;
+                            case "KIP":
+                                forceUnit = "kip";
+                                break;
+                            case "LB":
+                                forceUnit = "lb";
+                                break;
+                            case "KGF":
+                                forceUnit = "kgf";
+                                break;
+                            case "TONF":
+                                forceUnit = "tonf";
+                                break;
+                            default:
+                                forceUnit = forceToken;
+                                break;
+                        }
+
+                        string lengthUnit = tokens[1].ToLowerInvariant();
+                        string temperatureUnit = tokens[2].ToUpperInvariant();
+                        modelCurrentUnit = $"{forceUnit}-{lengthUnit}-{temperatureUnit}";
+                    }
+                }
+                catch
+                {
+                    // Keep attach successful when model metadata retrieval fails.
+                }
 
                 string modelPath = sapModel.GetModelFilename(true);
                 string modelName = !string.IsNullOrWhiteSpace(modelPath)
@@ -378,35 +428,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult<EtabsAttachedModelInfo> GetAttachedModelInfo()
-        {
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data == null)
-            {
-                return OperationResult<EtabsAttachedModelInfo>.Failure(connectionResult.Message);
-            }
-
-            ETABSv1.cSapModel sapModel = GetActiveSapModel(connectionResult.Data);
-            if (sapModel == null)
-            {
-                return OperationResult<EtabsAttachedModelInfo>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
-            }
-
-            string modelPath = string.Empty;
-            int getPathResult = sapModel.GetFilePath(ref modelPath);
-            string modelDisplayText = getPathResult != 0 || string.IsNullOrWhiteSpace(modelPath)
-                ? "Unknown model"
-                : Path.GetFileName(modelPath);
-
-            var modelInfo = new EtabsAttachedModelInfo
-            {
-                ModelDisplayText = modelDisplayText,
-                CurrentModelUnitText = GetCurrentModelUnitsDisplayTextOrFallback(sapModel)
-            };
-
-            return OperationResult<EtabsAttachedModelInfo>.Success(modelInfo);
-        }
-
         public OperationResult<string> GetCurrentModelUnitsDisplayText()
         {
             var connectionResult = EnsureConnection();
@@ -459,6 +480,28 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return $"{GetEnumKeyName(forceUnits)}-{GetEnumKeyName(lengthUnits)}-{GetEnumKeyName(temperatureUnits)}";
             }
             catch
+            {
+                return "Units unavailable";
+            }
+        }
+
+        private static string GetPresentUnitsText(ETABSv1.cSapModel sapModel)
+        {
+            try
+            {
+                ETABSv1.eUnits presentUnits = sapModel.GetPresentUnits();
+                return FormatPresentUnits(presentUnits);
+            }
+            catch
+            {
+                return "Units unavailable";
+            }
+        }
+
+        private static string FormatPresentUnits(ETABSv1.eUnits presentUnits)
+        {
+            string[] tokens = GetEnumKeyName(presentUnits).Split('_');
+            if (tokens.Length < 3)
             {
                 return "Units unavailable";
             }
