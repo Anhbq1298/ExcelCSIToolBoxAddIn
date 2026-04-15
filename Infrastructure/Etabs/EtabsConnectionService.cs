@@ -371,6 +371,29 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
+        public OperationResult<EtabsAttachedModelInfo> GetAttachedModelInfo()
+        {
+            var connectionResult = EnsureConnection();
+            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            {
+                return OperationResult<EtabsAttachedModelInfo>.Failure(connectionResult.Message);
+            }
+
+            ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
+            string modelPath = GetModelFileNameSafely(sapModel);
+            string modelDisplayText = string.IsNullOrWhiteSpace(modelPath)
+                ? "Unknown model"
+                : Path.GetFileName(modelPath);
+
+            var modelInfo = new EtabsAttachedModelInfo
+            {
+                ModelDisplayText = modelDisplayText,
+                CurrentModelUnitText = GetCurrentModelUnitsDisplayTextOrFallback(sapModel)
+            };
+
+            return OperationResult<EtabsAttachedModelInfo>.Success(modelInfo);
+        }
+
         public OperationResult<string> GetCurrentModelUnitsDisplayText()
         {
             var connectionResult = EnsureConnection();
@@ -382,21 +405,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             try
             {
                 ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
-                ETABSv1.eForce forceUnits = default(ETABSv1.eForce);
-                ETABSv1.eLength lengthUnits = default(ETABSv1.eLength);
-                ETABSv1.eTemperature temperatureUnits = default(ETABSv1.eTemperature);
+                string unitDisplayText = GetCurrentModelUnitsDisplayTextOrFallback(sapModel);
 
-                int getUnitsResult = sapModel.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
-                if (getUnitsResult != 0)
+                if (unitDisplayText == "Units unavailable")
                 {
-                    return OperationResult<string>.Failure(
-                        $"Connected to ETABS, but failed to read current model units (GetPresentUnits_2 returned {getUnitsResult}).");
+                    return OperationResult<string>.Failure("Connected to ETABS, but failed to read current model units.");
                 }
 
-                string displayText =
-                    $"{GetEnumKeyName(forceUnits)}-{GetEnumKeyName(lengthUnits)}-{GetEnumKeyName(temperatureUnits)}";
-
-                return OperationResult<string>.Success(displayText);
+                return OperationResult<string>.Success(unitDisplayText);
             }
             catch (COMException ex)
             {
@@ -405,6 +421,28 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             catch
             {
                 return OperationResult<string>.Failure("Connected to ETABS, but failed to read current model units.");
+            }
+        }
+
+        private static string GetCurrentModelUnitsDisplayTextOrFallback(ETABSv1.cSapModel sapModel)
+        {
+            try
+            {
+                ETABSv1.eForce forceUnits = default(ETABSv1.eForce);
+                ETABSv1.eLength lengthUnits = default(ETABSv1.eLength);
+                ETABSv1.eTemperature temperatureUnits = default(ETABSv1.eTemperature);
+
+                int getUnitsResult = sapModel.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
+                if (getUnitsResult != 0)
+                {
+                    return "Units unavailable";
+                }
+
+                return $"{GetEnumKeyName(forceUnits)}-{GetEnumKeyName(lengthUnits)}-{GetEnumKeyName(temperatureUnits)}";
+            }
+            catch
+            {
+                return "Units unavailable";
             }
         }
 
