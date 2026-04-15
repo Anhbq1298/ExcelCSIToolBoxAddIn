@@ -15,7 +15,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class EtabsToolboxViewModel : ViewModelBase
     {
         private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
-        private readonly GetCurrentEtabsModelUnitsUseCase _getCurrentEtabsModelUnitsUseCase;
+        private readonly GetAttachedEtabsModelInfoUseCase _getAttachedEtabsModelInfoUseCase;
         private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
         private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
@@ -33,7 +33,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var excelSelectionService = new ExcelSelectionService();
 
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
-            _getCurrentEtabsModelUnitsUseCase = new GetCurrentEtabsModelUnitsUseCase(etabsConnectionService);
+            _getAttachedEtabsModelInfoUseCase = new GetAttachedEtabsModelInfoUseCase(etabsConnectionService);
             _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
@@ -121,7 +121,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess && result.Data != null)
             {
                 IsConnected = true;
-                RefreshAttachedModelInfo(result.Data);
+                RefreshAttachedModelInfo();
 
                 StatusText = "Connected to running ETABS instance.";
 
@@ -180,29 +180,28 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             StatusText = result.Message;
         }
 
-        private void RefreshAttachedModelInfo(EtabsConnectionInfo connectionInfo)
+        private void RefreshAttachedModelInfo()
         {
-            ModelName = string.IsNullOrWhiteSpace(connectionInfo.ModelFileName)
-                ? "Unknown model"
-                : connectionInfo.ModelFileName;
-            CurrentModelUnitText = GetCurrentModelUnitsTextOrFallback();
+            var modelInfoResult = _getAttachedEtabsModelInfoUseCase.Execute();
+            if (modelInfoResult.IsSuccess && modelInfoResult.Data != null)
+            {
+                ModelName = string.IsNullOrWhiteSpace(modelInfoResult.Data.ModelDisplayText)
+                    ? "Unknown model"
+                    : modelInfoResult.Data.ModelDisplayText;
+                CurrentModelUnitText = string.IsNullOrWhiteSpace(modelInfoResult.Data.CurrentModelUnitText)
+                    ? "Units unavailable"
+                    : modelInfoResult.Data.CurrentModelUnitText;
+                return;
+            }
+
+            ModelName = "Unknown model";
+            CurrentModelUnitText = "Units unavailable";
         }
 
         private void SetDetachedModelInfo(string modelNameText)
         {
             ModelName = modelNameText;
             CurrentModelUnitText = "Not yet attached";
-        }
-
-        private string GetCurrentModelUnitsTextOrFallback()
-        {
-            var unitResult = _getCurrentEtabsModelUnitsUseCase.Execute();
-            if (unitResult.IsSuccess && !string.IsNullOrWhiteSpace(unitResult.Data))
-            {
-                return unitResult.Data;
-            }
-
-            return "Units unavailable";
         }
 
         private void SelectPointsByUniqueName()

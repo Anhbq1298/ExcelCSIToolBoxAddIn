@@ -20,5 +20,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         OperationResult<IReadOnlyList<EtabsPointData>> GetSelectedPointsFromActiveModel();
 
         OperationResult<string> GetCurrentModelUnitsDisplayText();
+
+        OperationResult<EtabsAttachedModelInfo> GetAttachedModelInfo();
     }
 }
