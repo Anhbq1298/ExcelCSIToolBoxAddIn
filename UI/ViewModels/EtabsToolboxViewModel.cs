@@ -17,6 +17,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
         private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
         private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
+        private readonly GetSelectedEtabsFramesUseCase _getSelectedEtabsFramesUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
         private readonly SelectFramesFromExcelRangeByUniqueNameUseCase _selectFramesFromExcelRangeByUniqueNameUseCase;
         private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
@@ -36,6 +37,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
             _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
+            _getSelectedEtabsFramesUseCase = new GetSelectedEtabsFramesUseCase(etabsConnectionService, excelOutputService);
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
             _selectFramesFromExcelRangeByUniqueNameUseCase = new SelectFramesFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
             _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
@@ -53,7 +55,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             AddFramesCommand = new RelayCommand(() => ShowPlaceholder("Add Frames"));
             SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"));
             RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
-            GetFramesCommand = new RelayCommand(() => ShowPlaceholder("Get Frames"));
+            GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames);
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
@@ -125,7 +127,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand AddFramesCommand { get; }
         public ICommand SetFramesCommand { get; }
         public ICommand RenameFramesCommand { get; }
-        public ICommand GetFramesCommand { get; }
+        public ICommand GetSelectedFramesCommand { get; }
 
         private void LoadConnectionState(bool showMessage)
         {
@@ -229,6 +231,27 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 MessageBox.Show(
                     "Successfully exported selected ETABS points to Excel.",
+                    "ETABS Toolbox",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            MessageBox.Show(
+                result.Message,
+                "ETABS Toolbox",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
+
+        private void GetSelectedFrames()
+        {
+            var result = _getSelectedEtabsFramesUseCase.Execute();
+
+            if (result.IsSuccess)
+            {
+                MessageBox.Show(
+                    "Successfully exported selected ETABS frames to Excel.",
                     "ETABS Toolbox",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
