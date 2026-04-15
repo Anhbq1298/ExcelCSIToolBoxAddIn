@@ -54,7 +54,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"));
             GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints);
 
-            AddFramesCommand = new RelayCommand(AddFramesByCoordinates);
+            AddFramesByCoordinatesCommand = new RelayCommand(AddFramesByCoordinates);
             SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"));
             RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
             GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames);
@@ -126,7 +126,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand RenameSelectedPointsCommand { get; }
         public ICommand GetSelectedPointsCommand { get; }
 
-        public ICommand AddFramesCommand { get; }
+        public ICommand AddFramesByCoordinatesCommand { get; }
         public ICommand SetFramesCommand { get; }
         public ICommand RenameFramesCommand { get; }
         public ICommand GetSelectedFramesCommand { get; }

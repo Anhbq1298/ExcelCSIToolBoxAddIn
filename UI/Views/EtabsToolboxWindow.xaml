@@ -289,7 +289,7 @@
                     Padding="12,4"
                     Content="By Coor"
                     Foreground="Blue"
-                    Command="{Binding AddFrameByCoordinatesCommand}"/>
+                    Command="{Binding AddFramesByCoordinatesCommand}"/>
 
                         <Button Grid.Row="4"
                     Grid.Column="4"
