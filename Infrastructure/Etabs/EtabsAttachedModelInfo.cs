@@ -5,6 +5,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     /// </summary>
     public class EtabsAttachedModelInfo
     {
+        public string ModelPath { get; set; }
+
         public string ModelDisplayText { get; set; }
 
         public string CurrentModelUnitText { get; set; }
