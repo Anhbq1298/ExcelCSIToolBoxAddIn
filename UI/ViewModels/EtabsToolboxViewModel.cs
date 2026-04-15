@@ -55,7 +55,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             AddFramesCommand = new RelayCommand(() => ShowPlaceholder("Add Frames"));
             SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"));
             RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
-            GetFramesCommand = new RelayCommand(GetSelectedFrames);
+            GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames);
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
@@ -127,8 +127,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand AddFramesCommand { get; }
         public ICommand SetFramesCommand { get; }
         public ICommand RenameFramesCommand { get; }
-        public ICommand GetFramesCommand { get; }
-        public ICommand GetSelectedFramesCommand => GetFramesCommand;
+        public ICommand GetSelectedFramesCommand { get; }
 
         private void LoadConnectionState(bool showMessage)
         {

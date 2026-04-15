@@ -13,8 +13,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     public class EtabsConnectionService : IEtabsConnectionService
     {
         private const string EtabsComProgId = "CSI.ETABS.API.ETABSObject";
-        private const int PointObjectType = 1;
-        private const int FrameObjectType = 2;
 
         private EtabsConnectionInfo _currentConnection;
 
@@ -449,7 +447,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         continue;
                     }
 
-                    if (objectTypes[i] != PointObjectType || string.IsNullOrWhiteSpace(objectNames[i]))
+                    if (objectTypes[i] != EtabsObjectTypeIds.Point || string.IsNullOrWhiteSpace(objectNames[i]))
                     {
                         continue;
                     }
@@ -511,17 +509,26 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     return OperationResult<IReadOnlyList<string>>.Failure("Failed to read selected objects from ETABS.");
                 }
 
+                if (numberItems < 0)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure("Failed to read selected objects from ETABS.");
+                }
+
+                if (numberItems > 0 &&
+                    (objectTypes == null ||
+                     objectNames == null ||
+                     objectTypes.Length < numberItems ||
+                     objectNames.Length < numberItems))
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure("Selected object data from ETABS is inconsistent.");
+                }
+
                 var frameUniqueNames = new List<string>();
 
                 for (int i = 0; i < numberItems; i++)
                 {
-                    if (objectTypes == null || objectNames == null || i >= objectTypes.Length || i >= objectNames.Length)
-                    {
-                        continue;
-                    }
-
                     var frameUniqueName = objectNames[i];
-                    if (objectTypes[i] != FrameObjectType || string.IsNullOrWhiteSpace(frameUniqueName))
+                    if (objectTypes[i] != EtabsObjectTypeIds.Frame || string.IsNullOrWhiteSpace(frameUniqueName))
                     {
                         continue;
                     }
