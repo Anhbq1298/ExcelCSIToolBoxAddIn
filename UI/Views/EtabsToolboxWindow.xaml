@@ -5,10 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="ETABS Toolbox"
-        Height="400"
-        Width="600"
-        MinHeight="400"
-        MinWidth="600"
+        Width="640"
+        Height="480"
+        MinWidth="640"
+        MinHeight="480"
+        MaxWidth="640"
+        MaxHeight="480"
+        ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         FontSize="11">
 
@@ -20,12 +23,12 @@
 
         <!-- Top area -->
         <Border Grid.Row="0"
-        Padding="10"
-        Margin="0,0,0,10"
-        BorderBrush="#DDDDDD"
-        BorderThickness="1"
-        CornerRadius="4"
-        Background="#FAFAFA">
+                Padding="10"
+                Margin="0,0,0,10"
+                BorderBrush="#DDDDDD"
+                BorderThickness="1"
+                CornerRadius="4"
+                Background="#FAFAFA">
             <StackPanel>
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
@@ -39,387 +42,395 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0"
-                       Grid.Column="0"
-                       Text="Model Name:"
-                       VerticalAlignment="Center"
-                       FontWeight="Bold"
-                       Foreground="Black"
-                       Margin="0,0,8,0"/>
+                               Grid.Column="0"
+                               Text="Model Name:"
+                               VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               Foreground="Black"
+                               Margin="0,0,8,0"/>
 
                     <TextBox Grid.Row="0"
-                     Grid.Column="1"
-                     Text="{Binding ModelDisplayText, Mode=OneWay}"
-                     IsReadOnly="True"
-                     BorderThickness="1"
-                     Background="White"
-                     VerticalContentAlignment="Center"
-                     FontWeight="Bold"
-                     Height="26"/>
+                             Grid.Column="1"
+                             Text="{Binding ModelDisplayText, Mode=OneWay}"
+                             IsReadOnly="True"
+                             BorderThickness="1"
+                             Background="White"
+                             VerticalContentAlignment="Center"
+                             FontWeight="Bold"
+                             Height="26"/>
 
                     <TextBlock Grid.Row="2"
-                       Grid.Column="0"
-                       Text="Current Model Unit:"
-                       VerticalAlignment="Center"
-                       FontWeight="Bold"
-                       Foreground="Black"
-                       Margin="0,0,8,0"/>
+                               Grid.Column="0"
+                               Text="Current Model Unit:"
+                               VerticalAlignment="Center"
+                               FontWeight="Bold"
+                               Foreground="Black"
+                               Margin="0,0,8,0"/>
 
                     <TextBox Grid.Row="2"
-                     Grid.Column="1"
-                     Text="{Binding CurrentModelUnitText, Mode=OneWay}"
-                     IsReadOnly="True"
-                     BorderThickness="1"
-                     Background="White"
-                     VerticalContentAlignment="Center"
-                     FontWeight="Bold"
-                     Height="26"/>
+                             Grid.Column="1"
+                             Text="{Binding CurrentModelUnitText, Mode=OneWay}"
+                             IsReadOnly="True"
+                             BorderThickness="1"
+                             Background="White"
+                             VerticalContentAlignment="Center"
+                             FontWeight="Bold"
+                             Height="26"/>
                 </Grid>
 
                 <StackPanel Orientation="Horizontal"
-                    HorizontalAlignment="Left">
+                            HorizontalAlignment="Left">
                     <Button Content="Attach"
-                    Width="70"
-                    Height="30"
-                    Padding="10,4"
-                    Margin="0,0,8,0"
-                    Command="{Binding AttachToRunningEtabsCommand}"/>
+                            Width="70"
+                            Height="30"
+                            Padding="10,4"
+                            Margin="0,0,8,0"
+                            Command="{Binding AttachToRunningEtabsCommand}"/>
 
                     <Button Content="Close"
-                    Width="70"
-                    Height="30"
-                    Padding="10,4"
-                    Command="{Binding CloseCurrentEtabsInstanceCommand}"/>
+                            Width="70"
+                            Height="30"
+                            Padding="10,4"
+                            Command="{Binding CloseCurrentEtabsInstanceCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <TabControl Grid.Row="1">
-            <TabItem Header="Point">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled"
-                              CanContentScroll="True">
-                    <Grid Margin="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="20"/>
-                        </Grid.ColumnDefinitions>
+        <!-- Main content frame -->
+        <Border Grid.Row="1"
+                Padding="8"
+                BorderBrush="#CFCFCF"
+                BorderThickness="1"
+                CornerRadius="4"
+                Background="#FFFFFF">
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+            <TabControl>
+                <TabItem Header="Point">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="True">
+                        <Grid Margin="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                            </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Row="0"
-                                   Grid.Column="1"
-                                   Text="Select Point in Model from Excel Range"
-                                   VerticalAlignment="Center"
-                                   Foreground="Black"
-                                   FontWeight="Bold"
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,8,0"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <Button Grid.Row="0"
-                                Grid.Column="2"
-                                Height="30"
-                                Margin="6,0,6,0"
-                                Padding="12,4"
-                                Content="By UniqueName"
-                                Foreground="Blue"
-                                Command="{Binding SelectPointsByUniqueNameCommand}"/>
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="1"
+                                       Text="Select Point in Model from Excel Range"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <TextBlock Grid.Row="2"
-                                   Grid.Column="1"
-                                   Text="Add Point From Range Excel"
-                                   VerticalAlignment="Center"
-                                   Foreground="Black"
-                                   FontWeight="Bold"
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,8,0"/>
+                            <Button Grid.Row="0"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="By UniqueName"
+                                    Foreground="Blue"
+                                    Command="{Binding SelectPointsByUniqueNameCommand}"/>
 
-                        <Button Grid.Row="2"
-                                Grid.Column="2"
-                                Height="30"
-                                Margin="6,0,6,0"
-                                Padding="12,4"
-                                Content="By Cartesian"
-                                HorizontalAlignment="Stretch"
-                                Foreground="Blue"
-                                Command="{Binding AddPointByCartesianCommand}"/>
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       Text="Add Point From Range Excel"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <TextBlock Grid.Row="4"
-                                   Grid.Column="1"
-                                   Text="Extract Selected Point Information"
-                                   VerticalAlignment="Center"
-                                   Foreground="Black"
-                                   FontWeight="Bold"
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,8,0"/>
+                            <Button Grid.Row="2"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="By Cartesian"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="Blue"
+                                    Command="{Binding AddPointByCartesianCommand}"/>
 
-                        <Button Grid.Row="4"
-                                Grid.Column="2"
-                                Height="30"
-                                Margin="6,0,6,0"
-                                Padding="12,4"
-                                Content="Run"
-                                HorizontalAlignment="Stretch"
-                                Foreground="Blue"
-                                Command="{Binding GetSelectedPointsCommand}"/>
+                            <TextBlock Grid.Row="4"
+                                       Grid.Column="1"
+                                       Text="Extract Selected Point Information"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <TextBlock Grid.Row="6"
-                                   Grid.Column="1"
-                                   Text="Grouping"
-                                   VerticalAlignment="Center"
-                                   Foreground="Black"
-                                   FontWeight="Bold"
-                                   Margin="0,0,8,0"/>
+                            <Button Grid.Row="4"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Run"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="Blue"
+                                    Command="{Binding GetSelectedPointsCommand}"/>
 
-                        <Button Grid.Row="6"
-                                Grid.Column="2"
-                                Height="30"
-                                Margin="6,0,6,0"
-                                Padding="12,4"
-                                Content="Get"
-                                HorizontalAlignment="Stretch"
-                                Foreground="Blue"/>
+                            <TextBlock Grid.Row="6"
+                                       Grid.Column="1"
+                                       Text="Grouping"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       Margin="0,0,8,0"/>
 
-                        <Button Grid.Row="6"
-                                Grid.Column="4"
-                                Height="30"
-                                Margin="6,0,6,0"
-                                Padding="12,4"
-                                Content="Set"
-                                HorizontalAlignment="Stretch"
-                                Foreground="Blue"/>
-                    </Grid>
-                </ScrollViewer>
-            </TabItem>
+                            <Button Grid.Row="6"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Get"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="Blue"/>
 
-            <TabItem Header="Frame">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  CanContentScroll="True">
-                    <Grid Margin="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="20"/>
-                        </Grid.ColumnDefinitions>
+                            <Button Grid.Row="6"
+                                    Grid.Column="4"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Set"
+                                    HorizontalAlignment="Stretch"
+                                    Foreground="Blue"/>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
 
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="10"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                <TabItem Header="Frame" FontSize="10">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="True">
+                        <Grid Margin="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="2.2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="20"/>
+                            </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Row="0"
-                       Grid.Column="1"
-                       Text="Get Current Selection Frame UniqueNames"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="10"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <Button Grid.Row="0"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Run"
-                    Foreground="Blue"
-                    Command="{Binding GetSelectedFramesCommand}"/>
+                            <TextBlock Grid.Row="0"
+                                       Grid.Column="1"
+                                       Text="Get Current Selection Frame UniqueNames"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <TextBlock Grid.Row="2"
-                       Grid.Column="1"
-                       Text="Select Frame in Model from Excel Range"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Button Grid.Row="0"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Run"
+                                    Foreground="Blue"
+                                    Command="{Binding GetSelectedFramesCommand}"/>
 
-                        <Button Grid.Row="2"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="By UniqueName"
-                    Foreground="Blue"
-                    Command="{Binding SelectFramesByUniqueNameCommand}"/>
+                            <TextBlock Grid.Row="2"
+                                       Grid.Column="1"
+                                       Text="Select Frame in Model from Excel Range"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <TextBlock Grid.Row="4"
-                       Grid.Column="1"
-                       Text="Add Frame From Range Excel"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Button Grid.Row="2"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="By UniqueName"
+                                    Foreground="Blue"
+                                    Command="{Binding SelectFramesByUniqueNameCommand}"/>
 
-                        <Button Grid.Row="4"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="By Coor"
-                    Foreground="Blue"
-                    Command="{Binding AddFramesByCoordinatesCommand}"/>
+                            <TextBlock Grid.Row="4"
+                                       Grid.Column="1"
+                                       Text="Add Frame From Range Excel"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <Button Grid.Row="4"
-                    Grid.Column="4"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="By Point"
-                    Foreground="Blue"
-                    Command="{Binding AddFrameByPointCommand}"/>
+                            <Button Grid.Row="4"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="By Coor"
+                                    Foreground="Blue"
+                                    Command="{Binding AddFramesByPointNamesCommand}"/>
 
-                        <TextBlock Grid.Row="6"
-                       Grid.Column="1"
-                       Text="Extract Selected Frame Information"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Button Grid.Row="4"
+                                    Grid.Column="4"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="By Point"
+                                    Foreground="Blue"
+                                    Command="{Binding AddFrameByPointCommand}"/>
 
-                        <Button Grid.Row="6"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Run"
-                    Foreground="Blue"
-                    Command="{Binding GetSelectedFramesCommand}"/>
+                            <TextBlock Grid.Row="6"
+                                       Grid.Column="1"
+                                       Text="Extract Selected Frame Information"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <TextBlock Grid.Row="8"
-                       Grid.Column="1"
-                       Text="Change Name"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Button Grid.Row="6"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Run"
+                                    Foreground="Blue"
+                                    Command="{Binding GetSelectedFramesCommand}"/>
 
-                        <Button Grid.Row="8"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Run"
-                    Foreground="Blue"
-                    Command="{Binding RenameFramesCommand}"/>
+                            <TextBlock Grid.Row="8"
+                                       Grid.Column="1"
+                                       Text="Change Name"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <TextBlock Grid.Row="10"
-                       Grid.Column="1"
-                       Text="Frame Section Property"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Button Grid.Row="8"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Run"
+                                    Foreground="Blue"
+                                    Command="{Binding RenameFramesCommand}"/>
 
-                        <Button Grid.Row="10"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Get"
-                    Foreground="Blue"
-                    Command="{Binding GetFrameSectionPropertyCommand}"/>
+                            <TextBlock Grid.Row="10"
+                                       Grid.Column="1"
+                                       Text="Frame Section Property"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <Button Grid.Row="10"
-                    Grid.Column="4"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Set"
-                    Foreground="Blue"
-                    Command="{Binding SetFrameSectionPropertyCommand}"/>
+                            <Button Grid.Row="10"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Get"
+                                    Foreground="Blue"
+                                    Command="{Binding GetFrameSectionPropertyCommand}"/>
 
-                        <TextBlock Grid.Row="12"
-                       Grid.Column="1"
-                       Text="Frame Group Assignment"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Button Grid.Row="10"
+                                    Grid.Column="4"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Set"
+                                    Foreground="Blue"
+                                    Command="{Binding SetFrameSectionPropertyCommand}"/>
 
-                        <Button Grid.Row="12"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Get"
-                    Foreground="Blue"
-                    Command="{Binding GetFrameGroupAssignmentCommand}"/>
+                            <TextBlock Grid.Row="12"
+                                       Grid.Column="1"
+                                       Text="Frame Group Assignment"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <Button Grid.Row="12"
-                    Grid.Column="4"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Set"
-                    Foreground="Blue"
-                    Command="{Binding SetFrameGroupAssignmentCommand}"/>
+                            <Button Grid.Row="12"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Get"
+                                    Foreground="Blue"
+                                    Command="{Binding GetFrameGroupAssignmentCommand}"/>
 
-                        <TextBlock Grid.Row="14"
-                       Grid.Column="1"
-                       Text="Frame Modifier"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       FontWeight="Bold"
-                       TextWrapping="Wrap"
-                       Margin="0,0,8,0"/>
+                            <Button Grid.Row="12"
+                                    Grid.Column="4"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Set"
+                                    Foreground="Blue"
+                                    Command="{Binding SetFrameGroupAssignmentCommand}"/>
 
-                        <Button Grid.Row="14"
-                    Grid.Column="2"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Get"
-                    Foreground="Blue"
-                    Command="{Binding GetFrameModifierCommand}"/>
+                            <TextBlock Grid.Row="14"
+                                       Grid.Column="1"
+                                       Text="Frame Modifier"
+                                       VerticalAlignment="Center"
+                                       Foreground="Black"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,8,0"/>
 
-                        <Button Grid.Row="14"
-                    Grid.Column="4"
-                    Height="30"
-                    Margin="6,0,6,0"
-                    Padding="12,4"
-                    Content="Set"
-                    Foreground="Blue"
-                    Command="{Binding SetFrameModifierCommand}"/>
-                    </Grid>
-                </ScrollViewer>
-            </TabItem>
-            
-        </TabControl>
+                            <Button Grid.Row="14"
+                                    Grid.Column="2"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Get"
+                                    Foreground="Blue"
+                                    Command="{Binding GetFrameModifierCommand}"/>
+
+                            <Button Grid.Row="14"
+                                    Grid.Column="4"
+                                    Height="30"
+                                    Margin="6,0,6,0"
+                                    Padding="12,4"
+                                    Content="Set"
+                                    Foreground="Blue"
+                                    Command="{Binding SetFrameModifierCommand}"/>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </Border>
     </Grid>
 </Window>
