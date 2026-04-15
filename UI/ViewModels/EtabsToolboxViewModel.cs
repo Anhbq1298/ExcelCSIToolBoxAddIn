@@ -15,7 +15,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class EtabsToolboxViewModel : ViewModelBase
     {
         private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
-        private readonly GetAttachedEtabsModelInfoUseCase _getAttachedEtabsModelInfoUseCase;
         private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
         private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
@@ -34,7 +33,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var excelSelectionService = new ExcelSelectionService();
 
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
-            _getAttachedEtabsModelInfoUseCase = new GetAttachedEtabsModelInfoUseCase(etabsConnectionService);
             _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
@@ -132,7 +130,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess && result.Data != null)
             {
                 IsConnected = true;
-                RefreshAttachedModelInfo();
+                ModelName = string.IsNullOrWhiteSpace(result.Data.ModelFileName)
+                    ? "Unknown model"
+                    : result.Data.ModelFileName;
+                ModelPath = result.Data.ModelPath ?? string.Empty;
+                CurrentModelUnitText = string.IsNullOrWhiteSpace(result.Data.ModelCurrentUnit)
+                    ? "Units unavailable"
+                    : result.Data.ModelCurrentUnit;
 
                 StatusText = "Connected to running ETABS instance.";
 
@@ -189,26 +193,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 MessageBoxImage.Warning);
 
             StatusText = result.Message;
-        }
-
-        private void RefreshAttachedModelInfo()
-        {
-            var modelInfoResult = _getAttachedEtabsModelInfoUseCase.Execute();
-            if (modelInfoResult.IsSuccess && modelInfoResult.Data != null)
-            {
-                ModelName = string.IsNullOrWhiteSpace(modelInfoResult.Data.ModelDisplayText)
-                    ? "Unknown model"
-                    : modelInfoResult.Data.ModelDisplayText;
-                ModelPath = modelInfoResult.Data.ModelPath ?? string.Empty;
-                CurrentModelUnitText = string.IsNullOrWhiteSpace(modelInfoResult.Data.CurrentModelUnitText)
-                    ? "Units unavailable"
-                    : modelInfoResult.Data.CurrentModelUnitText;
-                return;
-            }
-
-            ModelName = "Unknown model";
-            ModelPath = string.Empty;
-            CurrentModelUnitText = "Units unavailable";
         }
 
         private void SetDetachedModelInfo(string modelNameText)
