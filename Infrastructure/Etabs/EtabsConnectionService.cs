@@ -33,8 +33,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 }
 
                 ETABSv1.cSapModel sapModel = myETABSObject.SapModel;
-                string modelPath = GetModelFileNameSafely(sapModel);
-                string modelName = string.IsNullOrWhiteSpace(modelPath)
+                string modelPath = string.Empty;
+                int getPathResult = sapModel.GetFilePath(ref modelPath);
+                string modelName = getPathResult != 0 || string.IsNullOrWhiteSpace(modelPath)
                     ? "Unknown model"
                     : Path.GetFileName(modelPath);
 
@@ -374,14 +375,20 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public OperationResult<EtabsAttachedModelInfo> GetAttachedModelInfo()
         {
             var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            if (!connectionResult.IsSuccess || connectionResult.Data == null)
             {
                 return OperationResult<EtabsAttachedModelInfo>.Failure(connectionResult.Message);
             }
 
-            ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
-            string modelPath = GetModelFileNameSafely(sapModel);
-            string modelDisplayText = string.IsNullOrWhiteSpace(modelPath)
+            ETABSv1.cSapModel sapModel = GetActiveSapModel(connectionResult.Data);
+            if (sapModel == null)
+            {
+                return OperationResult<EtabsAttachedModelInfo>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
+            }
+
+            string modelPath = string.Empty;
+            int getPathResult = sapModel.GetFilePath(ref modelPath);
+            string modelDisplayText = getPathResult != 0 || string.IsNullOrWhiteSpace(modelPath)
                 ? "Unknown model"
                 : Path.GetFileName(modelPath);
 
@@ -397,14 +404,19 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public OperationResult<string> GetCurrentModelUnitsDisplayText()
         {
             var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            if (!connectionResult.IsSuccess || connectionResult.Data == null)
             {
                 return OperationResult<string>.Failure(connectionResult.Message);
             }
 
             try
             {
-                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
+                ETABSv1.cSapModel sapModel = GetActiveSapModel(connectionResult.Data);
+                if (sapModel == null)
+                {
+                    return OperationResult<string>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
+                }
+
                 string unitDisplayText = GetCurrentModelUnitsDisplayTextOrFallback(sapModel);
 
                 if (unitDisplayText == "Units unavailable")
@@ -468,30 +480,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success();
         }
 
-        private static string GetModelFileNameSafely(ETABSv1.cSapModel sapModel)
-        {
-            if (sapModel == null)
-            {
-                return null;
-            }
-
-            try
-            {
-                return sapModel.GetModelFilename(true);
-            }
-            catch
-            {
-                try
-                {
-                    return sapModel.GetModelFilename();
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-        }
-
         private static string GetEnumKeyName<TEnum>(TEnum enumValue) where TEnum : struct
         {
             var enumType = typeof(TEnum);
@@ -507,6 +495,34 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
 
             return Convert.ToInt32(enumValue).ToString();
+        }
+
+        private ETABSv1.cSapModel GetActiveSapModel(EtabsConnectionInfo connectionInfo)
+        {
+            if (connectionInfo == null)
+            {
+                return null;
+            }
+
+            var etabsApplication = connectionInfo.EtabsObject as ETABSv1.cOAPI;
+            if (etabsApplication != null)
+            {
+                try
+                {
+                    var activeSapModel = etabsApplication.SapModel;
+                    if (activeSapModel != null)
+                    {
+                        connectionInfo.SapModel = activeSapModel;
+                        return activeSapModel;
+                    }
+                }
+                catch
+                {
+                    // Fallback to existing SapModel reference below.
+                }
+            }
+
+            return connectionInfo.SapModel as ETABSv1.cSapModel;
         }
     }
 }
