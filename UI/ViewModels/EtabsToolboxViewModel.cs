@@ -21,6 +21,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
         private readonly SelectFramesFromExcelRangeByUniqueNameUseCase _selectFramesFromExcelRangeByUniqueNameUseCase;
         private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
+        private readonly AddFrameByCoordinatesFromExcelRangeUseCase _addFrameByCoordinatesFromExcelRangeUseCase;
 
         private string _modelName;
         private bool _isConnected;
@@ -41,6 +42,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
             _selectFramesFromExcelRangeByUniqueNameUseCase = new SelectFramesFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
             _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _addFrameByCoordinatesFromExcelRangeUseCase = new AddFrameByCoordinatesFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
 
             AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
@@ -52,7 +54,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"));
             GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints);
 
-            AddFramesCommand = new RelayCommand(() => ShowPlaceholder("Add Frames"));
+            AddFramesCommand = new RelayCommand(AddFramesByCoordinates);
             SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"));
             RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
             GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames);
@@ -221,6 +223,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private void AddPointByCartesian()
         {
             ShowOperationResult(_addPointsFromExcelRangeUseCase.Execute());
+        }
+
+        private void AddFramesByCoordinates()
+        {
+            ShowOperationResult(_addFrameByCoordinatesFromExcelRangeUseCase.Execute());
         }
 
         private void GetSelectedPoints()

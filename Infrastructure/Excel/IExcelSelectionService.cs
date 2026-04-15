@@ -8,5 +8,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
         OperationResult<IReadOnlyList<string>> ReadSingleColumnTextValues();
 
         OperationResult<IReadOnlyList<ExcelPointCartesianRow>> ReadPointCartesianRows();
+
+        OperationResult<IReadOnlyList<ExcelFrameByCoordRow>> ReadFrameByCoordRows();
     }
 }
