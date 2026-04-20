@@ -207,18 +207,25 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var unresolved = new List<string>();
                 var selectedCount = 0;
 
-                foreach (var uniqueName in orderedUniqueNames)
+                var progress = BatchProgressWindow.RunWithProgress(orderedUniqueNames.Count, $"Selecting {objectTypeName}s...", (ctx) =>
                 {
-                    int result = setSelected(sapModel, uniqueName);
-                    if (result == 0)
+                    foreach (var uniqueName in orderedUniqueNames)
                     {
-                        selectedCount++;
+                        if (ctx.IsCancellationRequested) break;
+
+                        int result = setSelected(sapModel, uniqueName);
+                        if (result == 0)
+                        {
+                            selectedCount++;
+                            ctx.IncrementRan();
+                        }
+                        else
+                        {
+                            unresolved.Add(uniqueName);
+                            ctx.IncrementSkipped();
+                        }
                     }
-                    else
-                    {
-                        unresolved.Add(uniqueName);
-                    }
-                }
+                });
 
                 var message = $"Selected {selectedCount} {objectTypeName}(s) by UniqueName.";
                 if (unresolved.Count > 0)
@@ -280,40 +287,44 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var successCount = 0;
 
                 // Process each row exactly as provided by Excel parsing:
-                // no grouping and no de-duplication.
-                // IMPORTANT: PointObj.AddCartesian is called with MergeOff = true so ETABS
-                // does NOT merge points even when multiple rows share identical coordinates.
-                foreach (var pointInput in pointInputs)
+                var progress = BatchProgressWindow.RunWithProgress(pointInputs.Count, "Adding Points to Model...", (ctx) =>
                 {
-                    string assignedName = string.Empty;
-                    string requestedUniqueName = string.IsNullOrWhiteSpace(pointInput.UniqueName) ? string.Empty : pointInput.UniqueName;
-
-                    int addResult = sapModel.PointObj.AddCartesian(
-                        pointInput.X,
-                        pointInput.Y,
-                        pointInput.Z,
-                        ref assignedName,
-                        requestedUniqueName,
-                        "Global",
-                        true,
-                        0);
-
-                    if (addResult != 0)
+                    foreach (var pointInput in pointInputs)
                     {
-                        failedRowMessages.Add(
-                            $"Row {pointInput.ExcelRowNumber}: ETABS API call PointObj.AddCartesian failed (return code {addResult}).");
-                        continue;
-                    }
+                        if (ctx.IsCancellationRequested) break;
 
-                    successCount++;
+                        string assignedName = string.Empty;
+                        string requestedUniqueName = string.IsNullOrWhiteSpace(pointInput.UniqueName) ? string.Empty : pointInput.UniqueName;
 
-                    if (!string.IsNullOrWhiteSpace(requestedUniqueName) &&
-                        !string.Equals(assignedName, requestedUniqueName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        failedRowMessages.Add(
-                            $"Row {pointInput.ExcelRowNumber}: Point was created, but ETABS assigned UniqueName '{assignedName}' instead of requested '{requestedUniqueName}'.");
+                        int addResult = sapModel.PointObj.AddCartesian(
+                            pointInput.X,
+                            pointInput.Y,
+                            pointInput.Z,
+                            ref assignedName,
+                            requestedUniqueName,
+                            "Global",
+                            true,
+                            0);
+
+                        if (addResult != 0)
+                        {
+                            failedRowMessages.Add(
+                                $"Row {pointInput.ExcelRowNumber}: ETABS API call PointObj.AddCartesian failed (return code {addResult}).");
+                            ctx.IncrementSkipped();
+                            continue;
+                        }
+
+                        successCount++;
+                        ctx.IncrementRan();
+
+                        if (!string.IsNullOrWhiteSpace(requestedUniqueName) &&
+                            !string.Equals(assignedName, requestedUniqueName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            failedRowMessages.Add(
+                                $"Row {pointInput.ExcelRowNumber}: Point was created, but ETABS assigned UniqueName '{assignedName}' instead of requested '{requestedUniqueName}'.");
+                        }
                     }
-                }
+                });
 
                 var data = new EtabsAddPointsResult
                 {
@@ -362,33 +373,40 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
-                foreach (var frameInput in frameInputs)
+                var progress = BatchProgressWindow.RunWithProgress(frameInputs.Count, "Adding Frames (by Coordinates)...", (ctx) =>
                 {
-                    string createdName = string.Empty;
-                    string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
-                    string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
-
-                    int addResult = sapModel.FrameObj.AddByCoord(
-                        frameInput.Xi,
-                        frameInput.Yi,
-                        frameInput.Zi,
-                        frameInput.Xj,
-                        frameInput.Yj,
-                        frameInput.Zj,
-                        ref createdName,
-                        sectionName,
-                        userName,
-                        "Global");
-
-                    if (addResult != 0)
+                    foreach (var frameInput in frameInputs)
                     {
-                        failedRowMessages.Add(
-                            $"Row {frameInput.ExcelRowNumber}: ETABS API call FrameObj.AddByCoord failed (return code {addResult}).");
-                        continue;
-                    }
+                        if (ctx.IsCancellationRequested) break;
 
-                    successCount++;
-                }
+                        string createdName = string.Empty;
+                        string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
+                        string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
+
+                        int addResult = sapModel.FrameObj.AddByCoord(
+                            frameInput.Xi,
+                            frameInput.Yi,
+                            frameInput.Zi,
+                            frameInput.Xj,
+                            frameInput.Yj,
+                            frameInput.Zj,
+                            ref createdName,
+                            sectionName,
+                            userName,
+                            "Global");
+
+                        if (addResult != 0)
+                        {
+                            failedRowMessages.Add(
+                                $"Row {frameInput.ExcelRowNumber}: ETABS API call FrameObj.AddByCoord failed (return code {addResult}).");
+                            ctx.IncrementSkipped();
+                            continue;
+                        }
+
+                        successCount++;
+                        ctx.IncrementRan();
+                    }
+                });
 
                 var data = new EtabsAddFramesResult
                 {
@@ -437,35 +455,42 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
-                foreach (var frameInput in frameInputs)
+                var progress = BatchProgressWindow.RunWithProgress(frameInputs.Count, "Adding Frames (by Point Names)...", (ctx) =>
                 {
-                    string createdName = string.Empty;
-                    string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
-                    string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
-
-                    int addResult = sapModel.FrameObj.AddByPoint(
-                        frameInput.Point1Name,
-                        frameInput.Point2Name,
-                        ref createdName,
-                        sectionName,
-                        userName);
-
-                    if (addResult != 0)
+                    foreach (var frameInput in frameInputs)
                     {
-                        failedRowMessages.Add(
-                            $"Row {frameInput.ExcelRowNumber}: ETABS API call FrameObj.AddByPoint failed (return code {addResult}).");
-                        continue;
-                    }
+                        if (ctx.IsCancellationRequested) break;
 
-                    successCount++;
+                        string createdName = string.Empty;
+                        string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
+                        string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
 
-                    if (!string.IsNullOrWhiteSpace(userName) &&
-                        !string.Equals(createdName, userName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        failedRowMessages.Add(
-                            $"Row {frameInput.ExcelRowNumber}: Frame was created, but ETABS assigned UniqueName '{createdName}' instead of requested '{userName}'.");
+                        int addResult = sapModel.FrameObj.AddByPoint(
+                            frameInput.Point1Name,
+                            frameInput.Point2Name,
+                            ref createdName,
+                            sectionName,
+                            userName);
+
+                        if (addResult != 0)
+                        {
+                            failedRowMessages.Add(
+                                $"Row {frameInput.ExcelRowNumber}: ETABS API call FrameObj.AddByPoint failed (return code {addResult}).");
+                            ctx.IncrementSkipped();
+                            continue;
+                        }
+
+                        successCount++;
+                        ctx.IncrementRan();
+
+                        if (!string.IsNullOrWhiteSpace(userName) &&
+                            !string.Equals(createdName, userName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            failedRowMessages.Add(
+                                $"Row {frameInput.ExcelRowNumber}: Frame was created, but ETABS assigned UniqueName '{createdName}' instead of requested '{userName}'.");
+                        }
                     }
-                }
+                });
 
                 var data = new EtabsAddFramesResult
                 {
