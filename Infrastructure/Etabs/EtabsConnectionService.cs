@@ -656,7 +656,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             int failCount = 0;
 
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, "Creating Steel I-Sections...", (ctx) =>
             {
                 foreach (var input in inputs)
                 {
@@ -711,7 +711,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             int failCount = 0;
 
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, "Creating Steel Channel Sections...", (ctx) =>
             {
                 foreach (var input in inputs)
                 {
@@ -764,7 +764,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             int failCount = 0;
 
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, "Creating Steel Angle Sections...", (ctx) =>
             {
                 foreach (var input in inputs)
                 {
@@ -817,7 +817,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             int failCount = 0;
 
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, "Creating Steel Pipe Sections...", (ctx) =>
             {
                 foreach (var input in inputs)
                 {
@@ -866,7 +866,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             int failCount = 0;
 
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, "Creating Steel Tube Sections...", (ctx) =>
             {
                 foreach (var input in inputs)
                 {
@@ -915,7 +915,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             int failCount = 0;
 
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, "Creating Concrete Rectangle Sections...", (ctx) =>
             {
                 foreach (var input in inputs)
                 {
@@ -947,7 +947,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             int failCount = 0;
 
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, "Creating Concrete Circle Sections...", (ctx) =>
             {
                 foreach (var input in inputs)
                 {

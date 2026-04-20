@@ -1,75 +1,108 @@
 <Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.BatchProgressWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="BATCH RUN PROGRESS BAR"
-        Width="310"
-        Height="180"
+        Title="Batch Progress"
+        Width="360"
+        Height="190"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        Background="#F0F0F0"
+        Background="#FDFDFD"
         ShowInTaskbar="False"
-        Topmost="True">
+        Topmost="True"
+        WindowStyle="ThreeDBorderWindow">
 
-    <Grid Margin="16,10,16,12">
+    <Window.Resources>
+        <Style x:Key="ModernButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#E1E1E1"/>
+            <Setter Property="Foreground" Value="#333333"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#ADADAD"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#D5D5D5"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#C1C1C1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="12"/>
+            <RowDefinition Height="20"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="6"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="4"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Title -->
-        <TextBlock Grid.Row="0"
-                   Text="BATCH RUN PROGRESS"
-                   FontWeight="Bold"
-                   FontSize="16"
-                   Foreground="#1A1A2E"
-                   HorizontalAlignment="Center"/>
+        <!-- Dynamic Title -->
+        <TextBlock x:Name="TaskTitleText" 
+                   Grid.Row="0"
+                   Text="Processing..."
+                   FontWeight="SemiBold"
+                   FontSize="18"
+                   Foreground="#2B579A"
+                   HorizontalAlignment="Center"
+                   TextWrapping="Wrap"
+                   TextAlignment="Center"/>
 
         <!-- Progress Bar -->
         <ProgressBar Grid.Row="2"
                      x:Name="MainProgressBar"
-                     Height="22"
+                     Height="24"
                      Minimum="0"
                      Maximum="100"
                      Value="0"
-                     Foreground="#4A76A8"
-                     Background="#E0E0E0"
-                     BorderBrush="#999999"
-                     BorderThickness="1"/>
+                     Foreground="#2B579A"
+                     Background="#E6E6E6"
+                     BorderThickness="1"
+                     BorderBrush="#CCCCCC"/>
 
-        <!-- Percentage text -->
-        <TextBlock Grid.Row="4"
-                   x:Name="PercentageText"
-                   Text="0% (0/0)"
-                   HorizontalAlignment="Right"
-                   FontSize="11"
-                   Foreground="#333333"/>
+        <!-- Stats Row -->
+        <Grid Grid.Row="3" Margin="0,5,0,0">
+            <TextBlock x:Name="CountersText"
+                       HorizontalAlignment="Left"
+                       FontSize="11"
+                       Foreground="#555555"
+                       VerticalAlignment="Center">
+                <Run Text="Ran: " FontWeight="Bold"/>
+                <Run x:Name="RanCountRun" Text="0"/>
+                <Run Text=" | "/>
+                <Run Text="Skipped: " FontWeight="Bold"/>
+                <Run x:Name="SkippedCountRun" Text="0"/>
+            </TextBlock>
 
-        <!-- Ran / Skipped counters -->
-        <TextBlock Grid.Row="6"
-                   x:Name="CountersText"
-                   HorizontalAlignment="Right"
-                   FontSize="11"
-                   Foreground="#333333">
-            <Run Text="Ran: " FontWeight="Bold"/>
-            <Run x:Name="RanCountRun" Text="0"/>
-            <Run Text=" | "/>
-            <Run Text="Skipped: " FontWeight="Bold"/>
-            <Run x:Name="SkippedCountRun" Text="0"/>
-        </TextBlock>
+            <TextBlock x:Name="PercentageText"
+                       Text="0% (0/0)"
+                       HorizontalAlignment="Right"
+                       FontSize="11"
+                       Foreground="#555555"
+                       VerticalAlignment="Center"/>
+        </Grid>
 
         <!-- Cancel button -->
-        <Button Grid.Row="8"
+        <Button Grid.Row="5"
                 x:Name="CancelButton"
                 Content="Cancel"
-                Width="80"
-                Height="28"
+                Width="90"
+                Height="30"
+                Style="{StaticResource ModernButtonStyle}"
                 HorizontalAlignment="Center"
                 Click="CancelButton_Click"/>
     </Grid>
