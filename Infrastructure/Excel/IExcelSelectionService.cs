@@ -20,5 +20,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow>> ReadSteelPipeSectionRows();
 
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow>> ReadSteelTubeSectionRows();
+
+        OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteRectangleSectionRow>> ReadConcreteRectangleSectionRows();
+        OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteCircleSectionRow>> ReadConcreteCircleSectionRows();
     }
 }

@@ -878,6 +878,56 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
         }
 
+        public OperationResult AddConcreteRectangleSections(IReadOnlyList<EtabsConcreteRectangleSectionInput> inputs)
+        {
+            ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
+            if (sapModel == null) return OperationResult.Failure("No active ETABS model found.");
+
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.N_mm_C);
+            if (unitRet != 0) return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
+
+            int okCount = 0; int failCount = 0; int skipCount = 0;
+
+            foreach (var input in inputs)
+            {
+                if (FrameSectionExists(sapModel, input.SectionName))
+                {
+                    skipCount++;
+                    continue;
+                }
+
+                int ret = sapModel.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B);
+                if (ret == 0) okCount++; else failCount++;
+            }
+
+            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+        }
+
+        public OperationResult AddConcreteCircleSections(IReadOnlyList<EtabsConcreteCircleSectionInput> inputs)
+        {
+            ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
+            if (sapModel == null) return OperationResult.Failure("No active ETABS model found.");
+
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.N_mm_C);
+            if (unitRet != 0) return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
+
+            int okCount = 0; int failCount = 0; int skipCount = 0;
+
+            foreach (var input in inputs)
+            {
+                if (FrameSectionExists(sapModel, input.SectionName))
+                {
+                    skipCount++;
+                    continue;
+                }
+
+                int ret = sapModel.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D);
+                if (ret == 0) okCount++; else failCount++;
+            }
+
+            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+        }
+
         private bool FrameSectionExists(ETABSv1.cSapModel sapModel, string sectionName)
         {
             if (string.IsNullOrWhiteSpace(sectionName))

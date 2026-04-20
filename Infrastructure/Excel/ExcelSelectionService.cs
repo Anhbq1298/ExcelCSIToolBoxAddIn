@@ -251,6 +251,29 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
             });
         }
 
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteRectangleSectionRow>> ReadConcreteRectangleSectionRows()
+        {
+            return ReadRows(4, "SectionName, Material, h, b", "Select a 4-column range:\r\nSectionName | Material | h | b", "Select Concrete Rectangle Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteRectangleSectionRow
+            {
+                ExcelRowNumber = selection.Row + row - 1,
+                SectionName = ReadCellText(rawValues, selection, row, 1),
+                MaterialName = ReadCellText(rawValues, selection, row, 2),
+                HText = ReadCellText(rawValues, selection, row, 3),
+                BText = ReadCellText(rawValues, selection, row, 4)
+            });
+        }
+
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteCircleSectionRow>> ReadConcreteCircleSectionRows()
+        {
+            return ReadRows(3, "SectionName, Material, d", "Select a 3-column range:\r\nSectionName | Material | d", "Select Concrete Circle Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteCircleSectionRow
+            {
+                ExcelRowNumber = selection.Row + row - 1,
+                SectionName = ReadCellText(rawValues, selection, row, 1),
+                MaterialName = ReadCellText(rawValues, selection, row, 2),
+                DText = ReadCellText(rawValues, selection, row, 3)
+            });
+        }
+
         private OperationResult<IReadOnlyList<T>> ReadRows<T>(int expectedColumns, string expectedColumnsDesc, string prompt, string title, System.Func<object, Range, int, T> rowMapper)
         {
             var selectionResult = GetActiveSelection(prompt, title);

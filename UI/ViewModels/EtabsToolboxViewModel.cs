@@ -30,6 +30,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly CreateSteelPipeSectionsFromExcelRangeUseCase _createSteelPipeSectionsUseCase;
         private readonly CreateSteelTubeSectionsFromExcelRangeUseCase _createSteelTubeSectionsUseCase;
 
+        private readonly CreateConcreteRectangleSectionsFromExcelRangeUseCase _createConcreteRectangleSectionsUseCase;
+        private readonly CreateConcreteCircleSectionsFromExcelRangeUseCase _createConcreteCircleSectionsUseCase;
+
         private string _modelName;
         private bool _isConnected;
         private string _statusText;
@@ -56,6 +59,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _createSteelPipeSectionsUseCase = new CreateSteelPipeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _createSteelTubeSectionsUseCase = new CreateSteelTubeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
 
+            _createConcreteRectangleSectionsUseCase = new CreateConcreteRectangleSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _createConcreteCircleSectionsUseCase = new CreateConcreteCircleSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+
             AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
 
@@ -64,6 +70,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelAngleSectionsUseCase.Execute()));
             CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelTubeSectionsUseCase.Execute()));
             CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelPipeSectionsUseCase.Execute()));
+
+            CreateConcreteRectangleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteRectangleSectionsUseCase.Execute()));
+            CreateConcreteCircleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteCircleSectionsUseCase.Execute()));
 
             SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName);
             SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName);
@@ -151,6 +160,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand CreateAngleSectionCommand { get; }
         public ICommand CreateTubeSectionCommand { get; }
         public ICommand CreatePipeSectionCommand { get; }
+
+        public ICommand CreateConcreteRectangleSectionCommand { get; }
+        public ICommand CreateConcreteCircleSectionCommand { get; }
 
         public ICommand SelectPointsByUniqueNameCommand { get; }
         public ICommand SelectFramesByUniqueNameCommand { get; }

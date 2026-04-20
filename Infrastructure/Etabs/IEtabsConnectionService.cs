@@ -29,5 +29,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs);
         OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs);
 
+        OperationResult AddConcreteRectangleSections(IReadOnlyList<EtabsConcreteRectangleSectionInput> inputs);
+        OperationResult AddConcreteCircleSections(IReadOnlyList<EtabsConcreteCircleSectionInput> inputs);
     }
 }
