@@ -1,0 +1,71 @@
+<Window x:Class="CsiExcelAddin.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CSI Excel Add-in"
+        Width="680" Height="480"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="CanResizeWithGrip">
+
+    <!--
+        All data flows from MainViewModel via DataContext set in code-behind.
+        No business logic lives here — only layout and bindings.
+    -->
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <!-- Toolbar row -->
+            <RowDefinition Height="Auto"/>
+            <!-- Model info row -->
+            <RowDefinition Height="Auto"/>
+            <!-- Data grid fills remaining space -->
+            <RowDefinition Height="*"/>
+            <!-- Status bar -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ── Toolbar ─────────────────────────────────────────────────────── -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Content="Attach"
+                    Command="{Binding AttachCommand}"
+                    Width="90" Margin="0,0,6,0"/>
+            <Button Content="Detach"
+                    Command="{Binding DetachCommand}"
+                    Width="90" Margin="0,0,6,0"/>
+            <Button Content="Read Model"
+                    Command="{Binding ReadModelCommand}"
+                    Width="100" Margin="0,0,6,0"/>
+            <Button Content="Export to Excel"
+                    Command="{Binding ExportToExcelCommand}"
+                    Width="120"/>
+        </StackPanel>
+
+        <!-- ── Model Info ──────────────────────────────────────────────────── -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+            <TextBlock Text="Model: " FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding ModelFileName}" Margin="0,0,16,0"/>
+            <TextBlock Text="Units: " FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding CurrentUnits}"/>
+        </StackPanel>
+
+        <!-- ── Frame Sections DataGrid ────────────────────────────────────── -->
+        <DataGrid Grid.Row="2"
+                  ItemsSource="{Binding FrameSections}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  CanUserReorderColumns="True"
+                  CanUserSortColumns="True"
+                  AlternatingRowBackground="#F5F5F5">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name"     Binding="{Binding Name}"     Width="*"/>
+                <DataGridTextColumn Header="Material" Binding="{Binding Material}" Width="*"/>
+                <DataGridTextColumn Header="Depth"    Binding="{Binding Depth}"    Width="80"/>
+                <DataGridTextColumn Header="Width"    Binding="{Binding Width}"    Width="80"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- ── Status Bar ─────────────────────────────────────────────────── -->
+        <Border Grid.Row="3" Background="#EEEEEE" Padding="6,4" Margin="0,8,0,0" CornerRadius="2">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="#333333"/>
+        </Border>
+    </Grid>
+</Window>
