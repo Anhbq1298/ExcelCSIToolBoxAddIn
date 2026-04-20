@@ -58,73 +58,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                     if (getUnitsResult == 0)
                     {
-                        string forceUnit;
-                        switch (GetEnumKeyName(forceUnits).ToUpperInvariant())
-                        {
-                            case "KN":
-                                forceUnit = "kN";
-                                break;
-                            case "KIP":
-                                forceUnit = "kip";
-                                break;
-                            case "LB":
-                                forceUnit = "lb";
-                                break;
-                            case "N":
-                                forceUnit = "N";
-                                break;
-                            case "KGF":
-                                forceUnit = "kgf";
-                                break;
-                            case "TONF":
-                                forceUnit = "tonf";
-                                break;
-                            default:
-                                forceUnit = GetEnumKeyName(forceUnits);
-                                break;
-                        }
-
-                        string lengthUnit;
-                        switch (GetEnumKeyName(lengthUnits).ToUpperInvariant())
-                        {
-                            case "M":
-                                lengthUnit = "m";
-                                break;
-                            case "MM":
-                                lengthUnit = "mm";
-                                break;
-                            case "CM":
-                                lengthUnit = "cm";
-                                break;
-                            case "FT":
-                                lengthUnit = "ft";
-                                break;
-                            case "INCH":
-                                lengthUnit = "inch";
-                                break;
-                            case "MICRON":
-                                lengthUnit = "micron";
-                                break;
-                            default:
-                                lengthUnit = GetEnumKeyName(lengthUnits);
-                                break;
-                        }
-
-                        string temperatureUnit;
-                        switch (GetEnumKeyName(temperatureUnits).ToUpperInvariant())
-                        {
-                            case "C":
-                                temperatureUnit = "C";
-                                break;
-                            case "F":
-                                temperatureUnit = "F";
-                                break;
-                            default:
-                                temperatureUnit = GetEnumKeyName(temperatureUnits);
-                                break;
-                        }
-
-                        modelCurrentUnit = $"{forceUnit}-{lengthUnit}-{temperatureUnit}";
+                        modelCurrentUnit = EtabsUnitFormatter.FormatDatabaseUnits(forceUnits, lengthUnits, temperatureUnits);
                     }
                 }
                 catch
@@ -228,70 +162,19 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames)
         {
-            if (uniqueNames == null || uniqueNames.Count == 0)
-            {
-                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
-            }
-
-            var orderedUniqueNames = GetOrderedDistinctNames(uniqueNames);
-            if (orderedUniqueNames.Count == 0)
-            {
-                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
-            }
-
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult.Failure(connectionResult.Message);
-            }
-
-            try
-            {
-                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
-
-                int clearSelectionResult = sapModel.SelectObj.ClearSelection();
-                if (clearSelectionResult != 0)
-                {
-                    return OperationResult.Failure("Failed to clear ETABS selection before selecting points by UniqueName.");
-                }
-
-                var unresolved = new List<string>();
-                var selectedCount = 0;
-
-                foreach (var uniqueName in orderedUniqueNames)
-                {
-                    int result = sapModel.PointObj.SetSelected(uniqueName, true, ETABSv1.eItemType.Objects);
-                    if (result == 0)
-                    {
-                        selectedCount++;
-                    }
-                    else
-                    {
-                        unresolved.Add(uniqueName);
-                    }
-                }
-
-                var message = $"Selected {selectedCount} point(s) by UniqueName.";
-                if (unresolved.Count > 0)
-                {
-                    message += $" Not found: {string.Join(", ", unresolved)}.";
-                }
-
-                var refreshResult = RefreshView(sapModel);
-                if (!refreshResult.IsSuccess)
-                {
-                    return refreshResult;
-                }
-
-                return OperationResult.Success(message);
-            }
-            catch
-            {
-                return OperationResult.Failure("Failed to select ETABS points by UniqueName.");
-            }
+            return SelectObjectsByUniqueNames(uniqueNames, "point",
+                (sapModel, name) => sapModel.PointObj.SetSelected(name, true, ETABSv1.eItemType.Objects));
         }
 
         public OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames)
+        {
+            return SelectObjectsByUniqueNames(uniqueNames, "frame",
+                (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, ETABSv1.eItemType.Objects));
+        }
+
+        private OperationResult SelectObjectsByUniqueNames(
+            IReadOnlyList<string> uniqueNames, string objectTypeName,
+            Func<ETABSv1.cSapModel, string, int> setSelected)
         {
             if (uniqueNames == null || uniqueNames.Count == 0)
             {
@@ -317,7 +200,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 int clearSelectionResult = sapModel.SelectObj.ClearSelection();
                 if (clearSelectionResult != 0)
                 {
-                    return OperationResult.Failure("Failed to clear ETABS selection before selecting frames by UniqueName.");
+                    return OperationResult.Failure($"Failed to clear ETABS selection before selecting {objectTypeName}s by UniqueName.");
                 }
 
                 var unresolved = new List<string>();
@@ -325,7 +208,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                 foreach (var uniqueName in orderedUniqueNames)
                 {
-                    int result = sapModel.FrameObj.SetSelected(uniqueName, true, ETABSv1.eItemType.Objects);
+                    int result = setSelected(sapModel, uniqueName);
                     if (result == 0)
                     {
                         selectedCount++;
@@ -336,7 +219,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     }
                 }
 
-                var message = $"Selected {selectedCount} frame(s) by UniqueName.";
+                var message = $"Selected {selectedCount} {objectTypeName}(s) by UniqueName.";
                 if (unresolved.Count > 0)
                 {
                     message += $" Not found: {string.Join(", ", unresolved)}.";
@@ -352,7 +235,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
             catch
             {
-                return OperationResult.Failure("Failed to select ETABS frames by UniqueName.");
+                return OperationResult.Failure($"Failed to select ETABS {objectTypeName}s by UniqueName.");
             }
         }
 
@@ -765,51 +648,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
 
             return OperationResult.Success();
-        }
-
-        private static string GetEnumKeyName<TEnum>(TEnum enumValue) where TEnum : struct
-        {
-            var enumType = typeof(TEnum);
-            var enumName = Enum.GetName(enumType, enumValue);
-            if (!string.IsNullOrWhiteSpace(enumName))
-            {
-                return enumName;
-            }
-
-            if (!enumType.IsEnum)
-            {
-                return "?";
-            }
-
-            return Convert.ToInt32(enumValue).ToString();
-        }
-
-        private ETABSv1.cSapModel GetActiveSapModel(EtabsConnectionInfo connectionInfo)
-        {
-            if (connectionInfo == null)
-            {
-                return null;
-            }
-
-            var etabsApplication = connectionInfo.EtabsObject as ETABSv1.cOAPI;
-            if (etabsApplication != null)
-            {
-                try
-                {
-                    var activeSapModel = etabsApplication.SapModel;
-                    if (activeSapModel != null)
-                    {
-                        connectionInfo.SapModel = activeSapModel;
-                        return activeSapModel;
-                    }
-                }
-                catch
-                {
-                    // Fallback to existing SapModel reference below.
-                }
-            }
-
-            return connectionInfo.SapModel as ETABSv1.cSapModel;
         }
     }
 }

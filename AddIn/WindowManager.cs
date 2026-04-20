@@ -10,27 +10,30 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     internal static class WindowManager
     {
         private static IEtabsConnectionService _etabsConnectionService;
+        private static IExcelSelectionService _excelSelectionService;
         private static IExcelOutputService _excelOutputService;
         private static EtabsToolboxWindow _activeEtabsWindow;
 
         internal static void Configure(
             IEtabsConnectionService etabsConnectionService,
+            IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
             _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
+            _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
         }
 
         internal static void ShowEtabsWindow()
         {
-            if (_etabsConnectionService == null || _excelOutputService == null)
+            if (_etabsConnectionService == null || _excelSelectionService == null || _excelOutputService == null)
             {
                 throw new InvalidOperationException("WindowManager is not configured.");
             }
 
             if (_activeEtabsWindow == null)
             {
-                var viewModel = new EtabsToolboxViewModel(_etabsConnectionService, _excelOutputService);
+                var viewModel = new EtabsToolboxViewModel(_etabsConnectionService, _excelSelectionService, _excelOutputService);
                 _activeEtabsWindow = new EtabsToolboxWindow
                 {
                     DataContext = viewModel

@@ -32,10 +32,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public EtabsToolboxViewModel(
             IEtabsConnectionService etabsConnectionService,
+            IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
-            var excelSelectionService = new ExcelSelectionService();
-
             _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
             _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
             _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
@@ -61,6 +60,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"));
             RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
             GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames);
+            GetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Section Property"));
+            SetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Section Property"));
+            GetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Group Assignment"));
+            SetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Group Assignment"));
+            GetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Modifier"));
+            SetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Modifier"));
+            GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"));
+            SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"));
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
@@ -134,6 +141,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand SetFramesCommand { get; }
         public ICommand RenameFramesCommand { get; }
         public ICommand GetSelectedFramesCommand { get; }
+        public ICommand GetFrameSectionPropertyCommand { get; }
+        public ICommand SetFrameSectionPropertyCommand { get; }
+        public ICommand GetFrameGroupAssignmentCommand { get; }
+        public ICommand SetFrameGroupAssignmentCommand { get; }
+        public ICommand GetFrameModifierCommand { get; }
+        public ICommand SetFrameModifierCommand { get; }
+        public ICommand GetPointGroupAssignmentCommand { get; }
+        public ICommand SetPointGroupAssignmentCommand { get; }
 
         private void LoadConnectionState(bool showMessage)
         {
@@ -241,44 +256,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void GetSelectedPoints()
         {
-            var result = _getSelectedEtabsPointsUseCase.Execute();
-
-            if (result.IsSuccess)
-            {
-                MessageBox.Show(
-                    "Successfully exported selected ETABS points to Excel.",
-                    "ETABS Toolbox",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            MessageBox.Show(
-                result.Message,
-                "ETABS Toolbox",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            ShowOperationResult(_getSelectedEtabsPointsUseCase.Execute());
         }
 
         private void GetSelectedFrames()
         {
-            var result = _getSelectedEtabsFramesUseCase.Execute();
-
-            if (result.IsSuccess)
-            {
-                MessageBox.Show(
-                    "Successfully exported selected ETABS frames to Excel.",
-                    "ETABS Toolbox",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
-                return;
-            }
-
-            MessageBox.Show(
-                result.Message,
-                "ETABS Toolbox",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            ShowOperationResult(_getSelectedEtabsFramesUseCase.Execute());
         }
 
         private static void ShowOperationResult(OperationResult result)

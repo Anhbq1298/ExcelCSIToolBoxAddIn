@@ -1,4 +1,4 @@
-﻿<Project ToolsVersion="17.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="17.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--
     This section defines project-level properties.
@@ -253,6 +253,7 @@
     <Compile Include="Infrastructure\Etabs\EtabsFrameByPointInput.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsAddFramesResult.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsObjectTypeIds.cs" />
+    <Compile Include="Infrastructure\Etabs\EtabsUnitFormatter.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionService.cs" />
     <Compile Include="Infrastructure\Etabs\IEtabsConnectionService.cs" />
     <Compile Include="Infrastructure\Excel\ExcelOutputService.cs" />

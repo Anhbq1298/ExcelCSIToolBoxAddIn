@@ -9,11 +9,20 @@
         Height="480"
         MinWidth="640"
         MinHeight="480"
-        MaxWidth="640"
-        MaxHeight="480"
-        ResizeMode="NoResize"
+        ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="CenterScreen"
         FontSize="11">
+
+    <Window.Resources>
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="#8B0000"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Focusable" Value="False"/>
+        </Style>
+    </Window.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
@@ -201,7 +210,8 @@
                                     Padding="12,4"
                                     Content="Get"
                                     HorizontalAlignment="Stretch"
-                                    Foreground="Blue"/>
+                                    Foreground="Blue"
+                                    Command="{Binding GetPointGroupAssignmentCommand}"/>
 
                             <Button Grid.Row="6"
                                     Grid.Column="4"
@@ -210,12 +220,13 @@
                                     Padding="12,4"
                                     Content="Set"
                                     HorizontalAlignment="Stretch"
-                                    Foreground="Blue"/>
+                                    Foreground="Blue"
+                                    Command="{Binding SetPointGroupAssignmentCommand}"/>
                         </Grid>
                     </ScrollViewer>
                 </TabItem>
 
-                <TabItem Header="Frame" FontSize="10">
+                <TabItem Header="Frame">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"
                                   CanContentScroll="True">

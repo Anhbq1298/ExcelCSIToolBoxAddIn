@@ -54,7 +54,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
                     }
                 }
 
-                return OperationResult.Success();
+                return OperationResult.Success($"Successfully exported {dataFrame.Rows.Count} row(s) to Excel.");
             }
             catch (Exception)
             {
