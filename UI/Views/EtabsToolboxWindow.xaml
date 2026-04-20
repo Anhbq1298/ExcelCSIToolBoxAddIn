@@ -119,6 +119,8 @@
                             <GroupBox Header="Steel Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                     <Button Content="Ishape" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateIshapeSectionCommand}" />
+                                    <Button Content="Channel" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateChannelSectionCommand}" />
+                                    <Button Content="Angle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateAngleSectionCommand}" />
                                     <Button Content="Tube" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateTubeSectionCommand}" />
                                     <Button Content="Pipe" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreatePipeSectionCommand}" />
                                 </StackPanel>

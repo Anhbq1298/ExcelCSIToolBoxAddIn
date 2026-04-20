@@ -25,6 +25,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly AddFramesByPointFromExcelRangeUseCase _addFramesByPointFromExcelRangeUseCase;
 
         private readonly CreateSteelISectionsFromExcelRangeUseCase _createSteelISectionsUseCase;
+        private readonly CreateSteelChannelSectionsFromExcelRangeUseCase _createSteelChannelSectionsUseCase;
+        private readonly CreateSteelAngleSectionsFromExcelRangeUseCase _createSteelAngleSectionsUseCase;
         private readonly CreateSteelPipeSectionsFromExcelRangeUseCase _createSteelPipeSectionsUseCase;
         private readonly CreateSteelTubeSectionsFromExcelRangeUseCase _createSteelTubeSectionsUseCase;
 
@@ -49,6 +51,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _addFrameByCoordinatesFromExcelRangeUseCase = new AddFrameByCoordinatesFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _addFramesByPointFromExcelRangeUseCase = new AddFramesByPointFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _createSteelISectionsUseCase = new CreateSteelISectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _createSteelChannelSectionsUseCase = new CreateSteelChannelSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _createSteelAngleSectionsUseCase = new CreateSteelAngleSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _createSteelPipeSectionsUseCase = new CreateSteelPipeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _createSteelTubeSectionsUseCase = new CreateSteelTubeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
 
@@ -56,6 +60,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
 
             CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelISectionsUseCase.Execute()));
+            CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelChannelSectionsUseCase.Execute()));
+            CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelAngleSectionsUseCase.Execute()));
             CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelTubeSectionsUseCase.Execute()));
             CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelPipeSectionsUseCase.Execute()));
 
@@ -141,6 +147,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand CloseCurrentEtabsInstanceCommand { get; }
 
         public ICommand CreateIshapeSectionCommand { get; }
+        public ICommand CreateChannelSectionCommand { get; }
+        public ICommand CreateAngleSectionCommand { get; }
         public ICommand CreateTubeSectionCommand { get; }
         public ICommand CreatePipeSectionCommand { get; }
 

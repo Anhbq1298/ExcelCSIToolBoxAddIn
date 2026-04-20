@@ -14,6 +14,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
         OperationResult<IReadOnlyList<ExcelFrameByPointRow>> ReadFrameByPointRows();
 
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow>> ReadSteelISectionRows();
+        OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelChannelSectionRow>> ReadSteelChannelSectionRows();
+        OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelAngleSectionRow>> ReadSteelAngleSectionRows();
 
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow>> ReadSteelPipeSectionRows();
 

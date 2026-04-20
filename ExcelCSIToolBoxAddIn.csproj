@@ -246,6 +246,8 @@
     <Compile Include="Core\Application\AddFrameByCoordinatesFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\AddFramesByPointFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\CreateSteelISectionsFromExcelRangeUseCase.cs" />
+    <Compile Include="Core\Application\CreateSteelChannelSectionsFromExcelRangeUseCase.cs" />
+    <Compile Include="Core\Application\CreateSteelAngleSectionsFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\CreateSteelPipeSectionsFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\CreateSteelTubeSectionsFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Tabular\ExcelSteelSectionRows.cs" />
