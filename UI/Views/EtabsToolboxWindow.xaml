@@ -128,7 +128,8 @@
 
                             <GroupBox Header="Concrete Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <!-- Buttons for Concrete section will go here -->
+                                    <Button Content="Rectangle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateConcreteRectangleSectionCommand}" />
+                                    <Button Content="Circle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateConcreteCircleSectionCommand}" />
                                 </StackPanel>
                             </GroupBox>
                         </StackPanel>
