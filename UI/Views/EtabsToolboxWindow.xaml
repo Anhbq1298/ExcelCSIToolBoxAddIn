@@ -114,6 +114,22 @@
                 Background="#FFFFFF">
 
             <TabControl>
+                <TabItem Header="Section Property">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="True">
+                        <Grid Margin="12">
+                            <GroupBox Header="Create Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <Button Content="Ishape" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateIshapeSectionCommand}" />
+                                    <Button Content="Tube" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateTubeSectionCommand}" />
+                                    <Button Content="Pipe" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreatePipeSectionCommand}" />
+                                </StackPanel>
+                            </GroupBox>
+                        </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
                 <TabItem Header="Point">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"

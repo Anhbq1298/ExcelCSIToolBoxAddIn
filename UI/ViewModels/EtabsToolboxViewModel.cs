@@ -48,6 +48,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
 
+            CreateIshapeSectionCommand = new RelayCommand(() => ShowPlaceholder("Create Ishape Section"));
+            CreateTubeSectionCommand = new RelayCommand(() => ShowPlaceholder("Create Tube Section"));
+            CreatePipeSectionCommand = new RelayCommand(() => ShowPlaceholder("Create Pipe Section"));
+
             SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName);
             SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName);
             AddPointByCartesianCommand = new RelayCommand(AddPointByCartesian);
@@ -128,6 +132,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ICommand AttachToRunningEtabsCommand { get; }
         public ICommand CloseCurrentEtabsInstanceCommand { get; }
+
+        public ICommand CreateIshapeSectionCommand { get; }
+        public ICommand CreateTubeSectionCommand { get; }
+        public ICommand CreatePipeSectionCommand { get; }
 
         public ICommand SelectPointsByUniqueNameCommand { get; }
         public ICommand SelectFramesByUniqueNameCommand { get; }
