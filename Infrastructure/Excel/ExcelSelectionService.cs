@@ -9,7 +9,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
     {
         public OperationResult<IReadOnlyList<string>> ReadSingleColumnTextValues()
         {
-            var selectionResult = GetActiveSelection();
+            var selectionResult = GetActiveSelection("Select a single column range:", "Select Items");
             if (!selectionResult.IsSuccess)
             {
                 return OperationResult<IReadOnlyList<string>>.Failure(selectionResult.Message);
@@ -44,7 +44,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 
         public OperationResult<IReadOnlyList<ExcelPointCartesianRow>> ReadPointCartesianRows()
         {
-            var selectionResult = GetActiveSelection();
+            var selectionResult = GetActiveSelection("Select a 4-column range:\r\nUniqueName | X | Y | Z", "Select Point Cartesian Range");
             if (!selectionResult.IsSuccess)
             {
                 return OperationResult<IReadOnlyList<ExcelPointCartesianRow>>.Failure(selectionResult.Message);
@@ -90,7 +90,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 
         public OperationResult<IReadOnlyList<ExcelFrameByCoordRow>> ReadFrameByCoordRows()
         {
-            var selectionResult = GetActiveSelection();
+            var selectionResult = GetActiveSelection("Select an 8-column range:\r\nUniqueName | Section | Xi | Yi | Zi | Xj | Yj | Zj", "Select Frame by Coordinates Range");
             if (!selectionResult.IsSuccess)
             {
                 return OperationResult<IReadOnlyList<ExcelFrameByCoordRow>>.Failure(selectionResult.Message);
@@ -140,7 +140,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 
         public OperationResult<IReadOnlyList<ExcelFrameByPointRow>> ReadFrameByPointRows()
         {
-            var selectionResult = GetActiveSelection();
+            var selectionResult = GetActiveSelection("Select a 4-column range:\r\nUniqueName | Section | Point1 | Point2", "Select Frame by Points Range");
             if (!selectionResult.IsSuccess)
             {
                 return OperationResult<IReadOnlyList<ExcelFrameByPointRow>>.Failure(selectionResult.Message);
@@ -186,7 +186,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow>> ReadSteelISectionRows()
         {
-            return ReadRows(6, "SectionName, Material, h, b, tw, tf", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow
+            return ReadRows(6, "SectionName, Material, h, b, tw, tf", "Select a 6-column range:\r\nSectionName | Material | h | b | tw | tf", "Select Steel I-Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow
             {
                 ExcelRowNumber = selection.Row + row - 1,
                 SectionName = ReadCellText(rawValues, selection, row, 1),
@@ -200,7 +200,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow>> ReadSteelPipeSectionRows()
         {
-            return ReadRows(4, "SectionName, Material, OutsideDiameter, WallThickness", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow
+            return ReadRows(4, "SectionName, Material, OutsideDiameter, WallThickness", "Select a 4-column range:\r\nSectionName | Material | OutsideDiameter | WallThickness", "Select Steel Pipe Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow
             {
                 ExcelRowNumber = selection.Row + row - 1,
                 SectionName = ReadCellText(rawValues, selection, row, 1),
@@ -212,7 +212,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow>> ReadSteelTubeSectionRows()
         {
-            return ReadRows(5, "SectionName, Material, h, b, t", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow
+            return ReadRows(5, "SectionName, Material, h, b, t", "Select a 5-column range:\r\nSectionName | Material | h | b | t", "Select Steel Tube Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow
             {
                 ExcelRowNumber = selection.Row + row - 1,
                 SectionName = ReadCellText(rawValues, selection, row, 1),
@@ -223,9 +223,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
             });
         }
 
-        private OperationResult<IReadOnlyList<T>> ReadRows<T>(int expectedColumns, string expectedColumnsDesc, System.Func<object, Range, int, T> rowMapper)
+        private OperationResult<IReadOnlyList<T>> ReadRows<T>(int expectedColumns, string expectedColumnsDesc, string prompt, string title, System.Func<object, Range, int, T> rowMapper)
         {
-            var selectionResult = GetActiveSelection();
+            var selectionResult = GetActiveSelection(prompt, title);
             if (!selectionResult.IsSuccess)
             {
                 return OperationResult<IReadOnlyList<T>>.Failure(selectionResult.Message);
@@ -262,7 +262,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
             return OperationResult<IReadOnlyList<T>>.Success(rows);
         }
 
-        private static OperationResult<Range> GetActiveSelection()
+        private static OperationResult<Range> GetActiveSelection(string prompt, string title)
         {
             try
             {
@@ -272,17 +272,23 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
                     return OperationResult<Range>.Failure("Excel application is not available.");
                 }
 
-                var selection = excelApp.Selection as Range;
+                object result = excelApp.InputBox(prompt, title, Type: 8);
+                if (result is bool b && !b)
+                {
+                    return OperationResult<Range>.Failure("Action canceled by user.");
+                }
+
+                var selection = result as Range;
                 if (selection == null)
                 {
-                    return OperationResult<Range>.Failure("Please select a range in Excel and try again.");
+                    return OperationResult<Range>.Failure("Please select a valid range in Excel and try again.");
                 }
 
                 return OperationResult<Range>.Success(selection);
             }
             catch (Exception)
             {
-                return OperationResult<Range>.Failure("Unable to read the current Excel selection.");
+                return OperationResult<Range>.Failure("Unable to read the current Excel selection or action canceled.");
             }
         }
 
