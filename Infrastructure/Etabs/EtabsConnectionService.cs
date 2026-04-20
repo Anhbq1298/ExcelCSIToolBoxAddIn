@@ -641,13 +641,13 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult AddSteelISections(IReadOnlyList<EtabsSteelISectionInput> inputs)
         {
-            var sapModel = GetActiveModel();
+            var sapModel = _currentConnection?.SapModel;
             if (sapModel == null)
             {
                 return OperationResult.Failure("No active ETABS model found.");
             }
 
-            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.eUnits_N_mm_C);
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.N_mm_C);
             if (unitRet != 0)
             {
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
@@ -690,13 +690,13 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs)
         {
-            var sapModel = GetActiveModel();
+            var sapModel = _currentConnection?.SapModel;
             if (sapModel == null)
             {
                 return OperationResult.Failure("No active ETABS model found.");
             }
 
-            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.eUnits_N_mm_C);
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.N_mm_C);
             if (unitRet != 0)
             {
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
@@ -735,13 +735,13 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs)
         {
-            var sapModel = GetActiveModel();
+            var sapModel = _currentConnection?.SapModel;
             if (sapModel == null)
             {
                 return OperationResult.Failure("No active ETABS model found.");
             }
 
-            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.eUnits_N_mm_C);
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.N_mm_C);
             if (unitRet != 0)
             {
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
