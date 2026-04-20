@@ -641,7 +641,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult AddSteelISections(IReadOnlyList<EtabsSteelISectionInput> inputs)
         {
-            var sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
+            ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
             {
                 return OperationResult.Failure("No active ETABS model found.");
@@ -690,7 +690,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs)
         {
-            var sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
+            ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
             {
                 return OperationResult.Failure("No active ETABS model found.");
@@ -735,7 +735,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs)
         {
-            var sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
+            ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
             {
                 return OperationResult.Failure("No active ETABS model found.");
