@@ -15,12 +15,9 @@
 
     <Window.Resources>
         <Style TargetType="TabItem">
-            <Setter Property="Foreground" Value="#8B0000"/>
-            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="MinHeight" Value="36"/>
-            <Setter Property="Focusable" Value="False"/>
         </Style>
     </Window.Resources>
 
