@@ -15,9 +15,6 @@
 
     <Window.Resources>
 
-        <!-- =========================
-             COLOR BRUSHES
-             ========================= -->
         <SolidColorBrush x:Key="WindowBgBrush" Color="#F5F7FB"/>
         <SolidColorBrush x:Key="CardBgBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="CardBorderBrush" Color="#D9E1EC"/>
@@ -32,9 +29,6 @@
         <SolidColorBrush x:Key="BadgeBrush" Color="#EFF6FF"/>
         <SolidColorBrush x:Key="BadgeBorderBrush" Color="#BFDBFE"/>
 
-        <!-- =========================
-             BUTTON STYLE
-             ========================= -->
         <Style x:Key="ModernButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="110"/>
             <Setter Property="Height" Value="34"/>
@@ -56,7 +50,6 @@
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
                         </Border>
-
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="RootBorder" Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
@@ -75,9 +68,6 @@
             </Setter>
         </Style>
 
-        <!-- =========================
-             PROGRESS BAR STYLE
-             ========================= -->
         <Style x:Key="FlatProgressStyle" TargetType="ProgressBar">
             <Setter Property="Height" Value="16"/>
             <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
@@ -120,9 +110,7 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- =========================
-                     HEADER
-                     ========================= -->
+                <!-- Header -->
                 <StackPanel Grid.Row="0">
                     <TextBlock Text="Progress"
                                FontSize="16"
@@ -140,9 +128,7 @@
                                TextWrapping="Wrap"/>
                 </StackPanel>
 
-                <!-- =========================
-                     PROGRESS BAR
-                     ========================= -->
+                <!-- Progress bar -->
                 <ProgressBar x:Name="MainProgressBar"
                              Grid.Row="2"
                              Style="{StaticResource FlatProgressStyle}"
@@ -150,9 +136,7 @@
                              Maximum="100"
                              Value="{Binding ProgressValue, FallbackValue=0, TargetNullValue=0}"/>
 
-                <!-- =========================
-                     STATUS ROW
-                     ========================= -->
+                <!-- Status row -->
                 <Grid Grid.Row="4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -167,44 +151,17 @@
                             BorderThickness="1"
                             CornerRadius="8"
                             Padding="12,8">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
 
-                            <TextBlock Grid.Column="0"
-                                       Text="Ran:"
-                                       FontSize="12"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center"/>
-
-                            <TextBlock Grid.Column="1"
-                                       Margin="6,0,0,0"
-                                       Text="{Binding RanCount, FallbackValue=0, TargetNullValue=0}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center"/>
-
-                            <TextBlock Grid.Column="3"
-                                       Text="Skipped:"
-                                       FontSize="12"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center"/>
-
-                            <TextBlock Grid.Column="4"
-                                       Margin="6,0,0,0"
-                                       Text="{Binding SkippedCount, FallbackValue=0, TargetNullValue=0}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       VerticalAlignment="Center"/>
-                        </Grid>
+                        <TextBlock x:Name="CountersText"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center">
+                            <Run Text="Ran: " FontWeight="SemiBold"/>
+                            <Run x:Name="RanCountRun" Text="0"/>
+                            <Run Text="    "/>
+                            <Run Text="Skipped: " FontWeight="SemiBold"/>
+                            <Run x:Name="SkippedCountRun" Text="0"/>
+                        </TextBlock>
                     </Border>
 
                     <!-- Right percentage badge -->
@@ -226,9 +183,7 @@
                     </Border>
                 </Grid>
 
-                <!-- =========================
-                     BUTTON ROW
-                     ========================= -->
+                <!-- Button row -->
                 <Grid Grid.Row="6">
                     <Button x:Name="CancelButton"
                             Content="Cancel"
