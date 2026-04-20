@@ -280,8 +280,16 @@
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\BatchProgressWindow.xaml.cs">
+      <DependentUpon>BatchProgressWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <None Include="CSI API ETABS v1.chm" />
     <Page Include="UI\Views\EtabsToolboxWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\BatchProgressWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

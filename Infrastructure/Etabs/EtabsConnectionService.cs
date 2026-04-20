@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Common.Results;
+using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 {
@@ -653,39 +654,45 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
             }
 
-            int okCount = 0;
             int failCount = 0;
-            int skipCount = 0;
 
-            foreach (var input in inputs)
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
             {
-                if (FrameSectionExists(sapModel, input.SectionName))
+                foreach (var input in inputs)
                 {
-                    skipCount++;
-                    continue;
-                }
+                    if (ctx.IsCancellationRequested) break;
 
-                int ret = sapModel.PropFrame.SetISection(
-                    input.SectionName,
-                    input.MaterialName,
-                    input.H,
-                    input.B,
-                    input.Tf,
-                    input.Tw,
-                    input.B,
-                    input.Tf);
+                    if (FrameSectionExists(sapModel, input.SectionName))
+                    {
+                        ctx.IncrementSkipped();
+                        continue;
+                    }
 
-                if (ret == 0)
-                {
-                    okCount++;
-                }
-                else
-                {
-                    failCount++;
-                }
-            }
+                    int ret = sapModel.PropFrame.SetISection(
+                        input.SectionName,
+                        input.MaterialName,
+                        input.H,
+                        input.B,
+                        input.Tf,
+                        input.Tw,
+                        input.B,
+                        input.Tf);
 
-            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+                    if (ret == 0)
+                    {
+                        ctx.IncrementRan();
+                    }
+                    else
+                    {
+                        failCount++;
+                        ctx.IncrementSkipped();
+                    }
+                }
+            });
+
+            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
+            if (progress.WasCancelled) msg += " (Cancelled)";
+            return OperationResult.Success(msg);
         }
 
         public OperationResult AddSteelChannelSections(IReadOnlyList<EtabsSteelChannelSectionInput> inputs)
@@ -702,37 +709,43 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
             }
 
-            int okCount = 0;
             int failCount = 0;
-            int skipCount = 0;
 
-            foreach (var input in inputs)
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
             {
-                if (FrameSectionExists(sapModel, input.SectionName))
+                foreach (var input in inputs)
                 {
-                    skipCount++;
-                    continue;
-                }
+                    if (ctx.IsCancellationRequested) break;
 
-                int ret = sapModel.PropFrame.SetChannel(
-                    input.SectionName,
-                    input.MaterialName,
-                    input.H,
-                    input.B,
-                    input.Tf,
-                    input.Tw);
+                    if (FrameSectionExists(sapModel, input.SectionName))
+                    {
+                        ctx.IncrementSkipped();
+                        continue;
+                    }
 
-                if (ret == 0)
-                {
-                    okCount++;
-                }
-                else
-                {
-                    failCount++;
-                }
-            }
+                    int ret = sapModel.PropFrame.SetChannel(
+                        input.SectionName,
+                        input.MaterialName,
+                        input.H,
+                        input.B,
+                        input.Tf,
+                        input.Tw);
 
-            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+                    if (ret == 0)
+                    {
+                        ctx.IncrementRan();
+                    }
+                    else
+                    {
+                        failCount++;
+                        ctx.IncrementSkipped();
+                    }
+                }
+            });
+
+            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
+            if (progress.WasCancelled) msg += " (Cancelled)";
+            return OperationResult.Success(msg);
         }
 
         public OperationResult AddSteelAngleSections(IReadOnlyList<EtabsSteelAngleSectionInput> inputs)
@@ -749,37 +762,43 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
             }
 
-            int okCount = 0;
             int failCount = 0;
-            int skipCount = 0;
 
-            foreach (var input in inputs)
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
             {
-                if (FrameSectionExists(sapModel, input.SectionName))
+                foreach (var input in inputs)
                 {
-                    skipCount++;
-                    continue;
-                }
+                    if (ctx.IsCancellationRequested) break;
 
-                int ret = sapModel.PropFrame.SetAngle(
-                    input.SectionName,
-                    input.MaterialName,
-                    input.H,
-                    input.B,
-                    input.Tf,
-                    input.Tw);
+                    if (FrameSectionExists(sapModel, input.SectionName))
+                    {
+                        ctx.IncrementSkipped();
+                        continue;
+                    }
 
-                if (ret == 0)
-                {
-                    okCount++;
-                }
-                else
-                {
-                    failCount++;
-                }
-            }
+                    int ret = sapModel.PropFrame.SetAngle(
+                        input.SectionName,
+                        input.MaterialName,
+                        input.H,
+                        input.B,
+                        input.Tf,
+                        input.Tw);
 
-            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+                    if (ret == 0)
+                    {
+                        ctx.IncrementRan();
+                    }
+                    else
+                    {
+                        failCount++;
+                        ctx.IncrementSkipped();
+                    }
+                }
+            });
+
+            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
+            if (progress.WasCancelled) msg += " (Cancelled)";
+            return OperationResult.Success(msg);
         }
 
         public OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs)
@@ -796,35 +815,39 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
             }
 
-            int okCount = 0;
             int failCount = 0;
-            int skipCount = 0;
 
-            foreach (var input in inputs)
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
             {
-                if (FrameSectionExists(sapModel, input.SectionName))
+                foreach (var input in inputs)
                 {
-                    skipCount++;
-                    continue;
-                }
+                    if (ctx.IsCancellationRequested) break;
 
-                int ret = sapModel.PropFrame.SetPipe(
-                    input.SectionName,
-                    input.MaterialName,
-                    input.OutsideDiameter,
-                    input.WallThickness);
+                    if (FrameSectionExists(sapModel, input.SectionName))
+                    {
+                        ctx.IncrementSkipped();
+                        continue;
+                    }
 
-                if (ret == 0)
-                {
-                    okCount++;
-                }
-                else
-                {
-                    failCount++;
-                }
-            }
+                    int ret = sapModel.PropFrame.SetPipe(
+                        input.SectionName,
+                        input.MaterialName,
+                        input.OutsideDiameter,
+                        input.WallThickness);
 
-            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+                    if (ret == 0)
+                        ctx.IncrementRan();
+                    else
+                    {
+                        failCount++;
+                        ctx.IncrementSkipped();
+                    }
+                }
+            });
+
+            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
+            if (progress.WasCancelled) msg += " (Cancelled)";
+            return OperationResult.Success(msg);
         }
 
         public OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs)
@@ -841,41 +864,45 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
             }
 
-            int okCount = 0;
             int failCount = 0;
-            int skipCount = 0;
 
-            foreach (var input in inputs)
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
             {
-                if (FrameSectionExists(sapModel, input.SectionName))
+                foreach (var input in inputs)
                 {
-                    skipCount++;
-                    continue;
-                }
+                    if (ctx.IsCancellationRequested) break;
 
-                int ret = sapModel.PropFrame.SetTube_1(
-                    input.SectionName,
-                    input.MaterialName,
-                    input.H,
-                    input.B,
-                    input.T,
-                    input.T,
-                    0.000000001,
-                    -1,
-                    "",
-                    "Default");
+                    if (FrameSectionExists(sapModel, input.SectionName))
+                    {
+                        ctx.IncrementSkipped();
+                        continue;
+                    }
 
-                if (ret == 0)
-                {
-                    okCount++;
-                }
-                else
-                {
-                    failCount++;
-                }
-            }
+                    int ret = sapModel.PropFrame.SetTube_1(
+                        input.SectionName,
+                        input.MaterialName,
+                        input.H,
+                        input.B,
+                        input.T,
+                        input.T,
+                        0.000000001,
+                        -1,
+                        "",
+                        "Default");
 
-            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+                    if (ret == 0)
+                        ctx.IncrementRan();
+                    else
+                    {
+                        failCount++;
+                        ctx.IncrementSkipped();
+                    }
+                }
+            });
+
+            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
+            if (progress.WasCancelled) msg += " (Cancelled)";
+            return OperationResult.Success(msg);
         }
 
         public OperationResult AddConcreteRectangleSections(IReadOnlyList<EtabsConcreteRectangleSectionInput> inputs)
@@ -886,21 +913,28 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.N_mm_C);
             if (unitRet != 0) return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
 
-            int okCount = 0; int failCount = 0; int skipCount = 0;
+            int failCount = 0;
 
-            foreach (var input in inputs)
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
             {
-                if (FrameSectionExists(sapModel, input.SectionName))
+                foreach (var input in inputs)
                 {
-                    skipCount++;
-                    continue;
+                    if (ctx.IsCancellationRequested) break;
+
+                    if (FrameSectionExists(sapModel, input.SectionName))
+                    {
+                        ctx.IncrementSkipped();
+                        continue;
+                    }
+
+                    int ret = sapModel.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B);
+                    if (ret == 0) ctx.IncrementRan(); else { failCount++; ctx.IncrementSkipped(); }
                 }
+            });
 
-                int ret = sapModel.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B);
-                if (ret == 0) okCount++; else failCount++;
-            }
-
-            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
+            if (progress.WasCancelled) msg += " (Cancelled)";
+            return OperationResult.Success(msg);
         }
 
         public OperationResult AddConcreteCircleSections(IReadOnlyList<EtabsConcreteCircleSectionInput> inputs)
@@ -911,21 +945,28 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.N_mm_C);
             if (unitRet != 0) return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
 
-            int okCount = 0; int failCount = 0; int skipCount = 0;
+            int failCount = 0;
 
-            foreach (var input in inputs)
+            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, (ctx) =>
             {
-                if (FrameSectionExists(sapModel, input.SectionName))
+                foreach (var input in inputs)
                 {
-                    skipCount++;
-                    continue;
+                    if (ctx.IsCancellationRequested) break;
+
+                    if (FrameSectionExists(sapModel, input.SectionName))
+                    {
+                        ctx.IncrementSkipped();
+                        continue;
+                    }
+
+                    int ret = sapModel.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D);
+                    if (ret == 0) ctx.IncrementRan(); else { failCount++; ctx.IncrementSkipped(); }
                 }
+            });
 
-                int ret = sapModel.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D);
-                if (ret == 0) okCount++; else failCount++;
-            }
-
-            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
+            if (progress.WasCancelled) msg += " (Cancelled)";
+            return OperationResult.Success(msg);
         }
 
         private bool FrameSectionExists(ETABSv1.cSapModel sapModel, string sectionName)
