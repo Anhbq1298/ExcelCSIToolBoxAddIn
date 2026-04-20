@@ -184,6 +184,84 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
             return OperationResult<IReadOnlyList<ExcelFrameByPointRow>>.Success(rows);
         }
 
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow>> ReadSteelISectionRows()
+        {
+            return ReadRows(6, "SectionName, Material, h, b, tw, tf", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow
+            {
+                ExcelRowNumber = selection.Row + row - 1,
+                SectionName = ReadCellText(rawValues, selection, row, 1),
+                MaterialName = ReadCellText(rawValues, selection, row, 2),
+                HText = ReadCellText(rawValues, selection, row, 3),
+                BText = ReadCellText(rawValues, selection, row, 4),
+                TwText = ReadCellText(rawValues, selection, row, 5),
+                TfText = ReadCellText(rawValues, selection, row, 6)
+            });
+        }
+
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow>> ReadSteelPipeSectionRows()
+        {
+            return ReadRows(4, "SectionName, Material, OutsideDiameter, WallThickness", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow
+            {
+                ExcelRowNumber = selection.Row + row - 1,
+                SectionName = ReadCellText(rawValues, selection, row, 1),
+                MaterialName = ReadCellText(rawValues, selection, row, 2),
+                OutsideDiameterText = ReadCellText(rawValues, selection, row, 3),
+                WallThicknessText = ReadCellText(rawValues, selection, row, 4)
+            });
+        }
+
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow>> ReadSteelTubeSectionRows()
+        {
+            return ReadRows(5, "SectionName, Material, h, b, t", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow
+            {
+                ExcelRowNumber = selection.Row + row - 1,
+                SectionName = ReadCellText(rawValues, selection, row, 1),
+                MaterialName = ReadCellText(rawValues, selection, row, 2),
+                HText = ReadCellText(rawValues, selection, row, 3),
+                BText = ReadCellText(rawValues, selection, row, 4),
+                TText = ReadCellText(rawValues, selection, row, 5)
+            });
+        }
+
+        private OperationResult<IReadOnlyList<T>> ReadRows<T>(int expectedColumns, string expectedColumnsDesc, System.Func<object, Range, int, T> rowMapper)
+        {
+            var selectionResult = GetActiveSelection();
+            if (!selectionResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<T>>.Failure(selectionResult.Message);
+            }
+
+            var selection = selectionResult.Data;
+            int rowCount = selection.Rows.Count;
+            int columnCount = selection.Columns.Count;
+
+            if (rowCount < 1)
+            {
+                return OperationResult<IReadOnlyList<T>>.Failure("Excel range validation failed: please select at least 1 row.");
+            }
+
+            if (columnCount < expectedColumns)
+            {
+                return OperationResult<IReadOnlyList<T>>.Failure(
+                    $"Excel range validation failed: expected at least {expectedColumns} columns ({expectedColumnsDesc}), but found {columnCount}.");
+            }
+
+            var rows = new List<T>();
+            object rawValues = selection.Value2;
+
+            for (int row = 1; row <= rowCount; row++)
+            {
+                rows.Add(rowMapper(rawValues, selection, row));
+            }
+
+            if (rows.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<T>>.Failure("Excel range validation failed: please select at least one valid row.");
+            }
+
+            return OperationResult<IReadOnlyList<T>>.Success(rows);
+        }
+
         private static OperationResult<Range> GetActiveSelection()
         {
             try

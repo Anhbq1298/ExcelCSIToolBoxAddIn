@@ -23,5 +23,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         OperationResult<IReadOnlyList<EtabsPointData>> GetSelectedPointsFromActiveModel();
         OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel();
 
+        OperationResult AddSteelISections(IReadOnlyList<EtabsSteelISectionInput> inputs);
+        OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs);
+        OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs);
+
     }
 }

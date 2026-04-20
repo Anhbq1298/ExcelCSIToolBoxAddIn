@@ -24,6 +24,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly AddFrameByCoordinatesFromExcelRangeUseCase _addFrameByCoordinatesFromExcelRangeUseCase;
         private readonly AddFramesByPointFromExcelRangeUseCase _addFramesByPointFromExcelRangeUseCase;
 
+        private readonly CreateSteelISectionsFromExcelRangeUseCase _createSteelISectionsUseCase;
+        private readonly CreateSteelPipeSectionsFromExcelRangeUseCase _createSteelPipeSectionsUseCase;
+        private readonly CreateSteelTubeSectionsFromExcelRangeUseCase _createSteelTubeSectionsUseCase;
+
         private string _modelName;
         private bool _isConnected;
         private string _statusText;
@@ -44,13 +48,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _addFrameByCoordinatesFromExcelRangeUseCase = new AddFrameByCoordinatesFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _addFramesByPointFromExcelRangeUseCase = new AddFramesByPointFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _createSteelISectionsUseCase = new CreateSteelISectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _createSteelPipeSectionsUseCase = new CreateSteelPipeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _createSteelTubeSectionsUseCase = new CreateSteelTubeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
 
             AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
 
-            CreateIshapeSectionCommand = new RelayCommand(() => ShowPlaceholder("Create Ishape Section"));
-            CreateTubeSectionCommand = new RelayCommand(() => ShowPlaceholder("Create Tube Section"));
-            CreatePipeSectionCommand = new RelayCommand(() => ShowPlaceholder("Create Pipe Section"));
+            CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelISectionsUseCase.Execute()));
+            CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelTubeSectionsUseCase.Execute()));
+            CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelPipeSectionsUseCase.Execute()));
 
             SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName);
             SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName);

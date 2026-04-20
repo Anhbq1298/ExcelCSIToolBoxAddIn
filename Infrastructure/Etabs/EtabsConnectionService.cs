@@ -639,6 +639,163 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return connectionResult;
         }
 
+        public OperationResult AddSteelISections(IReadOnlyList<EtabsSteelISectionInput> inputs)
+        {
+            var sapModel = GetActiveModel();
+            if (sapModel == null)
+            {
+                return OperationResult.Failure("No active ETABS model found.");
+            }
+
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.eUnits_N_mm_C);
+            if (unitRet != 0)
+            {
+                return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
+            }
+
+            int okCount = 0;
+            int failCount = 0;
+            int skipCount = 0;
+
+            foreach (var input in inputs)
+            {
+                if (FrameSectionExists(sapModel, input.SectionName))
+                {
+                    skipCount++;
+                    continue;
+                }
+
+                int ret = sapModel.PropFrame.SetISection(
+                    input.SectionName,
+                    input.MaterialName,
+                    input.H,
+                    input.B,
+                    input.Tf,
+                    input.Tw,
+                    input.B,
+                    input.Tf);
+
+                if (ret == 0)
+                {
+                    okCount++;
+                }
+                else
+                {
+                    failCount++;
+                }
+            }
+
+            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+        }
+
+        public OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs)
+        {
+            var sapModel = GetActiveModel();
+            if (sapModel == null)
+            {
+                return OperationResult.Failure("No active ETABS model found.");
+            }
+
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.eUnits_N_mm_C);
+            if (unitRet != 0)
+            {
+                return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
+            }
+
+            int okCount = 0;
+            int failCount = 0;
+            int skipCount = 0;
+
+            foreach (var input in inputs)
+            {
+                if (FrameSectionExists(sapModel, input.SectionName))
+                {
+                    skipCount++;
+                    continue;
+                }
+
+                int ret = sapModel.PropFrame.SetPipe(
+                    input.SectionName,
+                    input.MaterialName,
+                    input.OutsideDiameter,
+                    input.WallThickness);
+
+                if (ret == 0)
+                {
+                    okCount++;
+                }
+                else
+                {
+                    failCount++;
+                }
+            }
+
+            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+        }
+
+        public OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs)
+        {
+            var sapModel = GetActiveModel();
+            if (sapModel == null)
+            {
+                return OperationResult.Failure("No active ETABS model found.");
+            }
+
+            int unitRet = sapModel.SetPresentUnits(ETABSv1.eUnits.eUnits_N_mm_C);
+            if (unitRet != 0)
+            {
+                return OperationResult.Failure("Failed to set ETABS present units to N-mm-C.");
+            }
+
+            int okCount = 0;
+            int failCount = 0;
+            int skipCount = 0;
+
+            foreach (var input in inputs)
+            {
+                if (FrameSectionExists(sapModel, input.SectionName))
+                {
+                    skipCount++;
+                    continue;
+                }
+
+                int ret = sapModel.PropFrame.SetTube_1(
+                    input.SectionName,
+                    input.MaterialName,
+                    input.H,
+                    input.B,
+                    input.T,
+                    input.T,
+                    0.000000001,
+                    -1,
+                    "",
+                    "Default");
+
+                if (ret == 0)
+                {
+                    okCount++;
+                }
+                else
+                {
+                    failCount++;
+                }
+            }
+
+            return OperationResult.Success($"Created: {okCount}, Skipped: {skipCount}, Failed: {failCount}");
+        }
+
+        private bool FrameSectionExists(ETABSv1.cSapModel sapModel, string sectionName)
+        {
+            if (string.IsNullOrWhiteSpace(sectionName))
+            {
+                return false;
+            }
+
+            ETABSv1.eFramePropType propType = ETABSv1.eFramePropType.I;
+            int ret = sapModel.PropFrame.GetTypeOAPI(sectionName, ref propType);
+            return ret == 0;
+        }
+
         private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)
         {
             int refreshResult = sapModel.View.RefreshView(0, false);

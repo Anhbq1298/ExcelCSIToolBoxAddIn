@@ -245,7 +245,12 @@
     <Compile Include="Core\Application\AddPointsFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\AddFrameByCoordinatesFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\AddFramesByPointFromExcelRangeUseCase.cs" />
+    <Compile Include="Core\Application\CreateSteelISectionsFromExcelRangeUseCase.cs" />
+    <Compile Include="Core\Application\CreateSteelPipeSectionsFromExcelRangeUseCase.cs" />
+    <Compile Include="Core\Application\CreateSteelTubeSectionsFromExcelRangeUseCase.cs" />
+    <Compile Include="Core\Tabular\ExcelSteelSectionRows.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
+    <Compile Include="Infrastructure\Etabs\EtabsSteelSectionInputs.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsPointData.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsPointCartesianInput.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsAddPointsResult.cs" />
