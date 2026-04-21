@@ -470,16 +470,24 @@
                                   CanContentScroll="True">
                         <StackPanel Margin="12">
                             <GroupBox Header="Load Patterns" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <Button Content="Get" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding GetLoadPatternsCommand}" />
-                                    <Button Content="Set Name" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding SetLoadPatternsNameCommand}" />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Content="Get" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" />
+                                    <Button Grid.Column="2" Content="Set Name" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding SetLoadPatternsNameCommand}" />
+                                </Grid>
                             </GroupBox>
 
                             <GroupBox Header="Load Combination" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <Button Content="Add From Excel Range" Width="214" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding AddLoadCombinationFromExcelCommand}" />
-                                </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0" Content="Add From Excel Range" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding AddLoadCombinationFromExcelCommand}" />
+                                </Grid>
                             </GroupBox>
                         </StackPanel>
                     </ScrollViewer>
