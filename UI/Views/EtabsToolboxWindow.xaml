@@ -117,36 +117,20 @@
                                   CanContentScroll="True">
                         <StackPanel Margin="12">
                             <GroupBox Header="Steel Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Ishape" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding CreateIshapeSectionCommand}" />
-                                    <Button Grid.Column="2" Content="Channel" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding CreateChannelSectionCommand}" />
-                                    <Button Grid.Column="4" Content="Angle" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding CreateAngleSectionCommand}" />
-                                    <Button Grid.Column="6" Content="Tube" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding CreateTubeSectionCommand}" />
-                                    <Button Grid.Column="8" Content="Pipe" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding CreatePipeSectionCommand}" />
-                                </Grid>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <Button Content="Ishape" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateIshapeSectionCommand}" />
+                                    <Button Content="Channel" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateChannelSectionCommand}" />
+                                    <Button Content="Angle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateAngleSectionCommand}" />
+                                    <Button Content="Tube" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateTubeSectionCommand}" />
+                                    <Button Content="Pipe" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreatePipeSectionCommand}" />
+                                </StackPanel>
                             </GroupBox>
 
                             <GroupBox Header="Concrete Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Rectangle" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding CreateConcreteRectangleSectionCommand}" />
-                                    <Button Grid.Column="2" Content="Circle" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding CreateConcreteCircleSectionCommand}" />
-                                </Grid>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <Button Content="Rectangle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateConcreteRectangleSectionCommand}" />
+                                    <Button Content="Circle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateConcreteCircleSectionCommand}" />
+                                </StackPanel>
                             </GroupBox>
                         </StackPanel>
                     </ScrollViewer>
@@ -192,7 +176,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="By UniqueName"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding SelectPointsByUniqueNameCommand}"/>
 
@@ -313,7 +296,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Run"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding GetSelectedFramesCommand}"/>
 
@@ -332,7 +314,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="By UniqueName"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding SelectFramesByUniqueNameCommand}"/>
 
@@ -351,7 +332,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="By Coor"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding AddFramesByCoordinatesCommand}"/>
 
@@ -361,7 +341,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="By Point"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding AddFramesByPointNamesCommand}"/>
 
@@ -380,7 +359,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Run"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding GetSelectedFramesCommand}"/>
 
@@ -399,7 +377,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Run"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding RenameFramesCommand}"/>
 
@@ -418,7 +395,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Get"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding GetFrameSectionPropertyCommand}"/>
 
@@ -428,7 +404,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Set"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding SetFrameSectionPropertyCommand}"/>
 
@@ -447,7 +422,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Get"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding GetFrameGroupAssignmentCommand}"/>
 
@@ -457,7 +431,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Set"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding SetFrameGroupAssignmentCommand}"/>
 
@@ -476,7 +449,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Get"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding GetFrameModifierCommand}"/>
 
@@ -486,7 +458,6 @@
                                     Margin="6,0,6,0"
                                     Padding="12,4"
                                     Content="Set"
-                                    HorizontalAlignment="Stretch"
                                     Foreground="Blue"
                                     Command="{Binding SetFrameModifierCommand}"/>
                         </Grid>
