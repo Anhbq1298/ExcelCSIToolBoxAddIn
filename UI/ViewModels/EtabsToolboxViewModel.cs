@@ -95,6 +95,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"));
             SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"));
 
+            GetLoadPatternsCommand = new RelayCommand(() => ShowPlaceholder("Get Load Patterns"));
+            SetLoadPatternsNameCommand = new RelayCommand(() => ShowPlaceholder("Set Load Patterns Name"));
+            AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"));
+
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
         }
@@ -184,6 +188,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand SetFrameModifierCommand { get; }
         public ICommand GetPointGroupAssignmentCommand { get; }
         public ICommand SetPointGroupAssignmentCommand { get; }
+
+        public ICommand GetLoadPatternsCommand { get; }
+        public ICommand SetLoadPatternsNameCommand { get; }
+        public ICommand AddLoadCombinationFromExcelCommand { get; }
 
         private void LoadConnectionState(bool showMessage)
         {
