@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Common.Results;
+using ExcelCSIToolBoxAddIn.Core.Geometry;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 {
@@ -31,5 +32,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         OperationResult AddConcreteRectangleSections(IReadOnlyList<EtabsConcreteRectangleSectionInput> inputs);
         OperationResult AddConcreteCircleSections(IReadOnlyList<EtabsConcreteCircleSectionInput> inputs);
+
+        OperationResult CreateShellAreasFromSelectedFrames(
+            string propertyName,
+            ShellCreationTolerances tolerances);
     }
 }

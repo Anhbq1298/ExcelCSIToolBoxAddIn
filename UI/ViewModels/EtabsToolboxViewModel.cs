@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using ExcelCSIToolBoxAddIn.Common.Commands;
 using ExcelCSIToolBoxAddIn.Common.Results;
@@ -23,6 +24,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
         private readonly AddFrameByCoordinatesFromExcelRangeUseCase _addFrameByCoordinatesFromExcelRangeUseCase;
         private readonly AddFramesByPointFromExcelRangeUseCase _addFramesByPointFromExcelRangeUseCase;
+        private readonly CreateShellAreasFromSelectedFramesUseCase _createShellAreasFromSelectedFramesUseCase;
 
         private readonly CreateSteelISectionsFromExcelRangeUseCase _createSteelISectionsUseCase;
         private readonly CreateSteelChannelSectionsFromExcelRangeUseCase _createSteelChannelSectionsUseCase;
@@ -53,6 +55,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _addFrameByCoordinatesFromExcelRangeUseCase = new AddFrameByCoordinatesFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _addFramesByPointFromExcelRangeUseCase = new AddFramesByPointFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _createShellAreasFromSelectedFramesUseCase = new CreateShellAreasFromSelectedFramesUseCase(etabsConnectionService);
             _createSteelISectionsUseCase = new CreateSteelISectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _createSteelChannelSectionsUseCase = new CreateSteelChannelSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
             _createSteelAngleSectionsUseCase = new CreateSteelAngleSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
@@ -92,6 +95,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             SetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Group Assignment"));
             GetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Modifier"));
             SetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Modifier"));
+            CreateShellAreasFromSelectedFramesCommand = new RelayCommand(CreateShellAreasFromSelectedFrames);
             GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"));
             SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"));
 
@@ -186,6 +190,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand SetFrameGroupAssignmentCommand { get; }
         public ICommand GetFrameModifierCommand { get; }
         public ICommand SetFrameModifierCommand { get; }
+        public ICommand CreateShellAreasFromSelectedFramesCommand { get; }
         public ICommand GetPointGroupAssignmentCommand { get; }
         public ICommand SetPointGroupAssignmentCommand { get; }
 
@@ -305,6 +310,88 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private void GetSelectedFrames()
         {
             ShowOperationResult(_getSelectedEtabsFramesUseCase.Execute());
+        }
+
+        private void CreateShellAreasFromSelectedFrames()
+        {
+            var propertyName = PromptForShellPropertyName();
+            if (propertyName == null)
+            {
+                return;
+            }
+
+            ShowOperationResult(_createShellAreasFromSelectedFramesUseCase.Execute(propertyName));
+        }
+
+        private static string PromptForShellPropertyName()
+        {
+            var dialog = new Window
+            {
+                Title = "Shell Property",
+                Width = 360,
+                Height = 150,
+                MinWidth = 360,
+                MinHeight = 150,
+                ResizeMode = ResizeMode.NoResize,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
+                FontSize = 12
+            };
+
+            var root = new StackPanel { Margin = new Thickness(14) };
+            var label = new TextBlock
+            {
+                Text = "Enter shell property name. Leave blank to use Default.",
+                Margin = new Thickness(0, 0, 0, 8),
+                TextWrapping = TextWrapping.Wrap
+            };
+            var textBox = new TextBox
+            {
+                Text = "Default",
+                Height = 26,
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 12)
+            };
+
+            var buttons = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 74,
+                Margin = new Thickness(0, 0, 8, 0),
+                IsDefault = true
+            };
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                Width = 74,
+                IsCancel = true
+            };
+
+            okButton.Click += delegate
+            {
+                dialog.DialogResult = true;
+                dialog.Close();
+            };
+            cancelButton.Click += delegate
+            {
+                dialog.DialogResult = false;
+                dialog.Close();
+            };
+
+            buttons.Children.Add(okButton);
+            buttons.Children.Add(cancelButton);
+            root.Children.Add(label);
+            root.Children.Add(textBox);
+            root.Children.Add(buttons);
+            dialog.Content = root;
+
+            var result = dialog.ShowDialog();
+            return result == true ? textBox.Text : null;
         }
 
         private static void ShowOperationResult(OperationResult result)

@@ -252,6 +252,8 @@
     <Compile Include="Core\Application\CreateSteelTubeSectionsFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\CreateConcreteRectangleSectionsFromExcelRangeUseCase.cs" />
     <Compile Include="Core\Application\CreateConcreteCircleSectionsFromExcelRangeUseCase.cs" />
+    <Compile Include="Core\Application\CreateShellAreasFromSelectedFramesUseCase.cs" />
+    <Compile Include="Core\Geometry\ShellFaceBuilder.cs" />
     <Compile Include="Core\Tabular\ExcelSteelSectionRows.cs" />
     <Compile Include="Core\Tabular\ExcelConcreteSectionRows.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
