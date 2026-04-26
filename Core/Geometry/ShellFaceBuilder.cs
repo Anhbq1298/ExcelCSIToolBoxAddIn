@@ -43,6 +43,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
         public List<string[]> FaceLoops { get; set; }
         public int InitialRealEdgeCount { get; set; }
         public int EnrichedRealEdgeCount { get; set; }
+        public int VirtualEdgeCount { get; set; }
         public int ExtractedFaceCount { get; set; }
         public int OuterFaceRemovedCount { get; set; }
     }
@@ -82,26 +83,9 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                 AddUndirectedEdge(initialEdges, initialAdj, frame.StartPointName, frame.EndPointName);
             }
 
-            var frameSplitMap = InitializeFrameSplitMap(frameMap);
-            EnrichRealGraphByGeometricIntersections(
-                frameMap,
-                frameSplitMap,
-                pointCoords,
-                nodeModelPoint,
-                tolerances.PointTolerance,
-                tolerances.IntersectTolerance,
-                tolerances.ZTolerance);
-
-            var enrichedEdges = new Dictionary<string, Edge>(StringComparer.OrdinalIgnoreCase);
-            var enrichedAdj = NewAdjacency();
-            foreach (var frameName in frameSplitMap.Keys)
-            {
-                AddSplitEdgesForFrame(frameName, frameSplitMap, enrichedEdges, enrichedAdj);
-            }
-
             var virtualEdges = new Dictionary<string, Edge>(StringComparer.OrdinalIgnoreCase);
             var virtualAdj = NewAdjacency();
-            BuildVirtualGraph(enrichedAdj, pointCoords, virtualEdges, virtualAdj, tolerances.CollinearTolerance);
+            BuildVirtualGraph(initialAdj, pointCoords, virtualEdges, virtualAdj, tolerances.CollinearTolerance);
 
             var sortedNeighbors = BuildSortedNeighbors(virtualAdj, pointCoords);
             var faces = ExtractFacesFromPlanarGraph(
@@ -123,7 +107,8 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                     .Select(f => f.Loop)
                     .ToList(),
                 InitialRealEdgeCount = initialEdges.Count,
-                EnrichedRealEdgeCount = enrichedEdges.Count,
+                EnrichedRealEdgeCount = initialEdges.Count,
+                VirtualEdgeCount = virtualEdges.Count,
                 ExtractedFaceCount = extractedFaceCount,
                 OuterFaceRemovedCount = outerRemovedCount
             };
@@ -659,7 +644,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
             var curU = startU;
             var curV = startV;
             var safeCounter = 0;
-            var maxSteps = Math.Max(1, adjacency.Count * 20);
+            var maxSteps = Math.Max(1, adjacency.Count * 10);
 
             do
             {
@@ -749,7 +734,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
             var first = pointCoords[loopPts[0]];
             var last = pointCoords[loopPts[loopPts.Length - 1]];
 
-            if (Distance3D(first, last) > pointTol)
+            if (Distance2D(first.X, first.Y, last.X, last.Y) > pointTol)
             {
                 return loopPts;
             }
@@ -1113,6 +1098,11 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
         private static double Distance3DXYZ(double x1, double y1, double z1, double x2, double y2, double z2)
         {
             return Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1) + (z2 - z1) * (z2 - z1));
+        }
+
+        private static double Distance2D(double x1, double y1, double x2, double y2)
+        {
+            return Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         }
 
         private static double DistancePointToLineXY(double px, double py, double x1, double y1, double x2, double y2)

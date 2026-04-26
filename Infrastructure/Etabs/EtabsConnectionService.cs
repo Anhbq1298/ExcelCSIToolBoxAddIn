@@ -1032,9 +1032,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 }
 
                 var faceBuildResult = ShellFaceBuilder.BuildCandidateFaces(frameGeometries, tolerances);
-                if (faceBuildResult.EnrichedRealEdgeCount == 0)
+                if (faceBuildResult.InitialRealEdgeCount == 0)
                 {
-                    return OperationResult.Failure("No valid enriched frame graph was found from the current selection.");
+                    return OperationResult.Failure("No valid frame graph was found from the current selection.");
                 }
 
                 if (faceBuildResult.FaceLoops == null || faceBuildResult.FaceLoops.Count == 0)
@@ -1117,8 +1117,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                 var message = "Done." + Environment.NewLine +
                               $"Selected frames: {frameGeometries.Count}" + Environment.NewLine +
-                              $"Initial real edges: {faceBuildResult.InitialRealEdgeCount}" + Environment.NewLine +
-                              $"Enriched real edges: {faceBuildResult.EnrichedRealEdgeCount}" + Environment.NewLine +
+                              $"Real edges: {faceBuildResult.InitialRealEdgeCount}" + Environment.NewLine +
+                              $"Virtual edges: {faceBuildResult.VirtualEdgeCount}" + Environment.NewLine +
                               $"Extracted faces: {faceBuildResult.ExtractedFaceCount}" + Environment.NewLine +
                               $"Outer face removed: {faceBuildResult.OuterFaceRemovedCount}" + Environment.NewLine +
                               $"Created shell objects: {createdCount}" + Environment.NewLine +
@@ -1305,30 +1305,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return ptName;
             }
 
-            ShellPoint3D point;
-            if (!pointCoords.TryGetValue(nodeId, out point))
-            {
-                return string.Empty;
-            }
-
-            ptName = string.Empty;
-            int addResult = sapModel.PointObj.AddCartesian(
-                point.X,
-                point.Y,
-                point.Z,
-                ref ptName,
-                string.Empty,
-                "Global",
-                true,
-                0);
-
-            if (addResult != 0)
-            {
-                return string.Empty;
-            }
-
-            nodeModelPoint[nodeId] = ptName;
-            return ptName;
+            return string.Empty;
         }
 
         private static int SplitQuadAndCreateTwoTriangles(
