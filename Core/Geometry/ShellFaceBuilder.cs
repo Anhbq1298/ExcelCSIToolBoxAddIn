@@ -787,7 +787,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
 
         private static int RemoveOuterFace(List<FaceLoop> faces)
         {
-            if (faces.Count == 0)
+            if (faces.Count <= 1)
             {
                 return 0;
             }
