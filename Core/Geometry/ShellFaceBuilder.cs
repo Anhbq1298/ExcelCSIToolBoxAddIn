@@ -330,6 +330,8 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                 for (var j = i + 1; j < frames.Count; j++)
                 {
                     var f2 = frames[j];
+                    AddEndpointProjectionSplits(f1, f2, frameSplitMap, pointTol, zTol);
+
                     double ix;
                     double iy;
                     double t1;
@@ -380,6 +382,78 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                     AddFrameSplitParam(frameSplitMap, f2.FrameName, Clamp01(t2), nodeId);
                 }
             }
+        }
+
+        private static void AddEndpointProjectionSplits(
+            ShellFrameGeometry f1,
+            ShellFrameGeometry f2,
+            Dictionary<string, List<SplitParam>> frameSplitMap,
+            double pointTol,
+            double zTol)
+        {
+            AddEndpointToFrameIfOnSegment(f1.StartPointName, f1.StartPoint, f2, frameSplitMap, pointTol, zTol);
+            AddEndpointToFrameIfOnSegment(f1.EndPointName, f1.EndPoint, f2, frameSplitMap, pointTol, zTol);
+            AddEndpointToFrameIfOnSegment(f2.StartPointName, f2.StartPoint, f1, frameSplitMap, pointTol, zTol);
+            AddEndpointToFrameIfOnSegment(f2.EndPointName, f2.EndPoint, f1, frameSplitMap, pointTol, zTol);
+        }
+
+        private static void AddEndpointToFrameIfOnSegment(
+            string endpointName,
+            ShellPoint3D endpoint,
+            ShellFrameGeometry targetFrame,
+            Dictionary<string, List<SplitParam>> frameSplitMap,
+            double pointTol,
+            double zTol)
+        {
+            if (string.Equals(endpointName, targetFrame.StartPointName, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(endpointName, targetFrame.EndPointName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            double t;
+            if (!TryGetPointProjectionParameterOnFrameXY(endpoint, targetFrame, pointTol, out t))
+            {
+                return;
+            }
+
+            var zOnTarget = targetFrame.StartPoint.Z + t * (targetFrame.EndPoint.Z - targetFrame.StartPoint.Z);
+            if (Math.Abs(endpoint.Z - zOnTarget) > zTol)
+            {
+                return;
+            }
+
+            AddFrameSplitParam(frameSplitMap, targetFrame.FrameName, Clamp01(t), endpointName);
+        }
+
+        private static bool TryGetPointProjectionParameterOnFrameXY(
+            ShellPoint3D point,
+            ShellFrameGeometry frame,
+            double pointTol,
+            out double t)
+        {
+            t = 0.0;
+
+            var dx = frame.EndPoint.X - frame.StartPoint.X;
+            var dy = frame.EndPoint.Y - frame.StartPoint.Y;
+            var lenSq = dx * dx + dy * dy;
+            if (lenSq <= 0.0)
+            {
+                return false;
+            }
+
+            t = ((point.X - frame.StartPoint.X) * dx + (point.Y - frame.StartPoint.Y) * dy) / lenSq;
+            var len = Math.Sqrt(lenSq);
+            var paramTol = pointTol / len;
+
+            if (t < -paramTol || t > 1.0 + paramTol)
+            {
+                return false;
+            }
+
+            var projectedX = frame.StartPoint.X + t * dx;
+            var projectedY = frame.StartPoint.Y + t * dy;
+            return Distance2D(point.X, point.Y, projectedX, projectedY) <= pointTol;
         }
 
         private static bool FramesShareBothEndpoints(string p1, string p2, string q1, string q2)

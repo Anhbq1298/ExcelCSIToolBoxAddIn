@@ -1045,38 +1045,27 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 var acceptedFaces = new List<IReadOnlyList<string>>();
                 var createdCount = 0;
                 var skippedCount = 0;
+                var shellFaceCandidates = BuildShellFaceCandidates(
+                    faceBuildResult.FaceLoops,
+                    faceBuildResult.PointCoordinates,
+                    tolerances,
+                    ref skippedCount);
 
                 var progress = BatchProgressWindow.RunWithProgress(
-                    faceBuildResult.FaceLoops.Count,
+                    shellFaceCandidates.Count,
                     "Creating Shell Areas From Selected Frames...",
                     ctx =>
                     {
-                        foreach (var rawLoop in faceBuildResult.FaceLoops)
+                        foreach (var candidate in shellFaceCandidates)
                         {
                             if (ctx.IsCancellationRequested)
                             {
                                 break;
                             }
 
-                            var cleanLoop = ShellFaceBuilder.CleanLoopBoundaryXY(
-                                rawLoop,
-                                faceBuildResult.PointCoordinates,
-                                tolerances);
-
-                            if (cleanLoop == null || cleanLoop.Length < 3)
-                            {
-                                skippedCount++;
-                                ctx.IncrementSkipped();
-                                continue;
-                            }
-
-                            var orderedLoop = ShellFaceBuilder.OrderLoopUpward(
-                                cleanLoop,
-                                faceBuildResult.PointCoordinates);
-
                             string rejectReason;
                             if (!ShellFaceBuilder.ValidateFaceLoop(
-                                    orderedLoop,
+                                    candidate.OrderedLoop,
                                     faceBuildResult.PointCoordinates,
                                     acceptedFaces,
                                     tolerances,
@@ -1089,9 +1078,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                             var createdForLoop = CreateAreaFromLoop(
                                 sapModel,
-                                orderedLoop,
+                                candidate.OrderedLoop,
                                 faceBuildResult.PointCoordinates,
-                                faceBuildResult.NodeModelPoints,
                                 propertyName,
                                 acceptedFaces,
                                 tolerances);
@@ -1212,11 +1200,68 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult<IReadOnlyList<ShellFrameGeometry>>.Success(frames);
         }
 
+        private static List<ShellFaceCandidate> BuildShellFaceCandidates(
+            IReadOnlyList<string[]> rawFaceLoops,
+            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            ShellCreationTolerances tolerances,
+            ref int skippedCount)
+        {
+            var candidates = new List<ShellFaceCandidate>();
+            var emptyAcceptedFaces = new List<IReadOnlyList<string>>();
+
+            foreach (var rawLoop in rawFaceLoops)
+            {
+                var cleanLoop = ShellFaceBuilder.CleanLoopBoundaryXY(rawLoop, pointCoords, tolerances);
+                if (cleanLoop == null || cleanLoop.Length < 3)
+                {
+                    skippedCount++;
+                    continue;
+                }
+
+                var orderedLoop = ShellFaceBuilder.OrderLoopUpward(cleanLoop, pointCoords);
+                string rejectReason;
+                if (!ShellFaceBuilder.ValidateFaceLoop(
+                        orderedLoop,
+                        pointCoords,
+                        emptyAcceptedFaces,
+                        tolerances,
+                        out rejectReason))
+                {
+                    skippedCount++;
+                    continue;
+                }
+
+                candidates.Add(new ShellFaceCandidate
+                {
+                    OrderedLoop = orderedLoop
+                });
+            }
+
+            return candidates
+                .OrderBy(candidate => GetShellLoopPriority(candidate.OrderedLoop.Length))
+                .ThenBy(candidate => candidate.OrderedLoop.Length)
+                .ToList();
+        }
+
+        private static int GetShellLoopPriority(int nodeCount)
+        {
+            if (nodeCount == 4)
+            {
+                return 0;
+            }
+
+            if (nodeCount == 3)
+            {
+                return 1;
+            }
+
+            return 2;
+        }
+
         private static int CreateAreaFromLoop(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<string> loopPts,
             IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
-            Dictionary<string, string> nodeModelPoint,
             string propName,
             List<IReadOnlyList<string>> acceptedFaces,
             ShellCreationTolerances tolerances)
@@ -1228,7 +1273,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             if (loopPts.Count == 3)
             {
-                if (AddAreaByNodeIds(sapModel, loopPts, pointCoords, nodeModelPoint, propName))
+                if (AddAreaByNodeCoordinates(sapModel, loopPts, pointCoords, propName))
                 {
                     acceptedFaces.Add(loopPts.ToArray());
                     return 1;
@@ -1239,7 +1284,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             if (loopPts.Count == 4)
             {
-                if (AddAreaByNodeIds(sapModel, loopPts, pointCoords, nodeModelPoint, propName))
+                if (AddAreaByNodeCoordinates(sapModel, loopPts, pointCoords, propName))
                 {
                     acceptedFaces.Add(loopPts.ToArray());
                     return 1;
@@ -1249,7 +1294,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     sapModel,
                     loopPts,
                     pointCoords,
-                    nodeModelPoint,
                     propName,
                     acceptedFaces,
                     tolerances);
@@ -1258,11 +1302,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return 0;
         }
 
-        private static bool AddAreaByNodeIds(
+        private static bool AddAreaByNodeCoordinates(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<string> nodeIds,
             IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
-            Dictionary<string, string> nodeModelPoint,
             string propName)
         {
             if (nodeIds == null || (nodeIds.Count != 3 && nodeIds.Count != 4))
@@ -1270,67 +1313,32 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return false;
             }
 
-            var points = new string[nodeIds.Count];
+            var x = new double[nodeIds.Count];
+            var y = new double[nodeIds.Count];
+            var z = new double[nodeIds.Count];
 
             for (int i = 0; i < nodeIds.Count; i++)
             {
-                var modelPoint = EnsureModelPointForNode(sapModel, nodeIds[i], pointCoords, nodeModelPoint);
-                if (string.IsNullOrWhiteSpace(modelPoint))
+                ShellPoint3D point;
+                if (!pointCoords.TryGetValue(nodeIds[i], out point))
                 {
                     return false;
                 }
 
-                points[i] = modelPoint;
+                x[i] = point.X;
+                y[i] = point.Y;
+                z[i] = point.Z;
             }
 
             string areaName = string.Empty;
-            int addResult = sapModel.AreaObj.AddByPoint(points.Length, ref points, ref areaName, propName, string.Empty);
+            int addResult = sapModel.AreaObj.AddByCoord(nodeIds.Count, ref x, ref y, ref z, ref areaName, propName, string.Empty, "Global");
             return addResult == 0;
-        }
-
-        private static string EnsureModelPointForNode(
-            ETABSv1.cSapModel sapModel,
-            string nodeId,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
-            Dictionary<string, string> nodeModelPoint)
-        {
-            string ptName;
-            if (nodeModelPoint.TryGetValue(nodeId, out ptName) && !string.IsNullOrWhiteSpace(ptName))
-            {
-                return ptName;
-            }
-
-            ShellPoint3D point;
-            if (!pointCoords.TryGetValue(nodeId, out point))
-            {
-                return string.Empty;
-            }
-
-            ptName = string.Empty;
-            int addResult = sapModel.PointObj.AddCartesian(
-                point.X,
-                point.Y,
-                point.Z,
-                ref ptName,
-                string.Empty,
-                "Global",
-                true,
-                0);
-
-            if (addResult != 0)
-            {
-                return string.Empty;
-            }
-
-            nodeModelPoint[nodeId] = ptName;
-            return ptName;
         }
 
         private static int SplitQuadAndCreateTwoTriangles(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<string> quadPts,
             IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
-            Dictionary<string, string> nodeModelPoint,
             string propName,
             List<IReadOnlyList<string>> acceptedFaces,
             ShellCreationTolerances tolerances)
@@ -1367,20 +1375,25 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return 0;
             }
 
-            if (!AddAreaByNodeIds(sapModel, tri1Up, pointCoords, nodeModelPoint, propName))
+            if (!AddAreaByNodeCoordinates(sapModel, tri1Up, pointCoords, propName))
             {
                 return 0;
             }
 
             acceptedFaces.Add(tri1Up);
 
-            if (!AddAreaByNodeIds(sapModel, tri2Up, pointCoords, nodeModelPoint, propName))
+            if (!AddAreaByNodeCoordinates(sapModel, tri2Up, pointCoords, propName))
             {
                 return 1;
             }
 
             acceptedFaces.Add(tri2Up);
             return 2;
+        }
+
+        private class ShellFaceCandidate
+        {
+            public string[] OrderedLoop { get; set; }
         }
 
         private bool FrameSectionExists(ETABSv1.cSapModel sapModel, string sectionName)
