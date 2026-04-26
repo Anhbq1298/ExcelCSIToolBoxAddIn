@@ -114,9 +114,6 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                 pointCoords,
                 tolerances.AreaTolerance);
 
-            var extractedFaceCount = faces.Count;
-            var outerRemovedCount = RemoveOuterFace(faces);
-
             return new ShellFaceBuildResult
             {
                 PointCoordinates = pointCoords,
@@ -128,8 +125,8 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                 InitialRealEdgeCount = initialEdges.Count,
                 EnrichedRealEdgeCount = enrichedEdges.Count,
                 VirtualEdgeCount = virtualEdges.Count,
-                ExtractedFaceCount = extractedFaceCount,
-                OuterFaceRemovedCount = outerRemovedCount
+                ExtractedFaceCount = faces.Count,
+                OuterFaceRemovedCount = 0
             };
         }
 
@@ -267,6 +264,13 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
             var nz = ux * vy - uy * vx;
             var normalLength = Math.Sqrt(nx * nx + ny * ny + nz * nz);
             return normalLength <= 0.000000001;
+        }
+
+        public static double GetPolygonAreaXY(
+            IReadOnlyList<string> loopPts,
+            IReadOnlyDictionary<string, ShellPoint3D> pointCoords)
+        {
+            return PolygonAreaXY(loopPts, pointCoords);
         }
 
         public static double Distance3D(ShellPoint3D p1, ShellPoint3D p2)
@@ -783,18 +787,6 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
             }
 
             return idx == 0 ? arr[arr.Length - 1] : arr[idx - 1];
-        }
-
-        private static int RemoveOuterFace(List<FaceLoop> faces)
-        {
-            if (faces.Count <= 1)
-            {
-                return 0;
-            }
-
-            var outerFace = faces.OrderByDescending(f => Math.Abs(f.Area)).First();
-            faces.Remove(outerFace);
-            return 1;
         }
 
         private static string[] RemoveConsecutiveDuplicateVertices(IReadOnlyList<string> loopPts)

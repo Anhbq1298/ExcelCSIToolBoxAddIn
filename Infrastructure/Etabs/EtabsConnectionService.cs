@@ -1233,13 +1233,15 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                 candidates.Add(new ShellFaceCandidate
                 {
-                    OrderedLoop = orderedLoop
+                    OrderedLoop = orderedLoop,
+                    Area = Math.Abs(ShellFaceBuilder.GetPolygonAreaXY(orderedLoop, pointCoords))
                 });
             }
 
             return candidates
                 .OrderBy(candidate => GetShellLoopPriority(candidate.OrderedLoop.Length))
                 .ThenBy(candidate => candidate.OrderedLoop.Length)
+                .ThenBy(candidate => candidate.Area)
                 .ToList();
         }
 
@@ -1394,6 +1396,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         private class ShellFaceCandidate
         {
             public string[] OrderedLoop { get; set; }
+            public double Area { get; set; }
         }
 
         private bool FrameSectionExists(ETABSv1.cSapModel sapModel, string sectionName)
