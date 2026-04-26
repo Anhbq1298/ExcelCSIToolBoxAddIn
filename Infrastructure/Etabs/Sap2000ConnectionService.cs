@@ -149,7 +149,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
+                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
@@ -230,8 +230,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
-                return AddFrames(frameInputs.Count, "Adding Frames (by Coordinates)...", (object)sapModel, ctx =>
+                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
+                return AddFrames(frameInputs.Count, "Adding Frames (by Coordinates)...", sapModel, ctx =>
                 {
                     var failedRowMessages = new List<string>();
                     var successCount = 0;
@@ -295,8 +295,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
-                return AddFrames(frameInputs.Count, "Adding Frames (by Point Names)...", (object)sapModel, ctx =>
+                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
+                return AddFrames(frameInputs.Count, "Adding Frames (by Point Names)...", sapModel, ctx =>
                 {
                     var failedRowMessages = new List<string>();
                     var successCount = 0;
@@ -356,7 +356,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
+                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
                 int numberItems = 0;
                 int[] objectTypes = null;
                 string[] objectNames = null;
@@ -419,7 +419,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
+                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
                 int numberItems = 0;
                 int[] objectTypes = null;
                 string[] objectNames = null;
@@ -514,7 +514,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
+                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
 
                 int unitRet = sapModel.SetPresentUnits(SAP2000v1.eUnits.kN_m_C);
                 if (unitRet != 0)
@@ -522,7 +522,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     return OperationResult.Failure("Failed to set SAP2000 present units to kN-m-C.");
                 }
 
-                var framesResult = ReadSelectedFrameGeometries((object)sapModel);
+                var framesResult = ReadSelectedFrameGeometries(sapModel);
                 if (!framesResult.IsSuccess)
                 {
                     return OperationResult.Failure(framesResult.Message);
@@ -627,7 +627,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         private OperationResult SelectObjectsByUniqueNames(
             IReadOnlyList<string> uniqueNames,
             string objectTypeName,
-            Func<dynamic, string, int> setSelected)
+            Func<SAP2000v1.cSapModel, string, int> setSelected)
         {
             if (uniqueNames == null || uniqueNames.Count == 0)
             {
@@ -648,7 +648,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                dynamic sapModel = connectionResult.Data.SapModel;
+                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
                 int clearSelectionResult = sapModel.SelectObj.ClearSelection();
                 if (clearSelectionResult != 0)
                 {
@@ -712,7 +712,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         private OperationResult<CsiAddFramesResult> AddFrames(
             int totalItems,
             string title,
-            dynamic sapModel,
+            SAP2000v1.cSapModel sapModel,
             Func<BatchProgressContext, CsiAddFramesResult> addAction)
         {
             CsiAddFramesResult result = null;
@@ -733,7 +733,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         private OperationResult CreateSections<T>(
             IReadOnlyList<T> inputs,
             string title,
-            Func<dynamic, T, int> createSection)
+            Func<SAP2000v1.cSapModel, T, int> createSection)
         {
             if (inputs == null || inputs.Count == 0)
             {
@@ -746,7 +746,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure(connectionResult.Message);
             }
 
-            dynamic sapModel = connectionResult.Data.SapModel;
+            SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
             int unitRet = sapModel.SetPresentUnits(SAP2000v1.eUnits.N_mm_C);
             if (unitRet != 0)
             {
@@ -785,7 +785,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success(msg);
         }
 
-        private OperationResult<IReadOnlyList<ShellFrameGeometry>> ReadSelectedFrameGeometries(dynamic sapModel)
+        private OperationResult<IReadOnlyList<ShellFrameGeometry>> ReadSelectedFrameGeometries(SAP2000v1.cSapModel sapModel)
         {
             int numberItems = 0;
             int[] objectTypes = null;
@@ -914,7 +914,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         }
 
         private static int CreateAreaFromLoop(
-            dynamic sapModel,
+            SAP2000v1.cSapModel sapModel,
             IReadOnlyList<string> loopPts,
             IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
             string propName,
@@ -952,7 +952,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         }
 
         private static bool AddAreaByNodeCoordinates(
-            dynamic sapModel,
+            SAP2000v1.cSapModel sapModel,
             IReadOnlyList<string> nodeIds,
             IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
             string propName)
@@ -985,7 +985,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         }
 
         private static int SplitQuadAndCreateTwoTriangles(
-            dynamic sapModel,
+            SAP2000v1.cSapModel sapModel,
             IReadOnlyList<string> quadPts,
             IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
             string propName,
@@ -1040,7 +1040,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return 2;
         }
 
-        private bool FrameSectionExists(dynamic sapModel, string sectionName)
+        private bool FrameSectionExists(SAP2000v1.cSapModel sapModel, string sectionName)
         {
             if (string.IsNullOrWhiteSpace(sectionName))
             {
@@ -1103,7 +1103,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return uniqueNames;
         }
 
-        private static OperationResult RefreshView(dynamic sapModel)
+        private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel)
         {
             int refreshResult = sapModel.View.RefreshView(0, false);
             if (refreshResult != 0)
@@ -1121,3 +1121,4 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         }
     }
 }
+
