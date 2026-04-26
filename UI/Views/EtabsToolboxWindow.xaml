@@ -326,8 +326,6 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="10"/>
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <TextBlock Grid.Row="0"
@@ -473,23 +471,38 @@
                                     Margin="6,0,6,0"
                                     Content="Set"
                                     Command="{Binding SetFrameModifierCommand}"/>
-
-                            <TextBlock Grid.Row="16"
-                                       Grid.Column="1"
-                                       Text="Create Shell Area From Selected Frames"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="16"
-                                    Grid.Column="2"
-                                    Grid.ColumnSpan="3"
-                                    Margin="6,0,6,0"
-                                    Content="Create Shell"
-                                    Command="{Binding CreateShellAreasFromSelectedFramesCommand}"/>
                         </Grid>
+                    </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Shell">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="True">
+                        <StackPanel Margin="12">
+                            <GroupBox Header="Shell Area" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2.2*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0"
+                                               Text="Create Shell Area From Selected Frames"
+                                               VerticalAlignment="Center"
+                                               Foreground="Black"
+                                               FontWeight="Bold"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,8,0"/>
+
+                                    <Button Grid.Column="2"
+                                            Content="Create Shell"
+                                            HorizontalAlignment="Stretch"
+                                            Command="{Binding CreateShellAreasFromSelectedFramesCommand}"/>
+                                </Grid>
+                            </GroupBox>
+                        </StackPanel>
                     </ScrollViewer>
                 </TabItem>
 
