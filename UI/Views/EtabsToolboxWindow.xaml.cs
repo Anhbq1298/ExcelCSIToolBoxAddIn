@@ -11,5 +11,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         {
             InitializeComponent();
         }
+
+        private void HelpButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "This tool was developed by Mark Bui Quang Anh.",
+                "About ETABS Toolbox",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
     }
 }

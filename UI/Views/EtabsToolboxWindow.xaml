@@ -5,12 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="ETABS Toolbox"
-        Width="640"
-        Height="480"
-        MinWidth="640"
-        MinHeight="480"
-        ResizeMode="CanResizeWithGrip"
+        Width="800"
+        Height="600"
+        MinWidth="800"
+        MinHeight="600"
+        MaxWidth="800"
+        MaxHeight="600"
+        ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI"
         FontSize="11">
 
     <Window.Resources>
@@ -18,6 +21,50 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="16,8"/>
             <Setter Property="MinHeight" Value="36"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#1F6AA5"/>
+            <Setter Property="BorderBrush" Value="#1B5C90"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#2A7BBE"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#236B9F"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#184F7C"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#14456B"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#B7C4D0"/>
+                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#A8B5C1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -36,6 +83,26 @@
                 CornerRadius="4"
                 Background="#FAFAFA">
             <StackPanel>
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0"
+                               Text="ETABS Toolbox"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               VerticalAlignment="Center"/>
+
+                    <Button Grid.Column="1"
+                            Width="32"
+                            Height="32"
+                            Padding="0"
+                            Content="?"
+                            Click="HelpButton_Click"/>
+                </Grid>
+
                 <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="160"/>
@@ -88,15 +155,11 @@
                             HorizontalAlignment="Left">
                     <Button Content="Attach"
                             Width="70"
-                            Height="30"
-                            Padding="10,4"
                             Margin="0,0,8,0"
                             Command="{Binding AttachToRunningEtabsCommand}"/>
 
                     <Button Content="Close"
                             Width="70"
-                            Height="30"
-                            Padding="10,4"
                             Command="{Binding CloseCurrentEtabsInstanceCommand}"/>
                 </StackPanel>
             </StackPanel>
@@ -118,18 +181,18 @@
                         <StackPanel Margin="12">
                             <GroupBox Header="Steel Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <Button Content="Ishape" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateIshapeSectionCommand}" />
-                                    <Button Content="Channel" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateChannelSectionCommand}" />
-                                    <Button Content="Angle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateAngleSectionCommand}" />
-                                    <Button Content="Tube" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateTubeSectionCommand}" />
-                                    <Button Content="Pipe" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreatePipeSectionCommand}" />
+                                    <Button Content="Ishape" Width="80" Margin="0,0,10,0" Command="{Binding CreateIshapeSectionCommand}" />
+                                    <Button Content="Channel" Width="80" Margin="0,0,10,0" Command="{Binding CreateChannelSectionCommand}" />
+                                    <Button Content="Angle" Width="80" Margin="0,0,10,0" Command="{Binding CreateAngleSectionCommand}" />
+                                    <Button Content="Tube" Width="80" Margin="0,0,10,0" Command="{Binding CreateTubeSectionCommand}" />
+                                    <Button Content="Pipe" Width="80" Margin="0,0,10,0" Command="{Binding CreatePipeSectionCommand}" />
                                 </StackPanel>
                             </GroupBox>
 
                             <GroupBox Header="Concrete Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <Button Content="Rectangle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateConcreteRectangleSectionCommand}" />
-                                    <Button Content="Circle" Width="80" Height="30" Margin="0,0,10,0" Foreground="Blue" Command="{Binding CreateConcreteCircleSectionCommand}" />
+                                    <Button Content="Rectangle" Width="80" Margin="0,0,10,0" Command="{Binding CreateConcreteRectangleSectionCommand}" />
+                                    <Button Content="Circle" Width="80" Margin="0,0,10,0" Command="{Binding CreateConcreteCircleSectionCommand}" />
                                 </StackPanel>
                             </GroupBox>
                         </StackPanel>
@@ -172,11 +235,8 @@
 
                             <Button Grid.Row="0"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="By UniqueName"
-                                    Foreground="Blue"
                                     Command="{Binding SelectPointsByUniqueNameCommand}"/>
 
                             <TextBlock Grid.Row="2"
@@ -190,12 +250,9 @@
 
                             <Button Grid.Row="2"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="By Cartesian"
                                     HorizontalAlignment="Stretch"
-                                    Foreground="Blue"
                                     Command="{Binding AddPointByCartesianCommand}"/>
 
                             <TextBlock Grid.Row="4"
@@ -209,12 +266,9 @@
 
                             <Button Grid.Row="4"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Run"
                                     HorizontalAlignment="Stretch"
-                                    Foreground="Blue"
                                     Command="{Binding GetSelectedPointsCommand}"/>
 
                             <TextBlock Grid.Row="6"
@@ -227,22 +281,16 @@
 
                             <Button Grid.Row="6"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Get"
                                     HorizontalAlignment="Stretch"
-                                    Foreground="Blue"
                                     Command="{Binding GetPointGroupAssignmentCommand}"/>
 
                             <Button Grid.Row="6"
                                     Grid.Column="4"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Set"
                                     HorizontalAlignment="Stretch"
-                                    Foreground="Blue"
                                     Command="{Binding SetPointGroupAssignmentCommand}"/>
                         </Grid>
                     </ScrollViewer>
@@ -292,11 +340,8 @@
 
                             <Button Grid.Row="0"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Run"
-                                    Foreground="Blue"
                                     Command="{Binding GetSelectedFramesCommand}"/>
 
                             <TextBlock Grid.Row="2"
@@ -310,11 +355,8 @@
 
                             <Button Grid.Row="2"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="By UniqueName"
-                                    Foreground="Blue"
                                     Command="{Binding SelectFramesByUniqueNameCommand}"/>
 
                             <TextBlock Grid.Row="4"
@@ -328,20 +370,14 @@
 
                             <Button Grid.Row="4"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="By Coor"
-                                    Foreground="Blue"
                                     Command="{Binding AddFramesByCoordinatesCommand}"/>
 
                             <Button Grid.Row="4"
                                     Grid.Column="4"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="By Point"
-                                    Foreground="Blue"
                                     Command="{Binding AddFramesByPointNamesCommand}"/>
 
                             <TextBlock Grid.Row="6"
@@ -355,11 +391,8 @@
 
                             <Button Grid.Row="6"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Run"
-                                    Foreground="Blue"
                                     Command="{Binding GetSelectedFramesCommand}"/>
 
                             <TextBlock Grid.Row="8"
@@ -373,11 +406,8 @@
 
                             <Button Grid.Row="8"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Run"
-                                    Foreground="Blue"
                                     Command="{Binding RenameFramesCommand}"/>
 
                             <TextBlock Grid.Row="10"
@@ -391,20 +421,14 @@
 
                             <Button Grid.Row="10"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Get"
-                                    Foreground="Blue"
                                     Command="{Binding GetFrameSectionPropertyCommand}"/>
 
                             <Button Grid.Row="10"
                                     Grid.Column="4"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Set"
-                                    Foreground="Blue"
                                     Command="{Binding SetFrameSectionPropertyCommand}"/>
 
                             <TextBlock Grid.Row="12"
@@ -418,20 +442,14 @@
 
                             <Button Grid.Row="12"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Get"
-                                    Foreground="Blue"
                                     Command="{Binding GetFrameGroupAssignmentCommand}"/>
 
                             <Button Grid.Row="12"
                                     Grid.Column="4"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Set"
-                                    Foreground="Blue"
                                     Command="{Binding SetFrameGroupAssignmentCommand}"/>
 
                             <TextBlock Grid.Row="14"
@@ -445,20 +463,14 @@
 
                             <Button Grid.Row="14"
                                     Grid.Column="2"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Get"
-                                    Foreground="Blue"
                                     Command="{Binding GetFrameModifierCommand}"/>
 
                             <Button Grid.Row="14"
                                     Grid.Column="4"
-                                    Height="30"
                                     Margin="6,0,6,0"
-                                    Padding="12,4"
                                     Content="Set"
-                                    Foreground="Blue"
                                     Command="{Binding SetFrameModifierCommand}"/>
                         </Grid>
                     </ScrollViewer>
@@ -476,8 +488,8 @@
                                         <ColumnDefinition Width="12"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Get" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" />
-                                    <Button Grid.Column="2" Content="Set Name" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding SetLoadPatternsNameCommand}" />
+                                    <Button Grid.Column="0" Content="Get" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" />
+                                    <Button Grid.Column="2" Content="Set Name" HorizontalAlignment="Stretch" Command="{Binding SetLoadPatternsNameCommand}" />
                                 </Grid>
                             </GroupBox>
 
@@ -486,7 +498,7 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Add From Excel Range" Height="30" Foreground="Blue" HorizontalAlignment="Stretch" Command="{Binding AddLoadCombinationFromExcelCommand}" />
+                                    <Button Grid.Column="0" Content="Add From Excel Range" HorizontalAlignment="Stretch" Command="{Binding AddLoadCombinationFromExcelCommand}" />
                                 </Grid>
                             </GroupBox>
                         </StackPanel>
