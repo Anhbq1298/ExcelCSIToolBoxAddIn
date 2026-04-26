@@ -13,13 +13,15 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     /// Infrastructure service that safely attaches to a running ETABS instance.
     /// Stores the latest attached instance so ETABS commands can reuse the same SapModel.
     /// </summary>
-    public class EtabsConnectionService : IEtabsConnectionService
+    public class EtabsConnectionService : ICsiConnectionService
     {
         private const string EtabsComProgId = "CSI.ETABS.API.ETABSObject";
 
-        private EtabsConnectionInfo _currentConnection;
+        private CsiConnectionInfo _currentConnection;
 
-        public OperationResult<EtabsConnectionInfo> TryAttachToRunningInstance()
+        public string ProductName => "ETABS";
+
+        public OperationResult<CsiConnectionInfo> TryAttachToRunningInstance()
         {
             ETABSv1.cHelper myHelper = new ETABSv1.Helper();
             ETABSv1.cOAPI myETABSObject = null;
@@ -31,7 +33,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 if (myETABSObject == null)
                 {
                     _currentConnection = null;
-                    return OperationResult<EtabsConnectionInfo>.Failure("ETABS is not running.");
+                    return OperationResult<CsiConnectionInfo>.Failure("ETABS is not running.");
                 }
 
                 ETABSv1.cSapModel sapModel = myETABSObject.SapModel;
@@ -68,45 +70,45 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 {
                 }
 
-                _currentConnection = new EtabsConnectionInfo
+                _currentConnection = new CsiConnectionInfo
                 {
                     IsConnected = true,
                     ModelPath = modelPath,
                     ModelFileName = modelName,
                     ModelCurrentUnit = modelCurrentUnit,
-                    EtabsObject = myETABSObject,
+                    CsiObject = myETABSObject,
                     SapModel = sapModel
                 };
 
-                return OperationResult<EtabsConnectionInfo>.Success(_currentConnection);
+                return OperationResult<CsiConnectionInfo>.Success(_currentConnection);
             }
             catch
             {
                 _currentConnection = null;
-                return OperationResult<EtabsConnectionInfo>.Failure("ETABS is not running.");
+                return OperationResult<CsiConnectionInfo>.Failure("ETABS is not running.");
             }
         }
 
-        public OperationResult<EtabsConnectionInfo> GetCurrentConnection()
+        public OperationResult<CsiConnectionInfo> GetCurrentConnection()
         {
             if (_currentConnection?.SapModel == null)
             {
-                return OperationResult<EtabsConnectionInfo>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
+                return OperationResult<CsiConnectionInfo>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
             }
 
-            return OperationResult<EtabsConnectionInfo>.Success(_currentConnection);
+            return OperationResult<CsiConnectionInfo>.Success(_currentConnection);
         }
 
-        public OperationResult CloseCurrentEtabsInstance()
+        public OperationResult CloseCurrentInstance()
         {
-            if (_currentConnection?.EtabsObject == null)
+            if (_currentConnection?.CsiObject == null)
             {
                 return OperationResult.Failure("No running ETABS instance is currently attached.");
             }
 
             try
             {
-                var etabsApplication = _currentConnection.EtabsObject as ETABSv1.cOAPI;
+                var etabsApplication = _currentConnection.CsiObject as ETABSv1.cOAPI;
                 if (etabsApplication == null)
                 {
                     return OperationResult.Failure("The attached ETABS instance is invalid. Please reattach and try again.");
@@ -139,10 +141,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
 
             ReleaseComReference(_currentConnection.SapModel);
-            ReleaseComReference(_currentConnection.EtabsObject);
+            ReleaseComReference(_currentConnection.CsiObject);
 
             _currentConnection.SapModel = null;
-            _currentConnection.EtabsObject = null;
+            _currentConnection.CsiObject = null;
             _currentConnection = null;
         }
 
@@ -269,17 +271,17 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return uniqueNames;
         }
 
-        public OperationResult<EtabsAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs)
+        public OperationResult<CsiAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs)
         {
             if (pointInputs == null || pointInputs.Count == 0)
             {
-                return OperationResult<EtabsAddPointsResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CsiAddPointsResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<EtabsAddPointsResult>.Failure(connectionResult.Message);
+                return OperationResult<CsiAddPointsResult>.Failure(connectionResult.Message);
             }
 
             try
@@ -328,7 +330,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     }
                 });
 
-                var data = new EtabsAddPointsResult
+                var data = new CsiAddPointsResult
                 {
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
@@ -339,34 +341,34 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     var refreshResult = RefreshView(sapModel);
                     if (!refreshResult.IsSuccess)
                     {
-                        return OperationResult<EtabsAddPointsResult>.Failure(refreshResult.Message);
+                        return OperationResult<CsiAddPointsResult>.Failure(refreshResult.Message);
                     }
                 }
 
-                return OperationResult<EtabsAddPointsResult>.Success(data);
+                return OperationResult<CsiAddPointsResult>.Success(data);
             }
             catch (COMException ex)
             {
-                return OperationResult<EtabsAddPointsResult>.Failure($"ETABS COM error while adding points by Cartesian coordinates: {ex.Message}");
+                return OperationResult<CsiAddPointsResult>.Failure($"ETABS COM error while adding points by Cartesian coordinates: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return OperationResult<EtabsAddPointsResult>.Failure(
+                return OperationResult<CsiAddPointsResult>.Failure(
                     $"ETABS add-by-Cartesian failed unexpectedly: {ex.Message}");
             }
         }
 
-        public OperationResult<EtabsAddFramesResult> AddFramesByCoordinates(IReadOnlyList<EtabsFrameByCoordInput> frameInputs)
+        public OperationResult<CsiAddFramesResult> AddFramesByCoordinates(IReadOnlyList<EtabsFrameByCoordInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CsiAddFramesResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure(connectionResult.Message);
+                return OperationResult<CsiAddFramesResult>.Failure(connectionResult.Message);
             }
 
             try
@@ -410,7 +412,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     }
                 });
 
-                var data = new EtabsAddFramesResult
+                var data = new CsiAddFramesResult
                 {
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
@@ -421,34 +423,34 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     var refreshResult = RefreshView(sapModel);
                     if (!refreshResult.IsSuccess)
                     {
-                        return OperationResult<EtabsAddFramesResult>.Failure(refreshResult.Message);
+                        return OperationResult<CsiAddFramesResult>.Failure(refreshResult.Message);
                     }
                 }
 
-                return OperationResult<EtabsAddFramesResult>.Success(data);
+                return OperationResult<CsiAddFramesResult>.Success(data);
             }
             catch (COMException ex)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure($"ETABS COM error while adding frames by coordinates: {ex.Message}");
+                return OperationResult<CsiAddFramesResult>.Failure($"ETABS COM error while adding frames by coordinates: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure(
+                return OperationResult<CsiAddFramesResult>.Failure(
                     $"ETABS add-by-coordinates failed unexpectedly: {ex.Message}");
             }
         }
 
-        public OperationResult<EtabsAddFramesResult> AddFramesByPoint(IReadOnlyList<EtabsFrameByPointInput> frameInputs)
+        public OperationResult<CsiAddFramesResult> AddFramesByPoint(IReadOnlyList<EtabsFrameByPointInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CsiAddFramesResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure(connectionResult.Message);
+                return OperationResult<CsiAddFramesResult>.Failure(connectionResult.Message);
             }
 
             try
@@ -494,7 +496,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     }
                 });
 
-                var data = new EtabsAddFramesResult
+                var data = new CsiAddFramesResult
                 {
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
@@ -505,29 +507,29 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     var refreshResult = RefreshView(sapModel);
                     if (!refreshResult.IsSuccess)
                     {
-                        return OperationResult<EtabsAddFramesResult>.Failure(refreshResult.Message);
+                        return OperationResult<CsiAddFramesResult>.Failure(refreshResult.Message);
                     }
                 }
 
-                return OperationResult<EtabsAddFramesResult>.Success(data);
+                return OperationResult<CsiAddFramesResult>.Success(data);
             }
             catch (COMException ex)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure($"ETABS COM error while adding frames by point names: {ex.Message}");
+                return OperationResult<CsiAddFramesResult>.Failure($"ETABS COM error while adding frames by point names: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return OperationResult<EtabsAddFramesResult>.Failure(
+                return OperationResult<CsiAddFramesResult>.Failure(
                     $"ETABS add-by-point failed unexpectedly: {ex.Message}");
             }
         }
 
-        public OperationResult<IReadOnlyList<EtabsPointData>> GetSelectedPointsFromActiveModel()
+        public OperationResult<IReadOnlyList<CsiPointData>> GetSelectedPointsFromActiveModel()
         {
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<IReadOnlyList<EtabsPointData>>.Failure(connectionResult.Message);
+                return OperationResult<IReadOnlyList<CsiPointData>>.Failure(connectionResult.Message);
             }
 
             try
@@ -541,10 +543,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                 if (selectedResult != 0)
                 {
-                    return OperationResult<IReadOnlyList<EtabsPointData>>.Failure("Failed to read selected objects from ETABS.");
+                    return OperationResult<IReadOnlyList<CsiPointData>>.Failure("Failed to read selected objects from ETABS.");
                 }
 
-                var points = new List<EtabsPointData>();
+                var points = new List<CsiPointData>();
 
                 for (int i = 0; i < numberItems; i++)
                 {
@@ -553,7 +555,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         continue;
                     }
 
-                    if (objectTypes[i] != EtabsObjectTypeIds.Point || string.IsNullOrWhiteSpace(objectNames[i]))
+                    if (objectTypes[i] != CsiObjectTypeIds.Point || string.IsNullOrWhiteSpace(objectNames[i]))
                     {
                         continue;
                     }
@@ -568,7 +570,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                     if (pointResult == 0)
                     {
-                        points.Add(new EtabsPointData
+                        points.Add(new CsiPointData
                         {
                             PointUniqueName = objectNames[i],
                             PointLabel = pointLabelResult == 0 && !string.IsNullOrWhiteSpace(pointLabel)
@@ -583,14 +585,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                 if (points.Count == 0)
                 {
-                    return OperationResult<IReadOnlyList<EtabsPointData>>.Failure("No point objects are selected in ETABS.");
+                    return OperationResult<IReadOnlyList<CsiPointData>>.Failure("No point objects are selected in ETABS.");
                 }
 
-                return OperationResult<IReadOnlyList<EtabsPointData>>.Success(points);
+                return OperationResult<IReadOnlyList<CsiPointData>>.Success(points);
             }
             catch
             {
-                return OperationResult<IReadOnlyList<EtabsPointData>>.Failure("Unable to read selected ETABS points.");
+                return OperationResult<IReadOnlyList<CsiPointData>>.Failure("Unable to read selected ETABS points.");
             }
         }
 
@@ -634,7 +636,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 for (int i = 0; i < numberItems; i++)
                 {
                     var frameUniqueName = objectNames[i];
-                    if (objectTypes[i] != EtabsObjectTypeIds.Frame || string.IsNullOrWhiteSpace(frameUniqueName))
+                    if (objectTypes[i] != CsiObjectTypeIds.Frame || string.IsNullOrWhiteSpace(frameUniqueName))
                     {
                         continue;
                     }
@@ -656,7 +658,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         }
 
 
-        private OperationResult<EtabsConnectionInfo> EnsureConnection()
+        private OperationResult<CsiConnectionInfo> EnsureConnection()
         {
             var connectionResult = GetCurrentConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
@@ -1152,7 +1154,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 }
 
                 var frameName = objectNames[i];
-                if (objectTypes[i] != EtabsObjectTypeIds.Frame ||
+                if (objectTypes[i] != CsiObjectTypeIds.Frame ||
                     string.IsNullOrWhiteSpace(frameName) ||
                     seenFrames.Contains(frameName))
                 {

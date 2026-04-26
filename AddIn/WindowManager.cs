@@ -9,57 +9,91 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 {
     internal static class WindowManager
     {
-        private static IEtabsConnectionService _etabsConnectionService;
+        private static ICsiConnectionService _etabsConnectionService;
+        private static ICsiConnectionService _sap2000ConnectionService;
         private static IExcelSelectionService _excelSelectionService;
         private static IExcelOutputService _excelOutputService;
         private static EtabsToolboxWindow _activeEtabsWindow;
+        private static Sap2000ToolboxWindow _activeSap2000Window;
 
         internal static void Configure(
-            IEtabsConnectionService etabsConnectionService,
+            ICsiConnectionService etabsConnectionService,
+            ICsiConnectionService sap2000ConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
             _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
+            _sap2000ConnectionService = sap2000ConnectionService ?? throw new ArgumentNullException(nameof(sap2000ConnectionService));
             _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
         }
 
         internal static void ShowEtabsWindow()
         {
-            if (_etabsConnectionService == null || _excelSelectionService == null || _excelOutputService == null)
+            ShowCsiWindow(
+                _etabsConnectionService,
+                () => _activeEtabsWindow,
+                window => _activeEtabsWindow = window);
+        }
+
+        internal static void ShowSap2000Window()
+        {
+            ShowCsiWindow(
+                _sap2000ConnectionService,
+                () => _activeSap2000Window,
+                window => _activeSap2000Window = window);
+        }
+
+        private static void ShowCsiWindow<TWindow>(
+            ICsiConnectionService connectionService,
+            Func<TWindow> getActiveWindow,
+            Action<TWindow> setActiveWindow)
+            where TWindow : Window, new()
+        {
+            if (connectionService == null || _excelSelectionService == null || _excelOutputService == null)
             {
                 throw new InvalidOperationException("WindowManager is not configured.");
             }
 
-            if (_activeEtabsWindow == null)
+            var activeWindow = getActiveWindow();
+            if (activeWindow == null)
             {
-                var viewModel = new EtabsToolboxViewModel(_etabsConnectionService, _excelSelectionService, _excelOutputService);
-                _activeEtabsWindow = new EtabsToolboxWindow
+                var viewModel = new CsiToolboxViewModel(connectionService, _excelSelectionService, _excelOutputService);
+                activeWindow = new TWindow
                 {
                     DataContext = viewModel
                 };
+                setActiveWindow(activeWindow);
 
-                _activeEtabsWindow.Closed += (_, __) => _activeEtabsWindow = null;
-                _activeEtabsWindow.Show();
-                _activeEtabsWindow.Activate();
-                _activeEtabsWindow.Focus();
+                var openedWindow = activeWindow;
+                activeWindow.Closed += (_, __) =>
+                {
+                    if (ReferenceEquals(getActiveWindow(), openedWindow))
+                    {
+                        setActiveWindow(null);
+                    }
+                };
+
+                activeWindow.Show();
+                activeWindow.Activate();
+                activeWindow.Focus();
                 return;
             }
 
-            if (_activeEtabsWindow.WindowState == WindowState.Minimized)
+            if (activeWindow.WindowState == WindowState.Minimized)
             {
-                _activeEtabsWindow.WindowState = WindowState.Normal;
+                activeWindow.WindowState = WindowState.Normal;
             }
 
-            if (!_activeEtabsWindow.IsVisible)
+            if (!activeWindow.IsVisible)
             {
-                _activeEtabsWindow.Show();
+                activeWindow.Show();
             }
 
-            _activeEtabsWindow.Topmost = true;
-            _activeEtabsWindow.Topmost = false;
-            _activeEtabsWindow.Activate();
-            _activeEtabsWindow.Focus();
+            activeWindow.Topmost = true;
+            activeWindow.Topmost = false;
+            activeWindow.Activate();
+            activeWindow.Focus();
         }
     }
 }

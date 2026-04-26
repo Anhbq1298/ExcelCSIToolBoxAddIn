@@ -6,9 +6,9 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class CreateShellAreasFromSelectedFramesUseCase
     {
-        private readonly IEtabsConnectionService _connectionService;
+        private readonly ICsiConnectionService _connectionService;
 
-        public CreateShellAreasFromSelectedFramesUseCase(IEtabsConnectionService connectionService)
+        public CreateShellAreasFromSelectedFramesUseCase(ICsiConnectionService connectionService)
         {
             _connectionService = connectionService;
         }

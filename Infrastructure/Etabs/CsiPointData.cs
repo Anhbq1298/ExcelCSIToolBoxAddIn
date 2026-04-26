@@ -1,6 +1,6 @@
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 {
-    public class EtabsPointData
+    public class CsiPointData
     {
         public string PointUniqueName { get; set; }
 

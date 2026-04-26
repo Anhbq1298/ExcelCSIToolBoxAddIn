@@ -8,11 +8,11 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class CreateConcreteCircleSectionsFromExcelRangeUseCase
     {
-        private readonly IEtabsConnectionService _connectionService;
+        private readonly ICsiConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public CreateConcreteCircleSectionsFromExcelRangeUseCase(
-            IEtabsConnectionService connectionService,
+            ICsiConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;

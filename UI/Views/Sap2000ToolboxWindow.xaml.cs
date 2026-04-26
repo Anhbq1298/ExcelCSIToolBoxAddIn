@@ -3,11 +3,11 @@ using System.Windows;
 namespace ExcelCSIToolBoxAddIn.UI.Views
 {
     /// <summary>
-    /// Interaction logic for EtabsToolboxWindow.xaml
+    /// Interaction logic for Sap2000ToolboxWindow.xaml
     /// </summary>
-    public partial class EtabsToolboxWindow : Window
+    public partial class Sap2000ToolboxWindow : Window
     {
-        public EtabsToolboxWindow()
+        public Sap2000ToolboxWindow()
         {
             InitializeComponent();
         }
@@ -16,7 +16,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         {
             MessageBox.Show(
                 "This tool was developed by Mark Bui Quang Anh.",
-                "About CSI Toolbox",
+                "About SAP2000 Toolbox",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }

@@ -4,13 +4,13 @@ using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
-    public class GetSelectedEtabsFramesUseCase
+    public class GetSelectedCsiFramesUseCase
     {
-        private readonly IEtabsConnectionService _connectionService;
+        private readonly ICsiConnectionService _connectionService;
         private readonly IExcelOutputService _excelOutputService;
 
-        public GetSelectedEtabsFramesUseCase(
-            IEtabsConnectionService connectionService,
+        public GetSelectedCsiFramesUseCase(
+            ICsiConnectionService connectionService,
             IExcelOutputService excelOutputService)
         {
             _connectionService = connectionService;
@@ -25,7 +25,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(framesResult.Message);
             }
 
-            var dataFrame = EtabsFrameDataDataFrameMapper.Map(framesResult.Data);
+            var dataFrame = CsiFrameDataDataFrameMapper.Map(framesResult.Data);
             return _excelOutputService.WriteDataFrameToActiveCell(dataFrame);
         }
     }

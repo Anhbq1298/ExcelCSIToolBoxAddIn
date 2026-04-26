@@ -115,6 +115,10 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="ETABSv1" />
+    <Reference Include="SAP2000v1">
+      <HintPath>SAP2000v1.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -229,17 +233,17 @@
     <Compile Include="ThisAddIn.Designer.cs">
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
-    <Compile Include="AddIn\EtabsToolboxWindowLauncher.cs" />
+    <Compile Include="AddIn\CsiToolboxWindowLauncher.cs" />
     <Compile Include="AddIn\WindowManager.cs" />
     <Compile Include="Common\Commands\RelayCommand.cs" />
     <Compile Include="Common\Results\OperationResult.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />
-    <Compile Include="Core\Application\LoadEtabsConnectionUseCase.cs" />
-    <Compile Include="Core\Application\EtabsPointDataDataFrameMapper.cs" />
-    <Compile Include="Core\Application\EtabsFrameDataDataFrameMapper.cs" />
-    <Compile Include="Core\Application\GetSelectedEtabsPointsUseCase.cs" />
-    <Compile Include="Core\Application\GetSelectedEtabsFramesUseCase.cs" />
-    <Compile Include="Core\Application\CloseCurrentEtabsInstanceUseCase.cs" />
+    <Compile Include="Core\Application\LoadCsiConnectionUseCase.cs" />
+    <Compile Include="Core\Application\CsiPointDataDataFrameMapper.cs" />
+    <Compile Include="Core\Application\CsiFrameDataDataFrameMapper.cs" />
+    <Compile Include="Core\Application\GetSelectedCsiPointsUseCase.cs" />
+    <Compile Include="Core\Application\GetSelectedCsiFramesUseCase.cs" />
+    <Compile Include="Core\Application\CloseCurrentInstanceUseCase.cs" />
     <Compile Include="Core\Application\SelectPointsFromExcelRangeByUniqueNameUseCase.cs" />
     <Compile Include="Core\Application\SelectFramesFromExcelRangeByUniqueNameUseCase.cs" />
     <Compile Include="Core\Application\AddPointsFromExcelRangeUseCase.cs" />
@@ -256,19 +260,21 @@
     <Compile Include="Core\Geometry\ShellFaceBuilder.cs" />
     <Compile Include="Core\Tabular\ExcelSteelSectionRows.cs" />
     <Compile Include="Core\Tabular\ExcelConcreteSectionRows.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsConnectionInfo.cs" />
+    <Compile Include="Infrastructure\Etabs\CsiConnectionInfo.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsSteelSectionInputs.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConcreteSectionInputs.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsPointData.cs" />
+    <Compile Include="Infrastructure\Etabs\CsiPointData.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsPointCartesianInput.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsAddPointsResult.cs" />
+    <Compile Include="Infrastructure\Etabs\CsiAddPointsResult.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsFrameByCoordInput.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsFrameByPointInput.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsAddFramesResult.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsObjectTypeIds.cs" />
+    <Compile Include="Infrastructure\Etabs\CsiAddFramesResult.cs" />
+    <Compile Include="Infrastructure\Etabs\CsiObjectTypeIds.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsUnitFormatter.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionService.cs" />
-    <Compile Include="Infrastructure\Etabs\IEtabsConnectionService.cs" />
+    <Compile Include="Infrastructure\Etabs\ICsiConnectionService.cs" />
+    <Compile Include="Infrastructure\Etabs\Sap2000ConnectionService.cs" />
+    <Compile Include="Infrastructure\Etabs\Sap2000UnitFormatter.cs" />
     <Compile Include="Infrastructure\Excel\ExcelOutputService.cs" />
     <Compile Include="Infrastructure\Excel\ExcelPointCartesianRow.cs" />
     <Compile Include="Infrastructure\Excel\ExcelFrameByCoordRow.cs" />
@@ -276,10 +282,14 @@
     <Compile Include="Infrastructure\Excel\ExcelSelectionService.cs" />
     <Compile Include="Infrastructure\Excel\IExcelSelectionService.cs" />
     <Compile Include="Infrastructure\Excel\IExcelOutputService.cs" />
-    <Compile Include="UI\ViewModels\EtabsToolboxViewModel.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\Sap2000ToolboxWindow.xaml.cs">
+      <DependentUpon>Sap2000ToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\BatchProgressWindow.xaml.cs">
@@ -288,6 +298,10 @@
     </Compile>
     <None Include="CSI API ETABS v1.chm" />
     <Page Include="UI\Views\EtabsToolboxWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\Sap2000ToolboxWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

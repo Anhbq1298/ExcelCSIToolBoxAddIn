@@ -8,11 +8,11 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class CreateSteelPipeSectionsFromExcelRangeUseCase
     {
-        private readonly IEtabsConnectionService _connectionService;
+        private readonly ICsiConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public CreateSteelPipeSectionsFromExcelRangeUseCase(
-            IEtabsConnectionService connectionService,
+            ICsiConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;

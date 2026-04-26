@@ -6,11 +6,11 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class SelectFramesFromExcelRangeByUniqueNameUseCase
     {
-        private readonly IEtabsConnectionService _connectionService;
+        private readonly ICsiConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public SelectFramesFromExcelRangeByUniqueNameUseCase(
-            IEtabsConnectionService connectionService,
+            ICsiConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;

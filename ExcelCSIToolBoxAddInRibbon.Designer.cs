@@ -37,6 +37,7 @@
             this.tabExcelCSIToolBox = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.buttonEtabs = this.Factory.CreateRibbonButton();
+            this.buttonSap2000 = this.Factory.CreateRibbonButton();
             this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
             this.SuspendLayout();
@@ -50,6 +51,7 @@
             // group1
             // 
             this.group1.Items.Add(this.buttonEtabs);
+            this.group1.Items.Add(this.buttonSap2000);
             this.group1.Label = "CSI Toolbox";
             this.group1.Name = "group1";
             // 
@@ -60,6 +62,14 @@
             this.buttonEtabs.Name = "buttonEtabs";
             this.buttonEtabs.ShowImage = true;
             this.buttonEtabs.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonEtabs_Click);
+            // 
+            // buttonSap2000
+            // 
+            this.buttonSap2000.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonSap2000.Label = "SAP2000";
+            this.buttonSap2000.Name = "buttonSap2000";
+            this.buttonSap2000.ShowImage = true;
+            this.buttonSap2000.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonSap2000_Click);
             // 
             // ExcelCSIToolBoxAddInRibbon
             // 
@@ -80,6 +90,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tabExcelCSIToolBox;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonEtabs;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonSap2000;
     }
 
     partial class ThisRibbonCollection

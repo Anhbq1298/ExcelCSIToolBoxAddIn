@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 {
-    public class EtabsAddFramesResult
+    public class CsiAddPointsResult
     {
         public int AddedCount { get; set; }
 

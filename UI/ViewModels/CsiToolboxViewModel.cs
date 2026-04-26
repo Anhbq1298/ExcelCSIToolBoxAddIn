@@ -10,15 +10,15 @@ using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
     /// <summary>
-    /// ViewModel for ETABS toolbox shell.
+    /// ViewModel for CSI toolbox shells.
     /// Exposes connection state, model name, and point/frame placeholder commands.
     /// </summary>
-    public class EtabsToolboxViewModel : ViewModelBase
+    public class CsiToolboxViewModel : ViewModelBase
     {
-        private readonly LoadEtabsConnectionUseCase _loadEtabsConnectionUseCase;
-        private readonly CloseCurrentEtabsInstanceUseCase _closeCurrentEtabsInstanceUseCase;
-        private readonly GetSelectedEtabsPointsUseCase _getSelectedEtabsPointsUseCase;
-        private readonly GetSelectedEtabsFramesUseCase _getSelectedEtabsFramesUseCase;
+        private readonly LoadCsiConnectionUseCase _loadCsiConnectionUseCase;
+        private readonly CloseCurrentInstanceUseCase _closeCurrentInstanceUseCase;
+        private readonly GetSelectedCsiPointsUseCase _getSelectedCsiPointsUseCase;
+        private readonly GetSelectedCsiFramesUseCase _getSelectedCsiFramesUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
         private readonly SelectFramesFromExcelRangeByUniqueNameUseCase _selectFramesFromExcelRangeByUniqueNameUseCase;
         private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
@@ -40,33 +40,38 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private string _statusText;
         private string _currentModelUnitText;
         private string _modelPath;
+        private readonly string _productName;
 
-        public EtabsToolboxViewModel(
-            IEtabsConnectionService etabsConnectionService,
+        public CsiToolboxViewModel(
+            ICsiConnectionService csiConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
-            _loadEtabsConnectionUseCase = new LoadEtabsConnectionUseCase(etabsConnectionService);
-            _closeCurrentEtabsInstanceUseCase = new CloseCurrentEtabsInstanceUseCase(etabsConnectionService);
-            _getSelectedEtabsPointsUseCase = new GetSelectedEtabsPointsUseCase(etabsConnectionService, excelOutputService);
-            _getSelectedEtabsFramesUseCase = new GetSelectedEtabsFramesUseCase(etabsConnectionService, excelOutputService);
-            _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
-            _selectFramesFromExcelRangeByUniqueNameUseCase = new SelectFramesFromExcelRangeByUniqueNameUseCase(etabsConnectionService, excelSelectionService);
-            _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _addFrameByCoordinatesFromExcelRangeUseCase = new AddFrameByCoordinatesFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _addFramesByPointFromExcelRangeUseCase = new AddFramesByPointFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _createShellAreasFromSelectedFramesUseCase = new CreateShellAreasFromSelectedFramesUseCase(etabsConnectionService);
-            _createSteelISectionsUseCase = new CreateSteelISectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _createSteelChannelSectionsUseCase = new CreateSteelChannelSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _createSteelAngleSectionsUseCase = new CreateSteelAngleSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _createSteelPipeSectionsUseCase = new CreateSteelPipeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _createSteelTubeSectionsUseCase = new CreateSteelTubeSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _productName = string.IsNullOrWhiteSpace(csiConnectionService.ProductName)
+                ? "CSI"
+                : csiConnectionService.ProductName;
 
-            _createConcreteRectangleSectionsUseCase = new CreateConcreteRectangleSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
-            _createConcreteCircleSectionsUseCase = new CreateConcreteCircleSectionsFromExcelRangeUseCase(etabsConnectionService, excelSelectionService);
+            _loadCsiConnectionUseCase = new LoadCsiConnectionUseCase(csiConnectionService);
+            _closeCurrentInstanceUseCase = new CloseCurrentInstanceUseCase(csiConnectionService);
+            _getSelectedCsiPointsUseCase = new GetSelectedCsiPointsUseCase(csiConnectionService, excelOutputService);
+            _getSelectedCsiFramesUseCase = new GetSelectedCsiFramesUseCase(csiConnectionService, excelOutputService);
+            _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(csiConnectionService, excelSelectionService);
+            _selectFramesFromExcelRangeByUniqueNameUseCase = new SelectFramesFromExcelRangeByUniqueNameUseCase(csiConnectionService, excelSelectionService);
+            _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _addFrameByCoordinatesFromExcelRangeUseCase = new AddFrameByCoordinatesFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _addFramesByPointFromExcelRangeUseCase = new AddFramesByPointFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _createShellAreasFromSelectedFramesUseCase = new CreateShellAreasFromSelectedFramesUseCase(csiConnectionService);
+            _createSteelISectionsUseCase = new CreateSteelISectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _createSteelChannelSectionsUseCase = new CreateSteelChannelSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _createSteelAngleSectionsUseCase = new CreateSteelAngleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _createSteelPipeSectionsUseCase = new CreateSteelPipeSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _createSteelTubeSectionsUseCase = new CreateSteelTubeSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
 
-            AttachToRunningEtabsCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
-            CloseCurrentEtabsInstanceCommand = new RelayCommand(CloseCurrentEtabsInstance);
+            _createConcreteRectangleSectionsUseCase = new CreateConcreteRectangleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+            _createConcreteCircleSectionsUseCase = new CreateConcreteCircleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+
+            AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
+            CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance);
 
             CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelISectionsUseCase.Execute()));
             CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelChannelSectionsUseCase.Execute()));
@@ -160,8 +165,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public string ModelDisplayText => $"{ModelName}";
 
-        public ICommand AttachToRunningEtabsCommand { get; }
-        public ICommand CloseCurrentEtabsInstanceCommand { get; }
+        public string ProductTitle => $"{_productName} Toolbox";
+
+        public ICommand AttachToRunningCsiCommand { get; }
+        public ICommand CloseCurrentInstanceCommand { get; }
 
         public ICommand CreateIshapeSectionCommand { get; }
         public ICommand CreateChannelSectionCommand { get; }
@@ -200,7 +207,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void LoadConnectionState(bool showMessage)
         {
-            var result = _loadEtabsConnectionUseCase.Execute();
+            var result = _loadCsiConnectionUseCase.Execute();
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -213,13 +220,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     ? "Units unavailable"
                     : result.Data.ModelCurrentUnit;
 
-                StatusText = "Connected to running ETABS instance.";
+                StatusText = $"Connected to running {_productName} instance.";
 
                 if (showMessage)
                 {
                     MessageBox.Show(
-                        "Successfully attached to running ETABS.",
-                        "ETABS Toolbox",
+                        $"Successfully attached to running {_productName}.",
+                        ProductTitle,
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
                 }
@@ -230,22 +237,22 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             IsConnected = false;
             SetDetachedModelInfo("Not yet attached");
             StatusText = string.IsNullOrWhiteSpace(result.Message)
-                ? "ETABS connection unavailable."
+                ? $"{_productName} connection unavailable."
                 : result.Message;
 
             if (showMessage)
             {
                 MessageBox.Show(
                     StatusText,
-                    "ETABS Toolbox",
+                    ProductTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
         }
 
-        private void CloseCurrentEtabsInstance()
+        private void CloseCurrentInstance()
         {
-            var result = _closeCurrentEtabsInstanceUseCase.Execute();
+            var result = _closeCurrentInstanceUseCase.Execute();
 
             if (result.IsSuccess)
             {
@@ -255,7 +262,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 MessageBox.Show(
                     result.Message,
-                    "ETABS Toolbox",
+                    ProductTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
                 return;
@@ -263,7 +270,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             MessageBox.Show(
                 result.Message,
-                "ETABS Toolbox",
+                ProductTitle,
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
 
@@ -304,12 +311,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void GetSelectedPoints()
         {
-            ShowOperationResult(_getSelectedEtabsPointsUseCase.Execute());
+            ShowOperationResult(_getSelectedCsiPointsUseCase.Execute());
         }
 
         private void GetSelectedFrames()
         {
-            ShowOperationResult(_getSelectedEtabsFramesUseCase.Execute());
+            ShowOperationResult(_getSelectedCsiFramesUseCase.Execute());
         }
 
         private void CreateShellAreasFromSelectedFrames()
@@ -394,20 +401,20 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             return result == true ? textBox.Text : null;
         }
 
-        private static void ShowOperationResult(OperationResult result)
+        private void ShowOperationResult(OperationResult result)
         {
             MessageBox.Show(
                 result.Message,
-                "ETABS Toolbox",
+                ProductTitle,
                 MessageBoxButton.OK,
                 result.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
-        private static void ShowPlaceholder(string featureName)
+        private void ShowPlaceholder(string featureName)
         {
             MessageBox.Show(
                 $"{featureName} is a placeholder for phase 1.",
-                "ETABS Toolbox",
+                ProductTitle,
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }

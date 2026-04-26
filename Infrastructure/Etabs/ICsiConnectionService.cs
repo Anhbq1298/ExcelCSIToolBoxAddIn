@@ -4,24 +4,26 @@ using ExcelCSIToolBoxAddIn.Core.Geometry;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 {
-    public interface IEtabsConnectionService
+    public interface ICsiConnectionService
     {
-        OperationResult<EtabsConnectionInfo> TryAttachToRunningInstance();
+        string ProductName { get; }
 
-        OperationResult<EtabsConnectionInfo> GetCurrentConnection();
+        OperationResult<CsiConnectionInfo> TryAttachToRunningInstance();
 
-        OperationResult CloseCurrentEtabsInstance();
+        OperationResult<CsiConnectionInfo> GetCurrentConnection();
+
+        OperationResult CloseCurrentInstance();
 
         OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames);
         OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames);
 
         // pointInputs must be executed exactly in the given order.
         // Duplicate rows are valid and must not be merged or de-duplicated.
-        OperationResult<EtabsAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs);
-        OperationResult<EtabsAddFramesResult> AddFramesByCoordinates(IReadOnlyList<EtabsFrameByCoordInput> frameInputs);
-        OperationResult<EtabsAddFramesResult> AddFramesByPoint(IReadOnlyList<EtabsFrameByPointInput> frameInputs);
+        OperationResult<CsiAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs);
+        OperationResult<CsiAddFramesResult> AddFramesByCoordinates(IReadOnlyList<EtabsFrameByCoordInput> frameInputs);
+        OperationResult<CsiAddFramesResult> AddFramesByPoint(IReadOnlyList<EtabsFrameByPointInput> frameInputs);
 
-        OperationResult<IReadOnlyList<EtabsPointData>> GetSelectedPointsFromActiveModel();
+        OperationResult<IReadOnlyList<CsiPointData>> GetSelectedPointsFromActiveModel();
         OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel();
 
         OperationResult AddSteelISections(IReadOnlyList<EtabsSteelISectionInput> inputs);

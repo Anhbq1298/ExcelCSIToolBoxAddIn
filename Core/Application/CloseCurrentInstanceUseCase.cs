@@ -3,18 +3,18 @@ using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
-    public class CloseCurrentEtabsInstanceUseCase
+    public class CloseCurrentInstanceUseCase
     {
-        private readonly IEtabsConnectionService _connectionService;
+        private readonly ICsiConnectionService _connectionService;
 
-        public CloseCurrentEtabsInstanceUseCase(IEtabsConnectionService connectionService)
+        public CloseCurrentInstanceUseCase(ICsiConnectionService connectionService)
         {
             _connectionService = connectionService;
         }
 
         public OperationResult Execute()
         {
-            return _connectionService.CloseCurrentEtabsInstance();
+            return _connectionService.CloseCurrentInstance();
         }
     }
 }

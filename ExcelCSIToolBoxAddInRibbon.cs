@@ -13,5 +13,10 @@ namespace ExcelCSIToolBoxAddIn
         {
             WindowManager.ShowEtabsWindow();
         }
+
+        private void buttonSap2000_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowSap2000Window();
+        }
     }
 }

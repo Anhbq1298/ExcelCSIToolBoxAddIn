@@ -1,9 +1,9 @@
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 {
     /// <summary>
-    /// Value object containing ETABS connection details needed by the UI.
+    /// Value object containing CSI connection details needed by the UI.
     /// </summary>
-    public class EtabsConnectionInfo
+    public class CsiConnectionInfo
     {
         public bool IsConnected { get; set; }
 
@@ -14,9 +14,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public string ModelCurrentUnit { get; set; }
 
         /// <summary>
-        /// Optional COM object references for future ETABS operations.
+        /// Optional COM object references for future CSI operations.
         /// </summary>
-        public object EtabsObject { get; set; }
+        public object CsiObject { get; set; }
 
         public object SapModel { get; set; }
     }

@@ -7,11 +7,11 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class AddFramesByPointFromExcelRangeUseCase
     {
-        private readonly IEtabsConnectionService _connectionService;
+        private readonly ICsiConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public AddFramesByPointFromExcelRangeUseCase(
-            IEtabsConnectionService connectionService,
+            ICsiConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;

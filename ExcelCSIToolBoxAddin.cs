@@ -10,9 +10,10 @@ namespace ExcelCSIToolBoxAddIn
         {
             // Lightweight composition root for phase 1.
             var etabsConnectionService = new EtabsConnectionService();
+            var sap2000ConnectionService = new Sap2000ConnectionService();
             var excelSelectionService = new ExcelSelectionService();
             var excelOutputService = new ExcelOutputService();
-            WindowManager.Configure(etabsConnectionService, excelSelectionService, excelOutputService);
+            WindowManager.Configure(etabsConnectionService, sap2000ConnectionService, excelSelectionService, excelOutputService);
         }
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)

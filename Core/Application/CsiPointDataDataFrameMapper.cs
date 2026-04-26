@@ -4,9 +4,9 @@ using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
-    public static class EtabsPointDataDataFrameMapper
+    public static class CsiPointDataDataFrameMapper
     {
-        public static DataFrame Map(IReadOnlyList<EtabsPointData> points)
+        public static DataFrame Map(IReadOnlyList<CsiPointData> points)
         {
             var rows = new List<IReadOnlyList<object>>();
 
