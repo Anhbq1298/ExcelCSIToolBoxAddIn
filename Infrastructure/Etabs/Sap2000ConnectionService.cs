@@ -28,7 +28,22 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
             try
             {
-                sapObject = helper.GetObject(Sap2000ComProgId);
+                try
+                {
+                    sapObject = helper.GetObject(Sap2000ComProgId);
+                }
+                catch
+                {
+                    // Ignore exception and try fallback
+                }
+
+                if (sapObject == null)
+                {
+                    // Fallback to Marshal.GetActiveObject, which is often required for older SAP2000 versions
+                    // or specific COM registration scenarios where cHelper fails to find the ROT entry.
+                    sapObject = (SAP2000v1.cOAPI)System.Runtime.InteropServices.Marshal.GetActiveObject(Sap2000ComProgId);
+                }
+
                 if (sapObject == null)
                 {
                     _currentConnection = null;
