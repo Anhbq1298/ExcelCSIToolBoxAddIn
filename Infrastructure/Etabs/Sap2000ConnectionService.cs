@@ -23,31 +23,50 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult<CsiConnectionInfo> TryAttachToRunningInstance()
         {
-            SAP2000v1.cHelper helper = new SAP2000v1.Helper();
+            SAP2000v1.cHelper helper = null;
             SAP2000v1.cOAPI sapObject = null;
+            var errors = new List<string>();
 
             try
             {
                 try
                 {
-                    sapObject = helper.GetObject(Sap2000ComProgId);
+                    helper = new SAP2000v1.Helper();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore exception and try fallback
+                    errors.Add($"Failed to create Helper: {ex.Message}");
+                }
+
+                if (helper != null)
+                {
+                    try
+                    {
+                        sapObject = helper.GetObject(Sap2000ComProgId);
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"helper.GetObject failed: {ex.Message}");
+                    }
                 }
 
                 if (sapObject == null)
                 {
-                    // Fallback to Marshal.GetActiveObject, which is often required for older SAP2000 versions
-                    // or specific COM registration scenarios where cHelper fails to find the ROT entry.
-                    sapObject = (SAP2000v1.cOAPI)System.Runtime.InteropServices.Marshal.GetActiveObject(Sap2000ComProgId);
+                    try
+                    {
+                        sapObject = (SAP2000v1.cOAPI)System.Runtime.InteropServices.Marshal.GetActiveObject(Sap2000ComProgId);
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.Add($"Marshal.GetActiveObject failed: {ex.Message}");
+                    }
                 }
 
                 if (sapObject == null)
                 {
                     _currentConnection = null;
-                    return OperationResult<CsiConnectionInfo>.Failure("SAP2000 is not running.");
+                    string errorMsg = string.Join(" | ", errors);
+                    return OperationResult<CsiConnectionInfo>.Failure($"SAP2000 is not running or not accessible. Details: {errorMsg}");
                 }
 
                 SAP2000v1.cSapModel sapModel = sapObject.SapModel;
@@ -86,10 +105,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
                 return OperationResult<CsiConnectionInfo>.Success(_currentConnection);
             }
-            catch
+            catch (Exception ex)
             {
                 _currentConnection = null;
-                return OperationResult<CsiConnectionInfo>.Failure("SAP2000 is not running.");
+                return OperationResult<CsiConnectionInfo>.Failure($"SAP2000 attachment failed unexpectedly: {ex.Message}");
             }
         }
 
