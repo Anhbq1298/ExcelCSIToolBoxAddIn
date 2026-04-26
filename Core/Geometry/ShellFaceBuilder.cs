@@ -6,11 +6,13 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
 {
     public class ShellCreationTolerances
     {
-        public double PointTolerance { get; set; } = 0.0005;
-        public double CollinearTolerance { get; set; } = 0.0005;
-        public double AreaTolerance { get; set; } = 0.000001;
-        public double IntersectTolerance { get; set; } = 0.000001;
-        public double ZTolerance { get; set; } = 0.001;
+        private const double KnMCToleranceScale = 1000.0;
+
+        public double PointTolerance { get; set; } = 0.0005 * KnMCToleranceScale;
+        public double CollinearTolerance { get; set; } = 0.0005 * KnMCToleranceScale;
+        public double AreaTolerance { get; set; } = 0.000001 * KnMCToleranceScale * KnMCToleranceScale;
+        public double IntersectTolerance { get; set; } = 0.000001 * KnMCToleranceScale;
+        public double ZTolerance { get; set; } = 0.001 * KnMCToleranceScale;
     }
 
     public class ShellPoint3D
@@ -83,9 +85,26 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                 AddUndirectedEdge(initialEdges, initialAdj, frame.StartPointName, frame.EndPointName);
             }
 
+            var frameSplitMap = InitializeFrameSplitMap(frameMap);
+            EnrichRealGraphByGeometricIntersections(
+                frameMap,
+                frameSplitMap,
+                pointCoords,
+                nodeModelPoint,
+                tolerances.PointTolerance,
+                tolerances.IntersectTolerance,
+                tolerances.ZTolerance);
+
+            var enrichedEdges = new Dictionary<string, Edge>(StringComparer.OrdinalIgnoreCase);
+            var enrichedAdj = NewAdjacency();
+            foreach (var frameName in frameSplitMap.Keys)
+            {
+                AddSplitEdgesForFrame(frameName, frameSplitMap, enrichedEdges, enrichedAdj);
+            }
+
             var virtualEdges = new Dictionary<string, Edge>(StringComparer.OrdinalIgnoreCase);
             var virtualAdj = NewAdjacency();
-            BuildVirtualGraph(initialAdj, pointCoords, virtualEdges, virtualAdj, tolerances.CollinearTolerance);
+            BuildVirtualGraph(enrichedAdj, pointCoords, virtualEdges, virtualAdj, tolerances.CollinearTolerance);
 
             var sortedNeighbors = BuildSortedNeighbors(virtualAdj, pointCoords);
             var faces = ExtractFacesFromPlanarGraph(
@@ -107,7 +126,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                     .Select(f => f.Loop)
                     .ToList(),
                 InitialRealEdgeCount = initialEdges.Count,
-                EnrichedRealEdgeCount = initialEdges.Count,
+                EnrichedRealEdgeCount = enrichedEdges.Count,
                 VirtualEdgeCount = virtualEdges.Count,
                 ExtractedFaceCount = extractedFaceCount,
                 OuterFaceRemovedCount = outerRemovedCount
