@@ -45,6 +45,11 @@ namespace ExcelCSIToolBoxAddIn
         {
             WindowManager.ShowSap2000Window();
         }
+
+        private void buttonAiAgent_Click(object sender, RibbonControlEventArgs e)
+        {
+            AiTaskPaneManager.TogglePane();
+        }
     }
 }
 

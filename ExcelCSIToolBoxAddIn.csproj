@@ -252,6 +252,7 @@
     <Compile Include="ThisAddIn.Designer.cs">
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
+    <Compile Include="AddIn\AiTaskPaneManager.cs" />
     <Compile Include="AddIn\WindowManager.cs" />
     <Content Include="icon\etabs.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -318,6 +319,7 @@
       <DependentUpon>AiAgentChatTab.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\AiAgentTaskPaneHost.cs" />
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <PropertyGroup>

@@ -730,9 +730,6 @@
                     </ScrollViewer>
                 </TabItem>
 
-                <TabItem Header="AI Agent">
-                    <views:AiAgentChatTab/>
-                </TabItem>
             </TabControl>
         </Border>
     </Grid>

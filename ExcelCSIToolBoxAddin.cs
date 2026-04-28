@@ -20,6 +20,7 @@ namespace ExcelCSIToolBoxAddIn
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)
         {
+            AiTaskPaneManager.DisposePane();
         }
 
         #region VSTO generated code
