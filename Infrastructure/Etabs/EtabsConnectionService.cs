@@ -506,6 +506,156 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return result;
         }
 
+        public OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>> GetFrameSections()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>>.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            int numberNames = 0;
+            string[] names = null;
+            int ret = sapModel.PropFrame.GetNameList(ref numberNames, ref names);
+
+            if (ret != 0 || names == null)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>>.Failure("Failed to get frame section names from ETABS.");
+            }
+
+            var list = new List<CSISapModelFrameSectionDTO>();
+            for (int i = 0; i < numberNames; i++)
+            {
+                ETABSv1.eFramePropType propType = ETABSv1.eFramePropType.I;
+                sapModel.PropFrame.GetTypeOAPI(names[i], ref propType);
+
+                FrameSectionShapeType shapeType = FrameSectionShapeType.Unknown;
+                switch (propType)
+                {
+                    case ETABSv1.eFramePropType.I: shapeType = FrameSectionShapeType.I; break;
+                    case ETABSv1.eFramePropType.Channel: shapeType = FrameSectionShapeType.Channel; break;
+                    case ETABSv1.eFramePropType.T: shapeType = FrameSectionShapeType.T; break;
+                    case ETABSv1.eFramePropType.Angle: shapeType = FrameSectionShapeType.Angle; break;
+                    case ETABSv1.eFramePropType.DoubleAngle: shapeType = FrameSectionShapeType.DoubleAngle; break;
+                    case ETABSv1.eFramePropType.Box: shapeType = FrameSectionShapeType.Tube; break;
+                    case ETABSv1.eFramePropType.Pipe: shapeType = FrameSectionShapeType.Pipe; break;
+                    case ETABSv1.eFramePropType.Rectangular: shapeType = FrameSectionShapeType.Rectangular; break;
+                    case ETABSv1.eFramePropType.Circle: shapeType = FrameSectionShapeType.Circular; break;
+                    default: shapeType = FrameSectionShapeType.General; break;
+                }
+
+                list.Add(new CSISapModelFrameSectionDTO
+                {
+                    Name = names[i],
+                    ShapeType = shapeType
+                });
+            }
+
+            return OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>>.Success(list);
+        }
+
+        public OperationResult<CSISapModelFrameSectionDetailDTO> GetFrameSectionDetail(string sectionName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelFrameSectionDetailDTO>.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            ETABSv1.eFramePropType propType = ETABSv1.eFramePropType.I;
+            int ret = sapModel.PropFrame.GetTypeOAPI(sectionName, ref propType);
+            if (ret != 0) return OperationResult<CSISapModelFrameSectionDetailDTO>.Failure("Section not found.");
+
+            var detail = new CSISapModelFrameSectionDetailDTO
+            {
+                Name = sectionName,
+                Dimensions = new Dictionary<string, double>()
+            };
+
+            string fileName = "";
+            int color = 0;
+            string notes = "";
+            string guid = "";
+            double t3 = 0, t2 = 0, tf = 0, tw = 0, t2b = 0, tfb = 0;
+
+            switch (propType)
+            {
+                case ETABSv1.eFramePropType.Pipe:
+                    detail.ShapeType = FrameSectionShapeType.Pipe;
+                    sapModel.PropFrame.GetPipe(sectionName, ref fileName, ref matProp, ref t3, ref tw, ref color, ref notes, ref guid);
+                    detail.Dimensions["Outside diameter ( t3 )"] = t3;
+                    detail.Dimensions["Wall thickness ( tw )"] = tw;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                case ETABSv1.eFramePropType.I:
+                    detail.ShapeType = FrameSectionShapeType.I;
+                    sapModel.PropFrame.GetISection(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref tf, ref tw, ref t2b, ref tfb, ref color, ref notes, ref guid);
+                    detail.Dimensions["Total depth ( t3 )"] = t3;
+                    detail.Dimensions["Top flange width ( t2 )"] = t2;
+                    detail.Dimensions["Top flange thickness ( tf )"] = tf;
+                    detail.Dimensions["Web thickness ( tw )"] = tw;
+                    detail.Dimensions["Bottom flange width ( t2b )"] = t2b;
+                    detail.Dimensions["Bottom flange thickness ( tfb )"] = tfb;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                case ETABSv1.eFramePropType.Channel:
+                    detail.ShapeType = FrameSectionShapeType.Channel;
+                    sapModel.PropFrame.GetChannel(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref tf, ref tw, ref color, ref notes, ref guid);
+                    detail.Dimensions["Total depth ( t3 )"] = t3;
+                    detail.Dimensions["Flange width ( t2 )"] = t2;
+                    detail.Dimensions["Flange thickness ( tf )"] = tf;
+                    detail.Dimensions["Web thickness ( tw )"] = tw;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                case ETABSv1.eFramePropType.Angle:
+                    detail.ShapeType = FrameSectionShapeType.Angle;
+                    sapModel.PropFrame.GetAngle(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref tf, ref tw, ref color, ref notes, ref guid);
+                    detail.Dimensions["Total depth ( t3 )"] = t3;
+                    detail.Dimensions["Flange width ( t2 )"] = t2;
+                    detail.Dimensions["Flange thickness ( tf )"] = tf;
+                    detail.Dimensions["Web thickness ( tw )"] = tw;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                case ETABSv1.eFramePropType.Rectangular:
+                    detail.ShapeType = FrameSectionShapeType.Rectangular;
+                    sapModel.PropFrame.GetRectangle(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref color, ref notes, ref guid);
+                    detail.Dimensions["Depth ( t3 )"] = t3;
+                    detail.Dimensions["Width ( t2 )"] = t2;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                case ETABSv1.eFramePropType.Circle:
+                    detail.ShapeType = FrameSectionShapeType.Circular;
+                    sapModel.PropFrame.GetCircle(sectionName, ref fileName, ref matProp, ref t3, ref color, ref notes, ref guid);
+                    detail.Dimensions["Diameter ( t3 )"] = t3;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                case ETABSv1.eFramePropType.Box:
+                    detail.ShapeType = FrameSectionShapeType.Tube;
+                    sapModel.PropFrame.GetTube(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref tf, ref tw, ref color, ref notes, ref guid);
+                    detail.Dimensions["Total depth ( t3 )"] = t3;
+                    detail.Dimensions["Flange width ( t2 )"] = t2;
+                    detail.Dimensions["Flange thickness ( tf )"] = tf;
+                    detail.Dimensions["Web thickness ( tw )"] = tw;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                default:
+                    detail.ShapeType = FrameSectionShapeType.Unknown;
+                    break;
+            }
+
+            detail.MaterialName = matProp;
+            return OperationResult<CSISapModelFrameSectionDetailDTO>.Success(detail);
+        }
+
         private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)
         {
             int refreshResult = sapModel.View.RefreshView(0, false);

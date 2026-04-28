@@ -43,6 +43,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             string propertyName,
             ShellCreationTolerances tolerances);
 
+        OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>> GetFrameSections();
+        OperationResult<CSISapModelFrameSectionDetailDTO> GetFrameSectionDetail(string sectionName);
+
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);
         OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);

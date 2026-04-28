@@ -175,28 +175,64 @@
 
             <TabControl>
                 <TabItem Header="Section Property">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  CanContentScroll="True">
-                        <StackPanel Margin="12">
-                            <GroupBox Header="Steel Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <Button Content="Ishape" Width="80" Margin="0,0,10,0" Command="{Binding CreateIshapeSectionCommand}" />
-                                    <Button Content="Channel" Width="80" Margin="0,0,10,0" Command="{Binding CreateChannelSectionCommand}" />
-                                    <Button Content="Angle" Width="80" Margin="0,0,10,0" Command="{Binding CreateAngleSectionCommand}" />
-                                    <Button Content="Tube" Width="80" Margin="0,0,10,0" Command="{Binding CreateTubeSectionCommand}" />
-                                    <Button Content="Pipe" Width="80" Margin="0,0,10,0" Command="{Binding CreatePipeSectionCommand}" />
+                    <Grid Margin="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <GroupBox Grid.Column="0" Header="Existing Sections" FontWeight="Bold" Padding="5">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <ListView x:Name="FrameSectionList" Grid.Row="0" 
+                                          ItemsSource="{Binding FrameSections}"
+                                          SelectedItem="{Binding SelectedFrameSection}"
+                                          BorderBrush="#CCCCCC" BorderThickness="1"
+                                          FontWeight="Normal" Foreground="Black">
+                                    <ListView.InputBindings>
+                                        <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding EditFrameSectionCommand}" CommandParameter="{Binding ElementName=FrameSectionList, Path=SelectedItem}" />
+                                    </ListView.InputBindings>
+                                    <ListView.View>
+                                        <GridView>
+                                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="140"/>
+                                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding ShapeType}" Width="80"/>
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+                                <Button Grid.Row="1" Margin="0,8,0,0" Content="Refresh List" Command="{Binding GetFrameSectionsCommand}"/>
+                            </Grid>
+                        </GroupBox>
+                        
+                        <GroupBox Grid.Column="2" Header="Section Preview &amp; Creation" FontWeight="Bold" Padding="10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <Border Grid.Row="0" BorderBrush="#DDDDDD" BorderThickness="1" Background="#F9F9F9" Margin="0,0,0,10">
+                                    <TextBlock Text="Shape preview will be displayed here" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#888888" FontWeight="Normal"/>
+                                </Border>
+                                
+                                <StackPanel Grid.Row="1">
+                                    <TextBlock Text="Create New Section From Excel" Margin="0,0,0,8"/>
+                                    <WrapPanel>
+                                        <Button Content="Ishape" Width="70" Margin="0,0,8,8" Command="{Binding CreateIshapeSectionCommand}" />
+                                        <Button Content="Channel" Width="70" Margin="0,0,8,8" Command="{Binding CreateChannelSectionCommand}" />
+                                        <Button Content="Angle" Width="70" Margin="0,0,8,8" Command="{Binding CreateAngleSectionCommand}" />
+                                        <Button Content="Tube" Width="70" Margin="0,0,8,8" Command="{Binding CreateTubeSectionCommand}" />
+                                        <Button Content="Pipe" Width="70" Margin="0,0,8,8" Command="{Binding CreatePipeSectionCommand}" />
+                                        <Button Content="Rectangle" Width="70" Margin="0,0,8,8" Command="{Binding CreateConcreteRectangleSectionCommand}" />
+                                        <Button Content="Circle" Width="70" Margin="0,0,8,8" Command="{Binding CreateConcreteCircleSectionCommand}" />
+                                    </WrapPanel>
                                 </StackPanel>
-                            </GroupBox>
-
-                            <GroupBox Header="Concrete Section" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                                    <Button Content="Rectangle" Width="80" Margin="0,0,10,0" Command="{Binding CreateConcreteRectangleSectionCommand}" />
-                                    <Button Content="Circle" Width="80" Margin="0,0,10,0" Command="{Binding CreateConcreteCircleSectionCommand}" />
-                                </StackPanel>
-                            </GroupBox>
-                        </StackPanel>
-                    </ScrollViewer>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
                 </TabItem>
 
                 <TabItem Header="Point">

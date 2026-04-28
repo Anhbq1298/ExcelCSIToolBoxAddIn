@@ -42,6 +42,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly GetLoadPatternsUseCase _getLoadPatternsUseCase;
         private readonly DeleteLoadPatternsUseCase _deleteLoadPatternsUseCase;
 
+        private readonly GetFrameSectionsUseCase _getFrameSectionsUseCase;
+        private readonly GetFrameSectionDetailUseCase _getFrameSectionDetailUseCase;
+
         private string _modelName;
         private bool _isConnected;
         private string _statusText;
@@ -84,8 +87,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _getLoadPatternsUseCase = new GetLoadPatternsUseCase(csiConnectionService);
             _deleteLoadPatternsUseCase = new DeleteLoadPatternsUseCase(csiConnectionService);
 
+            _getFrameSectionsUseCase = new GetFrameSectionsUseCase(csiConnectionService);
+            _getFrameSectionDetailUseCase = new GetFrameSectionDetailUseCase(csiConnectionService);
+
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
+            FrameSections = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
@@ -129,6 +136,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"), () => IsConnected);
             DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => IsConnected);
             ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
+            
+            GetFrameSectionsCommand = new RelayCommand(GetFrameSections, () => IsConnected);
+            EditFrameSectionCommand = new RelayCommand<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO>(EditFrameSection, _ => IsConnected);
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
@@ -232,9 +242,24 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
         public ICommand ViewLoadCombinationCommand { get; }
+        
+        public ICommand GetFrameSectionsCommand { get; }
+        public ICommand EditFrameSectionCommand { get; }
 
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO> LoadPatterns { get; }
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
+        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO> FrameSections { get; }
+        
+        private ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO _selectedFrameSection;
+        public ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO SelectedFrameSection
+        {
+            get => _selectedFrameSection;
+            set
+            {
+                _selectedFrameSection = value;
+                OnPropertyChanged();
+            }
+        }
 
         private void LoadConnectionState(bool showMessage)
         {
@@ -550,6 +575,42 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 {
                     ShowOperationResult(OperationResult.Failure(result.Message));
                 }
+            }
+        }
+
+        private void GetFrameSections()
+        {
+            var result = _getFrameSectionsUseCase.Execute();
+            if (result.IsSuccess)
+            {
+                FrameSections.Clear();
+                if (result.Data != null)
+                {
+                    foreach (var section in result.Data)
+                    {
+                        FrameSections.Add(section);
+                    }
+                }
+            }
+            else
+            {
+                ShowOperationResult(OperationResult.Failure(result.Message));
+            }
+        }
+
+        private void EditFrameSection(ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO section)
+        {
+            if (section == null) return;
+
+            var result = _getFrameSectionDetailUseCase.Execute(section.Name);
+            if (result.IsSuccess)
+            {
+                var window = new ExcelCSIToolBoxAddIn.UI.Views.FrameSectionDetailWindow(result.Data);
+                window.ShowDialog();
+            }
+            else
+            {
+                ShowOperationResult(OperationResult.Failure(result.Message));
             }
         }
 
