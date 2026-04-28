@@ -187,6 +187,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _currentModelUnitText = value;
                 OnPropertyChanged();
+                RefreshSectionDimensionAnnotations();
             }
         }
 
@@ -391,8 +392,28 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 Value = value,
                 Unit = unit,
                 DisplayText = displayText,
+                DescriptionText = $"{key} = {GetDimensionDescription(key, sectionType)}",
                 SectionType = sectionType
             };
+        }
+
+        private static string GetDimensionDescription(string key, string sectionType)
+        {
+            switch (key)
+            {
+                case "h": return "height";
+                case "b": return "width";
+                case "d": return "diameter";
+                case "r": return "radius";
+                case "t": return "thickness";
+                case "tw": return "web thickness";
+                case "tf": return "flange thickness";
+                case "t2": return sectionType == FrameSectionShapeType.Tube.ToString() ? "top/bottom wall thickness" : "local 2 dimension";
+                case "t3": return sectionType == FrameSectionShapeType.Tube.ToString() ? "side wall thickness" : "local 3 dimension";
+                case "t2b": return "bottom flange width";
+                case "tfb": return "bottom flange thickness";
+                default: return "dimension";
+            }
         }
 
         private static DimensionSpec Spec(string key, params string[] dimensionNames)
