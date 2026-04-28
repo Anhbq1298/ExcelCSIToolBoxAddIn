@@ -8,5 +8,15 @@
   <ItemGroup>
     <ProjectReference Include="..\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj" />
     <ProjectReference Include="..\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
+    <ProjectReference Include="..\ExcelCSIToolBox.Infrastructure\ExcelCSIToolBox.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Newtonsoft.Json is used for JSON serialization in Ollama and MCP tool contracts -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- System.Net.Http is required for HttpClient on .NET 4.8 -->
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 </Project>
+

@@ -76,6 +76,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                     }
                 };
 
+                System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(activeWindow);
                 activeWindow.Show();
                 activeWindow.Activate();
                 activeWindow.Focus();

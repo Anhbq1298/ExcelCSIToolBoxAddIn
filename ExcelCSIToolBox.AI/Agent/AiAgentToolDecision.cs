@@ -1,0 +1,21 @@
+namespace ExcelCSIToolBox.AI.Agent
+{
+    /// <summary>
+    /// Parsed decision from the tool-routing LLM call.
+    /// If ShouldCallTool is true, the orchestrator calls the named tool.
+    /// </summary>
+    public class AiAgentToolDecision
+    {
+        /// <summary>Whether the AI decided a tool should be called.</summary>
+        public bool ShouldCallTool { get; set; }
+
+        /// <summary>Tool name to call (e.g. "CSI.GetModelInfo"). Empty if ShouldCallTool = false.</summary>
+        public string ToolName { get; set; }
+
+        /// <summary>JSON arguments for the tool. Usually "{}" for read-only no-arg tools.</summary>
+        public string ArgumentsJson { get; set; }
+
+        /// <summary>LLM's explanation of why this decision was made.</summary>
+        public string Reason { get; set; }
+    }
+}

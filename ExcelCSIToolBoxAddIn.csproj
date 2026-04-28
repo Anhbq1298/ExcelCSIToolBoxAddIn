@@ -137,6 +137,7 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -263,6 +264,9 @@
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
     <Compile Include="UI\ViewModels\SectionDimensionAnnotation.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
+    <Compile Include="UI\ViewModels\AiAgentChatMessageViewModel.cs" />
+    <Compile Include="UI\ViewModels\AiAgentChatViewModel.cs" />
+    <Compile Include="UI\ViewModels\AiAgentToolTraceViewModel.cs" />
     <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
@@ -306,6 +310,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UI\Views\AiAgentChatTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="UI\Views\AiAgentChatTab.xaml.cs">
+      <DependentUpon>AiAgentChatTab.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <PropertyGroup>
@@ -336,8 +348,12 @@
       <Name>ExcelCSIToolBox.Infrastructure</Name>
     </ProjectReference>
     <ProjectReference Include="ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj">
-      <Project>{44444444-4444-4444-8444-444444444444}</Project>
+      <Project>{C76C05E8-6B93-4A80-9C75-BEC22F58C3AF}</Project>
       <Name>ExcelCSIToolBox.Application</Name>
+    </ProjectReference>
+    <ProjectReference Include="ExcelCSIToolBox.AI\ExcelCSIToolBox.AI.csproj">
+      <Project>{44444444-4444-4444-8444-444444444444}</Project>
+      <Name>ExcelCSIToolBox.AI</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
