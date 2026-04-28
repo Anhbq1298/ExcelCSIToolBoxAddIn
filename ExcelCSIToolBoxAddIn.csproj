@@ -273,6 +273,7 @@
     <Compile Include="Data\DTOs\ApiFrameDto.cs" />
     <Compile Include="Data\DTOs\ApiPointDto.cs" />
     <Compile Include="Data\DTOs\ApiResultDto.cs" />
+    <Compile Include="Data\DTOs\CSISapModelLoadPatternDTO.cs" />
     <Compile Include="Data\DataFrames\FrameDataFrame.cs" />
     <Compile Include="Data\DataFrames\LoadCombinationDataFrame.cs" />
     <Compile Include="Data\DataFrames\PointDataFrame.cs" />

@@ -529,11 +529,12 @@
                                               SelectionMode="Extended"
                                               BorderBrush="#CCCCCC" BorderThickness="1"
                                               FontWeight="Normal" Foreground="Black">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}" />
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Load Pattern Name" DisplayMemberBinding="{Binding Name}" Width="250"/>
+                                                <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="150"/>
+                                            </GridView>
+                                        </ListView.View>
                                     </ListView>
                                     
                                     <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">

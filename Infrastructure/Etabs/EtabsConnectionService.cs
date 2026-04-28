@@ -379,18 +379,24 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return result;
         }
 
-        public OperationResult<IReadOnlyList<string>> GetLoadPatterns()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>> GetLoadPatterns()
         {
             var sapModelResult = EnsureEtabsSapModel();
             if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+                return OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>>.Failure(sapModelResult.Message);
             }
 
             return Infrastructure.CSISapModel.LoadPatternService.CSISapModelLoadPatternService.GetLoadPatterns(
                 sapModelResult.Data,
                 (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
-                    sapModel.LoadPatterns.GetNameList(ref numberNames, ref names));
+                    sapModel.LoadPatterns.GetNameList(ref numberNames, ref names),
+                (ETABSv1.cSapModel sapModel, string name) =>
+                {
+                    ETABSv1.eLoadPatternType type = ETABSv1.eLoadPatternType.Dead;
+                    sapModel.LoadPatterns.GetLoadType(name, ref type);
+                    return type.ToString();
+                });
         }
 
         public OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames)

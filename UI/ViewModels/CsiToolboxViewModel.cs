@@ -83,7 +83,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _deleteLoadPatternsUseCase = new DeleteLoadPatternsUseCase(csiConnectionService);
 
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<string>();
-            LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<string>();
+            LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance);
@@ -228,7 +228,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
 
-        public System.Collections.ObjectModel.ObservableCollection<string> LoadPatterns { get; }
+        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO> LoadPatterns { get; }
         public System.Collections.ObjectModel.ObservableCollection<string> LoadCombinations { get; }
 
         private void LoadConnectionState(bool showMessage)
@@ -463,9 +463,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var list = new System.Collections.Generic.List<string>();
             foreach (var item in selectedItems)
             {
-                if (item is string str)
+                if (item is ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO dto)
                 {
-                    list.Add(str);
+                    list.Add(dto.Name);
                 }
             }
 

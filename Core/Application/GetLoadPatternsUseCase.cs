@@ -13,7 +13,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
             _connectionService = connectionService;
         }
 
-        public OperationResult<IReadOnlyList<string>> Execute()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>> Execute()
         {
             return _connectionService.GetLoadPatterns();
         }
