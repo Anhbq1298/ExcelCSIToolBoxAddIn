@@ -490,6 +490,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 // Automatically refresh lists when connection is established
                 GetLoadPatterns();
                 GetLoadCombinations();
+                GetFrameSections();
 
                 if (showMessage)
                 {
@@ -507,6 +508,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 
             LoadPatterns.Clear();
             LoadCombinations.Clear();
+            FrameSections.Clear();
+            SelectedFrameSection = null;
 
             if (showMessage)
             {
@@ -530,6 +533,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 LoadPatterns.Clear();
                 LoadCombinations.Clear();
+                FrameSections.Clear();
+                SelectedFrameSection = null;
 
                 MessageBox.Show(
                     result.Message,
