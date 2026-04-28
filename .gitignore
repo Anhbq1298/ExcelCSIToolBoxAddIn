@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Extracted CHM documentation folders
+CSI_OAPI_Documentation/
+CSI_API_ETABS_v1/
