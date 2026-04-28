@@ -26,9 +26,9 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             _userInputTextBox = CreateUserInputTextBox();
             UserInputHost.Child = _userInputTextBox;
 
-            DataContext = new AiAgentChatViewModel();
             DataContextChanged += OnDataContextChanged;
             Loaded += UserControl_Loaded;
+            DataContext = new AiAgentChatViewModel();
         }
 
         private Forms.TextBox CreateUserInputTextBox()

@@ -76,9 +76,11 @@
             // buttonAiAgent
             // 
             this.buttonAiAgent.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonAiAgent.Enabled = true;
             this.buttonAiAgent.Label = "AI Agent";
             this.buttonAiAgent.Name = "buttonAiAgent";
-            this.buttonAiAgent.ShowImage = false;
+            this.buttonAiAgent.OfficeImageId = "HappyFace";
+            this.buttonAiAgent.ShowImage = true;
             this.buttonAiAgent.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonAiAgent_Click);
             // 
             // ExcelCSIToolBoxAddInRibbon
