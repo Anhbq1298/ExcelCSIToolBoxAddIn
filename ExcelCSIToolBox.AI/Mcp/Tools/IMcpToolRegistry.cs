@@ -1,6 +1,1 @@
-namespace ExcelCSIToolBox.AI.Mcp.Tools
-{
-    public interface IMcpToolRegistry
-    {
-    }
-}
+namespace ExcelCSIToolBox.AI.Mcp.Tools { public interface IMcpToolRegistry { } }

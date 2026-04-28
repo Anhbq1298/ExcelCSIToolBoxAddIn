@@ -3,20 +3,20 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
-    public class UpdateFrameSectionUseCase
+    public class GetFrameSectionDetailUseCase
     {
         private readonly ICSISapModelConnectionService _connectionService;
 
-        public UpdateFrameSectionUseCase(ICSISapModelConnectionService connectionService)
+        public GetFrameSectionDetailUseCase(ICSISapModelConnectionService connectionService)
         {
             _connectionService = connectionService ?? throw new ArgumentNullException(nameof(connectionService));
         }
 
-        public OperationResult Execute(CSISapModelFrameSectionUpdateDTO input)
+        public OperationResult<CSISapModelFrameSectionDetailDTO> Execute(string sectionName)
         {
-            return _connectionService.UpdateFrameSection(input);
+            return _connectionService.GetFrameSectionDetail(sectionName);
         }
     }
 }

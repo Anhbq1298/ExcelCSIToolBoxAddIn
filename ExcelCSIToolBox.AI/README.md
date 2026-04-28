@@ -1,7 +1,11 @@
 # ExcelCSIToolBox.AI
 
-This project is reserved for future offline AI, MCP, Ollama, and chat orchestration work.
-
-No production AI logic is implemented yet. The future MCP server should run locally/offline, with tool outputs kept structured and serialization-friendly. MCP tools should call application and infrastructure services through clean abstractions, never UI views, viewmodels, ribbon code, VSTO add-in classes, or raw SapModel objects.
-
-Transport should remain abstract so stdio, local HTTP, or named pipes can be swapped later. Product-specific ETABS and SAP2000 logic belongs in Infrastructure adapters and services, not in AI/MCP core classes.
+- This project is reserved for future offline AI/MCP/Ollama integration.
+- No production AI logic is implemented yet.
+- Future MCP server should run locally/offline.
+- Future MCP tools should call services from ExcelCSIToolBox.Application or ExcelCSIToolBox.Infrastructure through clean abstractions.
+- AI/MCP must not reference UI/ViewModels/Views/Ribbon code.
+- AI/MCP must not expose raw SapModel directly.
+- Tool outputs should be structured and serialization-friendly.
+- Transport should be abstracted so stdio, local HTTP, or named pipe can be swapped later.
+- Product-specific ETABS/SAP2000 logic belongs in Infrastructure adapters/services, not in AI/MCP core classes.

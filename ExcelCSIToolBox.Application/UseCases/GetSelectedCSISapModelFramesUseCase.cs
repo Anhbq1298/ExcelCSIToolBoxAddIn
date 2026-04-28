@@ -6,7 +6,7 @@ using ExcelCSIToolBox.Data.Mappers;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
     public class GetSelectedCSISapModelFramesUseCase
     {

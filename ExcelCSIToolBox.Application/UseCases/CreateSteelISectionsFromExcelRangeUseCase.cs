@@ -5,14 +5,14 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
-    public class CreateSteelAngleSectionsFromExcelRangeUseCase
+    public class CreateSteelISectionsFromExcelRangeUseCase
     {
         private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
-        public CreateSteelAngleSectionsFromExcelRangeUseCase(
+        public CreateSteelISectionsFromExcelRangeUseCase(
             ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
@@ -22,13 +22,13 @@ namespace ExcelCSIToolBox.Core.Application
 
         public OperationResult Execute()
         {
-            var rowResult = _excelSelectionService.ReadSteelAngleSectionRows();
+            var rowResult = _excelSelectionService.ReadSteelISectionRows();
             if (!rowResult.IsSuccess)
             {
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedCalls = new List<CSISapModelSteelAngleSectionInput>();
+            var orderedCalls = new List<CSISapModelSteelISectionInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -89,7 +89,7 @@ namespace ExcelCSIToolBox.Core.Application
                     continue;
                 }
 
-                orderedCalls.Add(new CSISapModelSteelAngleSectionInput
+                orderedCalls.Add(new CSISapModelSteelISectionInput
                 {
                     SectionName = sectionName,
                     MaterialName = materialName,
@@ -109,7 +109,7 @@ namespace ExcelCSIToolBox.Core.Application
                 return OperationResult.Failure("Excel parsing failed: no valid rows were found.");
             }
 
-            var addResult = _connectionService.AddSteelAngleSections(orderedCalls);
+            var addResult = _connectionService.AddSteelISections(orderedCalls);
             if (!addResult.IsSuccess)
             {
                 return OperationResult.Failure(addResult.Message);

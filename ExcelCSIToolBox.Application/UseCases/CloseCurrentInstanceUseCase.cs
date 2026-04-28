@@ -1,7 +1,7 @@
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
     public class CloseCurrentInstanceUseCase
     {

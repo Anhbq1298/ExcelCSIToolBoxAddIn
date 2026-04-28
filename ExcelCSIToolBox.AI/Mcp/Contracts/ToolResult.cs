@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-
-namespace ExcelCSIToolBox.AI.Mcp.Contracts
-{
+namespace ExcelCSIToolBox.AI.Mcp.Contracts {
     public class ToolResult<TData>
     {
         public bool Success { get; set; }

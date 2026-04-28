@@ -5,14 +5,14 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
-    public class CreateSteelPipeSectionsFromExcelRangeUseCase
+    public class CreateConcreteRectangleSectionsFromExcelRangeUseCase
     {
         private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
-        public CreateSteelPipeSectionsFromExcelRangeUseCase(
+        public CreateConcreteRectangleSectionsFromExcelRangeUseCase(
             ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
@@ -22,29 +22,29 @@ namespace ExcelCSIToolBox.Core.Application
 
         public OperationResult Execute()
         {
-            var rowResult = _excelSelectionService.ReadSteelPipeSectionRows();
+            var rowResult = _excelSelectionService.ReadConcreteRectangleSectionRows();
             if (!rowResult.IsSuccess)
             {
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedCalls = new List<CSISapModelSteelPipeSectionInput>();
+            var orderedCalls = new List<CSISapModelConcreteRectangleSectionInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
             {
                 var sectionName = Normalize(row.SectionName);
                 var materialName = Normalize(row.MaterialName);
-                var odText = Normalize(row.OutsideDiameterText);
-                var twText = Normalize(row.WallThicknessText);
+                var hText = Normalize(row.HText);
+                var bText = Normalize(row.BText);
 
                 if (string.IsNullOrWhiteSpace(sectionName) && string.IsNullOrWhiteSpace(materialName) &&
-                    string.IsNullOrWhiteSpace(odText) && string.IsNullOrWhiteSpace(twText))
+                    string.IsNullOrWhiteSpace(hText) && string.IsNullOrWhiteSpace(bText))
                 {
                     continue;
                 }
 
-                if (IsHeaderRow(sectionName, materialName, odText, twText))
+                if (IsHeaderRow(sectionName, materialName, hText, bText))
                 {
                     continue;
                 }
@@ -61,30 +61,24 @@ namespace ExcelCSIToolBox.Core.Application
                     continue;
                 }
 
-                if (!TryParseDouble(odText, out double od) || !TryParseDouble(twText, out double tw))
+                if (!TryParseDouble(hText, out double h) || !TryParseDouble(bText, out double b))
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: OutsideDiameter and WallThickness must be numeric.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: h and b must be numeric.");
                     continue;
                 }
 
-                if (od <= 0 || tw <= 0)
+                if (h <= 0 || b <= 0)
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: OutsideDiameter and WallThickness must all be > 0.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: h and b must all be > 0.");
                     continue;
                 }
 
-                if (2.0 * tw >= od)
-                {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: 2 * WallThickness must be smaller than OutsideDiameter.");
-                    continue;
-                }
-
-                orderedCalls.Add(new CSISapModelSteelPipeSectionInput
+                orderedCalls.Add(new CSISapModelConcreteRectangleSectionInput
                 {
                     SectionName = sectionName,
                     MaterialName = materialName,
-                    OutsideDiameter = od,
-                    WallThickness = tw
+                    H = h,
+                    B = b
                 });
             }
 
@@ -97,7 +91,7 @@ namespace ExcelCSIToolBox.Core.Application
                 return OperationResult.Failure("Excel parsing failed: no valid rows were found.");
             }
 
-            var addResult = _connectionService.AddSteelPipeSections(orderedCalls);
+            var addResult = _connectionService.AddConcreteRectangleSections(orderedCalls);
             if (!addResult.IsSuccess)
             {
                 return OperationResult.Failure(addResult.Message);
@@ -119,13 +113,9 @@ namespace ExcelCSIToolBox.Core.Application
             s3 = (s3 ?? "").ToUpper().Replace(" ", "");
             s4 = (s4 ?? "").ToUpper().Replace(" ", "");
 
-            if (s1 == "SECTIONNAME" && s2 == "MATERIAL")
+            if (s1 == "SECTIONNAME" && s2 == "MATERIAL" && s3 == "H" && s4 == "B")
             {
-                if ((s3 == "OUTSIDEDIAMETER" || s3 == "OD" || s3 == "DIAMETER") && 
-                    (s4 == "WALLTHICKNESS" || s4 == "THICKNESS" || s4 == "TW" || s4 == "T"))
-                {
-                    return true;
-                }
+                return true;
             }
             return false;
         }

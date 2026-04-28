@@ -2,14 +2,14 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
-    public class SelectPointsFromExcelRangeByUniqueNameUseCase
+    public class SelectFramesFromExcelRangeByUniqueNameUseCase
     {
         private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
-        public SelectPointsFromExcelRangeByUniqueNameUseCase(
+        public SelectFramesFromExcelRangeByUniqueNameUseCase(
             ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
@@ -25,7 +25,7 @@ namespace ExcelCSIToolBox.Core.Application
                 return OperationResult.Failure(valuesResult.Message);
             }
 
-            return _connectionService.SelectPointsByUniqueNames(valuesResult.Data);
+            return _connectionService.SelectFramesByUniqueNames(valuesResult.Data);
         }
     }
 }

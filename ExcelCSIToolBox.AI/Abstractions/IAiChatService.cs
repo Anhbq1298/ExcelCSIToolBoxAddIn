@@ -1,6 +1,1 @@
-namespace ExcelCSIToolBox.AI.Abstractions
-{
-    public interface IAiChatService
-    {
-    }
-}
+namespace ExcelCSIToolBox.AI.Abstractions { public interface IAiChatService { } }

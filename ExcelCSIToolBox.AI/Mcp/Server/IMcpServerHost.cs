@@ -1,6 +1,1 @@
-namespace ExcelCSIToolBox.AI.Mcp.Server
-{
-    public interface IMcpServerHost
-    {
-    }
-}
+namespace ExcelCSIToolBox.AI.Mcp.Server { public interface IMcpServerHost { } }

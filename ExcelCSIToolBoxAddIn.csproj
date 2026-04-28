@@ -335,6 +335,10 @@
       <Project>{33333333-3333-4333-8333-333333333333}</Project>
       <Name>ExcelCSIToolBox.Infrastructure</Name>
     </ProjectReference>
+    <ProjectReference Include="ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj">
+      <Project>{44444444-4444-4444-8444-444444444444}</Project>
+      <Name>ExcelCSIToolBox.Application</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.WinFX.targets" />
@@ -352,3 +356,4 @@
     </VisualStudio>
   </ProjectExtensions>
 </Project>
+

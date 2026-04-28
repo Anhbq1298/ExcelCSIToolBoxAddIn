@@ -1,6 +1,1 @@
-namespace ExcelCSIToolBox.AI.Mcp.Client
-{
-    public interface IMcpClient
-    {
-    }
-}
+namespace ExcelCSIToolBox.AI.Mcp.Client { public interface IMcpClient { } }

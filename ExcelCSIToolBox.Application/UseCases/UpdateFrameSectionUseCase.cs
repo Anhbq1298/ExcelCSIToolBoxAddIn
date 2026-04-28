@@ -1,23 +1,22 @@
 using System;
-using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
-    public class GetFrameSectionsUseCase
+    public class UpdateFrameSectionUseCase
     {
         private readonly ICSISapModelConnectionService _connectionService;
 
-        public GetFrameSectionsUseCase(ICSISapModelConnectionService connectionService)
+        public UpdateFrameSectionUseCase(ICSISapModelConnectionService connectionService)
         {
             _connectionService = connectionService ?? throw new ArgumentNullException(nameof(connectionService));
         }
 
-        public OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>> Execute()
+        public OperationResult Execute(CSISapModelFrameSectionUpdateDTO input)
         {
-            return _connectionService.GetFrameSections();
+            return _connectionService.UpdateFrameSection(input);
         }
     }
 }

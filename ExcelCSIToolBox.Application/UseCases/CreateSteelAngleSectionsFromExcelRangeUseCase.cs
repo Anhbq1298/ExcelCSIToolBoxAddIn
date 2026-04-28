@@ -5,14 +5,14 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
-    public class CreateSteelTubeSectionsFromExcelRangeUseCase
+    public class CreateSteelAngleSectionsFromExcelRangeUseCase
     {
         private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
-        public CreateSteelTubeSectionsFromExcelRangeUseCase(
+        public CreateSteelAngleSectionsFromExcelRangeUseCase(
             ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
@@ -22,13 +22,13 @@ namespace ExcelCSIToolBox.Core.Application
 
         public OperationResult Execute()
         {
-            var rowResult = _excelSelectionService.ReadSteelTubeSectionRows();
+            var rowResult = _excelSelectionService.ReadSteelAngleSectionRows();
             if (!rowResult.IsSuccess)
             {
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedCalls = new List<CSISapModelSteelTubeSectionInput>();
+            var orderedCalls = new List<CSISapModelSteelAngleSectionInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -37,16 +37,17 @@ namespace ExcelCSIToolBox.Core.Application
                 var materialName = Normalize(row.MaterialName);
                 var hText = Normalize(row.HText);
                 var bText = Normalize(row.BText);
-                var tText = Normalize(row.TText);
+                var twText = Normalize(row.TwText);
+                var tfText = Normalize(row.TfText);
 
                 if (string.IsNullOrWhiteSpace(sectionName) && string.IsNullOrWhiteSpace(materialName) &&
                     string.IsNullOrWhiteSpace(hText) && string.IsNullOrWhiteSpace(bText) &&
-                    string.IsNullOrWhiteSpace(tText))
+                    string.IsNullOrWhiteSpace(twText) && string.IsNullOrWhiteSpace(tfText))
                 {
                     continue;
                 }
 
-                if (IsHeaderRow(sectionName, materialName, hText, bText, tText))
+                if (IsHeaderRow(sectionName, materialName, hText, bText, twText, tfText))
                 {
                     continue;
                 }
@@ -64,37 +65,38 @@ namespace ExcelCSIToolBox.Core.Application
                 }
 
                 if (!TryParseDouble(hText, out double h) || !TryParseDouble(bText, out double b) ||
-                    !TryParseDouble(tText, out double t))
+                    !TryParseDouble(twText, out double tw) || !TryParseDouble(tfText, out double tf))
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: h, b, t must be numeric.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: h, b, tw, tf must be numeric.");
                     continue;
                 }
 
-                if (h <= 0 || b <= 0 || t <= 0)
+                if (h <= 0 || b <= 0 || tw <= 0 || tf <= 0)
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: h, b, t must all be > 0.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: h, b, tw, tf must all be > 0.");
                     continue;
                 }
 
-                if (2.0 * t >= b)
+                if (tw >= b)
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: 2*t must be smaller than b.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: tw must be smaller than b.");
                     continue;
                 }
 
-                if (2.0 * t >= h)
+                if (2.0 * tf >= h)
                 {
-                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: 2*t must be smaller than h.");
+                    failedRowMessages.Add($"Row {row.ExcelRowNumber}: 2*tf must be smaller than h.");
                     continue;
                 }
 
-                orderedCalls.Add(new CSISapModelSteelTubeSectionInput
+                orderedCalls.Add(new CSISapModelSteelAngleSectionInput
                 {
                     SectionName = sectionName,
                     MaterialName = materialName,
                     H = h,
                     B = b,
-                    T = t
+                    Tw = tw,
+                    Tf = tf
                 });
             }
 
@@ -107,7 +109,7 @@ namespace ExcelCSIToolBox.Core.Application
                 return OperationResult.Failure("Excel parsing failed: no valid rows were found.");
             }
 
-            var addResult = _connectionService.AddSteelTubeSections(orderedCalls);
+            var addResult = _connectionService.AddSteelAngleSections(orderedCalls);
             if (!addResult.IsSuccess)
             {
                 return OperationResult.Failure(addResult.Message);
@@ -122,19 +124,19 @@ namespace ExcelCSIToolBox.Core.Application
             return OperationResult.Success(message);
         }
 
-        private static bool IsHeaderRow(string s1, string s2, string s3, string s4, string s5)
+        private static bool IsHeaderRow(string s1, string s2, string s3, string s4, string s5, string s6)
         {
             s1 = (s1 ?? "").ToUpper().Replace(" ", "");
             s2 = (s2 ?? "").ToUpper().Replace(" ", "");
             s3 = (s3 ?? "").ToUpper().Replace(" ", "");
             s4 = (s4 ?? "").ToUpper().Replace(" ", "");
             s5 = (s5 ?? "").ToUpper().Replace(" ", "");
+            s6 = (s6 ?? "").ToUpper().Replace(" ", "");
 
             if (s1 == "SECTIONNAME" && s2 == "MATERIAL")
             {
-                if ((s3 == "H" || s3 == "DEPTH" || s3 == "T3") && 
-                    (s4 == "B" || s4 == "WIDTH" || s4 == "T2") &&
-                    (s5 == "T" || s5 == "THICKNESS" || s5 == "WALLTHICKNESS"))
+                if ((s3 == "H" || s3 == "DEPTH") && (s4 == "B" || s4 == "WIDTH") &&
+                    (s5 == "TW" || s5 == "WEBTHICKNESS") && (s6 == "TF" || s6 == "FLANGETHICKNESS"))
                 {
                     return true;
                 }

@@ -5,7 +5,7 @@ using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
 
 
-namespace ExcelCSIToolBox.Core.Application
+namespace ExcelCSIToolBox.Application.UseCases
 {
     /// <summary>
     /// Application use case for loading CSI connection state for the toolbox shell.

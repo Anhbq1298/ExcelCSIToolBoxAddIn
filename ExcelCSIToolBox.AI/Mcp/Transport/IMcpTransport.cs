@@ -1,6 +1,1 @@
-namespace ExcelCSIToolBox.AI.Mcp.Transport
-{
-    public interface IMcpTransport
-    {
-    }
-}
+namespace ExcelCSIToolBox.AI.Mcp.Transport { public interface IMcpTransport { } }
