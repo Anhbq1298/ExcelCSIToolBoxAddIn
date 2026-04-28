@@ -268,6 +268,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             StatusText = string.IsNullOrWhiteSpace(result.Message)
                 ? $"{_productName} connection unavailable."
                 : result.Message;
+                
+            LoadPatterns.Clear();
+            LoadCombinations.Clear();
 
             if (showMessage)
             {
@@ -288,6 +291,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 IsConnected = false;
                 SetDetachedModelInfo("Not connected");
                 StatusText = result.Message;
+
+                LoadPatterns.Clear();
+                LoadCombinations.Clear();
 
                 MessageBox.Show(
                     result.Message,
