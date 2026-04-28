@@ -20,12 +20,19 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
 
         OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames);
         OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames);
+        OperationResult ClearSelection();
 
         // pointInputs must be executed exactly in the given order.
         // Duplicate rows are valid and must not be merged or de-duplicated.
         OperationResult<CSISapModelAddPointsResultDTO> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs);
         OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs);
         OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs);
+        OperationResult AssignFrameSection(IReadOnlyList<string> frameNames, string sectionName);
+        OperationResult AssignFrameDistributedLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double value1, double value2);
+        OperationResult AssignFramePointLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double distance, double value);
+        OperationResult DeleteFrameObjects(IReadOnlyList<string> frameNames);
+        OperationResult RunAnalysis();
+        OperationResult SaveModel();
 
         OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel();
         OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel();

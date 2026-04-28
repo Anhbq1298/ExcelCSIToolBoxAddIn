@@ -86,6 +86,133 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                 RefreshView);
         }
 
+        public OperationResult ClearSelection()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+
+            int ret = sapModelResult.Data.SelectObj.ClearSelection();
+            return ret == 0 ? OperationResult.Success("Selection cleared.") : OperationResult.Failure($"Failed to clear selection (return code {ret}).");
+        }
+
+        public OperationResult AssignFrameSection(IReadOnlyList<string> frameNames, string sectionName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            if (frameNames == null || frameNames.Count == 0) return OperationResult.Failure("At least one frame name is required.");
+            if (string.IsNullOrWhiteSpace(sectionName)) return OperationResult.Failure("Section name is required.");
+
+            var sapModel = sapModelResult.Data;
+            if (!SectionNameExists(sapModel, sectionName)) return OperationResult.Failure($"Frame section '{sectionName}' does not exist.");
+
+            int success = 0;
+            var failures = new List<string>();
+            foreach (string frameName in frameNames)
+            {
+                if (string.IsNullOrWhiteSpace(frameName)) continue;
+                string p1 = string.Empty, p2 = string.Empty;
+                if (sapModel.FrameObj.GetPoints(frameName, ref p1, ref p2) != 0)
+                {
+                    failures.Add($"{frameName}: not found");
+                    continue;
+                }
+
+                int ret = sapModel.FrameObj.SetSection(frameName, sectionName, SAP2000v1.eItemType.Objects, 0, 0);
+                if (ret == 0) success++; else failures.Add($"{frameName}: return code {ret}");
+            }
+
+            RefreshView(sapModel);
+            string msg = $"Assigned section '{sectionName}' to {success} frame(s).";
+            if (failures.Count > 0) msg += " Failed: " + string.Join("; ", failures);
+            return failures.Count == 0 ? OperationResult.Success(msg) : OperationResult.Failure(msg);
+        }
+
+        public OperationResult AssignFrameDistributedLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double value1, double value2)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            if (frameNames == null || frameNames.Count == 0) return OperationResult.Failure("At least one frame name is required.");
+            if (string.IsNullOrWhiteSpace(loadPattern)) return OperationResult.Failure("Load pattern is required.");
+
+            var sapModel = sapModelResult.Data;
+            int success = 0;
+            var failures = new List<string>();
+            foreach (string frameName in frameNames)
+            {
+                if (string.IsNullOrWhiteSpace(frameName)) continue;
+                int ret = sapModel.FrameObj.SetLoadDistributed(frameName, loadPattern, 1, direction, 0, 1, value1, value2, "Global", true, true, SAP2000v1.eItemType.Objects);
+                if (ret == 0) success++; else failures.Add($"{frameName}: return code {ret}");
+            }
+
+            RefreshView(sapModel);
+            string msg = $"Assigned distributed load '{loadPattern}' to {success} frame(s).";
+            if (failures.Count > 0) msg += " Failed: " + string.Join("; ", failures);
+            return failures.Count == 0 ? OperationResult.Success(msg) : OperationResult.Failure(msg);
+        }
+
+        public OperationResult AssignFramePointLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double distance, double value)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            if (frameNames == null || frameNames.Count == 0) return OperationResult.Failure("At least one frame name is required.");
+            if (string.IsNullOrWhiteSpace(loadPattern)) return OperationResult.Failure("Load pattern is required.");
+
+            var sapModel = sapModelResult.Data;
+            int success = 0;
+            var failures = new List<string>();
+            foreach (string frameName in frameNames)
+            {
+                if (string.IsNullOrWhiteSpace(frameName)) continue;
+                int ret = sapModel.FrameObj.SetLoadPoint(frameName, loadPattern, 1, direction, distance, value, "Global", true, true, SAP2000v1.eItemType.Objects);
+                if (ret == 0) success++; else failures.Add($"{frameName}: return code {ret}");
+            }
+
+            RefreshView(sapModel);
+            string msg = $"Assigned point load '{loadPattern}' to {success} frame(s).";
+            if (failures.Count > 0) msg += " Failed: " + string.Join("; ", failures);
+            return failures.Count == 0 ? OperationResult.Success(msg) : OperationResult.Failure(msg);
+        }
+
+        public OperationResult DeleteFrameObjects(IReadOnlyList<string> frameNames)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            if (frameNames == null || frameNames.Count == 0) return OperationResult.Failure("At least one frame name is required.");
+
+            var sapModel = sapModelResult.Data;
+            int success = 0;
+            var failures = new List<string>();
+            foreach (string frameName in frameNames)
+            {
+                if (string.IsNullOrWhiteSpace(frameName)) continue;
+                int ret = sapModel.FrameObj.Delete(frameName, SAP2000v1.eItemType.Objects);
+                if (ret == 0) success++; else failures.Add($"{frameName}: return code {ret}");
+            }
+
+            RefreshView(sapModel);
+            string msg = $"Deleted {success} frame object(s).";
+            if (failures.Count > 0) msg += " Failed: " + string.Join("; ", failures);
+            return failures.Count == 0 ? OperationResult.Success(msg) : OperationResult.Failure(msg);
+        }
+
+        public OperationResult RunAnalysis()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            int ret = sapModelResult.Data.Analyze.RunAnalysis();
+            return ret == 0 ? OperationResult.Success("Analysis completed.") : OperationResult.Failure($"RunAnalysis failed (return code {ret}).");
+        }
+
+        public OperationResult SaveModel()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            string fileName = sapModelResult.Data.GetModelFilename(true);
+            if (string.IsNullOrWhiteSpace(fileName)) return OperationResult.Failure("Model has no file path. Save is blocked.");
+            int ret = sapModelResult.Data.File.Save(fileName);
+            return ret == 0 ? OperationResult.Success("Model saved.") : OperationResult.Failure($"Save failed (return code {ret}).");
+        }
+
         public OperationResult<CSISapModelAddPointsResultDTO> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs)
         {
             var sapModelResult = EnsureSap2000SapModel();

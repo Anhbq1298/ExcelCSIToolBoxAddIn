@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ExcelCSIToolBox.AI.Mcp.Contracts;
@@ -35,6 +36,11 @@ namespace ExcelCSIToolBox.AI.Mcp.Client
             };
 
             return _server.CallToolAsync(request, cancellationToken);
+        }
+
+        public IReadOnlyList<McpToolDescriptor> ListTools()
+        {
+            return _server.ListTools();
         }
     }
 }

@@ -16,10 +16,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools
         /// <summary>Human-readable description shown to the tool router LLM.</summary>
         string Description { get; }
 
-        /// <summary>
-        /// Must be true for any tool registered in the LocalMcpServer.
-        /// The server refuses to register or execute tools where IsReadOnly = false.
-        /// </summary>
+        /// <summary>True for read-only query tools; false for guarded write tools.</summary>
         bool IsReadOnly { get; }
 
         /// <summary>Execute the tool and return a structured response.</summary>

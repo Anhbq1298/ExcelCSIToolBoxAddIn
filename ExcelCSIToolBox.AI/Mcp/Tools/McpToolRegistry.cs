@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace ExcelCSIToolBox.AI.Mcp.Tools
 {
     /// <summary>
-    /// Concrete in-memory registry for read-only MCP tools.
-    /// Refuses to register any tool where IsReadOnly = false.
+    /// Concrete in-memory registry for local MCP tools.
+    /// Write tools are allowed only when implemented as typed, guarded tools.
     /// </summary>
     public class McpToolRegistry : IMcpToolRegistry
     {
@@ -13,20 +13,13 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools
             new Dictionary<string, IMcpTool>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Register a tool. Throws InvalidOperationException if the tool is not read-only.
+        /// Register a typed tool.
         /// </summary>
         public void Register(IMcpTool tool)
         {
             if (tool == null)
             {
                 throw new ArgumentNullException(nameof(tool));
-            }
-
-            // Safety rule: only read-only tools may be registered.
-            if (!tool.IsReadOnly)
-            {
-                throw new InvalidOperationException(
-                    $"Tool '{tool.Name}' is not read-only and cannot be registered in the LocalMcpServer.");
             }
 
             _tools[tool.Name] = tool;

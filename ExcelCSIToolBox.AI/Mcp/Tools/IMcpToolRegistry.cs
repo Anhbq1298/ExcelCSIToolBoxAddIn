@@ -3,12 +3,11 @@ using System.Collections.Generic;
 namespace ExcelCSIToolBox.AI.Mcp.Tools
 {
     /// <summary>
-    /// Registry that holds all registered MCP tools.
-    /// Only read-only tools may be registered.
+    /// Registry that holds all registered typed MCP tools.
     /// </summary>
     public interface IMcpToolRegistry
     {
-        /// <summary>Register a tool. Throws if the tool is not read-only.</summary>
+        /// <summary>Register a typed tool.</summary>
         void Register(IMcpTool tool);
 
         /// <summary>Retrieve a tool by its unique name. Returns null if not found.</summary>

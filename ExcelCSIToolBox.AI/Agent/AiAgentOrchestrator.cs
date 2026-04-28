@@ -16,21 +16,31 @@ namespace ExcelCSIToolBox.AI.Agent
     /// </summary>
     public class AiAgentOrchestrator
     {
-        private static readonly HashSet<string> ApprovedReadOnlyTools = new HashSet<string>(
+        private static readonly HashSet<string> ApprovedTools = new HashSet<string>(
             StringComparer.OrdinalIgnoreCase)
         {
             "CSI.GetModelInfo",
             "CSI.GetPresentUnits",
             "CSI.GetSelectedObjects",
             "CSI.GetSelectedFrames",
-            "CSI.GetSelectedFrameSections"
+            "CSI.GetSelectedFrameSections",
+            "points.add_by_coordinates",
+            "frames.add_by_coordinates",
+            "frames.add_by_points",
+            "frames.assign_section",
+            "loads.frame.assign_distributed",
+            "loads.frame.assign_point_load",
+            "selection.clear",
+            "frames.delete",
+            "analysis.run",
+            "file.save_model"
         };
 
         private const string ToolDecisionSystemPrompt =
-@"You are a read-only tool router for an Excel CSI toolbox.
-Decide whether the user's message requires a local read-only tool.
+@"You are a safe local tool router for an Excel CSI toolbox.
+Decide whether the user's message requires a local MCP tool.
 
-Available read-only tools:
+Available read tools:
 1. CSI.GetModelInfo
    Use when the user asks about current model file, model path, model name, or attached model info.
 
@@ -46,6 +56,28 @@ Available read-only tools:
 5. CSI.GetSelectedFrameSections
    Use when the user asks about section properties of selected frames.
 
+Available controlled write tools:
+6. points.add_by_coordinates
+   Args: {""dryRun"":true,""confirmed"":false,""x"":0,""y"":0,""z"":0,""userName"":""""}
+7. frames.add_by_coordinates
+   Args: {""dryRun"":true,""confirmed"":false,""xi"":0,""yi"":0,""zi"":0,""xj"":0,""yj"":0,""zj"":0,""sectionName"":"""",""userName"":""""}
+8. frames.add_by_points
+   Args: {""dryRun"":true,""confirmed"":false,""point1Name"":"""",""point2Name"":"""",""sectionName"":"""",""userName"":""""}
+9. frames.assign_section
+   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""sectionName"":""""}
+10. loads.frame.assign_distributed
+   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""value1"":0,""value2"":0}
+11. loads.frame.assign_point_load
+   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""distance"":0.5,""value"":0}
+12. selection.clear
+   Args: {""dryRun"":true,""confirmed"":false}
+13. frames.delete
+   Args: {""dryRun"":true,""confirmed"":false,""objectNames"":[""F1""]}
+14. analysis.run
+   Args: {""dryRun"":true,""confirmed"":false}
+15. file.save_model
+   Dangerous and blocked by default.
+
 Return JSON only:
 {
   ""shouldCallTool"": false,
@@ -55,32 +87,35 @@ Return JSON only:
 }
 
 Strict rules:
-- Only choose tools from the available read-only tool list.
-- Never choose or invent write tools.
-- If the user asks to modify the model, assign sections, assign loads, add/delete objects,
-  run analysis, unlock model, or save model, set shouldCallTool = false and explain in reason
-  that write operations are not allowed in this demo.
+- Only choose tools from the available tool list.
+- Never invent a tool.
+- For any model modification, set dryRun=true and confirmed=false first.
+- Never set confirmed=true unless the user is clearly confirming a preview.
+- Refuse unlock, open model, raw COM calls, mass delete, and unlisted tools.
 - Do not invent live model data.";
 
         private const string NormalChatSystemPrompt =
 @"You are an AI assistant embedded inside an Excel CSI toolbox.
 You can help the user understand Excel, ETABS, SAP2000, C# code, and structural engineering workflows.
-In this demo version, you may retrieve real model information only through approved read-only local tools.
-You cannot modify the ETABS/SAP2000/Excel model.
-If the user asks you to modify the model, politely say this demo is read-only and cannot perform write actions.
+You may query and modify CSI models only through approved local MCP tools.
+For model modification requests, always run a dry-run preview first, explain affected objects, and wait for explicit confirmation.
+Never use raw COM calls or unlisted tools.
 Keep responses concise and practical.";
 
         private const string ToolResultSummarySystemPrompt =
 @"You are an AI assistant inside an Excel CSI toolbox.
 The user asked a question.
-A read-only local tool was called and returned structured JSON.
+A local MCP tool was called and returned structured JSON.
 Summarize the result clearly for the user.
-Do not claim you performed any model modification.
+If this is a write preview requiring confirmation, ask the user to confirm before execution.
+If a write operation was blocked, explain why simply.
 If the result indicates failure, explain the failure simply and suggest checking whether
 ETABS/SAP2000 is open and a model is loaded.";
 
         private readonly OllamaChatService _ollamaChatService;
         private readonly LocalMcpClient _mcpClient;
+        private string _pendingToolName;
+        private string _pendingArgumentsJson;
 
         public AiAgentOrchestrator(OllamaChatService ollamaChatService, LocalMcpClient mcpClient)
         {
@@ -101,6 +136,12 @@ ETABS/SAP2000 is open and a model is loaded.";
                     AssistantText = "Please enter a message.",
                     ToolWasCalled = false
                 };
+            }
+
+            AiAgentResponse confirmationResponse = await TryHandlePendingConfirmationAsync(userMessage, cancellationToken);
+            if (confirmationResponse != null)
+            {
+                return confirmationResponse;
             }
 
             AiAgentToolDecision decision = TryCreateHeuristicToolDecision(userMessage);
@@ -135,7 +176,7 @@ ETABS/SAP2000 is open and a model is loaded.";
                 };
             }
 
-            if (!ApprovedReadOnlyTools.Contains(decision.ToolName))
+            if (!ApprovedTools.Contains(decision.ToolName))
             {
                 string refusalText = await _ollamaChatService.ChatAsync(
                     new List<OllamaMessage>
@@ -147,7 +188,7 @@ ETABS/SAP2000 is open and a model is loaded.";
 
                 return new AiAgentResponse
                 {
-                    AssistantText = "This demo is read-only and cannot modify the model. " + refusalText,
+                    AssistantText = "That tool is not approved for safe local execution. " + refusalText,
                     ToolWasCalled = false,
                     RoutingReason = $"Rejected non-approved tool: {decision.ToolName}"
                 };
@@ -157,6 +198,8 @@ ETABS/SAP2000 is open and a model is loaded.";
                 decision.ToolName,
                 decision.ArgumentsJson,
                 cancellationToken);
+
+            TryRememberPendingWritePreview(toolResponse, decision.ArgumentsJson);
 
             string fastToolResponse = TryFormatToolResponse(toolResponse);
             if (!string.IsNullOrWhiteSpace(fastToolResponse))
@@ -196,6 +239,100 @@ ETABS/SAP2000 is open and a model is loaded.";
                 ToolResponse = toolResponse,
                 RoutingReason = decision.Reason
             };
+        }
+
+        private async Task<AiAgentResponse> TryHandlePendingConfirmationAsync(
+            string userMessage,
+            CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(_pendingToolName) ||
+                string.IsNullOrWhiteSpace(_pendingArgumentsJson))
+            {
+                return null;
+            }
+
+            string normalized = Normalize(userMessage);
+            if (ContainsAny(normalized, "cancel", "no", "khong", "không", "huy", "hủy", "stop"))
+            {
+                _pendingToolName = null;
+                _pendingArgumentsJson = null;
+                return new AiAgentResponse
+                {
+                    AssistantText = "Cancelled. I did not execute the pending model change.",
+                    ToolWasCalled = false
+                };
+            }
+
+            if (!ContainsAny(normalized, "confirm", "yes", "ok", "proceed", "execute", "do it", "lam di", "làm đi", "dong y", "đồng ý"))
+            {
+                return null;
+            }
+
+            string toolName = _pendingToolName;
+            string executeArguments = BuildConfirmedArguments(_pendingArgumentsJson);
+            _pendingToolName = null;
+            _pendingArgumentsJson = null;
+
+            ToolCallResponse toolResponse = await _mcpClient.CallToolAsync(
+                toolName,
+                executeArguments,
+                cancellationToken);
+
+            return new AiAgentResponse
+            {
+                AssistantText = toolResponse.Success
+                    ? toolResponse.Message
+                    : "I could not execute the confirmed operation. " + toolResponse.Message,
+                ToolWasCalled = true,
+                ToolName = toolResponse.ToolName,
+                ToolArgumentsJson = executeArguments,
+                ToolResponse = toolResponse,
+                RoutingReason = "Executed previously previewed write tool after user confirmation."
+            };
+        }
+
+        private void TryRememberPendingWritePreview(ToolCallResponse toolResponse, string argumentsJson)
+        {
+            if (toolResponse == null ||
+                !toolResponse.Success ||
+                string.IsNullOrWhiteSpace(toolResponse.ResultJson))
+            {
+                return;
+            }
+
+            try
+            {
+                JObject result = JObject.Parse(toolResponse.ResultJson);
+                bool requiresConfirmation = result.Value<bool?>("RequiresConfirmation") ?? false;
+                string operationName = result.Value<string>("OperationName");
+
+                if (requiresConfirmation && !string.IsNullOrWhiteSpace(operationName))
+                {
+                    _pendingToolName = operationName;
+                    _pendingArgumentsJson = argumentsJson ?? "{}";
+                }
+            }
+            catch
+            {
+                // Tool result was not a write preview; no pending confirmation needed.
+            }
+        }
+
+        private static string BuildConfirmedArguments(string argumentsJson)
+        {
+            JObject args;
+            try
+            {
+                args = JObject.Parse(argumentsJson ?? "{}");
+            }
+            catch
+            {
+                args = new JObject();
+            }
+
+            args["dryRun"] = false;
+            args["confirmed"] = true;
+            return args.ToString(Newtonsoft.Json.Formatting.None);
         }
 
         private static AiAgentToolDecision TryCreateHeuristicToolDecision(string userMessage)
