@@ -10,14 +10,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 {
     internal sealed class AiAgentTaskPaneHost : UserControl
     {
-        private static readonly Color MainBackground = Color.FromArgb(247, 251, 255);
+        private static readonly Color MainBackground = Color.White;
         private static readonly Color ConversationBackground = Color.FromArgb(250, 253, 255);
         private static readonly Color LightBlueSurface = Color.FromArgb(234, 245, 252);
         private static readonly Color HeaderAccent = Color.FromArgb(31, 106, 165);
         private static readonly Color BorderBlue = Color.FromArgb(201, 221, 234);
-        private static readonly Color AssistantBubble = Color.FromArgb(242, 247, 251);
+        private static readonly Color AssistantBubble = Color.FromArgb(240, 246, 251);
         private static readonly Color Ink = Color.FromArgb(34, 34, 34);
-        private static readonly Color MutedInk = Color.FromArgb(111, 127, 140);
+        private static readonly Color MutedInk = Color.FromArgb(104, 120, 134);
         private static readonly Color ClearButtonBack = Color.FromArgb(234, 241, 246);
         private static readonly Color ClearButtonText = Color.FromArgb(46, 58, 68);
 
@@ -36,6 +36,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         {
             Dock = DockStyle.Fill;
             BackColor = MainBackground;
+            DoubleBuffered = true;
 
             _viewModel = new AiAgentChatViewModel();
             _subtitleLabel = CreateHeaderSubtitle();
@@ -47,7 +48,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 BackColor = ConversationBackground,
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.TopDown,
-                Padding = new Padding(10),
+                Padding = new Padding(12),
                 WrapContents = false
             };
             _inputBox = new TextBox
@@ -85,7 +86,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 AutoEllipsis = true,
                 BackColor = MainBackground,
                 Dock = DockStyle.Top,
-                Font = new Font("Segoe UI", 8.5F),
+                Font = new Font("Segoe UI", 8.25F),
                 ForeColor = MutedInk,
                 Height = 20,
                 TextAlign = ContentAlignment.MiddleLeft
@@ -96,25 +97,25 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         {
             return new Label
             {
-                AutoSize = true,
+                AutoSize = false,
                 BackColor = LightBlueSurface,
+                Dock = DockStyle.Fill,
                 Font = new Font("Segoe UI Semibold", 8.25F, FontStyle.Bold),
                 ForeColor = HeaderAccent,
-                Margin = new Padding(0, 0, 6, 4),
-                Padding = new Padding(8, 3, 8, 3)
+                TextAlign = ContentAlignment.MiddleCenter
             };
         }
 
         private static Button CreateButton(string text, Color backColor, Color foreColor)
         {
-            var button = new Button
+            var button = new RoundedButton
             {
                 BackColor = backColor,
                 Dock = DockStyle.Fill,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold),
                 ForeColor = foreColor,
-                Margin = new Padding(0, 0, 0, 6),
+                Margin = new Padding(0, 0, 0, 7),
                 Text = text,
                 UseVisualStyleBackColor = false
             };
@@ -132,10 +133,10 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 Padding = new Padding(12),
                 RowCount = 5
             };
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 86F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 96F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 8F));
-            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 94F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 10F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 98F));
             root.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
 
             root.Controls.Add(CreateHeader(), 0, 0);
@@ -148,7 +149,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private Control CreateHeader()
         {
-            var header = new Panel { BackColor = MainBackground, Dock = DockStyle.Fill };
+            var header = new RoundedPanel
+            {
+                BackColor = MainBackground,
+                BorderColor = Color.FromArgb(218, 233, 244),
+                CornerRadius = 16,
+                Dock = DockStyle.Fill,
+                Padding = new Padding(10, 8, 10, 6)
+            };
             var title = new Label
             {
                 BackColor = MainBackground,
@@ -156,18 +164,20 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 Font = new Font("Segoe UI Semibold", 13.5F, FontStyle.Bold),
                 ForeColor = HeaderAccent,
                 Height = 30,
-                Text = "🤖  MHT AI Assistant",
+                Text = "\U0001F916  MHT AI Assistant",
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            var badges = new WrapPanelHost
+            var badges = new FlowLayoutPanel
             {
                 BackColor = MainBackground,
                 Dock = DockStyle.Top,
-                Height = 30
+                Height = 32,
+                Padding = new Padding(0, 6, 0, 0),
+                WrapContents = true
             };
-            badges.Controls.Add(WrapBadge(_sap2000BadgeLabel));
-            badges.Controls.Add(WrapBadge(_etabsBadgeLabel));
+            badges.Controls.Add(WrapBadge(_sap2000BadgeLabel, 152));
+            badges.Controls.Add(WrapBadge(_etabsBadgeLabel, 96));
 
             header.Controls.Add(badges);
             header.Controls.Add(_subtitleLabel);
@@ -175,30 +185,30 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             return header;
         }
 
-        private static Control WrapBadge(Label label)
+        private static Control WrapBadge(Label label, int width)
         {
-            var badge = new BorderedPanel
+            var badge = new RoundedPanel
             {
                 BackColor = LightBlueSurface,
                 BorderColor = BorderBlue,
-                Margin = new Padding(0, 0, 6, 4),
+                CornerRadius = 10,
+                Margin = new Padding(0, 0, 7, 4),
                 Padding = new Padding(0),
-                Size = new Size(150, 24)
+                Size = new Size(width, 24)
             };
-            label.Dock = DockStyle.Fill;
-            label.TextAlign = ContentAlignment.MiddleCenter;
             badge.Controls.Add(label);
             return badge;
         }
 
         private Control CreateConversationCard()
         {
-            var card = new BorderedPanel
+            var card = new RoundedPanel
             {
                 BackColor = ConversationBackground,
                 BorderColor = BorderBlue,
+                CornerRadius = 18,
                 Dock = DockStyle.Fill,
-                Padding = new Padding(0)
+                Padding = new Padding(1)
             };
             card.Controls.Add(_conversationPanel);
             return card;
@@ -216,10 +226,11 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             inputRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             inputRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88F));
 
-            var inputCard = new BorderedPanel
+            var inputCard = new RoundedPanel
             {
                 BackColor = Color.White,
                 BorderColor = BorderBlue,
+                CornerRadius = 16,
                 Dock = DockStyle.Fill,
                 Padding = new Padding(10, 8, 10, 8)
             };
@@ -259,7 +270,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 Dock = DockStyle.Fill,
                 Font = new Font("Segoe UI", 8F),
                 ForeColor = MutedInk,
-                Text = "Read-only · Ollama local",
+                Text = "Read-only \u00B7 Ollama local",
                 TextAlign = ContentAlignment.MiddleRight
             };
 
@@ -352,7 +363,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private void UpdateHeader()
         {
-            _subtitleLabel.Text = "Powered by Ollama · Model: " + (_viewModel.CurrentModelName ?? "Not selected") + " · Read-only model access";
+            _subtitleLabel.Text = "Powered by Ollama \u00B7 Model: " + (_viewModel.CurrentModelName ?? "Not selected") + " \u00B7 Read-only model access";
             _sap2000BadgeLabel.Text = "SAP2000 Model: " + (_viewModel.Sap2000ConnectionStatus ?? "Attached");
             _etabsBadgeLabel.Text = "ETABS: " + (_viewModel.EtabsConnectionStatus ?? "Attached");
         }
@@ -401,10 +412,11 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             return new Label
             {
                 AutoSize = false,
+                BackColor = ConversationBackground,
                 Font = new Font("Segoe UI", 9F, FontStyle.Italic),
                 ForeColor = MutedInk,
-                Height = 46,
-                Margin = new Padding(2, 4, 2, 4),
+                Height = 54,
+                Margin = new Padding(3, 4, 3, 4),
                 Text = "Ask about selected frames, section properties, model units, or current model information.",
                 TextAlign = ContentAlignment.MiddleLeft,
                 Width = GetConversationWidth()
@@ -414,74 +426,85 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private Control CreateMessageRow(AiAgentChatMessageViewModel message)
         {
             int fullWidth = GetConversationWidth();
-            int bubbleWidth = Math.Max(180, fullWidth - 56);
             bool isUser = message.IsUser;
+            int maxBubbleWidth = Math.Max(190, (int)(fullWidth * 0.78));
+            maxBubbleWidth = Math.Min(maxBubbleWidth, fullWidth - 28);
+
+            Font nameFont = new Font("Segoe UI Semibold", 8.25F, FontStyle.Bold);
+            Font textFont = message.IsTemporary
+                ? new Font("Segoe UI", 13F, FontStyle.Bold)
+                : new Font("Segoe UI", 9.25F);
+            string speaker = isUser ? "You" : "MHT AI Assistant";
+            string body = message.Content ?? string.Empty;
+
+            Size nameSize = TextRenderer.MeasureText(speaker, nameFont, new Size(maxBubbleWidth - 24, 0), TextFormatFlags.NoPadding);
+            Size bodySize = TextRenderer.MeasureText(
+                body,
+                textFont,
+                new Size(maxBubbleWidth - 24, int.MaxValue),
+                TextFormatFlags.WordBreak | TextFormatFlags.NoPadding);
+            int bubbleWidth = Math.Max(118, Math.Max(nameSize.Width, bodySize.Width) + 26);
+            bubbleWidth = Math.Min(bubbleWidth, maxBubbleWidth);
+            int bubbleHeight = nameSize.Height + bodySize.Height + 24;
 
             var row = new Panel
             {
                 BackColor = ConversationBackground,
-                Height = 10,
+                Height = bubbleHeight + 6,
                 Margin = new Padding(0, 0, 0, 8),
                 Width = fullWidth
             };
 
-            var bubble = new BorderedPanel
+            var bubble = new RoundedPanel
             {
                 BackColor = isUser ? HeaderAccent : AssistantBubble,
                 BorderColor = isUser ? HeaderAccent : BorderBlue,
-                Padding = new Padding(10, 7, 10, 8),
+                CornerRadius = 14,
+                Height = bubbleHeight,
+                Padding = new Padding(11, 8, 11, 9),
                 Width = bubbleWidth
             };
 
             var label = new Label
             {
-                AutoSize = true,
                 BackColor = bubble.BackColor,
-                Font = new Font("Segoe UI Semibold", 8.25F, FontStyle.Bold),
+                Font = nameFont,
                 ForeColor = isUser ? Color.White : HeaderAccent,
-                MaximumSize = new Size(bubbleWidth - 22, 0),
-                Text = isUser ? "You" : "MHT AI Assistant"
+                Location = new Point(11, 7),
+                Size = new Size(bubbleWidth - 22, nameSize.Height + 2),
+                Text = speaker
             };
 
             var content = new Label
             {
-                AutoSize = true,
                 BackColor = bubble.BackColor,
-                Font = message.IsTemporary
-                    ? new Font("Segoe UI", 13F, FontStyle.Bold)
-                    : new Font("Segoe UI", 9.25F),
+                Font = textFont,
                 ForeColor = isUser ? Color.White : Ink,
-                MaximumSize = new Size(bubbleWidth - 22, 0),
-                Text = message.Content ?? string.Empty,
-                Top = label.Bottom + 3
+                Location = new Point(11, label.Bottom + 4),
+                Size = new Size(bubbleWidth - 22, bodySize.Height + 2),
+                Text = body
             };
 
             bubble.Controls.Add(label);
             bubble.Controls.Add(content);
-            content.Location = new Point(10, label.Bottom + 5);
-            int bubbleHeight = content.Bottom + 9;
-            bubble.Height = bubbleHeight;
-            bubble.Left = isUser ? fullWidth - bubbleWidth - 6 : 2;
+            bubble.Left = isUser ? fullWidth - bubbleWidth - 8 : 3;
             bubble.Top = 0;
-            row.Height = bubbleHeight + 2;
             row.Controls.Add(bubble);
             return row;
         }
 
         private int GetConversationWidth()
         {
-            int width = _conversationPanel.ClientSize.Width - 28;
+            int width = _conversationPanel.ClientSize.Width - 30;
             return Math.Max(260, width);
         }
 
         private void ScrollConversationToBottom()
         {
-            if (_conversationPanel.Controls.Count == 0)
+            if (_conversationPanel.Controls.Count > 0)
             {
-                return;
+                _conversationPanel.ScrollControlIntoView(_conversationPanel.Controls[_conversationPanel.Controls.Count - 1]);
             }
-
-            _conversationPanel.ScrollControlIntoView(_conversationPanel.Controls[_conversationPanel.Controls.Count - 1]);
         }
 
         private void UpdateButtons()
@@ -521,30 +544,85 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             base.Dispose(disposing);
         }
 
-        private sealed class BorderedPanel : Panel
+        private sealed class RoundedPanel : Panel
         {
             public Color BorderColor { get; set; }
+            public int CornerRadius { get; set; } = 12;
+
+            public RoundedPanel()
+            {
+                DoubleBuffered = true;
+            }
+
+            protected override void OnResize(EventArgs eventargs)
+            {
+                base.OnResize(eventargs);
+                using (GraphicsPath path = CreateRoundPath(ClientRectangle, CornerRadius))
+                {
+                    Region = new Region(path);
+                }
+            }
 
             protected override void OnPaint(PaintEventArgs e)
             {
-                base.OnPaint(e);
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (GraphicsPath path = CreateRoundPath(ClientRectangle, CornerRadius))
+                using (var brush = new SolidBrush(BackColor))
                 using (var pen = new Pen(BorderColor))
                 {
+                    e.Graphics.FillPath(brush, path);
                     Rectangle rect = ClientRectangle;
                     rect.Width -= 1;
                     rect.Height -= 1;
-                    e.Graphics.DrawRectangle(pen, rect);
+                    using (GraphicsPath borderPath = CreateRoundPath(rect, CornerRadius))
+                    {
+                        e.Graphics.DrawPath(pen, borderPath);
+                    }
                 }
+
+                base.OnPaint(e);
             }
         }
 
-        private sealed class WrapPanelHost : FlowLayoutPanel
+        private sealed class RoundedButton : Button
         {
-            protected override void OnPaint(PaintEventArgs e)
+            public RoundedButton()
             {
-                base.OnPaint(e);
+                DoubleBuffered = true;
             }
+
+            protected override void OnPaint(PaintEventArgs pevent)
+            {
+                pevent.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                Color fill = Enabled ? BackColor : Color.FromArgb(173, 201, 218);
+                using (GraphicsPath path = CreateRoundPath(ClientRectangle, 12))
+                using (var brush = new SolidBrush(fill))
+                {
+                    pevent.Graphics.FillPath(brush, path);
+                }
+
+                TextRenderer.DrawText(
+                    pevent.Graphics,
+                    Text,
+                    Font,
+                    ClientRectangle,
+                    Enabled ? ForeColor : Color.White,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            }
+        }
+
+        private static GraphicsPath CreateRoundPath(Rectangle bounds, int radius)
+        {
+            int diameter = Math.Max(1, radius * 2);
+            var path = new GraphicsPath();
+            bounds.Width = Math.Max(1, bounds.Width - 1);
+            bounds.Height = Math.Max(1, bounds.Height - 1);
+            path.AddArc(bounds.Left, bounds.Top, diameter, diameter, 180, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Top, diameter, diameter, 270, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
+            path.AddArc(bounds.Left, bounds.Bottom - diameter, diameter, diameter, 90, 90);
+            path.CloseFigure();
+            return path;
         }
     }
 }
