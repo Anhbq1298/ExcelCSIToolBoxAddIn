@@ -29,6 +29,7 @@ The add-in must:
   - CSI Product Adapters
   - Excel Services
   - Models / DTOs
+  - TableFormats / input DTOs
   - Commands
   - Helpers / Utilities
 - Keep UI logic out of code-behind whenever possible.
@@ -142,6 +143,9 @@ Do not assume that a method available in one CSI product behaves identically in 
 - New Excel operations must go through `IExcelRangeReader` or `IExcelRangeWriter`. Do not add direct Excel interop calls outside these services.
 - New status reporting must use the existing `OperationResult` pattern. Do not create a new result or response wrapper type.
 - New data models must check whether an existing DTO in `Models/` can be reused or extended before creating a new one.
+- New Excel table-shape input DTOs must live in a `TableFormats/` folder near the layer that consumes them. Examples: point Cartesian rows, frame-by-coordinate rows, frame-by-point rows, steel section rows, and concrete section rows.
+- Keep table-format DTOs as simple property bags with no business logic. They represent parsed Excel/table input shape, not CSI attachment logic or UI state.
+- When moving existing table-format DTO files into a folder, preserve the existing namespace unless a namespace rename is explicitly required. Avoid large using/reference churn for a file organization-only change.
 - If scaling requires a shared abstraction that does not yet exist, add it to the existing interface layer — do not build a parallel layer beside it.
 - The rule is: **extend the foundation, never duplicate it.**
 
@@ -192,6 +196,8 @@ Use a structure similar to this when generating code:
   - SAFE adapter
 - `Models/`
   - DTOs and simple models
+- `TableFormats/`
+  - parsed Excel/table input DTOs used by use cases and services
 - `Commands/`
   - relay command implementations
 - `Helpers/`
@@ -211,6 +217,7 @@ When asked to generate code for this project:
 10. Keep every method focused on one responsibility. If a method does two things, split it.
 11. Preserve extendability for ETABS, SAP2000, and SAFE.
 12. Use early binding with referenced CSI assemblies such as `ETABSv1.dll`.
+13. Store parsed Excel/table input DTOs in `TableFormats/` and keep them separate from connection services, product adapters, and UI view models.
 
 ## Output Expectations
 When producing code, prefer:
@@ -228,6 +235,7 @@ When producing code, prefer:
 - business logic inside XAML code-behind
 - direct CSI calls scattered across the UI layer
 - direct Excel range parsing scattered across multiple classes
+- table-format/input DTOs mixed directly into adapter or connection-service folders when a `TableFormats/` folder exists
 - CSI API calls written without first verifying the signature in the official `.chm` help file
 - guessed CSI API function names, parameter order, enum values, or return types
 - late binding for core CSI workflows
