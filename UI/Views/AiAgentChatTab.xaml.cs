@@ -27,11 +27,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             FocusInputBox();
         }
 
-        private void UserInputBox_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
-        {
-            FocusInputBox();
-        }
-
         private void FocusInputBox()
         {
             var hostWindow = Window.GetWindow(this);
@@ -48,8 +43,12 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                     return;
                 }
 
-                UserInputBox.Focus();
-                System.Windows.Input.Keyboard.Focus(UserInputBox);
+                if (!UserInputBox.IsKeyboardFocusWithin)
+                {
+                    UserInputBox.Focus();
+                    System.Windows.Input.Keyboard.Focus(UserInputBox);
+                }
+
                 UserInputBox.CaretIndex = UserInputBox.Text?.Length ?? 0;
             }), DispatcherPriority.Input);
         }
