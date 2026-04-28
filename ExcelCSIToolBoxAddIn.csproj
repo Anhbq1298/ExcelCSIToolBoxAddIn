@@ -286,7 +286,10 @@
     <Compile Include="Data\Models\SectionModel.cs" />
     <Compile Include="Core\Application\GetLoadCombinationsUseCase.cs" />
     <Compile Include="Core\Application\DeleteLoadCombinationsUseCase.cs" />
+    <Compile Include="Core\Application\GetLoadPatternsUseCase.cs" />
+    <Compile Include="Core\Application\DeleteLoadPatternsUseCase.cs" />
     <Compile Include="Infrastructure\CSISapModel\LoadCombinationService\CSISapModelLoadCombinationService.cs" />
+    <Compile Include="Infrastructure\CSISapModel\LoadPatternService\CSISapModelLoadPatternService.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />
     <Compile Include="Core\Application\LoadCSISapModelConnectionUseCase.cs" />
     <Compile Include="Core\Application\GetSelectedCSISapModelPointsUseCase.cs" />

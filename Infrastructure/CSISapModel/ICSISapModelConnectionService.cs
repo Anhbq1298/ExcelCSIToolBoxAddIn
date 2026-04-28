@@ -45,5 +45,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 
         OperationResult<IReadOnlyList<string>> GetLoadCombinations();
         OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);
+
+        OperationResult<IReadOnlyList<string>> GetLoadPatterns();
+        OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames);
     }
 }

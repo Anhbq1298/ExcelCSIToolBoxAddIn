@@ -379,6 +379,41 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return result;
         }
 
+        public OperationResult<IReadOnlyList<string>> GetLoadPatterns()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.LoadPatternService.CSISapModelLoadPatternService.GetLoadPatterns(
+                sapModelResult.Data,
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.LoadPatterns.GetNameList(ref numberNames, ref names));
+        }
+
+        public OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var result = Infrastructure.CSISapModel.LoadPatternService.CSISapModelLoadPatternService.DeleteLoadPatterns(
+                sapModelResult.Data,
+                loadPatternNames,
+                (ETABSv1.cSapModel sapModel, string name) => sapModel.LoadPatterns.Delete(name));
+            
+            if (result.IsSuccess)
+            {
+                RefreshView(sapModelResult.Data);
+            }
+
+            return result;
+        }
+
         private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)
         {
             int refreshResult = sapModel.View.RefreshView(0, false);

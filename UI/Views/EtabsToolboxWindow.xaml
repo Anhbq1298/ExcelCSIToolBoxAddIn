@@ -512,14 +512,37 @@
                                   CanContentScroll="True">
                         <StackPanel Margin="12">
                             <GroupBox Header="Load Patterns" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <Grid>
+                                <Grid Height="180">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="150"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Get" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" />
-                                    <Button Grid.Column="2" Content="Set Name" HorizontalAlignment="Stretch" Command="{Binding SetLoadPatternsNameCommand}" />
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Patterns in Model" Foreground="Black" Margin="0,0,0,4"/>
+                                    <ListView x:Name="LoadPatternList" Grid.Row="1" Grid.Column="0" 
+                                              ItemsSource="{Binding LoadPatterns}"
+                                              SelectionMode="Extended"
+                                              BorderBrush="#CCCCCC" BorderThickness="1"
+                                              FontWeight="Normal" Foreground="Black">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" />
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
+                                        <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" Margin="0,0,0,8"/>
+                                        <Button Content="Add From Excel" HorizontalAlignment="Stretch" Command="{Binding AddLoadPatternFromExcelCommand}" Margin="0,0,0,8"/>
+                                        <Button Content="Delete Selected" HorizontalAlignment="Stretch" 
+                                                Command="{Binding DeleteSelectedLoadPatternsCommand}"
+                                                CommandParameter="{Binding ElementName=LoadPatternList, Path=SelectedItems}"/>
+                                    </StackPanel>
                                 </Grid>
                             </GroupBox>
                         </StackPanel>

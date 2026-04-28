@@ -38,6 +38,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly GetLoadCombinationsUseCase _getLoadCombinationsUseCase;
         private readonly DeleteLoadCombinationsUseCase _deleteLoadCombinationsUseCase;
 
+        private readonly GetLoadPatternsUseCase _getLoadPatternsUseCase;
+        private readonly DeleteLoadPatternsUseCase _deleteLoadPatternsUseCase;
+
         private string _modelName;
         private bool _isConnected;
         private string _statusText;
@@ -76,7 +79,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _getLoadCombinationsUseCase = new GetLoadCombinationsUseCase(csiConnectionService);
             _deleteLoadCombinationsUseCase = new DeleteLoadCombinationsUseCase(csiConnectionService);
 
+            _getLoadPatternsUseCase = new GetLoadPatternsUseCase(csiConnectionService);
+            _deleteLoadPatternsUseCase = new DeleteLoadPatternsUseCase(csiConnectionService);
+
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<string>();
+            LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<string>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance);
@@ -112,8 +119,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"));
             SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"));
 
-            GetLoadPatternsCommand = new RelayCommand(() => ShowPlaceholder("Get Load Patterns"));
-            SetLoadPatternsNameCommand = new RelayCommand(() => ShowPlaceholder("Set Load Patterns Name"));
+            GetLoadPatternsCommand = new RelayCommand(GetLoadPatterns);
+            AddLoadPatternFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Pattern From Excel"));
+            DeleteSelectedLoadPatternsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadPatterns);
             
             GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations);
             AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"));
@@ -213,11 +221,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand SetPointGroupAssignmentCommand { get; }
 
         public ICommand GetLoadPatternsCommand { get; }
-        public ICommand SetLoadPatternsNameCommand { get; }
+        public ICommand AddLoadPatternFromExcelCommand { get; }
+        public ICommand DeleteSelectedLoadPatternsCommand { get; }
+
         public ICommand GetLoadCombinationsCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
 
+        public System.Collections.ObjectModel.ObservableCollection<string> LoadPatterns { get; }
         public System.Collections.ObjectModel.ObservableCollection<string> LoadCombinations { get; }
 
         private void LoadConnectionState(bool showMessage)
@@ -423,6 +434,49 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ProductTitle,
                 MessageBoxButton.OK,
                 result.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void GetLoadPatterns()
+        {
+            var result = _getLoadPatternsUseCase.Execute();
+            if (result.IsSuccess)
+            {
+                LoadPatterns.Clear();
+                if (result.Data != null)
+                {
+                    foreach (var p in result.Data)
+                    {
+                        LoadPatterns.Add(p);
+                    }
+                }
+            }
+            else
+            {
+                ShowOperationResult(OperationResult.Failure(result.Message));
+            }
+        }
+
+        private void DeleteSelectedLoadPatterns(System.Collections.IList selectedItems)
+        {
+            if (selectedItems == null || selectedItems.Count == 0) return;
+            
+            var list = new System.Collections.Generic.List<string>();
+            foreach (var item in selectedItems)
+            {
+                if (item is string str)
+                {
+                    list.Add(str);
+                }
+            }
+
+            if (list.Count == 0) return;
+
+            var result = _deleteLoadPatternsUseCase.Execute(list);
+            ShowOperationResult(result);
+            if (result.IsSuccess)
+            {
+                GetLoadPatterns(); // refresh list after deletion
+            }
         }
 
         private void GetLoadCombinations()
