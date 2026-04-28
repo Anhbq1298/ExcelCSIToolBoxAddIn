@@ -4,6 +4,7 @@ using System.Windows.Input;
 using ExcelCSIToolBoxAddIn.Common.Commands;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Application;
+using ExcelCSIToolBoxAddIn.Data;
 using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
@@ -92,7 +93,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
-            FrameSections = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO>();
+            FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
@@ -138,7 +139,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
             
             GetFrameSectionsCommand = new RelayCommand(GetFrameSections, () => IsConnected);
-            EditFrameSectionCommand = new RelayCommand<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO>(EditFrameSection, _ => IsConnected);
+            EditFrameSectionCommand = new RelayCommand<CSISapModelFrameSectionDTO>(EditFrameSection, _ => IsConnected);
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
@@ -248,10 +249,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO> LoadPatterns { get; }
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
-        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO> FrameSections { get; }
+        public System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO> FrameSections { get; }
         
-        private ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO _selectedFrameSection;
-        public ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO SelectedFrameSection
+        private CSISapModelFrameSectionDTO _selectedFrameSection;
+        public CSISapModelFrameSectionDTO SelectedFrameSection
         {
             get => _selectedFrameSection;
             set
@@ -598,7 +599,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
-        private void EditFrameSection(ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelFrameSectionDTO section)
+        private void EditFrameSection(CSISapModelFrameSectionDTO section)
         {
             if (section == null) return;
 

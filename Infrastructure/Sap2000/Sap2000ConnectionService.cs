@@ -569,6 +569,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             };
 
             string fileName = "";
+            string matProp = "";
             int color = 0;
             string notes = "";
             string guid = "";

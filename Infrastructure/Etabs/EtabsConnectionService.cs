@@ -575,6 +575,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             };
 
             string fileName = "";
+            string matProp = "";
             int color = 0;
             string notes = "";
             string guid = "";

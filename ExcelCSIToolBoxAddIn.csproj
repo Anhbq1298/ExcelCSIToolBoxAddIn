@@ -292,6 +292,8 @@
     <Compile Include="Core\Application\GetLoadCombinationDetailsUseCase.cs" />
     <Compile Include="Core\Application\GetLoadPatternsUseCase.cs" />
     <Compile Include="Core\Application\DeleteLoadPatternsUseCase.cs" />
+    <Compile Include="Core\Application\GetFrameSectionsUseCase.cs" />
+    <Compile Include="Core\Application\GetFrameSectionDetailUseCase.cs" />
     <Compile Include="Infrastructure\CSISapModel\LoadCombinationService\CSISapModelLoadCombinationService.cs" />
     <Compile Include="Infrastructure\CSISapModel\LoadPatternService\CSISapModelLoadPatternService.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />
@@ -351,6 +353,10 @@
       <DependentUpon>LoadCombinationDetailsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\FrameSectionDetailWindow.xaml.cs">
+      <DependentUpon>FrameSectionDetailWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <None Include="_ref\CSI API ETABS v1.chm" />
     <None Include="_ref\CSI_OAPI_Documentation.chm" />
     <Page Include="UI\Views\EtabsToolboxWindow.xaml">
@@ -366,6 +372,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\LoadCombinationDetailsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\FrameSectionDetailWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
