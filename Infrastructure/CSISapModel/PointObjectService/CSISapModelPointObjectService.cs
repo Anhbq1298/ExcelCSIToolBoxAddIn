@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
@@ -57,7 +55,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 refreshView);
         }
 
-        internal static OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian<TSapModel>(
+        internal static OperationResult<CSISapModelAddPointsResultDTO> AddPointsByCartesian<TSapModel>(
             IReadOnlyList<CSISapModelPointCartesianInput> pointInputs,
             string productName,
             TSapModel sapModel,
@@ -66,7 +64,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         {
             if (pointInputs == null || pointInputs.Count == 0)
             {
-                return OperationResult<CSISapModelAddPointsResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CSISapModelAddPointsResultDTO>.Failure("No valid rows were found in the selected range.");
             }
 
             try
@@ -107,11 +105,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                     var refreshResult = refreshView(sapModel);
                     if (!refreshResult.IsSuccess)
                     {
-                        return OperationResult<CSISapModelAddPointsResult>.Failure(refreshResult.Message);
+                        return OperationResult<CSISapModelAddPointsResultDTO>.Failure(refreshResult.Message);
                     }
                 }
 
-                return OperationResult<CSISapModelAddPointsResult>.Success(new CSISapModelAddPointsResult
+                return OperationResult<CSISapModelAddPointsResultDTO>.Success(new CSISapModelAddPointsResultDTO
                 {
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
@@ -119,15 +117,15 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             }
             catch (COMException ex)
             {
-                return OperationResult<CSISapModelAddPointsResult>.Failure($"{productName} COM error while adding points by Cartesian coordinates: {ex.Message}");
+                return OperationResult<CSISapModelAddPointsResultDTO>.Failure($"{productName} COM error while adding points by Cartesian coordinates: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return OperationResult<CSISapModelAddPointsResult>.Failure($"{productName} add-by-Cartesian failed unexpectedly: {ex.Message}");
+                return OperationResult<CSISapModelAddPointsResultDTO>.Failure($"{productName} add-by-Cartesian failed unexpectedly: {ex.Message}");
             }
         }
 
-        internal static OperationResult<IReadOnlyList<CSISapModelPointData>> GetSelectedPointsFromActiveModel<TSapModel>(
+        internal static OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel<TSapModel>(
             string productName,
             TSapModel sapModel,
             CSISapModelReadSelectedObjects<TSapModel> getSelectedObjects,
@@ -143,10 +141,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 
                 if (selectedResult != 0)
                 {
-                    return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure($"Failed to read selected objects from {productName}.");
+                    return OperationResult<IReadOnlyList<CSISapModelPointDataDTO>>.Failure($"Failed to read selected objects from {productName}.");
                 }
 
-                var points = new List<CSISapModelPointData>();
+                var points = new List<CSISapModelPointDataDTO>();
 
                 for (int i = 0; i < numberItems; i++)
                 {
@@ -175,7 +173,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                         ? -1
                         : getPointLabel(sapModel, objectNames[i], ref pointLabel, ref pointStory);
 
-                    points.Add(new CSISapModelPointData
+                    points.Add(new CSISapModelPointDataDTO
                     {
                         PointUniqueName = objectNames[i],
                         PointLabel = pointLabelResult == 0 && !string.IsNullOrWhiteSpace(pointLabel)
@@ -189,14 +187,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 
                 if (points.Count == 0)
                 {
-                    return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure($"No point objects are selected in {productName}.");
+                    return OperationResult<IReadOnlyList<CSISapModelPointDataDTO>>.Failure($"No point objects are selected in {productName}.");
                 }
 
-                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Success(points);
+                return OperationResult<IReadOnlyList<CSISapModelPointDataDTO>>.Success(points);
             }
             catch
             {
-                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure($"Unable to read selected {productName} points.");
+                return OperationResult<IReadOnlyList<CSISapModelPointDataDTO>>.Failure($"Unable to read selected {productName} points.");
             }
         }
 

@@ -1,6 +1,7 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 
+
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     /// <summary>
@@ -15,7 +16,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
             _connectionService = connectionService;
         }
 
-        public OperationResult<CSISapModelConnectionInfo> Execute()
+        public OperationResult<CSISapModelConnectionInfoDTO> Execute()
         {
             return _connectionService.TryAttachToRunningInstance();
         }

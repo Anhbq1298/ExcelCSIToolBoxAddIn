@@ -33,12 +33,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public string ProductName => "SAP2000";
 
-        public OperationResult<CSISapModelConnectionInfo> TryAttachToRunningInstance()
+        public OperationResult<CSISapModelConnectionInfoDTO> TryAttachToRunningInstance()
         {
             return _connectionAdapter.TryAttachToRunningInstance();
         }
 
-        public OperationResult<CSISapModelConnectionInfo> GetCurrentConnection()
+        public OperationResult<CSISapModelConnectionInfoDTO> GetCurrentConnection()
         {
             return _connectionAdapter.GetCurrentConnection();
         }
@@ -82,12 +82,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 RefreshView);
         }
 
-        public OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs)
+        public OperationResult<CSISapModelAddPointsResultDTO> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs)
         {
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<CSISapModelAddPointsResult>.Failure(sapModelResult.Message);
+                return OperationResult<CSISapModelAddPointsResultDTO>.Failure(sapModelResult.Message);
             }
 
             return CSISapModelPointObjectService.AddPointsByCartesian(
@@ -107,12 +107,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 RefreshView);
         }
 
-        public OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs)
+        public OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs)
         {
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
+                return OperationResult<CSISapModelAddFramesResultDTO>.Failure(sapModelResult.Message);
             }
 
             return CSISapModelFrameObjectService.AddFramesByCoordinates(
@@ -134,12 +134,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 RefreshView);
         }
 
-        public OperationResult<CSISapModelAddFramesResult> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs)
+        public OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs)
         {
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
+                return OperationResult<CSISapModelAddFramesResultDTO>.Failure(sapModelResult.Message);
             }
 
             return CSISapModelFrameObjectService.AddFramesByPoint(
@@ -156,12 +156,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 RefreshView);
         }
 
-        public OperationResult<IReadOnlyList<CSISapModelPointData>> GetSelectedPointsFromActiveModel()
+        public OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel()
         {
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure(sapModelResult.Message);
+                return OperationResult<IReadOnlyList<CSISapModelPointDataDTO>>.Failure(sapModelResult.Message);
             }
 
             var pointsResult = CSISapModelPointObjectService.GetSelectedPointsFromActiveModel(

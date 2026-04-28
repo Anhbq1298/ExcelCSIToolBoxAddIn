@@ -6,9 +6,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
     {
         string ProductName { get; }
 
-        OperationResult<CSISapModelConnectionInfo> TryAttachToRunningInstance();
+        OperationResult<CSISapModelConnectionInfoDTO> TryAttachToRunningInstance();
 
-        OperationResult<CSISapModelConnectionInfo> GetCurrentConnection();
+        OperationResult<CSISapModelConnectionInfoDTO> GetCurrentConnection();
 
         OperationResult<TSapModel> EnsureSapModel();
 

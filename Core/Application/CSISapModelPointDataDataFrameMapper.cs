@@ -6,7 +6,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public static class CSISapModelPointDataDataFrameMapper
     {
-        public static DataFrame Map(IReadOnlyList<CSISapModelPointData> points)
+        public static DataFrame Map(IReadOnlyList<CSISapModelPointDataDTO> points)
         {
             var rows = new List<IReadOnlyList<object>>();
 

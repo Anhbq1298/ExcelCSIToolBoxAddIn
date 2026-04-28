@@ -16,7 +16,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         private readonly Func<TSapModel, string> _getModelPath;
         private readonly Func<TSapModel, string> _getModelCurrentUnit;
         private readonly Func<TCsiObject, int> _closeApplication;
-        private CSISapModelConnectionInfo _currentConnection;
+        private CSISapModelConnectionInfoDTO _currentConnection;
 
         internal CSISapModelConnectionAdapter(
             ICsiModelAdapter modelAdapter,
@@ -34,7 +34,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 
         public string ProductName { get; }
 
-        public OperationResult<CSISapModelConnectionInfo> TryAttachToRunningInstance()
+        public OperationResult<CSISapModelConnectionInfoDTO> TryAttachToRunningInstance()
         {
             var attachResult = _modelAdapter.AttachToRunningInstance();
             if (!attachResult.IsSuccess)
@@ -54,7 +54,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             try
             {
                 var modelPath = _getModelPath(sapModel);
-                _currentConnection = new CSISapModelConnectionInfo
+                _currentConnection = new CSISapModelConnectionInfoDTO
                 {
                     IsConnected = true,
                     ModelPath = modelPath,
@@ -64,20 +64,20 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                     SapModel = sapModel
                 };
 
-                return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
+                return OperationResult<CSISapModelConnectionInfoDTO>.Success(_currentConnection);
             }
             catch
             {
                 _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure($"Failed to attach to the running {ProductName} instance.");
+                return OperationResult<CSISapModelConnectionInfoDTO>.Failure($"Failed to attach to the running {ProductName} instance.");
             }
         }
 
-        public OperationResult<CSISapModelConnectionInfo> GetCurrentConnection()
+        public OperationResult<CSISapModelConnectionInfoDTO> GetCurrentConnection()
         {
             if (_currentConnection?.SapModel == null)
             {
-                return OperationResult<CSISapModelConnectionInfo>.Failure($"No {ProductName} model is currently connected. Please attach to a running {ProductName} instance.");
+                return OperationResult<CSISapModelConnectionInfoDTO>.Failure($"No {ProductName} model is currently connected. Please attach to a running {ProductName} instance.");
             }
 
             return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);

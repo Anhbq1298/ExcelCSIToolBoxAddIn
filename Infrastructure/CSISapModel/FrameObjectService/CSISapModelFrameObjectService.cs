@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
@@ -40,7 +38,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 refreshView);
         }
 
-        internal static OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates<TSapModel>(
+        internal static OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates<TSapModel>(
             IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs,
             string productName,
             TSapModel sapModel,
@@ -65,7 +63,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 null);
         }
 
-        internal static OperationResult<CSISapModelAddFramesResult> AddFramesByPoint<TSapModel>(
+        internal static OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint<TSapModel>(
             IReadOnlyList<CSISapModelFrameByPointInput> frameInputs,
             string productName,
             TSapModel sapModel,
@@ -139,7 +137,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             }
         }
 
-        private static OperationResult<CSISapModelAddFramesResult> AddFrames<TSapModel, TFrameInput, TAddResult>(
+        private static OperationResult<CSISapModelAddFramesResultDTO> AddFrames<TSapModel, TFrameInput, TAddResult>(
             IReadOnlyList<TFrameInput> frameInputs,
             string progressTitle,
             string productName,
@@ -153,7 +151,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
-                return OperationResult<CSISapModelAddFramesResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CSISapModelAddFramesResultDTO>.Failure("No valid rows were found in the selected range.");
             }
 
             try
@@ -194,11 +192,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                     var refreshResult = refreshView(sapModel);
                     if (!refreshResult.IsSuccess)
                     {
-                        return OperationResult<CSISapModelAddFramesResult>.Failure(refreshResult.Message);
+                        return OperationResult<CSISapModelAddFramesResultDTO>.Failure(refreshResult.Message);
                     }
                 }
 
-                return OperationResult<CSISapModelAddFramesResult>.Success(new CSISapModelAddFramesResult
+                return OperationResult<CSISapModelAddFramesResultDTO>.Success(new CSISapModelAddFramesResultDTO
                 {
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
@@ -206,11 +204,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             }
             catch (COMException ex)
             {
-                return OperationResult<CSISapModelAddFramesResult>.Failure($"{productName} COM error while adding frames by {operationName}: {ex.Message}");
+                return OperationResult<CSISapModelAddFramesResultDTO>.Failure($"{productName} COM error while adding frames by {operationName}: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return OperationResult<CSISapModelAddFramesResult>.Failure($"{productName} add-by-{operationName} failed unexpectedly: {ex.Message}");
+                return OperationResult<CSISapModelAddFramesResultDTO>.Failure($"{productName} add-by-{operationName} failed unexpectedly: {ex.Message}");
             }
         }
 
