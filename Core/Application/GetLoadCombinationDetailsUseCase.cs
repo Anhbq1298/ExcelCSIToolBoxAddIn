@@ -4,18 +4,18 @@ using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
-    public class GetLoadCombinationsUseCase
+    public class GetLoadCombinationDetailsUseCase
     {
         private readonly ICSISapModelConnectionService _connectionService;
 
-        public GetLoadCombinationsUseCase(ICSISapModelConnectionService connectionService)
+        public GetLoadCombinationDetailsUseCase(ICSISapModelConnectionService connectionService)
         {
             _connectionService = connectionService;
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>> Execute()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>> Execute(string combinationName)
         {
-            var result = _connectionService.GetLoadCombinations();
+            var result = _connectionService.GetLoadCombinationDetails(combinationName);
             return result;
         }
     }

@@ -126,6 +126,7 @@ Do not assume that a method available in one CSI product behaves identically in 
 - Keep methods short and focused.
 - Use explicit, readable naming.
 - Avoid unnecessary abstractions, but also avoid tangled procedural code.
+- Return statements must return a single, named variable rather than a long, complex inline expression (e.g., assign the result to a variable, then return it).
 - Prefer single-responsibility methods and services.
 - Prefer composition over duplication.
 - Do not introduce utility functions that duplicate existing service responsibilities.

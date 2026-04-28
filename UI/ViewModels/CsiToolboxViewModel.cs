@@ -78,11 +78,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             _getLoadCombinationsUseCase = new GetLoadCombinationsUseCase(csiConnectionService);
             _deleteLoadCombinationsUseCase = new DeleteLoadCombinationsUseCase(csiConnectionService);
+            _getLoadCombinationDetailsUseCase = new GetLoadCombinationDetailsUseCase(csiConnectionService);
 
             _getLoadPatternsUseCase = new GetLoadPatternsUseCase(csiConnectionService);
             _deleteLoadPatternsUseCase = new DeleteLoadPatternsUseCase(csiConnectionService);
 
-            LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<string>();
+            LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
@@ -126,6 +127,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations);
             AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"));
             DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations);
+            ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination);
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);

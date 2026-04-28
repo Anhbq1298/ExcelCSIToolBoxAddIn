@@ -344,18 +344,54 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return shellResult;
         }
 
-        public OperationResult<IReadOnlyList<string>> GetLoadCombinations()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>> GetLoadCombinations()
         {
             var sapModelResult = EnsureEtabsSapModel();
             if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>>.Failure(sapModelResult.Message);
+                return errorResult;
             }
 
-            return Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.GetLoadCombinations(
+            var comboResult = Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.GetLoadCombinations(
                 sapModelResult.Data,
                 (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
-                    sapModel.RespCombo.GetNameList(ref numberNames, ref names));
+                    sapModel.RespCombo.GetNameList(ref numberNames, ref names),
+                (ETABSv1.cSapModel sapModel, string name) =>
+                {
+                    int type = 0;
+                    sapModel.RespCombo.GetTypeOAPI(name, ref type);
+                    // Usually 0=Linear Add, 1=Envelope, 2=Absolute Add, 3=SRSS, 4=Range Add
+                    switch (type)
+                    {
+                        case 0: return "Linear Add";
+                        case 1: return "Envelope";
+                        case 2: return "Absolute Add";
+                        case 3: return "SRSS";
+                        case 4: return "Range Add";
+                        default: return type.ToString();
+                    }
+                });
+            
+            return comboResult;
+        }
+
+        public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>>.Failure(sapModelResult.Message);
+                return errorResult;
+            }
+
+            var detailsResult = Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.GetLoadCombinationDetails(
+                sapModelResult.Data,
+                combinationName,
+                (ETABSv1.cSapModel sapModel, string name, ref int numberItems, ref string[] caseNames, ref int[] caseTypes, ref double[] scaleFactors) =>
+                    sapModel.RespCombo.GetCaseList(name, ref numberItems, ref caseNames, ref caseTypes, ref scaleFactors));
+            
+            return detailsResult;
         }
 
         public OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames)
@@ -384,10 +420,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             var sapModelResult = EnsureEtabsSapModel();
             if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>>.Failure(sapModelResult.Message);
+                return errorResult;
             }
 
-            return Infrastructure.CSISapModel.LoadPatternService.CSISapModelLoadPatternService.GetLoadPatterns(
+            var patternResult = Infrastructure.CSISapModel.LoadPatternService.CSISapModelLoadPatternService.GetLoadPatterns(
                 sapModelResult.Data,
                 (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
                     sapModel.LoadPatterns.GetNameList(ref numberNames, ref names),
@@ -397,6 +434,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     sapModel.LoadPatterns.GetLoadType(name, ref type);
                     return type.ToString();
                 });
+            
+            return patternResult;
         }
 
         public OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames)

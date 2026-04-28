@@ -274,6 +274,8 @@
     <Compile Include="Data\DTOs\ApiPointDto.cs" />
     <Compile Include="Data\DTOs\ApiResultDto.cs" />
     <Compile Include="Data\DTOs\CSISapModelLoadPatternDTO.cs" />
+    <Compile Include="Data\DTOs\CSISapModelLoadCombinationDTO.cs" />
+    <Compile Include="Data\DTOs\LoadCombinationItemDTO.cs" />
     <Compile Include="Data\DataFrames\FrameDataFrame.cs" />
     <Compile Include="Data\DataFrames\LoadCombinationDataFrame.cs" />
     <Compile Include="Data\DataFrames\PointDataFrame.cs" />
@@ -287,6 +289,7 @@
     <Compile Include="Data\Models\SectionModel.cs" />
     <Compile Include="Core\Application\GetLoadCombinationsUseCase.cs" />
     <Compile Include="Core\Application\DeleteLoadCombinationsUseCase.cs" />
+    <Compile Include="Core\Application\GetLoadCombinationDetailsUseCase.cs" />
     <Compile Include="Core\Application\GetLoadPatternsUseCase.cs" />
     <Compile Include="Core\Application\DeleteLoadPatternsUseCase.cs" />
     <Compile Include="Infrastructure\CSISapModel\LoadCombinationService\CSISapModelLoadCombinationService.cs" />
@@ -344,6 +347,10 @@
       <DependentUpon>BatchProgressWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\LoadCombinationDetailsWindow.xaml.cs">
+      <DependentUpon>LoadCombinationDetailsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <None Include="_ref\CSI API ETABS v1.chm" />
     <None Include="_ref\CSI_OAPI_Documentation.chm" />
     <Page Include="UI\Views\EtabsToolboxWindow.xaml">
@@ -355,6 +362,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\BatchProgressWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\LoadCombinationDetailsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
