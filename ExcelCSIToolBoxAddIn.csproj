@@ -335,8 +335,12 @@
       <DependentUpon>AiAgentChatTab.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\AiAgentTaskPaneHost.cs" />
-    <Compile Include="UI\Views\WpfTaskPaneHost.cs" />
+    <Compile Include="UI\Views\AiAgentTaskPaneHost.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UI\Views\WpfTaskPaneHost.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <PropertyGroup>
@@ -385,10 +389,9 @@
       <FlavorProperties GUID="{BAA0C2D2-18E2-41B9-852F-F413020CAA33}">
         <ProjectProperties HostName="Excel" HostPackage="{29A7B9D7-A7F1-4328-8EF0-6B2D1A56B2C1}" OfficeVersion="15.0" VstxVersion="4.0" ApplicationType="Excel" Language="cs" TemplatesPath="" DebugInfoExeName="#Software\Microsoft\Office\16.0\Excel\InstallRoot\Path#excel.exe" DebugInfoCommandLine="/x" AddItemTemplatesGuid="{51063C3A-E220-4D12-8922-BDA915ACD783}" />
         <Host Name="Excel" GeneratedCodeNamespace="ExcelCSIToolBoxAddIn" PublishedHash="69C324AB27932AA2FBF2B7EA72250886FF164DE6" IconIndex="0">
-          <HostItem Name="ExcelCSIToolBoxAddin" Code="ExcelCSIToolBoxAddin.cs" CanonicalName="AddIn" CanActivate="false" IconIndex="1" Blueprint="ThisAddIn.Designer.xml" GeneratedCode="ThisAddIn.Designer.cs" PublishedHash="3D881773361987634169637012B9820026F96EDC" />
+          <HostItem Name="ExcelCSIToolBoxAddin" Code="ExcelCSIToolBoxAddin.cs" CanonicalName="AddIn" PublishedHash="3D881773361987634169637012B9820026F96EDC" CanActivate="false" IconIndex="1" Blueprint="ThisAddIn.Designer.xml" GeneratedCode="ThisAddIn.Designer.cs" />
         </Host>
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
 </Project>
-
