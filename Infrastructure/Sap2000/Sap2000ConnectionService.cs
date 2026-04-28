@@ -672,6 +672,132 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             return OperationResult<CSISapModelFrameSectionDetailDTO>.Success(detail);
         }
 
+        public OperationResult UpdateFrameSection(CSISapModelFrameSectionUpdateDTO input)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+
+            var result = SetFrameSectionProperty(sapModelResult.Data, input.SectionName, input);
+            if (!result.IsSuccess) return result;
+
+            RefreshView(sapModelResult.Data);
+            return OperationResult.Success("Frame section updated.");
+        }
+
+        public OperationResult RenameFrameSection(CSISapModelFrameSectionRenameDTO input)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+
+            var sapModel = sapModelResult.Data;
+            if (SectionNameExists(sapModel, input.SectionName))
+            {
+                return OperationResult.Failure($"Section '{input.SectionName}' already exists.");
+            }
+
+            var createResult = SetFrameSectionProperty(sapModel, input.SectionName, input);
+            if (!createResult.IsSuccess) return createResult;
+
+            int numberNames = 0;
+            string[] frameNames = null;
+            int listRet = sapModel.FrameObj.GetNameList(ref numberNames, ref frameNames);
+            if (listRet != 0 || frameNames == null)
+            {
+                return OperationResult.Failure($"Created '{input.SectionName}', but failed to list frames for reassignment.");
+            }
+
+            int reassigned = 0;
+            foreach (string frameName in frameNames)
+            {
+                string propName = string.Empty;
+                string auto = string.Empty;
+                if (sapModel.FrameObj.GetSection(frameName, ref propName, ref auto) == 0 &&
+                    string.Equals(propName, input.OriginalName, StringComparison.Ordinal))
+                {
+                    int setRet = sapModel.FrameObj.SetSection(frameName, input.SectionName, SAP2000v1.eItemType.Objects, 0, 0);
+                    if (setRet != 0)
+                    {
+                        return OperationResult.Failure($"Created '{input.SectionName}', but failed to reassign frame '{frameName}'.");
+                    }
+
+                    reassigned++;
+                }
+            }
+
+            int deleteRet = sapModel.PropFrame.Delete(input.OriginalName);
+            RefreshView(sapModel);
+
+            if (deleteRet != 0)
+            {
+                return OperationResult.Success($"Renamed section and reassigned {reassigned} frame(s). Old section could not be deleted automatically.");
+            }
+
+            return OperationResult.Success($"Renamed section and reassigned {reassigned} frame(s).");
+        }
+
+        private static OperationResult SetFrameSectionProperty(SAP2000v1.cSapModel sapModel, string sectionName, CSISapModelFrameSectionUpdateDTO input)
+        {
+            if (string.IsNullOrWhiteSpace(sectionName)) return OperationResult.Failure("Section name is required.");
+            if (string.IsNullOrWhiteSpace(input.MaterialName)) return OperationResult.Failure("Material name is required.");
+
+            string notes = input.Notes ?? string.Empty;
+            string guid = string.Empty;
+            int ret;
+
+            switch (input.ShapeType)
+            {
+                case FrameSectionShapeType.I:
+                    ret = sapModel.PropFrame.SetISection(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Top flange width ( t2 )", "Flange width ( t2 )"), Dim(input, "Top flange thickness ( tf )", "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), Dim(input, "Bottom flange width ( t2b )", "Top flange width ( t2 )", "Flange width ( t2 )"), Dim(input, "Bottom flange thickness ( tfb )", "Top flange thickness ( tf )", "Flange thickness ( tf )"), input.Color, notes, guid);
+                    break;
+                case FrameSectionShapeType.Channel:
+                    ret = sapModel.PropFrame.SetChannel(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Flange width ( t2 )", "Width ( t2 )"), Dim(input, "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), input.Color, notes, guid);
+                    break;
+                case FrameSectionShapeType.Angle:
+                    ret = sapModel.PropFrame.SetAngle(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Flange width ( t2 )", "Width ( t2 )"), Dim(input, "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), input.Color, notes, guid);
+                    break;
+                case FrameSectionShapeType.DoubleAngle:
+                    ret = sapModel.PropFrame.SetDblAngle(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Flange width ( t2 )", "Width ( t2 )"), Dim(input, "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), Dim(input, "Spacing ( dis )"), input.Color, notes, guid);
+                    break;
+                case FrameSectionShapeType.Tube:
+                    ret = sapModel.PropFrame.SetTube(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Flange width ( t2 )", "Width ( t2 )"), Dim(input, "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), input.Color, notes, guid);
+                    break;
+                case FrameSectionShapeType.Pipe:
+                    ret = sapModel.PropFrame.SetPipe(sectionName, input.MaterialName, Dim(input, "Outside diameter ( t3 )", "Diameter ( t3 )"), Dim(input, "Wall thickness ( tw )"), input.Color, notes, guid);
+                    break;
+                case FrameSectionShapeType.Rectangular:
+                    ret = sapModel.PropFrame.SetRectangle(sectionName, input.MaterialName, Dim(input, "Depth ( t3 )", "Total depth ( t3 )"), Dim(input, "Width ( t2 )"), input.Color, notes, guid);
+                    break;
+                case FrameSectionShapeType.Circular:
+                    ret = sapModel.PropFrame.SetCircle(sectionName, input.MaterialName, Dim(input, "Diameter ( t3 )", "Outside diameter ( t3 )"), input.Color, notes, guid);
+                    break;
+                default:
+                    return OperationResult.Failure($"{input.ShapeType} editing is not supported yet.");
+            }
+
+            return ret == 0 ? OperationResult.Success() : OperationResult.Failure($"Failed to set frame section '{sectionName}' (return code {ret}).");
+        }
+
+        private static bool SectionNameExists(SAP2000v1.cSapModel sapModel, string sectionName)
+        {
+            int numberNames = 0;
+            string[] names = null;
+            if (sapModel.PropFrame.GetNameList(ref numberNames, ref names) != 0 || names == null) return false;
+            foreach (string name in names)
+            {
+                if (string.Equals(name, sectionName, StringComparison.Ordinal)) return true;
+            }
+            return false;
+        }
+
+        private static double Dim(CSISapModelFrameSectionUpdateDTO input, params string[] keys)
+        {
+            foreach (string key in keys)
+            {
+                if (input.Dimensions.TryGetValue(key, out double value)) return value;
+            }
+            return 0;
+        }
+
         private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel)
         {
             int refreshResult = sapModel.View.RefreshView(0, false);

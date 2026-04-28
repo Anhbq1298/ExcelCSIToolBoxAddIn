@@ -45,6 +45,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 
         OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>> GetFrameSections();
         OperationResult<CSISapModelFrameSectionDetailDTO> GetFrameSectionDetail(string sectionName);
+        OperationResult UpdateFrameSection(CSISapModelFrameSectionUpdateDTO input);
+        OperationResult RenameFrameSection(CSISapModelFrameSectionRenameDTO input);
 
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
         OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);

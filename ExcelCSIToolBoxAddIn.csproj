@@ -277,6 +277,7 @@
     <Compile Include="Data\DTOs\CSISapModelLoadCombinationDTO.cs" />
     <Compile Include="Data\DTOs\LoadCombinationItemDTO.cs" />
     <Compile Include="Data\DTOs\CSISapModelFrameSectionDTO.cs" />
+    <Compile Include="Data\DTOs\CSISapModelFrameSectionUpdateDTO.cs" />
     <Compile Include="Data\DataFrames\FrameDataFrame.cs" />
     <Compile Include="Data\DataFrames\LoadCombinationDataFrame.cs" />
     <Compile Include="Data\DataFrames\PointDataFrame.cs" />
@@ -295,6 +296,8 @@
     <Compile Include="Core\Application\DeleteLoadPatternsUseCase.cs" />
     <Compile Include="Core\Application\GetFrameSectionsUseCase.cs" />
     <Compile Include="Core\Application\GetFrameSectionDetailUseCase.cs" />
+    <Compile Include="Core\Application\UpdateFrameSectionUseCase.cs" />
+    <Compile Include="Core\Application\RenameFrameSectionUseCase.cs" />
     <Compile Include="Infrastructure\CSISapModel\LoadCombinationService\CSISapModelLoadCombinationService.cs" />
     <Compile Include="Infrastructure\CSISapModel\LoadPatternService\CSISapModelLoadPatternService.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />
@@ -337,6 +340,8 @@
     <Compile Include="Infrastructure\Excel\IExcelSelectionService.cs" />
     <Compile Include="Infrastructure\Excel\IExcelOutputService.cs" />
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
+    <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
+    <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
     <Compile Include="UI\ViewModels\SectionDimensionAnnotation.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
     <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />

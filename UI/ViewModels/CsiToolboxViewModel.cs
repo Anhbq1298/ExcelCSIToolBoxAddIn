@@ -47,6 +47,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private readonly GetFrameSectionsUseCase _getFrameSectionsUseCase;
         private readonly GetFrameSectionDetailUseCase _getFrameSectionDetailUseCase;
+        private readonly UpdateFrameSectionUseCase _updateFrameSectionUseCase;
+        private readonly RenameFrameSectionUseCase _renameFrameSectionUseCase;
 
         private string _modelName;
         private bool _isConnected;
@@ -92,6 +94,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             _getFrameSectionsUseCase = new GetFrameSectionsUseCase(csiConnectionService);
             _getFrameSectionDetailUseCase = new GetFrameSectionDetailUseCase(csiConnectionService);
+            _updateFrameSectionUseCase = new UpdateFrameSectionUseCase(csiConnectionService);
+            _renameFrameSectionUseCase = new RenameFrameSectionUseCase(csiConnectionService);
 
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
@@ -833,11 +837,60 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess)
             {
                 var window = new ExcelCSIToolBoxAddIn.UI.Views.FrameSectionDetailWindow(result.Data);
-                window.ShowDialog();
+                bool? dialogResult = window.ShowDialog();
+                if (dialogResult != true)
+                {
+                    return;
+                }
+
+                OperationResult saveResult;
+                string selectedName;
+                if (window.ViewModel.IsRename)
+                {
+                    var confirm = MessageBox.Show(
+                        "Renaming a section will create a new section, reassign frames using the old section, and then delete the old section when possible. Continue?",
+                        ProductTitle,
+                        MessageBoxButton.OKCancel,
+                        MessageBoxImage.Warning);
+
+                    if (confirm != MessageBoxResult.OK)
+                    {
+                        return;
+                    }
+
+                    var renameInput = window.ViewModel.ToRenameDto();
+                    selectedName = renameInput.SectionName;
+                    saveResult = _renameFrameSectionUseCase.Execute(renameInput);
+                }
+                else
+                {
+                    var updateInput = window.ViewModel.ToUpdateDto();
+                    selectedName = updateInput.SectionName;
+                    saveResult = _updateFrameSectionUseCase.Execute(updateInput);
+                }
+
+                ShowOperationResult(saveResult);
+                if (saveResult.IsSuccess)
+                {
+                    GetFrameSections();
+                    SelectFrameSectionByName(selectedName);
+                }
             }
             else
             {
                 ShowOperationResult(OperationResult.Failure(result.Message));
+            }
+        }
+
+        private void SelectFrameSectionByName(string sectionName)
+        {
+            foreach (var section in FrameSections)
+            {
+                if (string.Equals(section.Name, sectionName, System.StringComparison.Ordinal))
+                {
+                    SelectedFrameSection = section;
+                    return;
+                }
             }
         }
 
