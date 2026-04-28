@@ -34,6 +34,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private readonly CreateConcreteRectangleSectionsFromExcelRangeUseCase _createConcreteRectangleSectionsUseCase;
         private readonly CreateConcreteCircleSectionsFromExcelRangeUseCase _createConcreteCircleSectionsUseCase;
+        
+        private readonly GetLoadCombinationsUseCase _getLoadCombinationsUseCase;
+        private readonly DeleteLoadCombinationsUseCase _deleteLoadCombinationsUseCase;
 
         private string _modelName;
         private bool _isConnected;
@@ -69,6 +72,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             _createConcreteRectangleSectionsUseCase = new CreateConcreteRectangleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
             _createConcreteCircleSectionsUseCase = new CreateConcreteCircleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
+
+            _getLoadCombinationsUseCase = new GetLoadCombinationsUseCase(csiConnectionService);
+            _deleteLoadCombinationsUseCase = new DeleteLoadCombinationsUseCase(csiConnectionService);
+
+            LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<string>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance);
@@ -106,7 +114,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             GetLoadPatternsCommand = new RelayCommand(() => ShowPlaceholder("Get Load Patterns"));
             SetLoadPatternsNameCommand = new RelayCommand(() => ShowPlaceholder("Set Load Patterns Name"));
+            
+            GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations);
             AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"));
+            DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations);
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
@@ -203,7 +214,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ICommand GetLoadPatternsCommand { get; }
         public ICommand SetLoadPatternsNameCommand { get; }
+        public ICommand GetLoadCombinationsCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
+        public ICommand DeleteSelectedLoadCombinationsCommand { get; }
+
+        public System.Collections.ObjectModel.ObservableCollection<string> LoadCombinations { get; }
 
         private void LoadConnectionState(bool showMessage)
         {
@@ -408,6 +423,49 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ProductTitle,
                 MessageBoxButton.OK,
                 result.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void GetLoadCombinations()
+        {
+            var result = _getLoadCombinationsUseCase.Execute();
+            if (result.IsSuccess)
+            {
+                LoadCombinations.Clear();
+                if (result.Data != null)
+                {
+                    foreach (var c in result.Data)
+                    {
+                        LoadCombinations.Add(c);
+                    }
+                }
+            }
+            else
+            {
+                ShowOperationResult(OperationResult.Failure(result.Message));
+            }
+        }
+
+        private void DeleteSelectedLoadCombinations(System.Collections.IList selectedItems)
+        {
+            if (selectedItems == null || selectedItems.Count == 0) return;
+            
+            var list = new System.Collections.Generic.List<string>();
+            foreach (var item in selectedItems)
+            {
+                if (item is string str)
+                {
+                    list.Add(str);
+                }
+            }
+
+            if (list.Count == 0) return;
+
+            var result = _deleteLoadCombinationsUseCase.Execute(list);
+            ShowOperationResult(result);
+            if (result.IsSuccess)
+            {
+                GetLoadCombinations(); // refresh list after deletion
+            }
         }
 
         private void ShowPlaceholder(string featureName)

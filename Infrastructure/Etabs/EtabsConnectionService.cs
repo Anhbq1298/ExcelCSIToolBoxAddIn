@@ -344,6 +344,41 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return shellResult;
         }
 
+        public OperationResult<IReadOnlyList<string>> GetLoadCombinations()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.GetLoadCombinations(
+                sapModelResult.Data,
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.RespCombo.GetNameList(ref numberNames, ref names));
+        }
+
+        public OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var result = Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.DeleteLoadCombinations(
+                sapModelResult.Data,
+                loadCombinationNames,
+                (ETABSv1.cSapModel sapModel, string name) => sapModel.RespCombo.Delete(name));
+            
+            if (result.IsSuccess)
+            {
+                RefreshView(sapModelResult.Data);
+            }
+
+            return result;
+        }
+
         private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)
         {
             int refreshResult = sapModel.View.RefreshView(0, false);

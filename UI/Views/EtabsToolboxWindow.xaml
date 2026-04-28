@@ -524,11 +524,37 @@
                             </GroupBox>
 
                             <GroupBox Header="Load Combination" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <Grid>
+                                <Grid Height="180">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="150"/>
                                     </Grid.ColumnDefinitions>
-                                    <Button Grid.Column="0" Content="Add From Excel Range" HorizontalAlignment="Stretch" Command="{Binding AddLoadCombinationFromExcelCommand}" />
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Combinations in Model" Foreground="Black" Margin="0,0,0,4"/>
+                                    <ListView x:Name="LoadCombinationList" Grid.Row="1" Grid.Column="0" 
+                                              ItemsSource="{Binding LoadCombinations}"
+                                              SelectionMode="Extended"
+                                              BorderBrush="#CCCCCC" BorderThickness="1"
+                                              FontWeight="Normal" Foreground="Black">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}" />
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                    
+                                    <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
+                                        <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
+                                        <Button Content="Add From Excel" HorizontalAlignment="Stretch" Command="{Binding AddLoadCombinationFromExcelCommand}" Margin="0,0,0,8"/>
+                                        <Button Content="Delete Selected" HorizontalAlignment="Stretch" 
+                                                Command="{Binding DeleteSelectedLoadCombinationsCommand}"
+                                                CommandParameter="{Binding ElementName=LoadCombinationList, Path=SelectedItems}"/>
+                                    </StackPanel>
                                 </Grid>
                             </GroupBox>
                         </StackPanel>

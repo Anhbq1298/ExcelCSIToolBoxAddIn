@@ -339,6 +339,41 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             return _connectionAdapter.EnsureSapModel();
         }
 
+        public OperationResult<IReadOnlyList<string>> GetLoadCombinations()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.GetLoadCombinations(
+                sapModelResult.Data,
+                (SAP2000v1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.RespCombo.GetNameList(ref numberNames, ref names));
+        }
+
+        public OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var result = Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.DeleteLoadCombinations(
+                sapModelResult.Data,
+                loadCombinationNames,
+                (SAP2000v1.cSapModel sapModel, string name) => sapModel.RespCombo.Delete(name));
+            
+            if (result.IsSuccess)
+            {
+                RefreshView(sapModelResult.Data);
+            }
+
+            return result;
+        }
+
         private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel)
         {
             int refreshResult = sapModel.View.RefreshView(0, false);

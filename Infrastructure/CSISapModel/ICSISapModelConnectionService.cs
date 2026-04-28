@@ -42,5 +42,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         OperationResult CreateShellAreasFromSelectedFrames(
             string propertyName,
             ShellCreationTolerances tolerances);
+
+        OperationResult<IReadOnlyList<string>> GetLoadCombinations();
+        OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);
     }
 }
