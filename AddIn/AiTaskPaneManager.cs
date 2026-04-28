@@ -54,7 +54,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             }
 
             _aiTaskPaneHost = new AiAgentTaskPaneHost();
-            _aiTaskPane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(_aiTaskPaneHost, "AI Agent");
+            _aiTaskPane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(_aiTaskPaneHost, "AI Agent Studio");
             _aiTaskPane.DockPosition = MsoCTPDockPosition.msoCTPDockPositionRight;
             _aiTaskPane.Width = 420;
             _aiTaskPane.Visible = false;
