@@ -1,4 +1,8 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
+using ExcelCSIToolBoxAddIn.Data;
+using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBoxAddIn.Data.Models;
+using ExcelCSIToolBoxAddIn.Data.Mappers;
 using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 

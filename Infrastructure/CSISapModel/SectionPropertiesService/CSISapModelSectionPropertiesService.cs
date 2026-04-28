@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Common.Results;
+using ExcelCSIToolBoxAddIn.Data;
+using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBoxAddIn.Data.Models;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Core.Tabular;
-using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
+using ExcelCSIToolBoxAddIn.Data.DTOs;
 
-namespace ExcelCSIToolBoxAddIn.Core.Application
+namespace ExcelCSIToolBoxAddIn.Data.Mappers
 {
     public static class CSISapModelPointDataDataFrameMapper
     {

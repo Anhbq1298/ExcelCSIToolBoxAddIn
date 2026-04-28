@@ -3,6 +3,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
+using ExcelCSIToolBoxAddIn.Data;
+using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBoxAddIn.Data.Models;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using ExcelCSIToolBoxAddIn.Infrastructure.Sap2000;
 

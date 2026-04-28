@@ -4,6 +4,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
+using ExcelCSIToolBoxAddIn.Data;
+using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBoxAddIn.Data.Models;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel

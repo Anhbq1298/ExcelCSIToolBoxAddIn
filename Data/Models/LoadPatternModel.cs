@@ -1,0 +1,3 @@
+namespace ExcelCSIToolBoxAddIn.Data.Models
+{
+}

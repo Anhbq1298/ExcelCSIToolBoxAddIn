@@ -1,24 +1,27 @@
 using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Core.Tabular;
 
-namespace ExcelCSIToolBoxAddIn.Core.Application
+namespace ExcelCSIToolBoxAddIn.Data.Mappers
 {
     public static class CSISapModelFrameDataDataFrameMapper
     {
-        public static DataFrame Map(IReadOnlyList<string> frameUniqueNames)
+        public static DataFrame Map(IReadOnlyList<string> frames)
         {
             var rows = new List<IReadOnlyList<object>>();
 
-            if (frameUniqueNames != null)
+            if (frames != null)
             {
-                foreach (var frameUniqueName in frameUniqueNames)
+                foreach (var frame in frames)
                 {
-                    rows.Add(new object[] { frameUniqueName });
+                    rows.Add(new object[]
+                    {
+                        frame
+                    });
                 }
             }
 
             var dataFrame = new DataFrame(
-                new[] { "FrameUniqueName" },
+                new[] { "UniqueName" },
                 rows);
             return dataFrame;
         }

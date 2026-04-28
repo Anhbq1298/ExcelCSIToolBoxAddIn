@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
+namespace ExcelCSIToolBoxAddIn.Data
 {
     #region Results & Data DTOs
     
@@ -87,7 +87,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
     }
 
     public class CSISapModelSteelChannelSectionInput
-    {
+    { bn ds
         public string SectionName { get; set; }
         public string MaterialName { get; set; }
         public double H { get; set; }
