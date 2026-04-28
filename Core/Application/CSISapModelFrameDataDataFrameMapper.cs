@@ -17,9 +17,10 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 }
             }
 
-            return new DataFrame(
+            var dataFrame = new DataFrame(
                 new[] { "FrameUniqueName" },
                 rows);
+            return dataFrame;
         }
     }
 }

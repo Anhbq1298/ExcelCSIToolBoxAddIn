@@ -12,22 +12,24 @@ namespace ExcelCSIToolBoxAddIn.Adapters
 
         public static CsiAttachResult Success(object applicationObject, object sapModel, string message = null)
         {
-            return new CsiAttachResult
+            var result = new CsiAttachResult
             {
                 IsSuccess = true,
                 ApplicationObject = applicationObject,
                 SapModel = sapModel,
                 Message = message
             };
+            return result;
         }
 
         public static CsiAttachResult Failure(string message)
         {
-            return new CsiAttachResult
+            var result = new CsiAttachResult
             {
                 IsSuccess = false,
                 Message = message
             };
+            return result;
         }
     }
 }

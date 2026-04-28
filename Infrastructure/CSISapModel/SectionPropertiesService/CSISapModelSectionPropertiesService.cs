@@ -21,7 +21,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelISectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "ETABS",
                 "Creating Steel I-Sections...",
@@ -29,13 +29,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
                 (model, input) => model.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf));
+            return result;
         }
 
         internal static OperationResult AddSteelISections(
             SAP2000v1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelISectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "SAP2000",
                 "Creating Steel I-Sections...",
@@ -43,13 +44,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
                 (model, input) => model.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf, -1, "", ""));
+            return result;
         }
 
         internal static OperationResult AddSteelChannelSections(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "ETABS",
                 "Creating Steel Channel Sections...",
@@ -57,13 +59,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
                 (model, input) => model.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw));
+            return result;
         }
 
         internal static OperationResult AddSteelChannelSections(
             SAP2000v1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "SAP2000",
                 "Creating Steel Channel Sections...",
@@ -71,13 +74,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
                 (model, input) => model.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
+            return result;
         }
 
         internal static OperationResult AddSteelAngleSections(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "ETABS",
                 "Creating Steel Angle Sections...",
@@ -85,13 +89,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
                 (model, input) => model.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw));
+            return result;
         }
 
         internal static OperationResult AddSteelAngleSections(
             SAP2000v1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "SAP2000",
                 "Creating Steel Angle Sections...",
@@ -99,13 +104,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
                 (model, input) => model.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
+            return result;
         }
 
         internal static OperationResult AddSteelPipeSections(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "ETABS",
                 "Creating Steel Pipe Sections...",
@@ -113,13 +119,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
                 (model, input) => model.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness));
+            return result;
         }
 
         internal static OperationResult AddSteelPipeSections(
             SAP2000v1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "SAP2000",
                 "Creating Steel Pipe Sections...",
@@ -127,13 +134,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
                 (model, input) => model.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness, -1, "", ""));
+            return result;
         }
 
         internal static OperationResult AddSteelTubeSections(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "ETABS",
                 "Creating Steel Tube Sections...",
@@ -141,13 +149,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
                 (model, input) => model.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", "Default"));
+            return result;
         }
 
         internal static OperationResult AddSteelTubeSections(
             SAP2000v1.cSapModel sapModel,
             IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "SAP2000",
                 "Creating Steel Tube Sections...",
@@ -155,13 +164,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
                 (model, input) => model.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", ""));
+            return result;
         }
 
         internal static OperationResult AddConcreteRectangleSections(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "ETABS",
                 "Creating Concrete Rectangle Sections...",
@@ -169,13 +179,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
                 (model, input) => model.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B));
+            return result;
         }
 
         internal static OperationResult AddConcreteRectangleSections(
             SAP2000v1.cSapModel sapModel,
             IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "SAP2000",
                 "Creating Concrete Rectangle Sections...",
@@ -183,13 +194,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
                 (model, input) => model.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B, -1, "", ""));
+            return result;
         }
 
         internal static OperationResult AddConcreteCircleSections(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "ETABS",
                 "Creating Concrete Circle Sections...",
@@ -197,13 +209,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
                 (model, input) => model.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D));
+            return result;
         }
 
         internal static OperationResult AddConcreteCircleSections(
             SAP2000v1.cSapModel sapModel,
             IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs)
         {
-            return CreateSections(
+            var result = CreateSections(
                 inputs,
                 "SAP2000",
                 "Creating Concrete Circle Sections...",
@@ -211,6 +224,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
                 (model, input) => model.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D, -1, "", ""));
+            return result;
         }
 
         private static OperationResult CreateSections<TSapModel, TInput>(

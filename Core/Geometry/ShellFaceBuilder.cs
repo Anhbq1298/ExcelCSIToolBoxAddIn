@@ -114,7 +114,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                 pointCoords,
                 tolerances.AreaTolerance);
 
-            return new ShellFaceBuildResult
+            var buildResult = new ShellFaceBuildResult
             {
                 PointCoordinates = pointCoords,
                 NodeModelPoints = nodeModelPoint,
@@ -128,6 +128,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
                 ExtractedFaceCount = faces.Count,
                 OuterFaceRemovedCount = 0
             };
+            return buildResult;
         }
 
         public static string[] CleanLoopBoundaryXY(
@@ -280,18 +281,20 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
 
         private static bool IsValidFrame(ShellFrameGeometry frame)
         {
-            return frame != null &&
-                   !string.IsNullOrWhiteSpace(frame.FrameName) &&
-                   !string.IsNullOrWhiteSpace(frame.StartPointName) &&
-                   !string.IsNullOrWhiteSpace(frame.EndPointName) &&
-                   frame.StartPoint != null &&
-                   frame.EndPoint != null &&
-                   !string.Equals(frame.StartPointName, frame.EndPointName, StringComparison.OrdinalIgnoreCase);
+            var isValid = frame != null &&
+                          !string.IsNullOrWhiteSpace(frame.FrameName) &&
+                          !string.IsNullOrWhiteSpace(frame.StartPointName) &&
+                          !string.IsNullOrWhiteSpace(frame.EndPointName) &&
+                          frame.StartPoint != null &&
+                          frame.EndPoint != null &&
+                          !string.Equals(frame.StartPointName, frame.EndPointName, StringComparison.OrdinalIgnoreCase);
+            return isValid;
         }
 
         private static Dictionary<string, HashSet<string>> NewAdjacency()
         {
-            return new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            var adjacency = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            return adjacency;
         }
 
         private static void AddPointIfMissing(Dictionary<string, ShellPoint3D> pointCoords, string pointName, ShellPoint3D point)
@@ -457,15 +460,17 @@ namespace ExcelCSIToolBoxAddIn.Core.Geometry
 
             var projectedX = frame.StartPoint.X + t * dx;
             var projectedY = frame.StartPoint.Y + t * dy;
-            return Distance2D(point.X, point.Y, projectedX, projectedY) <= pointTol;
+            var isOnSegment = Distance2D(point.X, point.Y, projectedX, projectedY) <= pointTol;
+            return isOnSegment;
         }
 
         private static bool FramesShareBothEndpoints(string p1, string p2, string q1, string q2)
         {
-            return (string.Equals(p1, q1, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(p2, q2, StringComparison.OrdinalIgnoreCase)) ||
-                   (string.Equals(p1, q2, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(p2, q1, StringComparison.OrdinalIgnoreCase));
+            var forwardMatch = string.Equals(p1, q1, StringComparison.OrdinalIgnoreCase) &&
+                               string.Equals(p2, q2, StringComparison.OrdinalIgnoreCase);
+            var reverseMatch = string.Equals(p1, q2, StringComparison.OrdinalIgnoreCase) &&
+                               string.Equals(p2, q1, StringComparison.OrdinalIgnoreCase);
+            return forwardMatch || reverseMatch;
         }
 
         private static void AddFrameSplitParam(

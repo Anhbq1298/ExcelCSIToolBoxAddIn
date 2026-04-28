@@ -186,92 +186,134 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Excel
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow>> ReadSteelISectionRows()
         {
-            return ReadRows(6, "SectionName, Material, h, b, tw, tf", "Select a 6-column range:\r\nSectionName | Material | h | b | tw | tf", "Select Steel I-Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow
-            {
-                ExcelRowNumber = selection.Row + row - 1,
-                SectionName = ReadCellText(rawValues, selection, row, 1),
-                MaterialName = ReadCellText(rawValues, selection, row, 2),
-                HText = ReadCellText(rawValues, selection, row, 3),
-                BText = ReadCellText(rawValues, selection, row, 4),
-                TwText = ReadCellText(rawValues, selection, row, 5),
-                TfText = ReadCellText(rawValues, selection, row, 6)
-            });
+            var result = ReadRows(
+                6,
+                "SectionName, Material, h, b, tw, tf",
+                "Select a 6-column range:\r\nSectionName | Material | h | b | tw | tf",
+                "Select Steel I-Section Input Range",
+                (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelISectionRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    SectionName = ReadCellText(rawValues, selection, row, 1),
+                    MaterialName = ReadCellText(rawValues, selection, row, 2),
+                    HText = ReadCellText(rawValues, selection, row, 3),
+                    BText = ReadCellText(rawValues, selection, row, 4),
+                    TwText = ReadCellText(rawValues, selection, row, 5),
+                    TfText = ReadCellText(rawValues, selection, row, 6)
+                });
+            return result;
         }
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelChannelSectionRow>> ReadSteelChannelSectionRows()
         {
-            return ReadRows(6, "SectionName, Material, h, b, tw, tf", "Select a 6-column range:\r\nSectionName | Material | h | b | tw | tf", "Select Steel Channel Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelChannelSectionRow
-            {
-                ExcelRowNumber = selection.Row + row - 1,
-                SectionName = ReadCellText(rawValues, selection, row, 1),
-                MaterialName = ReadCellText(rawValues, selection, row, 2),
-                HText = ReadCellText(rawValues, selection, row, 3),
-                BText = ReadCellText(rawValues, selection, row, 4),
-                TwText = ReadCellText(rawValues, selection, row, 5),
-                TfText = ReadCellText(rawValues, selection, row, 6)
-            });
+            var result = ReadRows(
+                6,
+                "SectionName, Material, h, b, tw, tf",
+                "Select a 6-column range:\r\nSectionName | Material | h | b | tw | tf",
+                "Select Steel Channel Section Input Range",
+                (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelChannelSectionRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    SectionName = ReadCellText(rawValues, selection, row, 1),
+                    MaterialName = ReadCellText(rawValues, selection, row, 2),
+                    HText = ReadCellText(rawValues, selection, row, 3),
+                    BText = ReadCellText(rawValues, selection, row, 4),
+                    TwText = ReadCellText(rawValues, selection, row, 5),
+                    TfText = ReadCellText(rawValues, selection, row, 6)
+                });
+            return result;
         }
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelAngleSectionRow>> ReadSteelAngleSectionRows()
         {
-            return ReadRows(6, "SectionName, Material, h, b, tw, tf", "Select a 6-column range:\r\nSectionName | Material | h | b | tw | tf", "Select Steel Angle Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelAngleSectionRow
-            {
-                ExcelRowNumber = selection.Row + row - 1,
-                SectionName = ReadCellText(rawValues, selection, row, 1),
-                MaterialName = ReadCellText(rawValues, selection, row, 2),
-                HText = ReadCellText(rawValues, selection, row, 3),
-                BText = ReadCellText(rawValues, selection, row, 4),
-                TwText = ReadCellText(rawValues, selection, row, 5),
-                TfText = ReadCellText(rawValues, selection, row, 6)
-            });
+            var result = ReadRows(
+                6,
+                "SectionName, Material, h, b, tw, tf",
+                "Select a 6-column range:\r\nSectionName | Material | h | b | tw | tf",
+                "Select Steel Angle Section Input Range",
+                (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelAngleSectionRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    SectionName = ReadCellText(rawValues, selection, row, 1),
+                    MaterialName = ReadCellText(rawValues, selection, row, 2),
+                    HText = ReadCellText(rawValues, selection, row, 3),
+                    BText = ReadCellText(rawValues, selection, row, 4),
+                    TwText = ReadCellText(rawValues, selection, row, 5),
+                    TfText = ReadCellText(rawValues, selection, row, 6)
+                });
+            return result;
         }
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow>> ReadSteelPipeSectionRows()
         {
-            return ReadRows(4, "SectionName, Material, OutsideDiameter, WallThickness", "Select a 4-column range:\r\nSectionName | Material | OutsideDiameter | WallThickness", "Select Steel Pipe Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow
-            {
-                ExcelRowNumber = selection.Row + row - 1,
-                SectionName = ReadCellText(rawValues, selection, row, 1),
-                MaterialName = ReadCellText(rawValues, selection, row, 2),
-                OutsideDiameterText = ReadCellText(rawValues, selection, row, 3),
-                WallThicknessText = ReadCellText(rawValues, selection, row, 4)
-            });
+            var result = ReadRows(
+                4,
+                "SectionName, Material, OutsideDiameter, WallThickness",
+                "Select a 4-column range:\r\nSectionName | Material | OutsideDiameter | WallThickness",
+                "Select Steel Pipe Section Input Range",
+                (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelPipeSectionRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    SectionName = ReadCellText(rawValues, selection, row, 1),
+                    MaterialName = ReadCellText(rawValues, selection, row, 2),
+                    OutsideDiameterText = ReadCellText(rawValues, selection, row, 3),
+                    WallThicknessText = ReadCellText(rawValues, selection, row, 4)
+                });
+            return result;
         }
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow>> ReadSteelTubeSectionRows()
         {
-            return ReadRows(5, "SectionName, Material, h, b, t", "Select a 5-column range:\r\nSectionName | Material | h | b | t", "Select Steel Tube Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow
-            {
-                ExcelRowNumber = selection.Row + row - 1,
-                SectionName = ReadCellText(rawValues, selection, row, 1),
-                MaterialName = ReadCellText(rawValues, selection, row, 2),
-                HText = ReadCellText(rawValues, selection, row, 3),
-                BText = ReadCellText(rawValues, selection, row, 4),
-                TText = ReadCellText(rawValues, selection, row, 5)
-            });
+            var result = ReadRows(
+                5,
+                "SectionName, Material, h, b, t",
+                "Select a 5-column range:\r\nSectionName | Material | h | b | t",
+                "Select Steel Tube Section Input Range",
+                (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelSteelTubeSectionRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    SectionName = ReadCellText(rawValues, selection, row, 1),
+                    MaterialName = ReadCellText(rawValues, selection, row, 2),
+                    HText = ReadCellText(rawValues, selection, row, 3),
+                    BText = ReadCellText(rawValues, selection, row, 4),
+                    TText = ReadCellText(rawValues, selection, row, 5)
+                });
+            return result;
         }
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteRectangleSectionRow>> ReadConcreteRectangleSectionRows()
         {
-            return ReadRows(4, "SectionName, Material, h, b", "Select a 4-column range:\r\nSectionName | Material | h | b", "Select Concrete Rectangle Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteRectangleSectionRow
-            {
-                ExcelRowNumber = selection.Row + row - 1,
-                SectionName = ReadCellText(rawValues, selection, row, 1),
-                MaterialName = ReadCellText(rawValues, selection, row, 2),
-                HText = ReadCellText(rawValues, selection, row, 3),
-                BText = ReadCellText(rawValues, selection, row, 4)
-            });
+            var result = ReadRows(
+                4,
+                "SectionName, Material, h, b",
+                "Select a 4-column range:\r\nSectionName | Material | h | b",
+                "Select Concrete Rectangle Section Input Range",
+                (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteRectangleSectionRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    SectionName = ReadCellText(rawValues, selection, row, 1),
+                    MaterialName = ReadCellText(rawValues, selection, row, 2),
+                    HText = ReadCellText(rawValues, selection, row, 3),
+                    BText = ReadCellText(rawValues, selection, row, 4)
+                });
+            return result;
         }
 
         public OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteCircleSectionRow>> ReadConcreteCircleSectionRows()
         {
-            return ReadRows(3, "SectionName, Material, d", "Select a 3-column range:\r\nSectionName | Material | d", "Select Concrete Circle Section Input Range", (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteCircleSectionRow
-            {
-                ExcelRowNumber = selection.Row + row - 1,
-                SectionName = ReadCellText(rawValues, selection, row, 1),
-                MaterialName = ReadCellText(rawValues, selection, row, 2),
-                DText = ReadCellText(rawValues, selection, row, 3)
-            });
+            var result = ReadRows(
+                3,
+                "SectionName, Material, d",
+                "Select a 3-column range:\r\nSectionName | Material | d",
+                "Select Concrete Circle Section Input Range",
+                (rawValues, selection, row) => new ExcelCSIToolBoxAddIn.Core.Tabular.ExcelConcreteCircleSectionRow
+                {
+                    ExcelRowNumber = selection.Row + row - 1,
+                    SectionName = ReadCellText(rawValues, selection, row, 1),
+                    MaterialName = ReadCellText(rawValues, selection, row, 2),
+                    DText = ReadCellText(rawValues, selection, row, 3)
+                });
+            return result;
         }
 
         private OperationResult<IReadOnlyList<T>> ReadRows<T>(int expectedColumns, string expectedColumnsDesc, string prompt, string title, System.Func<object, Range, int, T> rowMapper)

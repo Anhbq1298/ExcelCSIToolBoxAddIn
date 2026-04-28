@@ -55,13 +55,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelPointObjectService.SelectPointsByUniqueNames(
+            var selectResult = CSISapModelPointObjectService.SelectPointsByUniqueNames(
                 uniqueNames,
                 ProductName,
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.PointObj.SetSelected(name, true, ETABSv1.eItemType.Objects),
                 RefreshView);
+            return selectResult;
         }
 
         public OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames)
@@ -72,13 +73,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelFrameObjectService.SelectFramesByUniqueNames(
+            var selectResult = CSISapModelFrameObjectService.SelectFramesByUniqueNames(
                 uniqueNames,
                 ProductName,
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, ETABSv1.eItemType.Objects),
                 RefreshView);
+            return selectResult;
         }
 
         public OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs)
@@ -89,7 +91,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult<CSISapModelAddPointsResult>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelPointObjectService.AddPointsByCartesian(
+            var addResult = CSISapModelPointObjectService.AddPointsByCartesian(
                 pointInputs,
                 ProductName,
                 sapModelResult.Data,
@@ -104,6 +106,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         true,
                         0),
                 RefreshView);
+            return addResult;
         }
 
         public OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs)
@@ -114,7 +117,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelFrameObjectService.AddFramesByCoordinates(
+            var addResult = CSISapModelFrameObjectService.AddFramesByCoordinates(
                 frameInputs,
                 ProductName,
                 sapModelResult.Data,
@@ -131,6 +134,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         userName,
                         "Global"),
                 RefreshView);
+            return addResult;
         }
 
         public OperationResult<CSISapModelAddFramesResult> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs)
@@ -141,7 +145,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelFrameObjectService.AddFramesByPoint(
+            var addResult = CSISapModelFrameObjectService.AddFramesByPoint(
                 frameInputs,
                 ProductName,
                 sapModelResult.Data,
@@ -153,6 +157,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         sectionName,
                         userName),
                 RefreshView);
+            return addResult;
         }
 
         public OperationResult<IReadOnlyList<CSISapModelPointData>> GetSelectedPointsFromActiveModel()
@@ -163,7 +168,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelPointObjectService.GetSelectedPointsFromActiveModel(
+            var pointsResult = CSISapModelPointObjectService.GetSelectedPointsFromActiveModel(
                 ProductName,
                 sapModelResult.Data,
                 (ETABSv1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
@@ -172,6 +177,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     sapModel.PointObj.GetCoordCartesian(pointName, ref x, ref y, ref z, "Global"),
                 (ETABSv1.cSapModel sapModel, string pointName, ref string pointLabel, ref string pointStory) =>
                     sapModel.PointObj.GetLabelFromName(pointName, ref pointLabel, ref pointStory));
+            return pointsResult;
         }
 
         public OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel()
@@ -182,11 +188,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelFrameObjectService.GetSelectedFramesFromActiveModel(
+            var framesResult = CSISapModelFrameObjectService.GetSelectedFramesFromActiveModel(
                 ProductName,
                 sapModelResult.Data,
                 (ETABSv1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
                     sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames));
+            return framesResult;
         }
 
         private OperationResult<ETABSv1.cSapModel> EnsureEtabsSapModel()
@@ -316,7 +323,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 return OperationResult.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelShellObjectService.CreateShellAreasFromSelectedFrames(
+            var shellResult = CSISapModelShellObjectService.CreateShellAreasFromSelectedFrames(
                 sapModelResult.Data,
                 "ETABS",
                 propertyName,
@@ -331,6 +338,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 (ETABSv1.cSapModel sapModel, int nodeCount, ref double[] x, ref double[] y, ref double[] z, ref string areaName, string propName) =>
                     sapModel.AreaObj.AddByCoord(nodeCount, ref x, ref y, ref z, ref areaName, propName, string.Empty, "Global"),
                 RefreshView);
+            return shellResult;
         }
 
         private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)

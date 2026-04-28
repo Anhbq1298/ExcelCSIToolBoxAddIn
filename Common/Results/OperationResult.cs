@@ -11,12 +11,14 @@ namespace ExcelCSIToolBoxAddIn.Common.Results
 
         public static OperationResult Success(string message = null)
         {
-            return new OperationResult { IsSuccess = true, Message = message };
+            var result = new OperationResult { IsSuccess = true, Message = message };
+            return result;
         }
 
         public static OperationResult Failure(string message)
         {
-            return new OperationResult { IsSuccess = false, Message = message };
+            var result = new OperationResult { IsSuccess = false, Message = message };
+            return result;
         }
     }
 
@@ -26,12 +28,14 @@ namespace ExcelCSIToolBoxAddIn.Common.Results
 
         public static OperationResult<T> Success(T data, string message = null)
         {
-            return new OperationResult<T> { IsSuccess = true, Data = data, Message = message };
+            var result = new OperationResult<T> { IsSuccess = true, Data = data, Message = message };
+            return result;
         }
 
         public static new OperationResult<T> Failure(string message)
         {
-            return new OperationResult<T> { IsSuccess = false, Message = message };
+            var result = new OperationResult<T> { IsSuccess = false, Message = message };
+            return result;
         }
     }
 }

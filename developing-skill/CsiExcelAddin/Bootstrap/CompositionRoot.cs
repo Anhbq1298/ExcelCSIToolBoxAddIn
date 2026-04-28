@@ -35,7 +35,8 @@ namespace CsiExcelAddin.Bootstrap
             var viewModel = new MainViewModel(adapter, excelWriter);
 
             // Wire View
-            return new MainWindow(viewModel);
+            var mainWindow = new MainWindow(viewModel);
+            return mainWindow;
         }
     }
 }

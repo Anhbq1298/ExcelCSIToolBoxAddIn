@@ -180,12 +180,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 
         internal static ICSISapModelConnectionAdapter<ETABSv1.cSapModel> CreateEtabs(ICsiModelAdapter modelAdapter)
         {
-            return new CSISapModelConnectionAdapter<ETABSv1.cSapModel, ETABSv1.cOAPI>(
+            var adapter = new CSISapModelConnectionAdapter<ETABSv1.cSapModel, ETABSv1.cOAPI>(
                 modelAdapter,
                 "ETABS",
                 GetEtabsModelPath,
                 GetEtabsModelCurrentUnit,
                 csiObject => csiObject.ApplicationExit(false));
+
+            return adapter;
         }
 
         internal static ICSISapModelConnectionAdapter<SAP2000v1.cSapModel> CreateSap2000()
@@ -195,12 +197,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 
         internal static ICSISapModelConnectionAdapter<SAP2000v1.cSapModel> CreateSap2000(ICsiModelAdapter modelAdapter)
         {
-            return new CSISapModelConnectionAdapter<SAP2000v1.cSapModel, SAP2000v1.cOAPI>(
+            var adapter = new CSISapModelConnectionAdapter<SAP2000v1.cSapModel, SAP2000v1.cOAPI>(
                 modelAdapter,
                 "SAP2000",
                 GetSap2000ModelPath,
                 GetSap2000ModelCurrentUnit,
                 csiObject => csiObject.ApplicationExit(false));
+
+            return adapter;
         }
 
         private static string GetEtabsModelPath(ETABSv1.cSapModel sapModel)

@@ -292,11 +292,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 });
             }
 
-            return candidates
+            var sortedCandidates = candidates
                 .OrderBy(candidate => GetShellLoopPriority(candidate.OrderedLoop.Length))
                 .ThenBy(candidate => candidate.OrderedLoop.Length)
                 .ThenBy(candidate => candidate.Area)
                 .ToList();
+            return sortedCandidates;
         }
 
         private static int GetShellLoopPriority(int nodeCount)

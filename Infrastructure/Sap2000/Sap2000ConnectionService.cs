@@ -164,7 +164,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelPointObjectService.GetSelectedPointsFromActiveModel(
+            var pointsResult = CSISapModelPointObjectService.GetSelectedPointsFromActiveModel(
                 ProductName,
                 sapModelResult.Data,
                 (SAP2000v1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
@@ -172,6 +172,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 (SAP2000v1.cSapModel sapModel, string pointName, ref double x, ref double y, ref double z) =>
                     sapModel.PointObj.GetCoordCartesian(pointName, ref x, ref y, ref z, "Global"),
                 null);
+            return pointsResult;
         }
 
         public OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel()
@@ -182,11 +183,12 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelFrameObjectService.GetSelectedFramesFromActiveModel(
+            var framesResult = CSISapModelFrameObjectService.GetSelectedFramesFromActiveModel(
                 ProductName,
                 sapModelResult.Data,
                 (SAP2000v1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
                     sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames));
+            return framesResult;
         }
 
         public OperationResult AddSteelISections(IReadOnlyList<CSISapModelSteelISectionInput> inputs)
@@ -311,7 +313,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelShellObjectService.CreateShellAreasFromSelectedFrames(
+            var shellResult = CSISapModelShellObjectService.CreateShellAreasFromSelectedFrames(
                 sapModelResult.Data,
                 "SAP2000",
                 propertyName,
@@ -326,6 +328,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 (SAP2000v1.cSapModel sapModel, int nodeCount, ref double[] x, ref double[] y, ref double[] z, ref string areaName, string propName) =>
                     sapModel.AreaObj.AddByCoord(nodeCount, ref x, ref y, ref z, ref areaName, propName, string.Empty, "Global"),
                 RefreshView);
+            return shellResult;
         }
 
         private OperationResult<SAP2000v1.cSapModel> EnsureSap2000SapModel()

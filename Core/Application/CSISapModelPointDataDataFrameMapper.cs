@@ -25,9 +25,10 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 }
             }
 
-            return new DataFrame(
+            var dataFrame = new DataFrame(
                 new[] { "UniqueName", "Point Label", "X", "Y", "Z" },
                 rows);
+            return dataFrame;
         }
     }
 }
