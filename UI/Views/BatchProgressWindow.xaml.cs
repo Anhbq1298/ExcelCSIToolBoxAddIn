@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Threading;
+using ExcelCSIToolBox.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
 {
@@ -27,7 +28,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         /// Runs a batch operation with a progress dialog.
         /// </summary>
         /// <param name="totalItems">Total number of items to process.</param>
-        /// <param name="title">The title/description of the task (e.g. "Creating Steel Sections...").</param>
+        /// <param name="title">The title/description of the task.</param>
         /// <param name="workAction">The work to perform.</param>
         /// <returns>A BatchProgressResult.</returns>
         public static BatchProgressResult RunWithProgress(int totalItems, string title, Action<BatchProgressContext> workAction)
@@ -58,6 +59,21 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             return result;
         }
 
+        public static BatchProgressSummary RunForInfrastructure(int totalItems, string title, Action<IBatchProgressContext> workAction)
+        {
+            BatchProgressResult result = RunWithProgress(
+                totalItems,
+                title,
+                context => workAction(context));
+
+            return new BatchProgressSummary
+            {
+                RanCount = result.RanCount,
+                SkippedCount = result.SkippedCount,
+                WasCancelled = result.WasCancelled
+            };
+        }
+
         internal void UpdateProgressUI(int ranCount, int skippedCount)
         {
             int processed = ranCount + skippedCount;
@@ -76,12 +92,13 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             {
                 _context.RequestCancellation();
             }
+
             CancelButton.IsEnabled = false;
             CancelButton.Content = "Cancelling...";
         }
     }
 
-    public class BatchProgressContext
+    public class BatchProgressContext : IBatchProgressContext
     {
         private readonly int _totalItems;
         private readonly BatchProgressWindow _window;
@@ -112,7 +129,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             PumpUI();
         }
 
-        internal void RequestCancellation()
+        public void RequestCancellation()
         {
             _cancellationRequested = true;
         }
@@ -132,4 +149,3 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         public int TotalProcessed => RanCount + SkippedCount;
     }
 }
-

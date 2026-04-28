@@ -1,8 +1,10 @@
-﻿using ExcelCSIToolBoxAddIn.AddIn;
+using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Infrastructure.Etabs;
 using ExcelCSIToolBox.Infrastructure.Excel;
 using ExcelCSIToolBox.Infrastructure.Sap2000;
+using ExcelCSIToolBoxAddIn.AddIn;
+using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn
 {
@@ -15,11 +17,14 @@ namespace ExcelCSIToolBoxAddIn
             var sap2000ConnectionService = new Sap2000ConnectionService(new Sap2000ModelAdapter());
             var excelSelectionService = new ExcelSelectionService();
             var excelOutputService = new ExcelOutputService();
+
+            BatchProgressHost.ProgressRunner = BatchProgressWindow.RunForInfrastructure;
             WindowManager.Configure(etabsConnectionService, sap2000ConnectionService, excelSelectionService, excelOutputService);
         }
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)
         {
+            BatchProgressHost.ProgressRunner = null;
             WindowManager.DisposePanes();
             AiTaskPaneManager.DisposePane();
         }
@@ -39,4 +44,3 @@ namespace ExcelCSIToolBoxAddIn
         #endregion
     }
 }
-
