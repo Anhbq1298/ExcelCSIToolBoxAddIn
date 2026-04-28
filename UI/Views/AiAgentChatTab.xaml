@@ -2,7 +2,6 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ExcelCSIToolBoxAddIn.UI.ViewModels"
-             xmlns:wfi="clr-namespace:System.Windows.Forms.Integration;assembly=WindowsFormsIntegration"
              Loaded="UserControl_Loaded">
 
     <UserControl.Resources>
@@ -197,14 +196,22 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
-                    MinHeight="36"
-                    MaxHeight="80"
-                    BorderBrush="#BBBBBB"
-                    BorderThickness="1"
-                    Background="White">
-                <wfi:WindowsFormsHost x:Name="UserInputHost"/>
-            </Border>
+            <TextBox x:Name="UserInputBox"
+                     Grid.Column="0"
+                     Text="{Binding UserInput, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     MinHeight="36"
+                     MaxHeight="80"
+                     VerticalScrollBarVisibility="Auto"
+                     VerticalContentAlignment="Center"
+                     Padding="6,4"
+                     FontSize="12"
+                     BorderBrush="#BBBBBB"
+                     BorderThickness="1"
+                     IsTabStop="True"
+                     Focusable="True"
+                     PreviewKeyDown="UserInputBox_PreviewKeyDown"/>
 
             <Button Grid.Column="2"
                     Content="Send"
