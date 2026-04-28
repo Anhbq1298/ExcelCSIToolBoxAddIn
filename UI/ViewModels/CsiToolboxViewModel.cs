@@ -5,6 +5,7 @@ using ExcelCSIToolBoxAddIn.Common.Commands;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Application;
 using ExcelCSIToolBoxAddIn.Data;
+using ExcelCSIToolBoxAddIn.Data.DTOs;
 using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 

@@ -276,6 +276,7 @@
     <Compile Include="Data\DTOs\CSISapModelLoadPatternDTO.cs" />
     <Compile Include="Data\DTOs\CSISapModelLoadCombinationDTO.cs" />
     <Compile Include="Data\DTOs\LoadCombinationItemDTO.cs" />
+    <Compile Include="Data\DTOs\CSISapModelFrameSectionDTO.cs" />
     <Compile Include="Data\DataFrames\FrameDataFrame.cs" />
     <Compile Include="Data\DataFrames\LoadCombinationDataFrame.cs" />
     <Compile Include="Data\DataFrames\PointDataFrame.cs" />
