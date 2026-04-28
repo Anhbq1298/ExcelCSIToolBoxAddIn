@@ -1,64 +1,213 @@
 # ExcelCSIToolBoxAddIn
 
-ExcelCSIToolBoxAddIn is a Microsoft Excel VSTO add-in that integrates Excel workflows with CSI ETABS through the ETABS v1 API. It provides a toolbox window where engineers can connect to a running ETABS instance, read model metadata, push point data from Excel into ETABS, and pull selected ETABS point data back into Excel.
+ExcelCSIToolBoxAddIn is a Microsoft Excel VSTO add-in for integrating Excel-based engineering workflows with CSI products such as **ETABS** and **SAP2000**.
 
-## What this repository contains
+The add-in provides Excel ribbon commands that open dedicated toolbox windows for ETABS and SAP2000. After a running CSI application is attached and a `SapModel` object is obtained, the downstream workflow can share common logic for model interaction, Excel range I/O, and engineering data processing.
 
-- **Excel add-in shell**: Ribbon button and add-in startup glue for launching the ETABS toolbox window.
-- **WPF toolbox UI**: A tabbed window for Point/Frame operations.
-- **Application use-cases**: Orchestrated operations such as attach to ETABS, close ETABS, select points by unique name, add points by Cartesian coordinates, and export selected point data.
-- **Infrastructure adapters**: ETABS API service wrappers and Excel range I/O services.
-- **Shared primitives**: Relay command and operation result patterns used across UI and core logic.
+## Current scope
 
-## Current feature status
+The repository is being structured as a multi-project C#/.NET Framework 4.8 solution with separate layers for UI, application logic, shared core logic, data/DTO models, infrastructure adapters, and AI-related tooling.
 
-### Implemented
+The current direction is:
 
-- Attach to a running ETABS instance.
-- Display active model name/path and current model units.
-- Close the currently attached ETABS instance.
-- Select ETABS points based on unique names from an Excel range.
-- Add ETABS points from Excel Cartesian coordinate rows.
-- Export selected ETABS point information to Excel.
+- **Excel VSTO Add-in Shell**: Ribbon, add-in startup, and window launch logic.
+- **WPF Toolbox UI**: ETABS and SAP2000 toolbox windows.
+- **Application Layer**: Use-case orchestration and workflow-level logic.
+- **Core Layer**: Shared abstractions, results, contracts, and domain-neutral logic.
+- **Data Layer**: DTOs, Excel mapping models, table schemas, and mapper-related code.
+- **Infrastructure Layer**: ETABS/SAP2000 API adapters, Excel interop services, COM/API integration, and external system access.
+- **AI Layer**: Future chatbox AI, local LLM, Ollama, or MCP-related integration.
 
-### Placeholder / in progress
-
-- Additional Point actions (set/rename/grouping variants).
-- Most Frame tab actions are currently placeholders.
-
-## Solution structure
+## Solution projects
 
 ```text
-AddIn/                Excel add-in window launch + window lifetime helpers
-Common/               Reusable command/result abstractions
-Core/Application/     Use-case orchestration logic
-Core/Tabular/         Lightweight tabular model helpers
-Infrastructure/Etabs/ ETABS API connection + model operations
-Infrastructure/Excel/ Excel selection/output services
-UI/ViewModels/        MVVM state and commands
-UI/Views/             WPF toolbox window
+ExcelCSIToolBoxAddIn.sln
+│
+├── ExcelCSIToolBoxAddIn
+│   └── Main Excel VSTO add-in project.
+│
+├── ExcelCSIToolBox.Application
+│   └── Application use cases and workflow orchestration.
+│
+├── ExcelCSIToolBox.Core
+│   └── Shared logic, contracts, results, and abstractions.
+│
+├── ExcelCSIToolBox.Data
+│   └── DTOs, mapper models, Excel schema models, and data structures.
+│
+├── ExcelCSIToolBox.Infrastructure
+│   └── ETABS, SAP2000, Excel interop, and external API implementations.
+│
+└── ExcelCSIToolBox.AI
+    └── AI/chatbox-related integration layer.
 ```
+
+## Folder directory
+
+```text
+ExcelCSIToolBoxAddIn/
+│
+├── ExcelCSIToolBoxAddIn.sln
+├── ExcelCSIToolBoxAddIn.csproj
+├── ExcelCSIToolBoxAddin.cs
+├── ThisAddIn.Designer.cs
+├── ThisAddIn.Designer.xml
+├── ExcelCSIToolBoxAddInRibbon.cs
+├── ExcelCSIToolBoxAddInRibbon.Designer.cs
+├── ExcelCSIToolBoxAddInRibbon.resx
+├── ExcelCSIToolBoxAddIn_TemporaryKey.pfx
+│
+├── AddIn/
+│   └── WindowManager.cs
+│
+├── UI/
+│   ├── Views/
+│   │   ├── EtabsToolboxWindow.xaml
+│   │   ├── EtabsToolboxWindow.xaml.cs
+│   │   ├── Sap2000ToolboxWindow.xaml
+│   │   ├── Sap2000ToolboxWindow.xaml.cs
+│   │   ├── BatchProgressWindow.xaml
+│   │   ├── BatchProgressWindow.xaml.cs
+│   │   ├── LoadCombinationDetailsWindow.xaml
+│   │   ├── LoadCombinationDetailsWindow.xaml.cs
+│   │   ├── FrameSectionDetailWindow.xaml
+│   │   └── FrameSectionDetailWindow.xaml.cs
+│   │
+│   ├── ViewModels/
+│   │   ├── CsiToolboxViewModel.cs
+│   │   ├── FrameSectionDetailViewModel.cs
+│   │   ├── FrameSectionDimensionEditItem.cs
+│   │   ├── SectionDimensionAnnotation.cs
+│   │   └── ViewModelBase.cs
+│   │
+│   └── Helpers/
+│       └── SectionShapeRenderer.cs
+│
+├── Properties/
+│   ├── AssemblyInfo.cs
+│   ├── Resources.resx
+│   ├── Resources.Designer.cs
+│   ├── Settings.settings
+│   └── Settings.Designer.cs
+│
+├── icon/
+│   ├── etabs.png
+│   └── sap2000icon.jpg
+│
+├── _ref/
+│   ├── CSI API ETABS v1.chm
+│   └── CSI_OAPI_Documentation.chm
+│
+├── ExcelCSIToolBox.Application/
+│   └── ExcelCSIToolBox.Application.csproj
+│
+├── ExcelCSIToolBox.Core/
+│   └── ExcelCSIToolBox.Core.csproj
+│
+├── ExcelCSIToolBox.Data/
+│   └── ExcelCSIToolBox.Data.csproj
+│
+├── ExcelCSIToolBox.Infrastructure/
+│   └── ExcelCSIToolBox.Infrastructure.csproj
+│
+└── ExcelCSIToolBox.AI/
+    └── ExcelCSIToolBox.AI.csproj
+```
+
+## Project reference map
+
+```text
+ExcelCSIToolBoxAddIn
+├── ExcelCSIToolBox.Core
+├── ExcelCSIToolBox.Data
+├── ExcelCSIToolBox.Infrastructure
+└── ExcelCSIToolBox.Application
+
+ExcelCSIToolBox.Application
+├── ExcelCSIToolBox.Core
+└── ExcelCSIToolBox.Data
+
+ExcelCSIToolBox.Core
+└── ExcelCSIToolBox.Data
+
+ExcelCSIToolBox.Infrastructure
+├── ExcelCSIToolBox.Core
+├── ExcelCSIToolBox.Data
+├── ETABSv1.dll
+└── SAP2000v1.dll
+
+ExcelCSIToolBox.AI
+├── ExcelCSIToolBox.Core
+└── ExcelCSIToolBox.Data
+```
+
+## Architecture notes
+
+The intended architecture is to keep the CSI-product-specific acquisition logic isolated inside adapters. ETABS and SAP2000 differ mainly in how the running application object is attached and how the initial `SapModel` is retrieved. Once `SapModel` is available, most downstream operations can be shared.
+
+Current architectural direction:
+
+```text
+Excel Ribbon / WPF UI
+        ↓
+Application Use Cases
+        ↓
+Core Contracts / Results / Shared Logic
+        ↓
+Data DTOs / Excel Mapping Models
+        ↓
+Infrastructure Adapters
+        ↓
+ETABS API / SAP2000 API / Excel Interop
+```
+
+A future clean-up target is to reduce direct dependency pressure on `Core`. Ideally, `Core` should contain domain-neutral contracts, result models, and shared abstractions without needing to reference Data, Infrastructure, or UI directly.
 
 ## Prerequisites
 
 - Windows with Microsoft Excel installed.
+- Visual Studio with Office/SharePoint development workload.
 - .NET Framework 4.8 developer tooling.
-- Visual Studio with Office/SharePoint development workload (VSTO support).
-- A compatible ETABS installation and API access.
-- `ETABSv1.dll` available to the project (already included in this repository).
+- Compatible CSI products depending on the workflow:
+  - ETABS with `ETABSv1.dll`.
+  - SAP2000 with `SAP2000v1.dll`.
+- Microsoft Office interop assemblies / VSTO runtime.
 
 ## Build and run
 
 1. Open `ExcelCSIToolBoxAddIn.sln` in Visual Studio.
-2. Restore/build the solution using `Debug|AnyCPU` or `Release|AnyCPU`.
+2. Build the solution using the required configuration.
 3. Start debugging from Visual Studio to launch Excel with the add-in loaded.
-4. In Excel, use the custom ribbon button to open the **ETABS Toolbox** window.
+4. Use the custom Excel ribbon commands to open the ETABS or SAP2000 toolbox window.
+5. Attach to a running ETABS/SAP2000 instance before running API-dependent operations.
+
+## Local directory export
+
+To generate a full local folder directory:
+
+```powershell
+tree /F /A > folder-directory.txt
+```
+
+To generate a cleaner directory list excluding build/system folders:
+
+```powershell
+Get-ChildItem -Recurse -Force |
+Where-Object {
+    $_.FullName -notmatch '\\(bin|obj|\.vs|\.git)\\'
+} |
+Select-Object FullName |
+Out-File folder-directory.txt
+```
 
 ## Notes for contributors
 
-- This project targets **.NET Framework 4.8** and uses classic `.csproj`/VSTO project style.
-- UI is implemented with WPF + MVVM-style view models.
-- ETABS interaction is mediated through `IEtabsConnectionService` and application use-cases to keep UI orchestration simple.
+- Target framework: **.NET Framework 4.8**.
+- UI pattern: WPF with MVVM-style ViewModels.
+- Main host: Microsoft Excel through VSTO.
+- CSI API access should be isolated behind Infrastructure adapters where possible.
+- Shared workflows should depend on the common `SapModel` abstraction/usage pattern after the CSI model is acquired.
+- Keep UI orchestration thin; place workflow logic in Application/Core where practical.
 
 ## License
 
