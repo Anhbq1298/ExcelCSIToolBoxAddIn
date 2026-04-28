@@ -249,16 +249,15 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 CurrentModelUnitText = string.IsNullOrWhiteSpace(result.Data.ModelCurrentUnit)
                     ? "Units unavailable"
                     : result.Data.ModelCurrentUnit;
-
-                StatusText = $"Connected to running {_productName} instance.";
+                StatusText = "Attached successfully.";
+                
+                // Automatically refresh lists when connection is established
+                GetLoadPatterns();
+                GetLoadCombinations();
 
                 if (showMessage)
                 {
-                    MessageBox.Show(
-                        $"Successfully attached to running {_productName}.",
-                        ProductTitle,
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    ShowOperationResult(OperationResult.Success("Successfully attached to the running application."));
                 }
 
                 return;

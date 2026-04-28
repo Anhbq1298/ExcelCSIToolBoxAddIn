@@ -591,9 +591,6 @@
                                     <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
                                         <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
                                         <Button Content="Add From Excel" HorizontalAlignment="Stretch" Command="{Binding AddLoadCombinationFromExcelCommand}" Margin="0,0,0,8"/>
-                                        <Button Content="Delete Selected" HorizontalAlignment="Stretch" 
-                                                Command="{Binding DeleteSelectedLoadCombinationsCommand}"
-                                                CommandParameter="{Binding ElementName=LoadCombinationList, Path=SelectedItems}"/>
                                     </StackPanel>
                                 </Grid>
                             </GroupBox>
