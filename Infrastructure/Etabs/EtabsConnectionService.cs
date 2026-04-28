@@ -180,361 +180,87 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
 
         public OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames)
         {
-            return SelectObjectsByUniqueNames(uniqueNames, "point",
-                (sapModel, name) => sapModel.PointObj.SetSelected(name, true, ETABSv1.eItemType.Objects));
+            return CSISapModelOperationRunner.SelectObjectsByUniqueNames(
+                uniqueNames,
+                "point",
+                ProductName,
+                EnsureConnection,
+                sapModel => (ETABSv1.cSapModel)sapModel,
+                sapModel => sapModel.SelectObj.ClearSelection(),
+                (sapModel, name) => sapModel.PointObj.SetSelected(name, true, ETABSv1.eItemType.Objects),
+                RefreshView);
         }
 
         public OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames)
         {
-            return SelectObjectsByUniqueNames(uniqueNames, "frame",
-                (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, ETABSv1.eItemType.Objects));
-        }
-
-        private OperationResult SelectObjectsByUniqueNames(
-            IReadOnlyList<string> uniqueNames, string objectTypeName,
-            Func<ETABSv1.cSapModel, string, int> setSelected)
-        {
-            if (uniqueNames == null || uniqueNames.Count == 0)
-            {
-                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
-            }
-
-            var orderedUniqueNames = GetOrderedDistinctNames(uniqueNames);
-            if (orderedUniqueNames.Count == 0)
-            {
-                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
-            }
-
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult.Failure(connectionResult.Message);
-            }
-
-            try
-            {
-                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
-
-                int clearSelectionResult = sapModel.SelectObj.ClearSelection();
-                if (clearSelectionResult != 0)
-                {
-                    return OperationResult.Failure($"Failed to clear ETABS selection before selecting {objectTypeName}s by UniqueName.");
-                }
-
-                var unresolved = new List<string>();
-                var selectedCount = 0;
-
-                var progress = BatchProgressWindow.RunWithProgress(orderedUniqueNames.Count, $"Selecting {objectTypeName}s...", (ctx) =>
-                {
-                    foreach (var uniqueName in orderedUniqueNames)
-                    {
-                        if (ctx.IsCancellationRequested) break;
-
-                        int result = setSelected(sapModel, uniqueName);
-                        if (result == 0)
-                        {
-                            selectedCount++;
-                            ctx.IncrementRan();
-                        }
-                        else
-                        {
-                            unresolved.Add(uniqueName);
-                            ctx.IncrementSkipped();
-                        }
-                    }
-                });
-
-                var message = $"Selected {selectedCount} {objectTypeName}(s) by UniqueName.";
-                if (unresolved.Count > 0)
-                {
-                    message += $" Not found: {string.Join(", ", unresolved)}.";
-                }
-
-                var refreshResult = RefreshView(sapModel);
-                if (!refreshResult.IsSuccess)
-                {
-                    return refreshResult;
-                }
-
-                return OperationResult.Success(message);
-            }
-            catch
-            {
-                return OperationResult.Failure($"Failed to select ETABS {objectTypeName}s by UniqueName.");
-            }
-        }
-
-        private static IReadOnlyList<string> GetOrderedDistinctNames(IReadOnlyList<string> names)
-        {
-            var uniqueNames = new List<string>();
-            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var rawName in names)
-            {
-                var name = string.IsNullOrWhiteSpace(rawName) ? null : rawName.Trim();
-                if (string.IsNullOrWhiteSpace(name) || seenNames.Contains(name))
-                {
-                    continue;
-                }
-
-                seenNames.Add(name);
-                uniqueNames.Add(name);
-            }
-
-            return uniqueNames;
+            return CSISapModelOperationRunner.SelectObjectsByUniqueNames(
+                uniqueNames,
+                "frame",
+                ProductName,
+                EnsureConnection,
+                sapModel => (ETABSv1.cSapModel)sapModel,
+                sapModel => sapModel.SelectObj.ClearSelection(),
+                (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, ETABSv1.eItemType.Objects),
+                RefreshView);
         }
 
         public OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs)
         {
-            if (pointInputs == null || pointInputs.Count == 0)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure("No valid rows were found in the selected range.");
-            }
-
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure(connectionResult.Message);
-            }
-
-            try
-            {
-                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
-                var failedRowMessages = new List<string>();
-                var successCount = 0;
-
-                // Process each row exactly as provided by Excel parsing:
-                var progress = BatchProgressWindow.RunWithProgress(pointInputs.Count, "Adding Points to Model...", (ctx) =>
-                {
-                    foreach (var pointInput in pointInputs)
-                    {
-                        if (ctx.IsCancellationRequested) break;
-
-                        string assignedName = string.Empty;
-                        string requestedUniqueName = string.IsNullOrWhiteSpace(pointInput.UniqueName) ? string.Empty : pointInput.UniqueName;
-
-                        int addResult = sapModel.PointObj.AddCartesian(
-                            pointInput.X,
-                            pointInput.Y,
-                            pointInput.Z,
-                            ref assignedName,
-                            requestedUniqueName,
-                            "Global",
-                            true,
-                            0);
-
-                        if (addResult != 0)
-                        {
-                            failedRowMessages.Add(
-                                $"Row {pointInput.ExcelRowNumber}: ETABS API call PointObj.AddCartesian failed (return code {addResult}).");
-                            ctx.IncrementSkipped();
-                            continue;
-                        }
-
-                        successCount++;
-                        ctx.IncrementRan();
-
-                        if (!string.IsNullOrWhiteSpace(requestedUniqueName) &&
-                            !string.Equals(assignedName, requestedUniqueName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            failedRowMessages.Add(
-                                $"Row {pointInput.ExcelRowNumber}: Point was created, but ETABS assigned UniqueName '{assignedName}' instead of requested '{requestedUniqueName}'.");
-                        }
-                    }
-                });
-
-                var data = new CSISapModelAddPointsResult
-                {
-                    AddedCount = successCount,
-                    FailedRowMessages = failedRowMessages
-                };
-
-                if (successCount > 0)
-                {
-                    var refreshResult = RefreshView(sapModel);
-                    if (!refreshResult.IsSuccess)
-                    {
-                        return OperationResult<CSISapModelAddPointsResult>.Failure(refreshResult.Message);
-                    }
-                }
-
-                return OperationResult<CSISapModelAddPointsResult>.Success(data);
-            }
-            catch (COMException ex)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure($"ETABS COM error while adding points by Cartesian coordinates: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure(
-                    $"ETABS add-by-Cartesian failed unexpectedly: {ex.Message}");
-            }
+            return CSISapModelOperationRunner.AddPointsByCartesian(
+                pointInputs,
+                ProductName,
+                EnsureConnection,
+                sapModel => (ETABSv1.cSapModel)sapModel,
+                (ETABSv1.cSapModel sapModel, CSISapModelPointCartesianInput pointInput, ref string assignedName, string requestedUniqueName) =>
+                    sapModel.PointObj.AddCartesian(
+                        pointInput.X,
+                        pointInput.Y,
+                        pointInput.Z,
+                        ref assignedName,
+                        requestedUniqueName,
+                        "Global",
+                        true,
+                        0),
+                RefreshView);
         }
 
         public OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs)
         {
-            if (frameInputs == null || frameInputs.Count == 0)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure("No valid rows were found in the selected range.");
-            }
-
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure(connectionResult.Message);
-            }
-
-            try
-            {
-                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
-                var failedRowMessages = new List<string>();
-                var successCount = 0;
-
-                var progress = BatchProgressWindow.RunWithProgress(frameInputs.Count, "Adding Frames (by Coordinates)...", (ctx) =>
-                {
-                    foreach (var frameInput in frameInputs)
-                    {
-                        if (ctx.IsCancellationRequested) break;
-
-                        string createdName = string.Empty;
-                        string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
-                        string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
-
-                        int addResult = sapModel.FrameObj.AddByCoord(
-                            frameInput.Xi,
-                            frameInput.Yi,
-                            frameInput.Zi,
-                            frameInput.Xj,
-                            frameInput.Yj,
-                            frameInput.Zj,
-                            ref createdName,
-                            sectionName,
-                            userName,
-                            "Global");
-
-                        if (addResult != 0)
-                        {
-                            failedRowMessages.Add(
-                                $"Row {frameInput.ExcelRowNumber}: ETABS API call FrameObj.AddByCoord failed (return code {addResult}).");
-                            ctx.IncrementSkipped();
-                            continue;
-                        }
-
-                        successCount++;
-                        ctx.IncrementRan();
-                    }
-                });
-
-                var data = new CSISapModelAddFramesResult
-                {
-                    AddedCount = successCount,
-                    FailedRowMessages = failedRowMessages
-                };
-
-                if (successCount > 0)
-                {
-                    var refreshResult = RefreshView(sapModel);
-                    if (!refreshResult.IsSuccess)
-                    {
-                        return OperationResult<CSISapModelAddFramesResult>.Failure(refreshResult.Message);
-                    }
-                }
-
-                return OperationResult<CSISapModelAddFramesResult>.Success(data);
-            }
-            catch (COMException ex)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure($"ETABS COM error while adding frames by coordinates: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure(
-                    $"ETABS add-by-coordinates failed unexpectedly: {ex.Message}");
-            }
+            return CSISapModelOperationRunner.AddFramesByCoordinates(
+                frameInputs,
+                ProductName,
+                EnsureConnection,
+                sapModel => (ETABSv1.cSapModel)sapModel,
+                (ETABSv1.cSapModel sapModel, CSISapModelFrameByCoordInput frameInput, ref string createdName, string sectionName, string userName) =>
+                    sapModel.FrameObj.AddByCoord(
+                        frameInput.Xi,
+                        frameInput.Yi,
+                        frameInput.Zi,
+                        frameInput.Xj,
+                        frameInput.Yj,
+                        frameInput.Zj,
+                        ref createdName,
+                        sectionName,
+                        userName,
+                        "Global"),
+                RefreshView);
         }
 
         public OperationResult<CSISapModelAddFramesResult> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs)
         {
-            if (frameInputs == null || frameInputs.Count == 0)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure("No valid rows were found in the selected range.");
-            }
-
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure(connectionResult.Message);
-            }
-
-            try
-            {
-                ETABSv1.cSapModel sapModel = (ETABSv1.cSapModel)connectionResult.Data.SapModel;
-                var failedRowMessages = new List<string>();
-                var successCount = 0;
-
-                var progress = BatchProgressWindow.RunWithProgress(frameInputs.Count, "Adding Frames (by Point Names)...", (ctx) =>
-                {
-                    foreach (var frameInput in frameInputs)
-                    {
-                        if (ctx.IsCancellationRequested) break;
-
-                        string createdName = string.Empty;
-                        string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
-                        string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
-
-                        int addResult = sapModel.FrameObj.AddByPoint(
-                            frameInput.Point1Name,
-                            frameInput.Point2Name,
-                            ref createdName,
-                            sectionName,
-                            userName);
-
-                        if (addResult != 0)
-                        {
-                            failedRowMessages.Add(
-                                $"Row {frameInput.ExcelRowNumber}: ETABS API call FrameObj.AddByPoint failed (return code {addResult}).");
-                            ctx.IncrementSkipped();
-                            continue;
-                        }
-
-                        successCount++;
-                        ctx.IncrementRan();
-
-                        if (!string.IsNullOrWhiteSpace(userName) &&
-                            !string.Equals(createdName, userName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            failedRowMessages.Add(
-                                $"Row {frameInput.ExcelRowNumber}: Frame was created, but ETABS assigned UniqueName '{createdName}' instead of requested '{userName}'.");
-                        }
-                    }
-                });
-
-                var data = new CSISapModelAddFramesResult
-                {
-                    AddedCount = successCount,
-                    FailedRowMessages = failedRowMessages
-                };
-
-                if (successCount > 0)
-                {
-                    var refreshResult = RefreshView(sapModel);
-                    if (!refreshResult.IsSuccess)
-                    {
-                        return OperationResult<CSISapModelAddFramesResult>.Failure(refreshResult.Message);
-                    }
-                }
-
-                return OperationResult<CSISapModelAddFramesResult>.Success(data);
-            }
-            catch (COMException ex)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure($"ETABS COM error while adding frames by point names: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure(
-                    $"ETABS add-by-point failed unexpectedly: {ex.Message}");
-            }
+            return CSISapModelOperationRunner.AddFramesByPoint(
+                frameInputs,
+                ProductName,
+                EnsureConnection,
+                sapModel => (ETABSv1.cSapModel)sapModel,
+                (ETABSv1.cSapModel sapModel, CSISapModelFrameByPointInput frameInput, ref string createdName, string sectionName, string userName) =>
+                    sapModel.FrameObj.AddByPoint(
+                        frameInput.Point1Name,
+                        frameInput.Point2Name,
+                        ref createdName,
+                        sectionName,
+                        userName),
+                RefreshView);
         }
 
         public OperationResult<IReadOnlyList<CSISapModelPointData>> GetSelectedPointsFromActiveModel()
