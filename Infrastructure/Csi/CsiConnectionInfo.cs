@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
     /// <summary>
     /// Value object containing CSI connection details needed by the UI.

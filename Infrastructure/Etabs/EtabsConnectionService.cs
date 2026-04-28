@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
+using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
@@ -283,7 +284,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return uniqueNames;
         }
 
-        public OperationResult<CsiAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs)
+        public OperationResult<CsiAddPointsResult> AddPointsByCartesian(IReadOnlyList<CsiPointCartesianInput> pointInputs)
         {
             if (pointInputs == null || pointInputs.Count == 0)
             {
@@ -370,7 +371,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult<CsiAddFramesResult> AddFramesByCoordinates(IReadOnlyList<EtabsFrameByCoordInput> frameInputs)
+        public OperationResult<CsiAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CsiFrameByCoordInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
@@ -452,7 +453,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult<CsiAddFramesResult> AddFramesByPoint(IReadOnlyList<EtabsFrameByPointInput> frameInputs)
+        public OperationResult<CsiAddFramesResult> AddFramesByPoint(IReadOnlyList<CsiFrameByPointInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
@@ -681,7 +682,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return connectionResult;
         }
 
-        public OperationResult AddSteelISections(IReadOnlyList<EtabsSteelISectionInput> inputs)
+        public OperationResult AddSteelISections(IReadOnlyList<CsiSteelISectionInput> inputs)
         {
             ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
@@ -736,7 +737,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success(msg);
         }
 
-        public OperationResult AddSteelChannelSections(IReadOnlyList<EtabsSteelChannelSectionInput> inputs)
+        public OperationResult AddSteelChannelSections(IReadOnlyList<CsiSteelChannelSectionInput> inputs)
         {
             ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
@@ -789,7 +790,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success(msg);
         }
 
-        public OperationResult AddSteelAngleSections(IReadOnlyList<EtabsSteelAngleSectionInput> inputs)
+        public OperationResult AddSteelAngleSections(IReadOnlyList<CsiSteelAngleSectionInput> inputs)
         {
             ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
@@ -842,7 +843,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success(msg);
         }
 
-        public OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs)
+        public OperationResult AddSteelPipeSections(IReadOnlyList<CsiSteelPipeSectionInput> inputs)
         {
             ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
@@ -891,7 +892,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success(msg);
         }
 
-        public OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs)
+        public OperationResult AddSteelTubeSections(IReadOnlyList<CsiSteelTubeSectionInput> inputs)
         {
             ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null)
@@ -946,7 +947,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success(msg);
         }
 
-        public OperationResult AddConcreteRectangleSections(IReadOnlyList<EtabsConcreteRectangleSectionInput> inputs)
+        public OperationResult AddConcreteRectangleSections(IReadOnlyList<CsiConcreteRectangleSectionInput> inputs)
         {
             ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null) return OperationResult.Failure("No active ETABS model found.");
@@ -978,7 +979,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             return OperationResult.Success(msg);
         }
 
-        public OperationResult AddConcreteCircleSections(IReadOnlyList<EtabsConcreteCircleSectionInput> inputs)
+        public OperationResult AddConcreteCircleSections(IReadOnlyList<CsiConcreteCircleSectionInput> inputs)
         {
             ETABSv1.cSapModel sapModel = _currentConnection?.SapModel as ETABSv1.cSapModel;
             if (sapModel == null) return OperationResult.Failure("No active ETABS model found.");

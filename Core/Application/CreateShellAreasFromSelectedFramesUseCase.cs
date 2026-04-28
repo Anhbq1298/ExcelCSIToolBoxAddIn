@@ -1,6 +1,6 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {

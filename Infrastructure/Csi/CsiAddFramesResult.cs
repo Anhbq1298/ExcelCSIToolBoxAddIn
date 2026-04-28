@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
     public class CsiAddFramesResult
     {

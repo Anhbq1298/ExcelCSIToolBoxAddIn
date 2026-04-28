@@ -2,6 +2,7 @@ using ExcelCSIToolBoxAddIn.AddIn;
 using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
+using ExcelCSIToolBoxAddIn.Infrastructure.Sap2000;
 
 namespace ExcelCSIToolBoxAddIn
 {

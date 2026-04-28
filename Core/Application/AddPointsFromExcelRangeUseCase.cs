@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
@@ -29,7 +29,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 
             // Intentionally preserve Excel selection order and duplicates.
             // Each valid row becomes one independent ETABS PointObj.AddCartesian call later in the ETABS service.
-            var orderedPointCalls = new List<EtabsPointCartesianInput>();
+            var orderedPointCalls = new List<CsiPointCartesianInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -71,7 +71,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                orderedPointCalls.Add(new EtabsPointCartesianInput
+                orderedPointCalls.Add(new CsiPointCartesianInput
                 {
                     ExcelRowNumber = row.ExcelRowNumber,
                     UniqueName = uniqueName,

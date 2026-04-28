@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
@@ -27,7 +27,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedCalls = new List<EtabsConcreteCircleSectionInput>();
+            var orderedCalls = new List<CsiConcreteCircleSectionInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -71,7 +71,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                orderedCalls.Add(new EtabsConcreteCircleSectionInput
+                orderedCalls.Add(new CsiConcreteCircleSectionInput
                 {
                     SectionName = sectionName,
                     MaterialName = materialName,

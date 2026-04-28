@@ -1,4 +1,4 @@
-﻿namespace ExcelCSIToolBoxAddIn
+namespace ExcelCSIToolBoxAddIn
 {
     partial class ExcelCSIToolBoxAddInRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
     {

@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
     public class CsiPointData
     {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
@@ -26,7 +26,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedFrameCalls = new List<EtabsFrameByPointInput>();
+            var orderedFrameCalls = new List<CsiFrameByPointInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -62,7 +62,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                orderedFrameCalls.Add(new EtabsFrameByPointInput
+                orderedFrameCalls.Add(new CsiFrameByPointInput
                 {
                     ExcelRowNumber = row.ExcelRowNumber,
                     UniqueName = uniqueName,

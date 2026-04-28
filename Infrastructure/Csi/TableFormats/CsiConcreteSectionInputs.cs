@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
-    public class EtabsConcreteRectangleSectionInput
+    public class CsiConcreteRectangleSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }
@@ -8,7 +8,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public double B { get; set; }
     }
 
-    public class EtabsConcreteCircleSectionInput
+    public class CsiConcreteCircleSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }

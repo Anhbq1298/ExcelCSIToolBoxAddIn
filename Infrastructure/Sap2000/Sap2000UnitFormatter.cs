@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 {
     public static class Sap2000UnitFormatter
     {

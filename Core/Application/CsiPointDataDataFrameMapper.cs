@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Core.Tabular;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
+using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {

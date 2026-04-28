@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
-    public class EtabsFrameByCoordInput
+    public class CsiFrameByCoordInput
     {
         public int ExcelRowNumber { get; set; }
 

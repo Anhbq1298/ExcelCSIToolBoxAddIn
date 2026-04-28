@@ -6,10 +6,11 @@ using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
+using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
 using ExcelCSIToolBoxAddIn.UI.Views;
 using SAP2000v1;
 
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 {
     /// <summary>
     /// SAP2000 adapter that exposes the same toolbox contract used by ETABS.
@@ -148,7 +149,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                 (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, SAP2000v1.eItemType.Objects));
         }
 
-        public OperationResult<CsiAddPointsResult> AddPointsByCartesian(IReadOnlyList<EtabsPointCartesianInput> pointInputs)
+        public OperationResult<CsiAddPointsResult> AddPointsByCartesian(IReadOnlyList<CsiPointCartesianInput> pointInputs)
         {
             if (pointInputs == null || pointInputs.Count == 0)
             {
@@ -229,7 +230,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult<CsiAddFramesResult> AddFramesByCoordinates(IReadOnlyList<EtabsFrameByCoordInput> frameInputs)
+        public OperationResult<CsiAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CsiFrameByCoordInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
@@ -294,7 +295,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult<CsiAddFramesResult> AddFramesByPoint(IReadOnlyList<EtabsFrameByPointInput> frameInputs)
+        public OperationResult<CsiAddFramesResult> AddFramesByPoint(IReadOnlyList<CsiFrameByPointInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
@@ -471,43 +472,43 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             }
         }
 
-        public OperationResult AddSteelISections(IReadOnlyList<EtabsSteelISectionInput> inputs)
+        public OperationResult AddSteelISections(IReadOnlyList<CsiSteelISectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel I-Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf, -1, "", ""));
         }
 
-        public OperationResult AddSteelChannelSections(IReadOnlyList<EtabsSteelChannelSectionInput> inputs)
+        public OperationResult AddSteelChannelSections(IReadOnlyList<CsiSteelChannelSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Channel Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
         }
 
-        public OperationResult AddSteelAngleSections(IReadOnlyList<EtabsSteelAngleSectionInput> inputs)
+        public OperationResult AddSteelAngleSections(IReadOnlyList<CsiSteelAngleSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Angle Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
         }
 
-        public OperationResult AddSteelPipeSections(IReadOnlyList<EtabsSteelPipeSectionInput> inputs)
+        public OperationResult AddSteelPipeSections(IReadOnlyList<CsiSteelPipeSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Pipe Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness, -1, "", ""));
         }
 
-        public OperationResult AddSteelTubeSections(IReadOnlyList<EtabsSteelTubeSectionInput> inputs)
+        public OperationResult AddSteelTubeSections(IReadOnlyList<CsiSteelTubeSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Tube Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", ""));
         }
 
-        public OperationResult AddConcreteRectangleSections(IReadOnlyList<EtabsConcreteRectangleSectionInput> inputs)
+        public OperationResult AddConcreteRectangleSections(IReadOnlyList<CsiConcreteRectangleSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Concrete Rectangle Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B, -1, "", ""));
         }
 
-        public OperationResult AddConcreteCircleSections(IReadOnlyList<EtabsConcreteCircleSectionInput> inputs)
+        public OperationResult AddConcreteCircleSections(IReadOnlyList<CsiConcreteCircleSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Concrete Circle Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D, -1, "", ""));

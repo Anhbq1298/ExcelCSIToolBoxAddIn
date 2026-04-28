@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
-    public class EtabsSteelISectionInput
+    public class CsiSteelISectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }
@@ -10,7 +10,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public double Tf { get; set; }
     }
 
-    public class EtabsSteelChannelSectionInput
+    public class CsiSteelChannelSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }
@@ -20,7 +20,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public double Tf { get; set; }
     }
 
-    public class EtabsSteelAngleSectionInput
+    public class CsiSteelAngleSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }
@@ -30,7 +30,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public double Tf { get; set; }
     }
 
-    public class EtabsSteelPipeSectionInput
+    public class CsiSteelPipeSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }
@@ -38,7 +38,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
         public double WallThickness { get; set; }
     }
 
-    public class EtabsSteelTubeSectionInput
+    public class CsiSteelTubeSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }

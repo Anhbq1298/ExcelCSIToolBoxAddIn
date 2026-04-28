@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
     internal static class CsiObjectTypeIds
     {

@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
+namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
 {
-    public class EtabsPointCartesianInput
+    public class CsiPointCartesianInput
     {
         public int ExcelRowNumber { get; set; }
 
