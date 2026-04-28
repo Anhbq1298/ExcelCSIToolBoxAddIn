@@ -39,7 +39,7 @@
                 </Border>
 
                 <!-- Assistant message: left-aligned grey bubble -->
-                <Border Style="{StaticResource AssistantBubble}">
+                <Border>
                     <Border.Style>
                         <Style TargetType="Border" BasedOn="{StaticResource AssistantBubble}">
                             <Setter Property="Visibility" Value="Visible"/>
