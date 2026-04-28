@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
@@ -15,165 +13,38 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     /// </summary>
     public class EtabsConnectionService : ICSISapModelConnectionService
     {
-        private readonly ICsiModelAdapter _modelAdapter;
-        private CSISapModelConnectionInfo _currentConnection;
+        private readonly ICSISapModelConnectionAdapter<ETABSv1.cSapModel> _connectionAdapter;
 
         public EtabsConnectionService()
-            : this(new EtabsModelAdapter())
+            : this(CSISapModelConnectionAdapterFactory.CreateEtabs())
         {
         }
 
         public EtabsConnectionService(ICsiModelAdapter modelAdapter)
+            : this(CSISapModelConnectionAdapterFactory.CreateEtabs(modelAdapter))
         {
-            _modelAdapter = modelAdapter ?? throw new ArgumentNullException(nameof(modelAdapter));
+        }
+
+        private EtabsConnectionService(ICSISapModelConnectionAdapter<ETABSv1.cSapModel> connectionAdapter)
+        {
+            _connectionAdapter = connectionAdapter ?? throw new ArgumentNullException(nameof(connectionAdapter));
         }
 
         public string ProductName => "ETABS";
 
         public OperationResult<CSISapModelConnectionInfo> TryAttachToRunningInstance()
         {
-            var attachResult = _modelAdapter.AttachToRunningInstance();
-            if (!attachResult.IsSuccess)
-            {
-                _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure(attachResult.Message);
-            }
-
-            var etabsObject = attachResult.ApplicationObject as ETABSv1.cOAPI;
-            var sapModel = attachResult.SapModel as ETABSv1.cSapModel;
-            if (etabsObject == null || sapModel == null)
-            {
-                _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure("The attached ETABS instance is invalid. Please reattach and try again.");
-            }
-
-            try
-            {
-                string modelPath = string.Empty;
-                string modelName = "Unsaved Model";
-                try
-                {
-                    modelPath = sapModel.GetModelFilename(true);
-                    modelName = string.IsNullOrWhiteSpace(modelPath)
-                        ? "Unsaved Model"
-                        : Path.GetFileName(modelPath);
-                }
-                catch
-                {
-                    // Keep attach successful when model metadata retrieval fails.
-                }
-
-                string modelCurrentUnit = "Units unavailable";
-                try
-                {
-                    ETABSv1.eForce forceUnits = ETABSv1.eForce.N;
-                    ETABSv1.eLength lengthUnits = ETABSv1.eLength.m;
-                    ETABSv1.eTemperature temperatureUnits = ETABSv1.eTemperature.C;
-
-                    int getUnitsResult = sapModel.GetDatabaseUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
-
-                    if (getUnitsResult == 0)
-                    {
-                        modelCurrentUnit = EtabsUnitFormatter.FormatDatabaseUnits(forceUnits, lengthUnits, temperatureUnits);
-                    }
-                }
-                catch
-                {
-                }
-
-                _currentConnection = new CSISapModelConnectionInfo
-                {
-                    IsConnected = true,
-                    ModelPath = modelPath,
-                    ModelFileName = modelName,
-                    ModelCurrentUnit = modelCurrentUnit,
-                    CsiObject = etabsObject,
-                    SapModel = sapModel
-                };
-
-                return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
-            }
-            catch
-            {
-                _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure("Failed to attach to the running ETABS instance.");
-            }
+            return _connectionAdapter.TryAttachToRunningInstance();
         }
 
         public OperationResult<CSISapModelConnectionInfo> GetCurrentConnection()
         {
-            if (_currentConnection?.SapModel == null)
-            {
-                return OperationResult<CSISapModelConnectionInfo>.Failure("No ETABS model is currently connected. Please click 'Attach to Running ETABS'.");
-            }
-
-            return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
+            return _connectionAdapter.GetCurrentConnection();
         }
 
         public OperationResult CloseCurrentInstance()
         {
-            if (_currentConnection?.CsiObject == null)
-            {
-                return OperationResult.Failure("No running ETABS instance is currently attached.");
-            }
-
-            try
-            {
-                var etabsApplication = _currentConnection.CsiObject as ETABSv1.cOAPI;
-                if (etabsApplication == null)
-                {
-                    return OperationResult.Failure("The attached ETABS instance is invalid. Please reattach and try again.");
-                }
-
-                int result = etabsApplication.ApplicationExit(false);
-                if (result != 0)
-                {
-                    return OperationResult.Failure($"ETABS failed to close the attached instance (ApplicationExit returned {result}).");
-                }
-
-                ResetCurrentConnection();
-                return OperationResult.Success("Successfully closed the attached ETABS instance.");
-            }
-            catch (COMException ex)
-            {
-                return OperationResult.Failure($"ETABS COM error while closing attached instance: {ex.Message}");
-            }
-            catch
-            {
-                return OperationResult.Failure("Failed to close the attached ETABS instance.");
-            }
-        }
-
-        private void ResetCurrentConnection()
-        {
-            if (_currentConnection == null)
-            {
-                return;
-            }
-
-            ReleaseComReference(_currentConnection.SapModel);
-            ReleaseComReference(_currentConnection.CsiObject);
-
-            _currentConnection.SapModel = null;
-            _currentConnection.CsiObject = null;
-            _currentConnection = null;
-        }
-
-        private static void ReleaseComReference(object comReference)
-        {
-            if (comReference == null || !Marshal.IsComObject(comReference))
-            {
-                return;
-            }
-
-            try
-            {
-                Marshal.FinalReleaseComObject(comReference);
-            }
-            catch
-            {
-                // Ignored to avoid masking the primary ETABS operation result.
-            }
+            return _connectionAdapter.CloseCurrentInstance();
         }
 
         public OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames)
@@ -318,33 +189,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames));
         }
 
-
-        private OperationResult<CSISapModelConnectionInfo> EnsureConnection()
-        {
-            var connectionResult = GetCurrentConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                connectionResult = TryAttachToRunningInstance();
-            }
-
-            return connectionResult;
-        }
-
         private OperationResult<ETABSv1.cSapModel> EnsureEtabsSapModel()
         {
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult<ETABSv1.cSapModel>.Failure(connectionResult.Message);
-            }
-
-            var sapModel = connectionResult.Data.SapModel as ETABSv1.cSapModel;
-            if (sapModel == null)
-            {
-                return OperationResult<ETABSv1.cSapModel>.Failure("The attached ETABS SapModel is invalid. Please reattach and try again.");
-            }
-
-            return OperationResult<ETABSv1.cSapModel>.Success(sapModel);
+            return _connectionAdapter.EnsureSapModel();
         }
 
         public OperationResult AddSteelISections(IReadOnlyList<CSISapModelSteelISectionInput> inputs)

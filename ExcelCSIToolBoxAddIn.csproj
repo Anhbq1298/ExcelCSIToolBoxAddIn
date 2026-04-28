@@ -267,6 +267,8 @@
     <Compile Include="Infrastructure\CSISapModel\CSISapModelAddPointsResult.cs" />
     <Compile Include="Infrastructure\CSISapModel\CSISapModelAddFramesResult.cs" />
     <Compile Include="Infrastructure\CSISapModel\CSISapModelObjectTypeIds.cs" />
+    <Compile Include="Infrastructure\CSISapModel\ConnectionAdapters\ICSISapModelConnectionAdapter.cs" />
+    <Compile Include="Infrastructure\CSISapModel\ConnectionAdapters\CSISapModelConnectionAdapter.cs" />
     <Compile Include="Infrastructure\CSISapModel\PointObjectService\CSISapModelPointObjectService.cs" />
     <Compile Include="Infrastructure\CSISapModel\FrameObjectService\CSISapModelFrameObjectService.cs" />
     <Compile Include="Infrastructure\CSISapModel\ShellObjectService\CSISapModelShellObjectService.cs" />

@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
@@ -16,123 +14,38 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
     /// </summary>
     public class Sap2000ConnectionService : ICSISapModelConnectionService
     {
-        private readonly ICsiModelAdapter _modelAdapter;
-        private CSISapModelConnectionInfo _currentConnection;
+        private readonly ICSISapModelConnectionAdapter<SAP2000v1.cSapModel> _connectionAdapter;
 
         public Sap2000ConnectionService()
-            : this(new Sap2000ModelAdapter())
+            : this(CSISapModelConnectionAdapterFactory.CreateSap2000())
         {
         }
 
         public Sap2000ConnectionService(ICsiModelAdapter modelAdapter)
+            : this(CSISapModelConnectionAdapterFactory.CreateSap2000(modelAdapter))
         {
-            _modelAdapter = modelAdapter ?? throw new ArgumentNullException(nameof(modelAdapter));
+        }
+
+        private Sap2000ConnectionService(ICSISapModelConnectionAdapter<SAP2000v1.cSapModel> connectionAdapter)
+        {
+            _connectionAdapter = connectionAdapter ?? throw new ArgumentNullException(nameof(connectionAdapter));
         }
 
         public string ProductName => "SAP2000";
 
         public OperationResult<CSISapModelConnectionInfo> TryAttachToRunningInstance()
         {
-            var attachResult = _modelAdapter.AttachToRunningInstance();
-            if (!attachResult.IsSuccess)
-            {
-                _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure(attachResult.Message);
-            }
-
-            var sapObject = attachResult.ApplicationObject as SAP2000v1.cOAPI;
-            var sapModel = attachResult.SapModel as SAP2000v1.cSapModel;
-            if (sapObject == null || sapModel == null)
-            {
-                _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure("The attached SAP2000 instance is invalid. Please reattach and try again.");
-            }
-
-            try
-            {
-                string modelPath = string.Empty;
-                string modelName = "Unsaved Model";
-                try
-                {
-                    modelPath = sapModel.GetModelFilename(true);
-                    modelName = string.IsNullOrWhiteSpace(modelPath)
-                        ? "Unsaved Model"
-                        : Path.GetFileName(modelPath);
-                }
-                catch
-                {
-                }
-
-                string modelCurrentUnit = "Units unavailable";
-                try
-                {
-                    modelCurrentUnit = Sap2000UnitFormatter.FormatPresentUnits(sapModel.GetPresentUnits());
-                }
-                catch
-                {
-                }
-
-                _currentConnection = new CSISapModelConnectionInfo
-                {
-                    IsConnected = true,
-                    ModelPath = modelPath,
-                    ModelFileName = modelName,
-                    ModelCurrentUnit = modelCurrentUnit,
-                    CsiObject = sapObject,
-                    SapModel = sapModel
-                };
-
-                return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
-            }
-            catch
-            {
-                _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure("Failed to attach to the running SAP2000 instance.");
-            }
+            return _connectionAdapter.TryAttachToRunningInstance();
         }
 
         public OperationResult<CSISapModelConnectionInfo> GetCurrentConnection()
         {
-            if (_currentConnection?.SapModel == null)
-            {
-                return OperationResult<CSISapModelConnectionInfo>.Failure("No SAP2000 model is currently connected. Please click Attach.");
-            }
-
-            return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
+            return _connectionAdapter.GetCurrentConnection();
         }
 
         public OperationResult CloseCurrentInstance()
         {
-            if (_currentConnection?.CsiObject == null)
-            {
-                return OperationResult.Failure("No running SAP2000 instance is currently attached.");
-            }
-
-            try
-            {
-                var sapApplication = _currentConnection.CsiObject as SAP2000v1.cOAPI;
-                if (sapApplication == null)
-                {
-                    return OperationResult.Failure("The attached SAP2000 instance is invalid. Please reattach and try again.");
-                }
-
-                int result = sapApplication.ApplicationExit(false);
-                if (result != 0)
-                {
-                    return OperationResult.Failure($"SAP2000 failed to close the attached instance (ApplicationExit returned {result}).");
-                }
-
-                ResetCurrentConnection();
-                return OperationResult.Success("Successfully closed the attached SAP2000 instance.");
-            }
-            catch (COMException ex)
-            {
-                return OperationResult.Failure($"SAP2000 COM error while closing attached instance: {ex.Message}");
-            }
-            catch
-            {
-                return OperationResult.Failure("Failed to close the attached SAP2000 instance.");
-            }
+            return _connectionAdapter.CloseCurrentInstance();
         }
 
         public OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames)
@@ -415,63 +328,9 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 RefreshView);
         }
 
-        private OperationResult<CSISapModelConnectionInfo> EnsureConnection()
-        {
-            var connectionResult = GetCurrentConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                connectionResult = TryAttachToRunningInstance();
-            }
-
-            return connectionResult;
-        }
-
         private OperationResult<SAP2000v1.cSapModel> EnsureSap2000SapModel()
         {
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult<SAP2000v1.cSapModel>.Failure(connectionResult.Message);
-            }
-
-            var sapModel = connectionResult.Data.SapModel as SAP2000v1.cSapModel;
-            if (sapModel == null)
-            {
-                return OperationResult<SAP2000v1.cSapModel>.Failure("The attached SAP2000 SapModel is invalid. Please reattach and try again.");
-            }
-
-            return OperationResult<SAP2000v1.cSapModel>.Success(sapModel);
-        }
-
-        private void ResetCurrentConnection()
-        {
-            if (_currentConnection == null)
-            {
-                return;
-            }
-
-            ReleaseComReference(_currentConnection.SapModel);
-            ReleaseComReference(_currentConnection.CsiObject);
-
-            _currentConnection.SapModel = null;
-            _currentConnection.CsiObject = null;
-            _currentConnection = null;
-        }
-
-        private static void ReleaseComReference(object comReference)
-        {
-            if (comReference == null || !Marshal.IsComObject(comReference))
-            {
-                return;
-            }
-
-            try
-            {
-                Marshal.FinalReleaseComObject(comReference);
-            }
-            catch
-            {
-            }
+            return _connectionAdapter.EnsureSapModel();
         }
 
         private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel)
