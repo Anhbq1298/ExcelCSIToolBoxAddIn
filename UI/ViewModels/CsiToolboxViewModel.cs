@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Commands;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Application;
@@ -287,97 +288,121 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            foreach (var annotation in CreateDimensionAnnotations(SelectedFrameSectionDetail))
+            foreach (var annotation in CreateDimensionAnnotations(SelectedFrameSectionDetail, GetLengthUnitText()))
             {
                 SectionDimensionAnnotations.Add(annotation);
             }
         }
 
-        private static System.Collections.Generic.IEnumerable<SectionDimensionAnnotation> CreateDimensionAnnotations(CSISapModelFrameSectionDetailDTO detail)
+        private static System.Collections.Generic.IEnumerable<SectionDimensionAnnotation> CreateDimensionAnnotations(CSISapModelFrameSectionDetailDTO detail, string unit)
         {
             switch (detail.ShapeType)
             {
                 case FrameSectionShapeType.Rectangular:
-                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
-                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
+                    foreach (var item in DimensionItems(detail, unit,
+                        Spec("h", "Depth ( t3 )", "Total depth ( t3 )"),
+                        Spec("b", "Width ( t2 )", "Flange width ( t2 )")))
+                    {
+                        yield return item;
+                    }
                     break;
 
                 case FrameSectionShapeType.Tube:
-                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
-                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
-                    yield return Annotation("t2", detail, 126, 34, 126, 48, 132, 36, "Vertical");
-                    yield return Annotation("t3", detail, 100, 106, 116, 106, 104, 108, "Horizontal");
+                    foreach (var item in DimensionItems(detail, unit,
+                        Spec("h", "Total depth ( t3 )", "Depth ( t3 )"),
+                        Spec("b", "Flange width ( t2 )", "Width ( t2 )"),
+                        Spec("t2", "Flange thickness ( tf )"),
+                        Spec("t3", "Web thickness ( tw )")))
+                    {
+                        yield return item;
+                    }
                     break;
 
                 case FrameSectionShapeType.I:
-                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
-                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
-                    yield return Annotation("tw", detail, 74, 60, 86, 60, 76, 62, "Horizontal");
-                    yield return Annotation("tf", detail, 126, 18, 126, 32, 132, 20, "Vertical");
-
-                    if (HasAnyDimension(detail, "Bottom flange width ( t2b )"))
+                    foreach (var item in DimensionItems(detail, unit,
+                        Spec("h", "Total depth ( t3 )", "Depth ( t3 )"),
+                        Spec("b", "Top flange width ( t2 )", "Flange width ( t2 )"),
+                        Spec("tw", "Web thickness ( tw )"),
+                        Spec("tf", "Top flange thickness ( tf )", "Flange thickness ( tf )"),
+                        Spec("t2b", "Bottom flange width ( t2b )"),
+                        Spec("tfb", "Bottom flange thickness ( tfb )")))
                     {
-                        yield return Annotation("t2b", detail, 38, 112, 122, 112, 74, 114, "Horizontal");
-                    }
-
-                    if (HasAnyDimension(detail, "Bottom flange thickness ( tfb )"))
-                    {
-                        yield return Annotation("tfb", detail, 28, 88, 28, 102, 4, 90, "Vertical");
+                        yield return item;
                     }
                     break;
 
                 case FrameSectionShapeType.Channel:
                 case FrameSectionShapeType.Angle:
-                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
-                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
-                    yield return Annotation("tw", detail, 74, 60, 86, 60, 76, 62, "Horizontal");
-                    yield return Annotation("tf", detail, 126, 18, 126, 32, 132, 20, "Vertical");
+                    foreach (var item in DimensionItems(detail, unit,
+                        Spec("h", "Total depth ( t3 )", "Depth ( t3 )"),
+                        Spec("b", "Flange width ( t2 )", "Width ( t2 )"),
+                        Spec("tw", "Web thickness ( tw )"),
+                        Spec("tf", "Flange thickness ( tf )")))
+                    {
+                        yield return item;
+                    }
                     break;
 
                 case FrameSectionShapeType.Pipe:
-                    yield return Annotation("d", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
-                    if (HasAnyDimension(detail, "Wall thickness ( tw )", "Wall thickness ( t )"))
+                    foreach (var item in DimensionItems(detail, unit,
+                        Spec("d", "Outside diameter ( t3 )", "Diameter ( t3 )"),
+                        Spec("t", "Wall thickness ( tw )", "Wall thickness ( t )")))
                     {
-                        yield return Annotation("t", detail, 118, 34, 132, 48, 134, 38, "Diagonal");
+                        yield return item;
                     }
                     break;
 
                 case FrameSectionShapeType.Circular:
-                    yield return Annotation("d", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
-                    if (HasAnyDimension(detail, "Radius ( r )"))
+                    foreach (var item in DimensionItems(detail, unit,
+                        Spec("d", "Diameter ( t3 )", "Outside diameter ( t3 )"),
+                        Spec("r", "Radius ( r )")))
                     {
-                        yield return Annotation("r", detail, 80, 60, 116, 60, 98, 62, "Horizontal");
+                        yield return item;
                     }
                     break;
             }
         }
 
-        private static SectionDimensionAnnotation Annotation(
-            string key,
+        private static System.Collections.Generic.IEnumerable<SectionDimensionAnnotation> DimensionItems(
             CSISapModelFrameSectionDetailDTO detail,
-            double x1,
-            double y1,
-            double x2,
-            double y2,
-            double labelX,
-            double labelY,
-            string orientation)
+            string unit,
+            params DimensionSpec[] specs)
         {
+            foreach (var spec in specs)
+            {
+                if (TryGetDimensionValue(detail, out double value, spec.DimensionNames))
+                {
+                    yield return CreateDimensionItem(spec.Key, value, unit, detail.ShapeType.ToString());
+                }
+            }
+        }
+
+        private static SectionDimensionAnnotation CreateDimensionItem(string key, double value, string unit, string sectionType)
+        {
+            string valueText = value.ToString("0.###", CultureInfo.InvariantCulture);
+            string displayText = string.IsNullOrWhiteSpace(unit)
+                ? $"{key} = {valueText}"
+                : $"{key} = {valueText} {unit}";
+
             return new SectionDimensionAnnotation
             {
                 Key = key,
                 DisplayLabel = key,
-                SectionType = detail.ShapeType.ToString(),
-                StartPoint = new Point(x1, y1),
-                EndPoint = new Point(x2, y2),
-                LabelPosition = new Point(labelX, labelY),
-                Orientation = orientation,
-                Visibility = Visibility.Visible
+                Value = value,
+                Unit = unit,
+                DisplayText = displayText,
+                SectionType = sectionType
             };
         }
 
-        private static bool HasAnyDimension(CSISapModelFrameSectionDetailDTO detail, params string[] keys)
+        private static DimensionSpec Spec(string key, params string[] dimensionNames)
         {
+            return new DimensionSpec { Key = key, DimensionNames = dimensionNames };
+        }
+
+        private static bool TryGetDimensionValue(CSISapModelFrameSectionDetailDTO detail, out double value, params string[] keys)
+        {
+            value = 0;
             if (detail?.Dimensions == null)
             {
                 return false;
@@ -385,13 +410,33 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             foreach (string key in keys)
             {
-                if (detail.Dimensions.ContainsKey(key))
+                if (detail.Dimensions.TryGetValue(key, out value))
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private string GetLengthUnitText()
+        {
+            string unitText = CurrentModelUnitText ?? string.Empty;
+            string lower = unitText.ToLowerInvariant();
+
+            if (lower.Contains("mm")) return "mm";
+            if (lower.Contains("cm")) return "cm";
+            if (lower.Contains("-m-") || lower.EndsWith("-m")) return "m";
+            if (lower.Contains("in")) return "in";
+            if (lower.Contains("ft")) return "ft";
+
+            return string.Empty;
+        }
+
+        private class DimensionSpec
+        {
+            public string Key { get; set; }
+            public string[] DimensionNames { get; set; }
         }
 
         private void LoadSelectedSectionDetail(CSISapModelFrameSectionDTO section)

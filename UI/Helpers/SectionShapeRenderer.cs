@@ -39,6 +39,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
         public static void Render(Canvas canvas, CSISapModelFrameSectionDetailDTO dto)
         {
             canvas.Children.Clear();
+            DrawPreviewGrid(canvas);
 
             if (dto == null)
             {
@@ -178,6 +179,51 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
         }
 
         // --- Helpers ---
+
+        private static void DrawPreviewGrid(Canvas canvas)
+        {
+            const double size = 100;
+            const double step = 5;
+            var minorBrush = new SolidColorBrush(Color.FromRgb(150, 184, 190));
+            var majorBrush = new SolidColorBrush(Color.FromRgb(92, 134, 145));
+            var xAxisBrush = new SolidColorBrush(Color.FromRgb(210, 55, 55));
+            var yAxisBrush = new SolidColorBrush(Color.FromRgb(55, 85, 220));
+            var dash = new DoubleCollection { 2, 2 };
+
+            for (double p = 0; p <= size; p += step)
+            {
+                bool isMajor = Math.Abs(p % 20) < 0.001;
+                Brush brush = isMajor ? majorBrush : minorBrush;
+                double thickness = isMajor ? 0.55 : 0.35;
+
+                AddGridLine(canvas, p, 0, p, size, brush, thickness, dash);
+                AddGridLine(canvas, 0, p, size, p, brush, thickness, dash);
+            }
+
+            AddGridLine(canvas, 50, 0, 50, size, yAxisBrush, 0.9, null);
+            AddGridLine(canvas, 0, 50, size, 50, xAxisBrush, 0.9, null);
+        }
+
+        private static void AddGridLine(Canvas canvas, double x1, double y1, double x2, double y2, Brush brush, double thickness, DoubleCollection dash)
+        {
+            var line = new Line
+            {
+                X1 = x1,
+                Y1 = y1,
+                X2 = x2,
+                Y2 = y2,
+                Stroke = brush,
+                StrokeThickness = thickness,
+                SnapsToDevicePixels = true
+            };
+
+            if (dash != null)
+            {
+                line.StrokeDashArray = dash;
+            }
+
+            canvas.Children.Add(line);
+        }
 
         private static LineSegment Seg(double x, double y) => new LineSegment(new Point(x, y), true);
 
