@@ -36,16 +36,19 @@
         {
             this.tabExcelCSIToolBox = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
+            this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonEtabs = this.Factory.CreateRibbonButton();
             this.buttonSap2000 = this.Factory.CreateRibbonButton();
             this.buttonAiAgent = this.Factory.CreateRibbonButton();
             this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
+            this.groupAiAssistant.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabExcelCSIToolBox
             // 
             this.tabExcelCSIToolBox.Groups.Add(this.group1);
+            this.tabExcelCSIToolBox.Groups.Add(this.groupAiAssistant);
             this.tabExcelCSIToolBox.Label = "ExcelCSIToolBox";
             this.tabExcelCSIToolBox.Name = "tabExcelCSIToolBox";
             // 
@@ -53,9 +56,14 @@
             // 
             this.group1.Items.Add(this.buttonEtabs);
             this.group1.Items.Add(this.buttonSap2000);
-            this.group1.Items.Add(this.buttonAiAgent);
             this.group1.Label = "CSI Toolbox";
             this.group1.Name = "group1";
+            // 
+            // groupAiAssistant
+            // 
+            this.groupAiAssistant.Items.Add(this.buttonAiAgent);
+            this.groupAiAssistant.Label = "AI Assistant";
+            this.groupAiAssistant.Name = "groupAiAssistant";
             // 
             // buttonEtabs
             // 
@@ -77,10 +85,12 @@
             // 
             this.buttonAiAgent.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
             this.buttonAiAgent.Enabled = true;
-            this.buttonAiAgent.Label = "AI Agent";
+            this.buttonAiAgent.Label = "MHT AI Assistant";
             this.buttonAiAgent.Name = "buttonAiAgent";
             this.buttonAiAgent.OfficeImageId = "HappyFace";
+            this.buttonAiAgent.ScreenTip = "Open MHT AI Assistant";
             this.buttonAiAgent.ShowImage = true;
+            this.buttonAiAgent.SuperTip = "Open the local Ollama-powered AI assistant in an Excel custom task pane.";
             this.buttonAiAgent.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonAiAgent_Click);
             // 
             // ExcelCSIToolBoxAddInRibbon
@@ -93,6 +103,8 @@
             this.tabExcelCSIToolBox.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
+            this.groupAiAssistant.ResumeLayout(false);
+            this.groupAiAssistant.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -101,6 +113,7 @@
 
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tabExcelCSIToolBox;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAiAssistant;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonEtabs;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonSap2000;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAiAgent;

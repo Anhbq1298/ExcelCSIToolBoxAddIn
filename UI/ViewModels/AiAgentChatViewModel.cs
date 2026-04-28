@@ -31,6 +31,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private string                       _userInput  = string.Empty;
         private string                       _statusText = "Ready";
+        private string                       _currentModelName = OllamaChatService.DefaultModel;
+        private string                       _sap2000ConnectionStatus = "Attached";
+        private string                       _etabsConnectionStatus = "Attached";
         private bool                         _isBusy     = false;
         private AiAgentToolTraceViewModel    _lastToolTrace;
 
@@ -87,6 +90,24 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             private set { _statusText = value; OnPropertyChanged(); }
         }
 
+        public string CurrentModelName
+        {
+            get { return _currentModelName; }
+            set { _currentModelName = string.IsNullOrWhiteSpace(value) ? "Not selected" : value; OnPropertyChanged(); }
+        }
+
+        public string Sap2000ConnectionStatus
+        {
+            get { return _sap2000ConnectionStatus; }
+            set { _sap2000ConnectionStatus = string.IsNullOrWhiteSpace(value) ? "Not attached" : value; OnPropertyChanged(); }
+        }
+
+        public string EtabsConnectionStatus
+        {
+            get { return _etabsConnectionStatus; }
+            set { _etabsConnectionStatus = string.IsNullOrWhiteSpace(value) ? "Not attached" : value; OnPropertyChanged(); }
+        }
+
         public bool IsBusy
         {
             get { return _isBusy; }
@@ -123,6 +144,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             // Add the user message to the chat history.
             Messages.Add(new AiAgentChatMessageViewModel { Role = "User", Content = userMessage });
+            var thinkingMessage = new AiAgentChatMessageViewModel
+            {
+                Role = "Assistant",
+                Content = "...",
+                IsTemporary = true
+            };
+            Messages.Add(thinkingMessage);
             UserInput  = string.Empty;
             IsBusy     = true;
             StatusText = "Thinking…";
@@ -133,6 +161,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 AiAgentResponse response = await _orchestrator.SendAsync(
                     userMessage,
                     CancellationToken.None);
+
+                Messages.Remove(thinkingMessage);
 
                 // Add assistant reply.
                 Messages.Add(new AiAgentChatMessageViewModel
@@ -156,6 +186,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
             catch (Exception ex)
             {
+                Messages.Remove(thinkingMessage);
+
                 Messages.Add(new AiAgentChatMessageViewModel
                 {
                     Role    = "Assistant",
