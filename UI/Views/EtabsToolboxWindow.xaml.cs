@@ -1,4 +1,7 @@
+using System.ComponentModel;
 using System.Windows;
+using ExcelCSIToolBoxAddIn.UI.Helpers;
+using ExcelCSIToolBoxAddIn.UI.ViewModels;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
 {
@@ -10,6 +13,27 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         public EtabsToolboxWindow()
         {
             InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is CsiToolboxViewModel oldVm)
+                oldVm.PropertyChanged -= OnViewModelPropertyChanged;
+            if (e.NewValue is CsiToolboxViewModel newVm)
+                newVm.PropertyChanged += OnViewModelPropertyChanged;
+        }
+
+        private void OnViewModelPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(CsiToolboxViewModel.SelectedFrameSectionDetail))
+            {
+                var vm = (CsiToolboxViewModel)sender;
+                var detail = vm.SelectedFrameSectionDetail;
+                SectionShapeRenderer.Render(EtabsSectionPreviewCanvas, detail);
+                EtabsSectionNameLabel.Text = detail?.Name ?? "—";
+                EtabsSectionTypeLabel.Text = detail != null ? detail.ShapeType.ToString() : "";
+            }
         }
 
         private void HelpButton_Click(object sender, RoutedEventArgs e)

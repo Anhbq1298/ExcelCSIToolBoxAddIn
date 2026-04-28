@@ -214,8 +214,20 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
                                 
-                                <Border Grid.Row="0" BorderBrush="#DDDDDD" BorderThickness="1" Background="#F9F9F9" Margin="0,0,0,10">
-                                    <TextBlock Text="Shape preview will be displayed here" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#888888" FontWeight="Normal"/>
+                                <Border Grid.Row="0" BorderBrush="#DDDDDD" BorderThickness="1" Background="#F9F9F9" Margin="0,0,0,10" MinHeight="160">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Viewbox Grid.Row="0" Margin="10" Stretch="Uniform">
+                                            <Canvas x:Name="Sap2000SectionPreviewCanvas" Width="100" Height="100"/>
+                                        </Viewbox>
+                                        <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                            <TextBlock x:Name="Sap2000SectionNameLabel" Text="—" HorizontalAlignment="Center" FontWeight="SemiBold" Foreground="#333333" FontSize="11"/>
+                                            <TextBlock x:Name="Sap2000SectionTypeLabel" Text="" HorizontalAlignment="Center" Foreground="#888888" FontSize="10"/>
+                                        </StackPanel>
+                                    </Grid>
                                 </Border>
                                 
                                 <StackPanel Grid.Row="1">

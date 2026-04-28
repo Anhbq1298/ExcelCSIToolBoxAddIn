@@ -338,6 +338,7 @@
     <Compile Include="Infrastructure\Excel\IExcelOutputService.cs" />
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
+    <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

@@ -260,7 +260,30 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _selectedFrameSection = value;
                 OnPropertyChanged();
+                LoadSelectedSectionDetail(value);
             }
+        }
+
+        private CSISapModelFrameSectionDetailDTO _selectedFrameSectionDetail;
+        public CSISapModelFrameSectionDetailDTO SelectedFrameSectionDetail
+        {
+            get => _selectedFrameSectionDetail;
+            private set
+            {
+                _selectedFrameSectionDetail = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private void LoadSelectedSectionDetail(CSISapModelFrameSectionDTO section)
+        {
+            if (section == null || _getFrameSectionDetailUseCase == null)
+            {
+                SelectedFrameSectionDetail = null;
+                return;
+            }
+            var result = _getFrameSectionDetailUseCase.Execute(section.Name);
+            SelectedFrameSectionDetail = result.IsSuccess ? result.Data : null;
         }
 
         private void LoadConnectionState(bool showMessage)
