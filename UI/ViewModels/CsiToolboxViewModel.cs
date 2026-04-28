@@ -88,47 +88,47 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
-            CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance);
+            CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
 
-            CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelISectionsUseCase.Execute()));
-            CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelChannelSectionsUseCase.Execute()));
-            CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelAngleSectionsUseCase.Execute()));
-            CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelTubeSectionsUseCase.Execute()));
-            CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelPipeSectionsUseCase.Execute()));
+            CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelISectionsUseCase.Execute()), () => IsConnected);
+            CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelChannelSectionsUseCase.Execute()), () => IsConnected);
+            CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelAngleSectionsUseCase.Execute()), () => IsConnected);
+            CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelTubeSectionsUseCase.Execute()), () => IsConnected);
+            CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelPipeSectionsUseCase.Execute()), () => IsConnected);
 
-            CreateConcreteRectangleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteRectangleSectionsUseCase.Execute()));
-            CreateConcreteCircleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteCircleSectionsUseCase.Execute()));
+            CreateConcreteRectangleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteRectangleSectionsUseCase.Execute()), () => IsConnected);
+            CreateConcreteCircleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteCircleSectionsUseCase.Execute()), () => IsConnected);
 
-            SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName);
-            SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName);
-            AddPointByCartesianCommand = new RelayCommand(AddPointByCartesian);
-            SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"));
-            RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"));
-            GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints);
+            SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName, () => IsConnected);
+            SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName, () => IsConnected);
+            AddPointByCartesianCommand = new RelayCommand(AddPointByCartesian, () => IsConnected);
+            SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"), () => IsConnected);
+            RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"), () => IsConnected);
+            GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints, () => IsConnected);
 
-            AddFramesByCoordinatesCommand = new RelayCommand(AddFramesByCoordinates);
-            AddFramesByPointNamesCommand = new RelayCommand(AddFramesByPointNames);
-            SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"));
-            RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"));
-            GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames);
-            GetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Section Property"));
-            SetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Section Property"));
-            GetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Group Assignment"));
-            SetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Group Assignment"));
-            GetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Modifier"));
-            SetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Modifier"));
-            CreateShellAreasFromSelectedFramesCommand = new RelayCommand(CreateShellAreasFromSelectedFrames);
-            GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"));
-            SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"));
+            AddFramesByCoordinatesCommand = new RelayCommand(AddFramesByCoordinates, () => IsConnected);
+            AddFramesByPointNamesCommand = new RelayCommand(AddFramesByPointNames, () => IsConnected);
+            SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"), () => IsConnected);
+            RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"), () => IsConnected);
+            GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames, () => IsConnected);
+            GetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Section Property"), () => IsConnected);
+            SetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Section Property"), () => IsConnected);
+            GetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Group Assignment"), () => IsConnected);
+            SetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Group Assignment"), () => IsConnected);
+            GetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Modifier"), () => IsConnected);
+            SetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Modifier"), () => IsConnected);
+            CreateShellAreasFromSelectedFramesCommand = new RelayCommand(CreateShellAreasFromSelectedFrames, () => IsConnected);
+            GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"), () => IsConnected);
+            SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"), () => IsConnected);
 
-            GetLoadPatternsCommand = new RelayCommand(GetLoadPatterns);
-            AddLoadPatternFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Pattern From Excel"));
-            DeleteSelectedLoadPatternsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadPatterns);
+            GetLoadPatternsCommand = new RelayCommand(GetLoadPatterns, () => IsConnected);
+            AddLoadPatternFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Pattern From Excel"), () => IsConnected);
+            DeleteSelectedLoadPatternsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadPatterns, _ => IsConnected);
             
-            GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations);
-            AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"));
-            DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations);
-            ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination);
+            GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations, () => IsConnected);
+            AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"), () => IsConnected);
+            DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => IsConnected);
+            ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
 
             CurrentModelUnitText = "Not yet attached";
             LoadConnectionState(showMessage: false);
@@ -152,6 +152,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _isConnected = value;
                 OnPropertyChanged();
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
             }
         }
 

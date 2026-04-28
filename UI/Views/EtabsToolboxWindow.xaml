@@ -529,6 +529,11 @@
                                               SelectionMode="Extended"
                                               BorderBrush="#CCCCCC" BorderThickness="1"
                                               FontWeight="Normal" Foreground="Black">
+                                        <ListView.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Delete" Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadPatternsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            </ContextMenu>
+                                        </ListView.ContextMenu>
                                         <ListView.View>
                                             <GridView>
                                                 <GridViewColumn Header="Load Pattern Name" DisplayMemberBinding="{Binding Name}" Width="250"/>
@@ -540,9 +545,6 @@
                                     <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
                                         <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" Margin="0,0,0,8"/>
                                         <Button Content="Add From Excel" HorizontalAlignment="Stretch" Command="{Binding AddLoadPatternFromExcelCommand}" Margin="0,0,0,8"/>
-                                        <Button Content="Delete Selected" HorizontalAlignment="Stretch" 
-                                                Command="{Binding DeleteSelectedLoadPatternsCommand}"
-                                                CommandParameter="{Binding ElementName=LoadPatternList, Path=SelectedItems}"/>
                                     </StackPanel>
                                 </Grid>
                             </GroupBox>
