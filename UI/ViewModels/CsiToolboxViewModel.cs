@@ -37,6 +37,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         
         private readonly GetLoadCombinationsUseCase _getLoadCombinationsUseCase;
         private readonly DeleteLoadCombinationsUseCase _deleteLoadCombinationsUseCase;
+        private readonly GetLoadCombinationDetailsUseCase _getLoadCombinationDetailsUseCase;
 
         private readonly GetLoadPatternsUseCase _getLoadPatternsUseCase;
         private readonly DeleteLoadPatternsUseCase _deleteLoadPatternsUseCase;
@@ -225,13 +226,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand GetLoadPatternsCommand { get; }
         public ICommand AddLoadPatternFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadPatternsCommand { get; }
-
+        
         public ICommand GetLoadCombinationsCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
+        public ICommand ViewLoadCombinationCommand { get; }
 
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO> LoadPatterns { get; }
-        public System.Collections.ObjectModel.ObservableCollection<string> LoadCombinations { get; }
+        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
 
         private void LoadConnectionState(bool showMessage)
         {
@@ -508,9 +510,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var list = new System.Collections.Generic.List<string>();
             foreach (var item in selectedItems)
             {
-                if (item is string str)
+                if (item is ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO dto)
                 {
-                    list.Add(str);
+                    list.Add(dto.Name);
                 }
             }
 
@@ -521,6 +523,28 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess)
             {
                 GetLoadCombinations(); // refresh list after deletion
+            }
+        }
+
+        private void ViewLoadCombination(System.Collections.IList selectedItems)
+        {
+            if (selectedItems == null || selectedItems.Count == 0) return;
+            
+            // Only view the first selected item
+            var firstItem = selectedItems[0];
+            if (firstItem is ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO dto)
+            {
+                var result = _getLoadCombinationDetailsUseCase.Execute(dto.Name);
+                if (result.IsSuccess)
+                {
+                    var window = new ExcelCSIToolBoxAddIn.UI.Views.LoadCombinationDetailsWindow(result.Data);
+                    window.Owner = System.Windows.Application.Current.MainWindow;
+                    window.ShowDialog();
+                }
+                else
+                {
+                    ShowOperationResult(OperationResult.Failure(result.Message));
+                }
             }
         }
 

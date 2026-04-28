@@ -574,11 +574,18 @@
                                               SelectionMode="Extended"
                                               BorderBrush="#CCCCCC" BorderThickness="1"
                                               FontWeight="Normal" Foreground="Black">
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding}" />
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
+                                        <ListView.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="View" Command="{Binding DataContext.ViewLoadCombinationCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                <MenuItem Header="Delete" Command="{Binding DataContext.DeleteSelectedLoadCombinationsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                            </ContextMenu>
+                                        </ListView.ContextMenu>
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Combination Name" DisplayMemberBinding="{Binding Name}" Width="250"/>
+                                                <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="150"/>
+                                            </GridView>
+                                        </ListView.View>
                                     </ListView>
                                     
                                     <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">

@@ -383,7 +383,19 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 sapModelResult.Data,
                 combinationName,
                 (SAP2000v1.cSapModel sapModel, string name, ref int numberItems, ref string[] caseNames, ref int[] caseTypes, ref double[] scaleFactors) =>
-                    sapModel.RespCombo.GetCaseList(name, ref numberItems, ref caseNames, ref caseTypes, ref scaleFactors));
+                {
+                    SAP2000v1.eCNameType[] cTypes = null;
+                    int ret = sapModel.RespCombo.GetCaseList(name, ref numberItems, ref cTypes, ref caseNames, ref scaleFactors);
+                    if (cTypes != null)
+                    {
+                        caseTypes = new int[cTypes.Length];
+                        for (int i = 0; i < cTypes.Length; i++)
+                        {
+                            caseTypes[i] = (int)cTypes[i];
+                        }
+                    }
+                    return ret;
+                });
             
             return detailsResult;
         }
