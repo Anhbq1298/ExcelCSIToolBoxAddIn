@@ -6,12 +6,6 @@ using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 {
-    public delegate int CSISapModelAddCartesianPoint<TSapModel>(
-        TSapModel sapModel,
-        CSISapModelPointCartesianInput pointInput,
-        ref string assignedName,
-        string requestedUniqueName);
-
     public delegate int CSISapModelAddFrameByCoord<TSapModel>(
         TSapModel sapModel,
         CSISapModelFrameByCoordInput frameInput,
@@ -26,147 +20,24 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         string sectionName,
         string userName);
 
-    internal static class CSISapModelOperationRunner
+    internal static class CSISapModelFrameObjectService
     {
-        internal static OperationResult SelectObjectsByUniqueNames<TSapModel>(
+        internal static OperationResult SelectFramesByUniqueNames<TSapModel>(
             IReadOnlyList<string> uniqueNames,
-            string objectTypeName,
             string productName,
             TSapModel sapModel,
-            Func<TSapModel, int> clearSelection,
-            Func<TSapModel, string, int> setSelected,
+            CSISapModelClearSelection<TSapModel> clearSelection,
+            CSISapModelSetSelectedByName<TSapModel> setSelected,
             Func<TSapModel, OperationResult> refreshView)
         {
-            if (uniqueNames == null || uniqueNames.Count == 0)
-            {
-                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
-            }
-
-            var orderedUniqueNames = GetOrderedDistinctNames(uniqueNames);
-            if (orderedUniqueNames.Count == 0)
-            {
-                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
-            }
-
-            try
-            {
-                int clearSelectionResult = clearSelection(sapModel);
-                if (clearSelectionResult != 0)
-                {
-                    return OperationResult.Failure($"Failed to clear {productName} selection before selecting {objectTypeName}s by UniqueName.");
-                }
-
-                var unresolved = new List<string>();
-                var selectedCount = 0;
-
-                BatchProgressWindow.RunWithProgress(orderedUniqueNames.Count, $"Selecting {objectTypeName}s...", ctx =>
-                {
-                    foreach (var uniqueName in orderedUniqueNames)
-                    {
-                        if (ctx.IsCancellationRequested) break;
-
-                        int result = setSelected(sapModel, uniqueName);
-                        if (result == 0)
-                        {
-                            selectedCount++;
-                            ctx.IncrementRan();
-                        }
-                        else
-                        {
-                            unresolved.Add(uniqueName);
-                            ctx.IncrementSkipped();
-                        }
-                    }
-                });
-
-                var message = $"Selected {selectedCount} {objectTypeName}(s) by UniqueName.";
-                if (unresolved.Count > 0)
-                {
-                    message += $" Not found: {string.Join(", ", unresolved)}.";
-                }
-
-                var refreshResult = refreshView(sapModel);
-                if (!refreshResult.IsSuccess)
-                {
-                    return refreshResult;
-                }
-
-                return OperationResult.Success(message);
-            }
-            catch
-            {
-                return OperationResult.Failure($"Failed to select {productName} {objectTypeName}s by UniqueName.");
-            }
-        }
-
-        internal static OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian<TSapModel>(
-            IReadOnlyList<CSISapModelPointCartesianInput> pointInputs,
-            string productName,
-            TSapModel sapModel,
-            CSISapModelAddCartesianPoint<TSapModel> addPoint,
-            Func<TSapModel, OperationResult> refreshView)
-        {
-            if (pointInputs == null || pointInputs.Count == 0)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure("No valid rows were found in the selected range.");
-            }
-
-            try
-            {
-                var failedRowMessages = new List<string>();
-                var successCount = 0;
-
-                BatchProgressWindow.RunWithProgress(pointInputs.Count, "Adding Points to Model...", ctx =>
-                {
-                    foreach (var pointInput in pointInputs)
-                    {
-                        if (ctx.IsCancellationRequested) break;
-
-                        string assignedName = string.Empty;
-                        string requestedUniqueName = string.IsNullOrWhiteSpace(pointInput.UniqueName) ? string.Empty : pointInput.UniqueName;
-                        int addResult = addPoint(sapModel, pointInput, ref assignedName, requestedUniqueName);
-
-                        if (addResult != 0)
-                        {
-                            failedRowMessages.Add($"Row {pointInput.ExcelRowNumber}: {productName} API call PointObj.AddCartesian failed (return code {addResult}).");
-                            ctx.IncrementSkipped();
-                            continue;
-                        }
-
-                        successCount++;
-                        ctx.IncrementRan();
-
-                        if (!string.IsNullOrWhiteSpace(requestedUniqueName) &&
-                            !string.Equals(assignedName, requestedUniqueName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            failedRowMessages.Add($"Row {pointInput.ExcelRowNumber}: Point was created, but {productName} assigned UniqueName '{assignedName}' instead of requested '{requestedUniqueName}'.");
-                        }
-                    }
-                });
-
-                if (successCount > 0)
-                {
-                    var refreshResult = refreshView(sapModel);
-                    if (!refreshResult.IsSuccess)
-                    {
-                        return OperationResult<CSISapModelAddPointsResult>.Failure(refreshResult.Message);
-                    }
-                }
-
-                return OperationResult<CSISapModelAddPointsResult>.Success(new CSISapModelAddPointsResult
-                {
-                    AddedCount = successCount,
-                    FailedRowMessages = failedRowMessages
-                });
-            }
-            catch (COMException ex)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure($"{productName} COM error while adding points by Cartesian coordinates: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure($"{productName} add-by-Cartesian failed unexpectedly: {ex.Message}");
-            }
+            return SelectObjectsByUniqueNames(
+                uniqueNames,
+                "frame",
+                productName,
+                sapModel,
+                clearSelection,
+                setSelected,
+                refreshView);
         }
 
         internal static OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates<TSapModel>(
@@ -222,6 +93,50 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                         : new FrameAddResult(result, null);
                 },
                 result => result.WarningMessage);
+        }
+
+        internal static OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            CSISapModelReadSelectedObjects<TSapModel> getSelectedObjects)
+        {
+            try
+            {
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int selectedResult = getSelectedObjects(sapModel, ref numberItems, ref objectTypes, ref objectNames);
+                if (selectedResult != 0)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure($"Failed to read selected objects from {productName}.");
+                }
+
+                var frameUniqueNames = new List<string>();
+                for (int i = 0; i < numberItems; i++)
+                {
+                    if (objectTypes == null || objectNames == null || i >= objectTypes.Length || i >= objectNames.Length)
+                    {
+                        continue;
+                    }
+
+                    var frameUniqueName = objectNames[i];
+                    if (objectTypes[i] == CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(frameUniqueName))
+                    {
+                        frameUniqueNames.Add(frameUniqueName);
+                    }
+                }
+
+                if (frameUniqueNames.Count == 0)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure($"No frame objects are selected in {productName}.");
+                }
+
+                return OperationResult<IReadOnlyList<string>>.Success(frameUniqueNames);
+            }
+            catch
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure($"Unable to read selected {productName} frames.");
+            }
         }
 
         private static OperationResult<CSISapModelAddFramesResult> AddFrames<TSapModel, TFrameInput, TAddResult>(
@@ -296,6 +211,77 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             catch (Exception ex)
             {
                 return OperationResult<CSISapModelAddFramesResult>.Failure($"{productName} add-by-{operationName} failed unexpectedly: {ex.Message}");
+            }
+        }
+
+        private static OperationResult SelectObjectsByUniqueNames<TSapModel>(
+            IReadOnlyList<string> uniqueNames,
+            string objectTypeName,
+            string productName,
+            TSapModel sapModel,
+            CSISapModelClearSelection<TSapModel> clearSelection,
+            CSISapModelSetSelectedByName<TSapModel> setSelected,
+            Func<TSapModel, OperationResult> refreshView)
+        {
+            if (uniqueNames == null || uniqueNames.Count == 0)
+            {
+                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
+            }
+
+            var orderedUniqueNames = GetOrderedDistinctNames(uniqueNames);
+            if (orderedUniqueNames.Count == 0)
+            {
+                return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
+            }
+
+            try
+            {
+                int clearSelectionResult = clearSelection(sapModel);
+                if (clearSelectionResult != 0)
+                {
+                    return OperationResult.Failure($"Failed to clear {productName} selection before selecting {objectTypeName}s by UniqueName.");
+                }
+
+                var unresolved = new List<string>();
+                var selectedCount = 0;
+
+                BatchProgressWindow.RunWithProgress(orderedUniqueNames.Count, $"Selecting {objectTypeName}s...", ctx =>
+                {
+                    foreach (var uniqueName in orderedUniqueNames)
+                    {
+                        if (ctx.IsCancellationRequested) break;
+
+                        int result = setSelected(sapModel, uniqueName);
+                        if (result == 0)
+                        {
+                            selectedCount++;
+                            ctx.IncrementRan();
+                        }
+                        else
+                        {
+                            unresolved.Add(uniqueName);
+                            ctx.IncrementSkipped();
+                        }
+                    }
+                });
+
+                var message = $"Selected {selectedCount} {objectTypeName}(s) by UniqueName.";
+                if (unresolved.Count > 0)
+                {
+                    message += $" Not found: {string.Join(", ", unresolved)}.";
+                }
+
+                var refreshResult = refreshView(sapModel);
+                if (!refreshResult.IsSuccess)
+                {
+                    return refreshResult;
+                }
+
+                return OperationResult.Success(message);
+            }
+            catch
+            {
+                return OperationResult.Failure($"Failed to select {productName} {objectTypeName}s by UniqueName.");
             }
         }
 

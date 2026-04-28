@@ -6,7 +6,6 @@ using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
 using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
-using ExcelCSIToolBoxAddIn.UI.Views;
 using SAP2000v1;
 
 namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
@@ -144,9 +143,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelOperationRunner.SelectObjectsByUniqueNames(
+            return CSISapModelPointObjectService.SelectPointsByUniqueNames(
                 uniqueNames,
-                "point",
                 ProductName,
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
@@ -162,9 +160,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelOperationRunner.SelectObjectsByUniqueNames(
+            return CSISapModelFrameObjectService.SelectFramesByUniqueNames(
                 uniqueNames,
-                "frame",
                 ProductName,
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
@@ -180,7 +177,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult<CSISapModelAddPointsResult>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelOperationRunner.AddPointsByCartesian(
+            return CSISapModelPointObjectService.AddPointsByCartesian(
                 pointInputs,
                 ProductName,
                 sapModelResult.Data,
@@ -205,7 +202,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelOperationRunner.AddFramesByCoordinates(
+            return CSISapModelFrameObjectService.AddFramesByCoordinates(
                 frameInputs,
                 ProductName,
                 sapModelResult.Data,
@@ -232,7 +229,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelOperationRunner.AddFramesByPoint(
+            return CSISapModelFrameObjectService.AddFramesByPoint(
                 frameInputs,
                 ProductName,
                 sapModelResult.Data,
@@ -248,155 +245,175 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public OperationResult<IReadOnlyList<CSISapModelPointData>> GetSelectedPointsFromActiveModel()
         {
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure(connectionResult.Message);
+                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure(sapModelResult.Message);
             }
 
-            try
-            {
-                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
-                int numberItems = 0;
-                int[] objectTypes = null;
-                string[] objectNames = null;
-                int selectedResult = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
-                if (selectedResult != 0)
-                {
-                    return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure("Failed to read selected objects from SAP2000.");
-                }
-
-                var points = new List<CSISapModelPointData>();
-                for (int i = 0; i < numberItems; i++)
-                {
-                    if (objectTypes == null || objectNames == null || i >= objectTypes.Length || i >= objectNames.Length)
-                    {
-                        continue;
-                    }
-
-                    if (objectTypes[i] != CSISapModelObjectTypeIds.Point || string.IsNullOrWhiteSpace(objectNames[i]))
-                    {
-                        continue;
-                    }
-
-                    double x = 0;
-                    double y = 0;
-                    double z = 0;
-                    int pointResult = sapModel.PointObj.GetCoordCartesian(objectNames[i], ref x, ref y, ref z, "Global");
-                    if (pointResult == 0)
-                    {
-                        points.Add(new CSISapModelPointData
-                        {
-                            PointUniqueName = objectNames[i],
-                            PointLabel = objectNames[i],
-                            X = x,
-                            Y = y,
-                            Z = z
-                        });
-                    }
-                }
-
-                if (points.Count == 0)
-                {
-                    return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure("No point objects are selected in SAP2000.");
-                }
-
-                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Success(points);
-            }
-            catch
-            {
-                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure("Unable to read selected SAP2000 points.");
-            }
+            return CSISapModelPointObjectService.GetSelectedPointsFromActiveModel(
+                ProductName,
+                sapModelResult.Data,
+                (SAP2000v1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
+                    sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames),
+                (SAP2000v1.cSapModel sapModel, string pointName, ref double x, ref double y, ref double z) =>
+                    sapModel.PointObj.GetCoordCartesian(pointName, ref x, ref y, ref z, "Global"),
+                null);
         }
 
         public OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel()
         {
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
             {
-                return OperationResult<IReadOnlyList<string>>.Failure(connectionResult.Message);
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
             }
 
-            try
-            {
-                SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
-                int numberItems = 0;
-                int[] objectTypes = null;
-                string[] objectNames = null;
-                int selectedResult = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
-                if (selectedResult != 0)
-                {
-                    return OperationResult<IReadOnlyList<string>>.Failure("Failed to read selected objects from SAP2000.");
-                }
-
-                var frameUniqueNames = new List<string>();
-                for (int i = 0; i < numberItems; i++)
-                {
-                    if (objectTypes == null || objectNames == null || i >= objectTypes.Length || i >= objectNames.Length)
-                    {
-                        continue;
-                    }
-
-                    var frameUniqueName = objectNames[i];
-                    if (objectTypes[i] == CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(frameUniqueName))
-                    {
-                        frameUniqueNames.Add(frameUniqueName);
-                    }
-                }
-
-                if (frameUniqueNames.Count == 0)
-                {
-                    return OperationResult<IReadOnlyList<string>>.Failure("No frame objects are selected in SAP2000.");
-                }
-
-                return OperationResult<IReadOnlyList<string>>.Success(frameUniqueNames);
-            }
-            catch
-            {
-                return OperationResult<IReadOnlyList<string>>.Failure("Unable to read selected SAP2000 frames.");
-            }
+            return CSISapModelFrameObjectService.GetSelectedFramesFromActiveModel(
+                ProductName,
+                sapModelResult.Data,
+                (SAP2000v1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
+                    sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames));
         }
 
         public OperationResult AddSteelISections(IReadOnlyList<CSISapModelSteelISectionInput> inputs)
         {
-            return CreateSections(inputs, "Creating Steel I-Sections...", (sapModel, input) =>
-                sapModel.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf, -1, "", ""));
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            var result = CSISapModelSectionPropertiesService.AddSteelISections(
+                inputs,
+                ProductName,
+                sapModel,
+                SetSectionCreationUnits,
+                FrameSectionExists,
+                SetSteelISection);
+
+            return result;
         }
 
         public OperationResult AddSteelChannelSections(IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs)
         {
-            return CreateSections(inputs, "Creating Steel Channel Sections...", (sapModel, input) =>
-                sapModel.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            var result = CSISapModelSectionPropertiesService.AddSteelChannelSections(
+                inputs,
+                ProductName,
+                sapModel,
+                SetSectionCreationUnits,
+                FrameSectionExists,
+                SetSteelChannelSection);
+
+            return result;
         }
 
         public OperationResult AddSteelAngleSections(IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs)
         {
-            return CreateSections(inputs, "Creating Steel Angle Sections...", (sapModel, input) =>
-                sapModel.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            var result = CSISapModelSectionPropertiesService.AddSteelAngleSections(
+                inputs,
+                ProductName,
+                sapModel,
+                SetSectionCreationUnits,
+                FrameSectionExists,
+                SetSteelAngleSection);
+
+            return result;
         }
 
         public OperationResult AddSteelPipeSections(IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs)
         {
-            return CreateSections(inputs, "Creating Steel Pipe Sections...", (sapModel, input) =>
-                sapModel.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness, -1, "", ""));
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            var result = CSISapModelSectionPropertiesService.AddSteelPipeSections(
+                inputs,
+                ProductName,
+                sapModel,
+                SetSectionCreationUnits,
+                FrameSectionExists,
+                SetSteelPipeSection);
+
+            return result;
         }
 
         public OperationResult AddSteelTubeSections(IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs)
         {
-            return CreateSections(inputs, "Creating Steel Tube Sections...", (sapModel, input) =>
-                sapModel.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", ""));
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            var result = CSISapModelSectionPropertiesService.AddSteelTubeSections(
+                inputs,
+                ProductName,
+                sapModel,
+                SetSectionCreationUnits,
+                FrameSectionExists,
+                SetSteelTubeSection);
+
+            return result;
         }
 
         public OperationResult AddConcreteRectangleSections(IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs)
         {
-            return CreateSections(inputs, "Creating Concrete Rectangle Sections...", (sapModel, input) =>
-                sapModel.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B, -1, "", ""));
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            var result = CSISapModelSectionPropertiesService.AddConcreteRectangleSections(
+                inputs,
+                ProductName,
+                sapModel,
+                SetSectionCreationUnits,
+                FrameSectionExists,
+                SetConcreteRectangleSection);
+
+            return result;
         }
 
         public OperationResult AddConcreteCircleSections(IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs)
         {
-            return CreateSections(inputs, "Creating Concrete Circle Sections...", (sapModel, input) =>
-                sapModel.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D, -1, "", ""));
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            var sapModel = sapModelResult.Data;
+            var result = CSISapModelSectionPropertiesService.AddConcreteCircleSections(
+                inputs,
+                ProductName,
+                sapModel,
+                SetSectionCreationUnits,
+                FrameSectionExists,
+                SetConcreteCircleSection);
+
+            return result;
         }
 
         public OperationResult CreateShellAreasFromSelectedFrames(
@@ -409,7 +426,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 return OperationResult.Failure(sapModelResult.Message);
             }
 
-            return CSISapModelShellAreaService.CreateShellAreasFromSelectedFrames(
+            return CSISapModelShellObjectService.CreateShellAreasFromSelectedFrames(
                 sapModelResult.Data,
                 "SAP2000",
                 propertyName,
@@ -454,61 +471,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             return OperationResult<SAP2000v1.cSapModel>.Success(sapModel);
         }
 
-        private OperationResult CreateSections<T>(
-            IReadOnlyList<T> inputs,
-            string title,
-            Func<SAP2000v1.cSapModel, T, int> createSection)
-        {
-            if (inputs == null || inputs.Count == 0)
-            {
-                return OperationResult.Failure("No valid rows were found in the selected range.");
-            }
-
-            var connectionResult = EnsureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult.Failure(connectionResult.Message);
-            }
-
-            SAP2000v1.cSapModel sapModel = (SAP2000v1.cSapModel)connectionResult.Data.SapModel;
-            int unitRet = sapModel.SetPresentUnits(SAP2000v1.eUnits.N_mm_C);
-            if (unitRet != 0)
-            {
-                return OperationResult.Failure("Failed to set SAP2000 present units to N-mm-C.");
-            }
-
-            int failCount = 0;
-            var progress = BatchProgressWindow.RunWithProgress(inputs.Count, title, ctx =>
-            {
-                foreach (var input in inputs)
-                {
-                    if (ctx.IsCancellationRequested) break;
-
-                    string sectionName = (string)input.GetType().GetProperty("SectionName").GetValue(input, null);
-                    if (FrameSectionExists(sapModel, sectionName))
-                    {
-                        ctx.IncrementSkipped();
-                        continue;
-                    }
-
-                    int ret = createSection(sapModel, input);
-                    if (ret == 0)
-                    {
-                        ctx.IncrementRan();
-                    }
-                    else
-                    {
-                        failCount++;
-                        ctx.IncrementSkipped();
-                    }
-                }
-            });
-
-            string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
-            if (progress.WasCancelled) msg += " (Cancelled)";
-            return OperationResult.Success(msg);
-        }
-
         private bool FrameSectionExists(SAP2000v1.cSapModel sapModel, string sectionName)
         {
             if (string.IsNullOrWhiteSpace(sectionName))
@@ -519,6 +481,87 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             SAP2000v1.eFramePropType propType = SAP2000v1.eFramePropType.I;
             int ret = sapModel.PropFrame.GetTypeOAPI(sectionName, ref propType);
             return ret == 0;
+        }
+
+        private static int SetSectionCreationUnits(SAP2000v1.cSapModel sapModel)
+        {
+            return sapModel.SetPresentUnits(SAP2000v1.eUnits.N_mm_C);
+        }
+
+        private static int SetSteelISection(
+            SAP2000v1.cSapModel sapModel,
+            string sectionName,
+            string materialName,
+            double h,
+            double b,
+            double tf,
+            double tw)
+        {
+            return sapModel.PropFrame.SetISection(sectionName, materialName, h, b, tf, tw, b, tf, -1, "", "");
+        }
+
+        private static int SetSteelChannelSection(
+            SAP2000v1.cSapModel sapModel,
+            string sectionName,
+            string materialName,
+            double h,
+            double b,
+            double tf,
+            double tw)
+        {
+            return sapModel.PropFrame.SetChannel(sectionName, materialName, h, b, tf, tw, -1, "", "");
+        }
+
+        private static int SetSteelAngleSection(
+            SAP2000v1.cSapModel sapModel,
+            string sectionName,
+            string materialName,
+            double h,
+            double b,
+            double tf,
+            double tw)
+        {
+            return sapModel.PropFrame.SetAngle(sectionName, materialName, h, b, tf, tw, -1, "", "");
+        }
+
+        private static int SetSteelPipeSection(
+            SAP2000v1.cSapModel sapModel,
+            string sectionName,
+            string materialName,
+            double outsideDiameter,
+            double wallThickness)
+        {
+            return sapModel.PropFrame.SetPipe(sectionName, materialName, outsideDiameter, wallThickness, -1, "", "");
+        }
+
+        private static int SetSteelTubeSection(
+            SAP2000v1.cSapModel sapModel,
+            string sectionName,
+            string materialName,
+            double h,
+            double b,
+            double t)
+        {
+            return sapModel.PropFrame.SetTube_1(sectionName, materialName, h, b, t, t, 0.000000001, -1, "", "");
+        }
+
+        private static int SetConcreteRectangleSection(
+            SAP2000v1.cSapModel sapModel,
+            string sectionName,
+            string materialName,
+            double h,
+            double b)
+        {
+            return sapModel.PropFrame.SetRectangle(sectionName, materialName, h, b, -1, "", "");
+        }
+
+        private static int SetConcreteCircleSection(
+            SAP2000v1.cSapModel sapModel,
+            string sectionName,
+            string materialName,
+            double d)
+        {
+            return sapModel.PropFrame.SetCircle(sectionName, materialName, d, -1, "", "");
         }
 
         private void ResetCurrentConnection()

@@ -36,7 +36,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         ref string areaName,
         string propertyName);
 
-    internal static class CSISapModelShellAreaService
+    internal static class CSISapModelShellObjectService
     {
         internal static OperationResult CreateShellAreasFromSelectedFrames<TSapModel>(
             TSapModel sapModel,
