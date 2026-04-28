@@ -43,7 +43,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             if (!attachResult.IsSuccess)
             {
                 _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure(attachResult.Message);
+                return OperationResult<CSISapModelConnectionInfoDTO>.Failure(attachResult.Message);
             }
 
             var csiObject = attachResult.ApplicationObject as TCsiObject;
@@ -51,7 +51,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             if (csiObject == null || sapModel == null)
             {
                 _currentConnection = null;
-                return OperationResult<CSISapModelConnectionInfo>.Failure($"The attached {ProductName} instance is invalid. Please reattach and try again.");
+                return OperationResult<CSISapModelConnectionInfoDTO>.Failure($"The attached {ProductName} instance is invalid. Please reattach and try again.");
             }
 
             try
@@ -83,7 +83,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 return OperationResult<CSISapModelConnectionInfoDTO>.Failure($"No {ProductName} model is currently connected. Please attach to a running {ProductName} instance.");
             }
 
-            return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
+            return OperationResult<CSISapModelConnectionInfoDTO>.Success(_currentConnection);
         }
 
         public OperationResult<TSapModel> EnsureSapModel()

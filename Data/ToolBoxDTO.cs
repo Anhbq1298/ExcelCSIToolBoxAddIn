@@ -1,3 +1,5 @@
+using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBoxAddIn.Data.Models;
 using System.Collections.Generic;
 
 namespace ExcelCSIToolBoxAddIn.Data
@@ -151,3 +153,4 @@ namespace ExcelCSIToolBoxAddIn.Data
 
     #endregion
 }
+

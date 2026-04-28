@@ -1,3 +1,4 @@
+using ExcelCSIToolBoxAddIn.Data.DTOs;
 namespace ExcelCSIToolBoxAddIn.Data.DTOs
 {
     public class CSISapModelPointDataDTO
@@ -9,3 +10,4 @@ namespace ExcelCSIToolBoxAddIn.Data.DTOs
         public double Z { get; set; }
     }
 }
+

@@ -1,3 +1,4 @@
+using ExcelCSIToolBoxAddIn.Data.Models;
 namespace ExcelCSIToolBoxAddIn.Data.Models
 {
     public class CSISapModelSteelISectionInput
@@ -62,3 +63,4 @@ namespace ExcelCSIToolBoxAddIn.Data.Models
         public double D { get; set; }
     }
 }
+

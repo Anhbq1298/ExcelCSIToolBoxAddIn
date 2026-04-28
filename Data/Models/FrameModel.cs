@@ -1,3 +1,4 @@
+using ExcelCSIToolBoxAddIn.Data.Models;
 namespace ExcelCSIToolBoxAddIn.Data.Models
 {
     public class CSISapModelFrameByCoordInput
@@ -22,3 +23,4 @@ namespace ExcelCSIToolBoxAddIn.Data.Models
         public string Point2Name { get; set; }
     }
 }
+

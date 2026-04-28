@@ -1,3 +1,4 @@
+using ExcelCSIToolBoxAddIn.Data.DTOs;
 using System.Collections.Generic;
 
 namespace ExcelCSIToolBoxAddIn.Data.DTOs
@@ -24,3 +25,4 @@ namespace ExcelCSIToolBoxAddIn.Data.DTOs
         public object SapModel { get; set; }
     }
 }
+

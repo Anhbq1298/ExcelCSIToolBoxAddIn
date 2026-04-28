@@ -1,3 +1,4 @@
+using ExcelCSIToolBoxAddIn.Data.Models;
 namespace ExcelCSIToolBoxAddIn.Data.Models
 {
     public class CSISapModelPointCartesianInput
@@ -9,3 +10,4 @@ namespace ExcelCSIToolBoxAddIn.Data.Models
         public double Z { get; set; }
     }
 }
+
