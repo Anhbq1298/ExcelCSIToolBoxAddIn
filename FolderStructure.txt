@@ -1,0 +1,34 @@
+ExcelCSIToolBoxAddIn/
++---Adapters
++---AddIn
++---Common
+|   +---Commands
+|   \---Results
++---Core
+|   +---Application
+|   +---Geometry
+|   \---Tabular
++---Data
+|   +---DataFrames
+|   +---DTOs
+|   +---Mappers
+|   \---Models
++---Infrastructure
+|   +---CSISapModel
+|   |   +---ConnectionAdapters
+|   |   +---FrameObjectService
+|   |   +---LoadCombinationService
+|   |   +---LoadingService
+|   |   +---LoadPatternService
+|   |   +---PointObjectService
+|   |   +---SectionPropertiesService
+|   |   \---ShellObjectService
+|   +---Etabs
+|   +---Excel
+|   \---Sap2000
++---Properties
++---UI
+|   +---ViewModels
+|   \---Views
+\---_ref
+    \---developing-skill
