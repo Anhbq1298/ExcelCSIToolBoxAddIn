@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -13,3 +13,4 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         }
     }
 }
+

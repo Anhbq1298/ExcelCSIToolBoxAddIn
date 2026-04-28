@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using CsiExcelAddin.ViewModels;
 
 namespace CsiExcelAddin.Views
@@ -19,3 +19,4 @@ namespace CsiExcelAddin.Views
         }
     }
 }
+

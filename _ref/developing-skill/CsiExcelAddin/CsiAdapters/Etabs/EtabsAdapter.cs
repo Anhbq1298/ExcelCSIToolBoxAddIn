@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CsiExcelAddin.Models;
 using CsiExcelAddin.Services.Interfaces;
@@ -12,7 +12,7 @@ namespace CsiExcelAddin.CsiAdapters.Etabs
 {
     /// <summary>
     /// ETABS-specific implementation of ICsiProductAdapter.
-    /// All ETABS API calls are isolated here — no ETABS types leak into shared layers.
+    /// All ETABS API calls are isolated here â€” no ETABS types leak into shared layers.
     ///
     /// IMPORTANT: Verify every API signature against the official ETABSv1 help file
     /// before implementing. Function names and parameter lists must not be assumed.
@@ -33,7 +33,7 @@ namespace CsiExcelAddin.CsiAdapters.Etabs
         }
     }
 
-    // ── Internal connection holder ────────────────────────────────────────────
+    // â”€â”€ Internal connection holder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Wraps the raw ETABS API objects so both services share one live reference.
 
     internal class EtabsConnection
@@ -75,7 +75,7 @@ namespace CsiExcelAddin.CsiAdapters.Etabs
         }
     }
 
-    // ── Application service ───────────────────────────────────────────────────
+    // â”€â”€ Application service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     internal class EtabsApplicationService : ICsiApplicationService
     {
@@ -91,7 +91,7 @@ namespace CsiExcelAddin.CsiAdapters.Etabs
         public void Detach() => _connection.Detach();
     }
 
-    // ── Model service ─────────────────────────────────────────────────────────
+    // â”€â”€ Model service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     internal class EtabsModelService : ICsiModelService
     {
@@ -102,27 +102,28 @@ namespace CsiExcelAddin.CsiAdapters.Etabs
 
         public string GetModelFileName()
         {
-            // TODO: Verify API — example (do not assume):
+            // TODO: Verify API â€” example (do not assume):
             //   return _connection.SapModel.GetModelFilename();
             throw new NotImplementedException("Verify ETABSv1 API signature before implementing.");
         }
 
         public string GetCurrentUnits()
         {
-            // TODO: Verify API — units getter differs between ETABS versions.
+            // TODO: Verify API â€” units getter differs between ETABS versions.
             throw new NotImplementedException("Verify ETABSv1 API signature before implementing.");
         }
 
         public IReadOnlyList<FrameSectionDto> GetFrameSections()
         {
-            // TODO: Verify API — likely SapModel.PropFrame.GetNameList or similar.
+            // TODO: Verify API â€” likely SapModel.PropFrame.GetNameList or similar.
             throw new NotImplementedException("Verify ETABSv1 API signature before implementing.");
         }
 
         public IReadOnlyList<JointDto> GetJoints()
         {
-            // TODO: Verify API — likely SapModel.PointObj.GetNameList or similar.
+            // TODO: Verify API â€” likely SapModel.PointObj.GetNameList or similar.
             throw new NotImplementedException("Verify ETABSv1 API signature before implementing.");
         }
     }
 }
+

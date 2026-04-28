@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -14,3 +14,4 @@ class Program
         File.WriteAllText(path, content);
     }
 }
+

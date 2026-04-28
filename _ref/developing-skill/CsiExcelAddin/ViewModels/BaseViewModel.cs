@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace CsiExcelAddin.ViewModels
@@ -6,7 +6,7 @@ namespace CsiExcelAddin.ViewModels
     /// <summary>
     /// Base class for all ViewModels in this add-in.
     /// Implements INotifyPropertyChanged so WPF bindings update automatically.
-    /// All ViewModels must inherit from this — do not reimplement INPC elsewhere.
+    /// All ViewModels must inherit from this â€” do not reimplement INPC elsewhere.
     /// </summary>
     public abstract class BaseViewModel : INotifyPropertyChanged
     {
@@ -33,3 +33,4 @@ namespace CsiExcelAddin.ViewModels
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
+

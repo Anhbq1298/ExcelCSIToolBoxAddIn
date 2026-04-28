@@ -1,8 +1,8 @@
-using Microsoft.Office.Core;
+﻿using Microsoft.Office.Core;
 using CsiExcelAddin.Views;
 using CsiExcelAddin.Bootstrap;
 
-// RibbonX callback attribute required by Office — do not remove
+// RibbonX callback attribute required by Office â€” do not remove
 [assembly: System.Runtime.InteropServices.ComVisible(true)]
 
 namespace CsiExcelAddin.Ribbon
@@ -40,7 +40,7 @@ namespace CsiExcelAddin.Ribbon
 
         /// <summary>
         /// Called when the user clicks the 'Open CSI Panel' Ribbon button.
-        /// Delegates window creation to the composition root — no direct construction here.
+        /// Delegates window creation to the composition root â€” no direct construction here.
         /// </summary>
         public void OnOpenMainPanel(IRibbonControl control)
         {
@@ -50,3 +50,4 @@ namespace CsiExcelAddin.Ribbon
         }
     }
 }
+

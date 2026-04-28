@@ -1,4 +1,4 @@
-using CsiExcelAddin.CsiAdapters.Etabs;
+﻿using CsiExcelAddin.CsiAdapters.Etabs;
 using CsiExcelAddin.Services.Excel;
 using CsiExcelAddin.ViewModels;
 using CsiExcelAddin.Views;
@@ -7,7 +7,7 @@ using Microsoft.Office.Interop.Excel;
 namespace CsiExcelAddin.Bootstrap
 {
     /// <summary>
-    /// Composition root — the single place where all dependencies are wired together.
+    /// Composition root â€” the single place where all dependencies are wired together.
     /// Only this class knows which concrete implementations are in use.
     /// ViewModels, Services, and Adapters only see interfaces.
     ///
@@ -18,7 +18,7 @@ namespace CsiExcelAddin.Bootstrap
     {
         /// <summary>
         /// Builds a fully wired MainWindow ready to be shown.
-        /// Call this from the Ribbon callback — nowhere else.
+        /// Call this from the Ribbon callback â€” nowhere else.
         /// </summary>
         public static MainWindow BuildMainWindow()
         {
@@ -28,7 +28,7 @@ namespace CsiExcelAddin.Bootstrap
             // Wire services
             var excelWriter = new ExcelRangeWriter(excelApp);
 
-            // Wire adapter — swap this line to switch CSI product
+            // Wire adapter â€” swap this line to switch CSI product
             var adapter = new EtabsAdapter();
 
             // Wire ViewModel
@@ -40,3 +40,4 @@ namespace CsiExcelAddin.Bootstrap
         }
     }
 }
+

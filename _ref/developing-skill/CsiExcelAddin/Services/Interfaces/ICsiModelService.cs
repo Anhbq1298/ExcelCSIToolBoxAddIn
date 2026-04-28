@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CsiExcelAddin.Models;
 
 namespace CsiExcelAddin.Services.Interfaces
@@ -7,7 +7,7 @@ namespace CsiExcelAddin.Services.Interfaces
     /// Defines model-level operations shared across CSI products.
     /// Implementations live in product-specific adapters.
     /// Only methods that are verifiably available in all supported products
-    /// belong here — product-unique operations go in the adapter directly.
+    /// belong here â€” product-unique operations go in the adapter directly.
     /// </summary>
     public interface ICsiModelService
     {
@@ -25,14 +25,15 @@ namespace CsiExcelAddin.Services.Interfaces
 
         /// <summary>
         /// Returns all named frame sections defined in the model.
-        /// Returns an empty list — not null — when nothing is defined.
+        /// Returns an empty list â€” not null â€” when nothing is defined.
         /// </summary>
         IReadOnlyList<FrameSectionDto> GetFrameSections();
 
         /// <summary>
         /// Returns all joint coordinates defined in the model.
-        /// Returns an empty list — not null — when nothing is defined.
+        /// Returns an empty list â€” not null â€” when nothing is defined.
         /// </summary>
         IReadOnlyList<JointDto> GetJoints();
     }
 }
+

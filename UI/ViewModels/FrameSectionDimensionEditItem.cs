@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBoxAddIn.UI.ViewModels
+﻿namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
     public class FrameSectionDimensionEditItem : ViewModelBase
     {
@@ -17,3 +17,4 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         }
     }
 }
+

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CsiExcelAddin.Models;
 using CsiExcelAddin.Services.Interfaces;
@@ -88,3 +88,4 @@ namespace CsiExcelAddin.CsiAdapters.Sap2000
             => throw new NotImplementedException("Verify SAP2000v1 API signature before implementing.");
     }
 }
+

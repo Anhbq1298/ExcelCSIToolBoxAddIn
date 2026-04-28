@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Threading;
 
@@ -132,3 +132,4 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         public int TotalProcessed => RanCount + SkippedCount;
     }
 }
+

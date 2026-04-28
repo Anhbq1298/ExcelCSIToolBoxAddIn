@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
-using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.Helpers
 {
     /// <summary>
     /// Renders structural cross-section shapes onto a WPF Canvas.
-    /// Canvas is assumed to be 100×100 logical units, stretched via Viewbox.
+    /// Canvas is assumed to be 100Ã—100 logical units, stretched via Viewbox.
     /// </summary>
     internal static class SectionShapeRenderer
     {
@@ -339,3 +339,4 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
         }
     }
 }
+

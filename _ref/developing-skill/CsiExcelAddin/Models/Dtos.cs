@@ -1,8 +1,8 @@
-namespace CsiExcelAddin.Models
+﻿namespace CsiExcelAddin.Models
 {
     /// <summary>
     /// Lightweight transfer object for a frame section read from a CSI model.
-    /// Contains only the data needed by the ViewModel — not a CSI API type.
+    /// Contains only the data needed by the ViewModel â€” not a CSI API type.
     /// </summary>
     public class FrameSectionDto
     {
@@ -55,3 +55,4 @@ namespace CsiExcelAddin.Models
             => new OperationResult(false, message);
     }
 }
+

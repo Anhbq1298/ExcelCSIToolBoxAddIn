@@ -1,3 +1,0 @@
-namespace ExcelCSIToolBoxAddIn.Data.DataFrames
-{
-}

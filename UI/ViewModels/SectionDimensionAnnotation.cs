@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBoxAddIn.UI.ViewModels
+﻿namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
     public class SectionDimensionAnnotation
     {
@@ -11,3 +11,4 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public string SectionType { get; set; }
     }
 }
+

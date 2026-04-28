@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Windows;
-using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
 {
@@ -13,3 +13,4 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         }
     }
 }
+

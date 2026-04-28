@@ -1,7 +1,9 @@
 using System;
 using System.Windows;
-using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
-using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
+using ExcelCSIToolBox.Core.Abstractions.CSI;
+using ExcelCSIToolBox.Core.Abstractions.Excel;
+using ExcelCSIToolBox.Infrastructure.CSISapModel;
+using ExcelCSIToolBox.Infrastructure.Excel;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
@@ -97,3 +99,4 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         }
     }
 }
+

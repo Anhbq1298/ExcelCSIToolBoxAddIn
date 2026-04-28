@@ -1,6 +1,6 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
-using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -98,3 +98,4 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         }
     }
 }
+

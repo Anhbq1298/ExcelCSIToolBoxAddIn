@@ -1,4 +1,4 @@
-using ExcelCSIToolBoxAddIn.AddIn;
+﻿using ExcelCSIToolBoxAddIn.AddIn;
 using Microsoft.Office.Tools.Ribbon;
 
 namespace ExcelCSIToolBoxAddIn
@@ -47,3 +47,4 @@ namespace ExcelCSIToolBoxAddIn
         }
     }
 }
+

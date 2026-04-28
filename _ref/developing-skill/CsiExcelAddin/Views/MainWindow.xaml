@@ -1,4 +1,4 @@
-<Window x:Class="CsiExcelAddin.Views.MainWindow"
+﻿<Window x:Class="CsiExcelAddin.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CSI Excel Add-in"
@@ -8,7 +8,7 @@
 
     <!--
         All data flows from MainViewModel via DataContext set in code-behind.
-        No business logic lives here — only layout and bindings.
+        No business logic lives here â€” only layout and bindings.
     -->
 
     <Grid Margin="12">
@@ -23,7 +23,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- ── Toolbar ─────────────────────────────────────────────────────── -->
+        <!-- â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
             <Button Content="Attach"
                     Command="{Binding AttachCommand}"
@@ -39,7 +39,7 @@
                     Width="120"/>
         </StackPanel>
 
-        <!-- ── Model Info ──────────────────────────────────────────────────── -->
+        <!-- â”€â”€ Model Info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
             <TextBlock Text="Model: " FontWeight="SemiBold"/>
             <TextBlock Text="{Binding ModelFileName}" Margin="0,0,16,0"/>
@@ -47,7 +47,7 @@
             <TextBlock Text="{Binding CurrentUnits}"/>
         </StackPanel>
 
-        <!-- ── Frame Sections DataGrid ────────────────────────────────────── -->
+        <!-- â”€â”€ Frame Sections DataGrid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <DataGrid Grid.Row="2"
                   ItemsSource="{Binding FrameSections}"
                   AutoGenerateColumns="False"
@@ -63,9 +63,10 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <!-- ── Status Bar ─────────────────────────────────────────────────── -->
+        <!-- â”€â”€ Status Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <Border Grid.Row="3" Background="#EEEEEE" Padding="6,4" Margin="0,8,0,0" CornerRadius="2">
             <TextBlock Text="{Binding StatusMessage}" Foreground="#333333"/>
         </Border>
     </Grid>
 </Window>
+

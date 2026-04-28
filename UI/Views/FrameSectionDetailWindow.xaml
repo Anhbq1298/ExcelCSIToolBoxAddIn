@@ -1,4 +1,4 @@
-<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.FrameSectionDetailWindow"
+﻿<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.FrameSectionDetailWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Section Property" Height="450" Width="600"
@@ -78,3 +78,4 @@
         </Grid>
     </Grid>
 </Window>
+

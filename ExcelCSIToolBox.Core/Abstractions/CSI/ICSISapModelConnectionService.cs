@@ -1,0 +1,60 @@
+using System.Collections.Generic;
+using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBox.Core.Geometry;
+using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Data.Models;
+
+
+namespace ExcelCSIToolBox.Core.Abstractions.CSI
+{
+    public interface ICSISapModelConnectionService
+    {
+        string ProductName { get; }
+
+        OperationResult<CSISapModelConnectionInfoDTO> TryAttachToRunningInstance();
+
+        OperationResult<CSISapModelConnectionInfoDTO> GetCurrentConnection();
+
+        OperationResult CloseCurrentInstance();
+
+        OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames);
+        OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames);
+
+        // pointInputs must be executed exactly in the given order.
+        // Duplicate rows are valid and must not be merged or de-duplicated.
+        OperationResult<CSISapModelAddPointsResultDTO> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs);
+        OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs);
+        OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs);
+
+        OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel();
+        OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel();
+
+        OperationResult AddSteelISections(IReadOnlyList<CSISapModelSteelISectionInput> inputs);
+        OperationResult AddSteelChannelSections(IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs);
+        OperationResult AddSteelAngleSections(IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs);
+        OperationResult AddSteelPipeSections(IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs);
+        OperationResult AddSteelTubeSections(IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs);
+
+        OperationResult AddConcreteRectangleSections(IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs);
+        OperationResult AddConcreteCircleSections(IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs);
+
+        OperationResult CreateShellAreasFromSelectedFrames(
+            string propertyName,
+            ShellCreationTolerances tolerances);
+
+        OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>> GetFrameSections();
+        OperationResult<CSISapModelFrameSectionDetailDTO> GetFrameSectionDetail(string sectionName);
+        OperationResult UpdateFrameSection(CSISapModelFrameSectionUpdateDTO input);
+        OperationResult RenameFrameSection(CSISapModelFrameSectionRenameDTO input);
+
+        OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
+        OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);
+        OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);
+
+        OperationResult<IReadOnlyList<CSISapModelLoadPatternDTO>> GetLoadPatterns();
+        OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames);
+    }
+}
+
+

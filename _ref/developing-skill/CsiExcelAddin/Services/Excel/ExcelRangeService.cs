@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CsiExcelAddin.Services.Interfaces;
 using Microsoft.Office.Interop.Excel;
@@ -7,7 +7,7 @@ namespace CsiExcelAddin.Services.Excel
 {
     /// <summary>
     /// Reads data from Excel ranges using the Excel Interop API.
-    /// All Excel interop concerns are contained in this class —
+    /// All Excel interop concerns are contained in this class â€”
     /// ViewModels and CSI services never touch Excel objects directly.
     /// </summary>
     public class ExcelRangeReader : IExcelRangeReader
@@ -120,7 +120,7 @@ namespace CsiExcelAddin.Services.Excel
             range.ClearContents();
         }
 
-        // ── Internals ─────────────────────────────────────────────────────────
+        // â”€â”€ Internals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         private void WriteFromCell(Range startCell, IReadOnlyList<IReadOnlyList<object>> data)
         {
@@ -131,7 +131,7 @@ namespace CsiExcelAddin.Services.Excel
             foreach (var row in data)
                 if (row.Count > colCount) colCount = row.Count;
 
-            // Build a 2-D array — one bulk assignment is far faster than cell-by-cell writes
+            // Build a 2-D array â€” one bulk assignment is far faster than cell-by-cell writes
             object[,] values = new object[rowCount, colCount];
             for (int r = 0; r < rowCount; r++)
                 for (int c = 0; c < data[r].Count; c++)
@@ -163,3 +163,4 @@ namespace CsiExcelAddin.Services.Excel
         }
     }
 }
+

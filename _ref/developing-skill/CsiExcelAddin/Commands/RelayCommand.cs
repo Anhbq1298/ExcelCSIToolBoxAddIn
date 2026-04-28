@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Windows.Input;
 
 namespace CsiExcelAddin.Commands
@@ -23,7 +23,7 @@ namespace CsiExcelAddin.Commands
         }
 
         /// <param name="execute">Action to run when command is invoked.</param>
-        /// <param name="canExecute">Optional guard — returns true when command is allowed.</param>
+        /// <param name="canExecute">Optional guard â€” returns true when command is allowed.</param>
         public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
@@ -48,3 +48,4 @@ namespace CsiExcelAddin.Commands
             => CommandManager.InvalidateRequerySuggested();
     }
 }
+

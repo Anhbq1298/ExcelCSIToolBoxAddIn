@@ -1,4 +1,4 @@
-<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.BatchProgressWindow"
+﻿<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.BatchProgressWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Excel CSI Toolbox - Progress"

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CsiExcelAddin.Commands;
 using CsiExcelAddin.Models;
@@ -9,14 +9,14 @@ namespace CsiExcelAddin.ViewModels
     /// <summary>
     /// ViewModel for the main popup window.
     /// Orchestrates attach/detach, data reading from CSI, and export to Excel.
-    /// All operations route through injected service interfaces — never direct API calls.
+    /// All operations route through injected service interfaces â€” never direct API calls.
     /// </summary>
     public class MainViewModel : BaseViewModel
     {
         private readonly ICsiProductAdapter _adapter;
         private readonly IExcelRangeWriter _excelWriter;
 
-        // ── Bindable state ────────────────────────────────────────────────────
+        // â”€â”€ Bindable state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         private string _statusMessage = "Ready.";
         /// <summary>Shown in the status bar at the bottom of the popup.</summary>
@@ -34,14 +34,14 @@ namespace CsiExcelAddin.ViewModels
             set => SetProperty(ref _isAttached, value);
         }
 
-        private string _modelFileName = "—";
+        private string _modelFileName = "â€”";
         public string ModelFileName
         {
             get => _modelFileName;
             set => SetProperty(ref _modelFileName, value);
         }
 
-        private string _currentUnits = "—";
+        private string _currentUnits = "â€”";
         public string CurrentUnits
         {
             get => _currentUnits;
@@ -51,14 +51,14 @@ namespace CsiExcelAddin.ViewModels
         /// <summary>Frame sections loaded from the CSI model, bound to a DataGrid.</summary>
         public ObservableCollection<FrameSectionDto> FrameSections { get; } = new ObservableCollection<FrameSectionDto>();
 
-        // ── Commands ──────────────────────────────────────────────────────────
+        // â”€â”€ Commands â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         public ICommand AttachCommand { get; }
         public ICommand DetachCommand { get; }
         public ICommand ReadModelCommand { get; }
         public ICommand ExportToExcelCommand { get; }
 
-        // ── Constructor ───────────────────────────────────────────────────────
+        // â”€â”€ Constructor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Services are injected through the constructor (composition root wires them up).
@@ -75,7 +75,7 @@ namespace CsiExcelAddin.ViewModels
             ExportToExcelCommand = new RelayCommand(ExecuteExportToExcel, _ => FrameSections.Count > 0);
         }
 
-        // ── Command handlers ──────────────────────────────────────────────────
+        // â”€â”€ Command handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         private void ExecuteAttach(object _)
         {
@@ -94,8 +94,8 @@ namespace CsiExcelAddin.ViewModels
         {
             _adapter.ApplicationService.Detach();
             IsAttached = false;
-            ModelFileName = "—";
-            CurrentUnits = "—";
+            ModelFileName = "â€”";
+            CurrentUnits = "â€”";
             FrameSections.Clear();
             StatusMessage = "Detached from " + _adapter.ProductName + ".";
         }
@@ -130,3 +130,4 @@ namespace CsiExcelAddin.ViewModels
         }
     }
 }
+

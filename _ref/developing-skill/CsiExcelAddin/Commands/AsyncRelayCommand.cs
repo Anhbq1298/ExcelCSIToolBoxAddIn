@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -21,7 +21,7 @@ namespace CsiExcelAddin.Commands
         }
 
         /// <param name="execute">Async action to run when command is invoked.</param>
-        /// <param name="canExecute">Optional guard — also blocks when already executing.</param>
+        /// <param name="canExecute">Optional guard â€” also blocks when already executing.</param>
         public AsyncRelayCommand(Func<object, Task> execute, Func<object, bool> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
@@ -60,3 +60,4 @@ namespace CsiExcelAddin.Commands
         }
     }
 }
+

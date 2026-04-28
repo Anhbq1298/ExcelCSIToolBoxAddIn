@@ -1,8 +1,8 @@
-using ExcelCSIToolBoxAddIn.AddIn;
-using ExcelCSIToolBoxAddIn.Adapters;
-using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
-using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
-using ExcelCSIToolBoxAddIn.Infrastructure.Sap2000;
+﻿using ExcelCSIToolBoxAddIn.AddIn;
+using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
+using ExcelCSIToolBox.Infrastructure.Etabs;
+using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBox.Infrastructure.Sap2000;
 
 namespace ExcelCSIToolBoxAddIn
 {
@@ -37,3 +37,4 @@ namespace ExcelCSIToolBoxAddIn
         #endregion
     }
 }
+

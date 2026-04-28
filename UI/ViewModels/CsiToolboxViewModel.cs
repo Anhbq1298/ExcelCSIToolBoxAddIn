@@ -2,13 +2,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Globalization;
-using ExcelCSIToolBoxAddIn.Common.Commands;
-using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Core.Application;
-using ExcelCSIToolBoxAddIn.Data;
-using ExcelCSIToolBoxAddIn.Data.DTOs;
-using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
-using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
+using ExcelCSIToolBox.Core.Common.Commands;
+using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBox.Core.Application;
+using ExcelCSIToolBox.Core.Abstractions.CSI;
+using ExcelCSIToolBox.Core.Abstractions.Excel;
+using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Infrastructure.CSISapModel;
+using ExcelCSIToolBox.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -97,8 +99,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _updateFrameSectionUseCase = new UpdateFrameSectionUseCase(csiConnectionService);
             _renameFrameSectionUseCase = new RenameFrameSectionUseCase(csiConnectionService);
 
-            LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>();
-            LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
+            LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>();
+            LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>();
             FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
             SectionDimensionAnnotations = new System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation>();
 
@@ -255,8 +257,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand GetFrameSectionsCommand { get; }
         public ICommand EditFrameSectionCommand { get; }
 
-        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO> LoadPatterns { get; }
-        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
+        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO> LoadPatterns { get; }
+        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
         public System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO> FrameSections { get; }
         public System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation> SectionDimensionAnnotations { get; }
         
@@ -729,7 +731,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var list = new System.Collections.Generic.List<string>();
             foreach (var item in selectedItems)
             {
-                if (item is ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO dto)
+                if (item is ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO dto)
                 {
                     list.Add(dto.Name);
                 }
@@ -772,7 +774,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var list = new System.Collections.Generic.List<string>();
             foreach (var item in selectedItems)
             {
-                if (item is ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO dto)
+                if (item is ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO dto)
                 {
                     list.Add(dto.Name);
                 }
@@ -794,7 +796,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             
             // Only view the first selected item
             var firstItem = selectedItems[0];
-            if (firstItem is ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO dto)
+            if (firstItem is ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO dto)
             {
                 var result = _getLoadCombinationDetailsUseCase.Execute(dto.Name);
                 if (result.IsSuccess)
@@ -904,3 +906,4 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         }
     }
 }
+

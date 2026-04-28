@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CsiExcelAddin.Models;
 using CsiExcelAddin.Services.Interfaces;
@@ -14,7 +14,7 @@ namespace CsiExcelAddin.CsiAdapters.Safe
     /// All SAFE API calls are isolated here.
     ///
     /// NOTE: SAFE's API surface differs significantly from ETABS and SAP2000.
-    /// Frame section concepts do not apply — replace ICsiModelService members
+    /// Frame section concepts do not apply â€” replace ICsiModelService members
     /// with SAFE-relevant operations (slabs, punching, etc.) as needed.
     /// Shared interface methods that have no SAFE equivalent should return
     /// an empty collection or a descriptive not-supported message.
@@ -83,7 +83,7 @@ namespace CsiExcelAddin.CsiAdapters.Safe
 
         public IReadOnlyList<FrameSectionDto> GetFrameSections()
         {
-            // SAFE does not use frame sections — return empty list rather than throwing
+            // SAFE does not use frame sections â€” return empty list rather than throwing
             return Array.Empty<FrameSectionDto>();
         }
 
@@ -91,3 +91,4 @@ namespace CsiExcelAddin.CsiAdapters.Safe
             => throw new NotImplementedException("Verify SAFE API signature before implementing.");
     }
 }
+

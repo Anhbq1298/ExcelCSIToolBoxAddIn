@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>ExcelCSIToolBox.Infrastructure</RootNamespace>
+    <AssemblyName>ExcelCSIToolBox.Infrastructure</AssemblyName>
+    <LangVersion>7.3</LangVersion>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj" />
+    <ProjectReference Include="..\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="SAP2000v1">
+      <HintPath>..\SAP2000v1.dll</HintPath>
+    </Reference>
+    <Reference Include="ETABSv1">
+      <HintPath>..\ETABSv1.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\Visual Studio Tools for Office\PIA\Office15\Microsoft.Office.Interop.Excel.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Office">
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio\Shared\Visual Studio Tools for Office\PIA\Office15\Office.dll</HintPath>
+      <EmbedInteropTypes>true</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+</Project>

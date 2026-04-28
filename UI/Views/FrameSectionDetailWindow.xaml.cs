@@ -1,6 +1,6 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
-using ExcelCSIToolBoxAddIn.Data.DTOs;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBoxAddIn.UI.Helpers;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 
@@ -67,3 +67,4 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         }
     }
 }
+

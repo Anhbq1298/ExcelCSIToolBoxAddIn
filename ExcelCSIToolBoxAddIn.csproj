@@ -124,9 +124,6 @@
   -->
   <ItemGroup>
     <Reference Include="Accessibility" />
-    <Reference Include="SAP2000v1">
-      <HintPath>.\SAP2000v1.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -140,7 +137,6 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="ETABSv1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Office.Tools.v4.0.Framework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -262,83 +258,6 @@
     <Content Include="icon\sap2000icon.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="Adapters\CsiAttachResult.cs" />
-    <Compile Include="Adapters\EtabsModelAdapter.cs" />
-    <Compile Include="Adapters\ICsiModelAdapter.cs" />
-    <Compile Include="Adapters\Sap2000ModelAdapter.cs" />
-    <Compile Include="Common\Commands\RelayCommand.cs" />
-    <Compile Include="Common\Commands\RelayCommandOfT.cs" />
-    <Compile Include="Common\Results\OperationResult.cs" />
-    <Compile Include="Data\Constants.cs" />
-    <Compile Include="Data\DTOs\ApiFrameDto.cs" />
-    <Compile Include="Data\DTOs\ApiPointDto.cs" />
-    <Compile Include="Data\DTOs\ApiResultDto.cs" />
-    <Compile Include="Data\DTOs\CSISapModelLoadPatternDTO.cs" />
-    <Compile Include="Data\DTOs\CSISapModelLoadCombinationDTO.cs" />
-    <Compile Include="Data\DTOs\LoadCombinationItemDTO.cs" />
-    <Compile Include="Data\DTOs\CSISapModelFrameSectionDTO.cs" />
-    <Compile Include="Data\DTOs\CSISapModelFrameSectionUpdateDTO.cs" />
-    <Compile Include="Data\DataFrames\FrameDataFrame.cs" />
-    <Compile Include="Data\DataFrames\LoadCombinationDataFrame.cs" />
-    <Compile Include="Data\DataFrames\PointDataFrame.cs" />
-    <Compile Include="Data\Mappers\FrameMapper.cs" />
-    <Compile Include="Data\Mappers\LoadCombinationMapper.cs" />
-    <Compile Include="Data\Mappers\PointMapper.cs" />
-    <Compile Include="Data\Models\FrameModel.cs" />
-    <Compile Include="Data\Models\LoadCombinationModel.cs" />
-    <Compile Include="Data\Models\LoadPatternModel.cs" />
-    <Compile Include="Data\Models\PointModel.cs" />
-    <Compile Include="Data\Models\SectionModel.cs" />
-    <Compile Include="Core\Application\GetLoadCombinationsUseCase.cs" />
-    <Compile Include="Core\Application\DeleteLoadCombinationsUseCase.cs" />
-    <Compile Include="Core\Application\GetLoadCombinationDetailsUseCase.cs" />
-    <Compile Include="Core\Application\GetLoadPatternsUseCase.cs" />
-    <Compile Include="Core\Application\DeleteLoadPatternsUseCase.cs" />
-    <Compile Include="Core\Application\GetFrameSectionsUseCase.cs" />
-    <Compile Include="Core\Application\GetFrameSectionDetailUseCase.cs" />
-    <Compile Include="Core\Application\UpdateFrameSectionUseCase.cs" />
-    <Compile Include="Core\Application\RenameFrameSectionUseCase.cs" />
-    <Compile Include="Infrastructure\CSISapModel\LoadCombinationService\CSISapModelLoadCombinationService.cs" />
-    <Compile Include="Infrastructure\CSISapModel\LoadPatternService\CSISapModelLoadPatternService.cs" />
-    <Compile Include="Core\Tabular\DataFrame.cs" />
-    <Compile Include="Core\Application\LoadCSISapModelConnectionUseCase.cs" />
-    <Compile Include="Core\Application\GetSelectedCSISapModelPointsUseCase.cs" />
-    <Compile Include="Core\Application\GetSelectedCSISapModelFramesUseCase.cs" />
-    <Compile Include="Core\Application\CloseCurrentInstanceUseCase.cs" />
-    <Compile Include="Core\Application\SelectPointsFromExcelRangeByUniqueNameUseCase.cs" />
-    <Compile Include="Core\Application\SelectFramesFromExcelRangeByUniqueNameUseCase.cs" />
-    <Compile Include="Core\Application\AddPointsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\AddFrameByCoordinatesFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\AddFramesByPointFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateSteelISectionsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateSteelChannelSectionsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateSteelAngleSectionsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateSteelPipeSectionsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateSteelTubeSectionsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateConcreteRectangleSectionsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateConcreteCircleSectionsFromExcelRangeUseCase.cs" />
-    <Compile Include="Core\Application\CreateShellAreasFromSelectedFramesUseCase.cs" />
-    <Compile Include="Core\Geometry\ShellFaceBuilder.cs" />
-    <Compile Include="Core\Tabular\ExcelSteelSectionRows.cs" />
-    <Compile Include="Core\Tabular\ExcelConcreteSectionRows.cs" />
-    <Compile Include="Infrastructure\CSISapModel\ConnectionAdapters\ICSISapModelConnectionAdapter.cs" />
-    <Compile Include="Infrastructure\CSISapModel\ConnectionAdapters\CSISapModelConnectionAdapter.cs" />
-    <Compile Include="Infrastructure\CSISapModel\PointObjectService\CSISapModelPointObjectService.cs" />
-    <Compile Include="Infrastructure\CSISapModel\FrameObjectService\CSISapModelFrameObjectService.cs" />
-    <Compile Include="Infrastructure\CSISapModel\ShellObjectService\CSISapModelShellObjectService.cs" />
-    <Compile Include="Infrastructure\CSISapModel\SectionPropertiesService\CSISapModelSectionPropertiesService.cs" />
-    <Compile Include="Infrastructure\CSISapModel\ICSISapModelConnectionService.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsUnitFormatter.cs" />
-    <Compile Include="Infrastructure\Etabs\EtabsConnectionService.cs" />
-    <Compile Include="Infrastructure\Sap2000\Sap2000ConnectionService.cs" />
-    <Compile Include="Infrastructure\Sap2000\Sap2000UnitFormatter.cs" />
-    <Compile Include="Infrastructure\Excel\ExcelOutputService.cs" />
-    <Compile Include="Infrastructure\Excel\ExcelPointCartesianRow.cs" />
-    <Compile Include="Infrastructure\Excel\ExcelFrameByCoordRow.cs" />
-    <Compile Include="Infrastructure\Excel\ExcelFrameByPointRow.cs" />
-    <Compile Include="Infrastructure\Excel\ExcelSelectionService.cs" />
-    <Compile Include="Infrastructure\Excel\IExcelSelectionService.cs" />
-    <Compile Include="Infrastructure\Excel\IExcelOutputService.cs" />
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
@@ -403,6 +322,20 @@
     <ManifestCertificateThumbprint>DAE9A0AB0DEBBC19F78AB3173B0750B9658AE3C2</ManifestCertificateThumbprint>
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
+  <ItemGroup>
+    <ProjectReference Include="ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj">
+      <Project>{11111111-1111-4111-8111-111111111111}</Project>
+      <Name>ExcelCSIToolBox.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj">
+      <Project>{22222222-2222-4222-8222-222222222222}</Project>
+      <Name>ExcelCSIToolBox.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="ExcelCSIToolBox.Infrastructure\ExcelCSIToolBox.Infrastructure.csproj">
+      <Project>{33333333-3333-4333-8333-333333333333}</Project>
+      <Name>ExcelCSIToolBox.Infrastructure</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.WinFX.targets" />
   <!-- Include additional build rules for an Office application add-in. -->

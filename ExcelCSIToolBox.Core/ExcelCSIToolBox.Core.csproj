@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>ExcelCSIToolBox.Core</RootNamespace>
+    <AssemblyName>ExcelCSIToolBox.Core</AssemblyName>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\ExcelCSIToolBox.Data\Mappers\FrameMapper.cs" Link="Application\Mappers\FrameMapper.cs" />
+    <Compile Include="..\ExcelCSIToolBox.Data\Mappers\PointMapper.cs" Link="Application\Mappers\PointMapper.cs" />
+  </ItemGroup>
+</Project>

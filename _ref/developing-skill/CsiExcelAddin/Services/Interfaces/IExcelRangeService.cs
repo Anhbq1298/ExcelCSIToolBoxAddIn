@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace CsiExcelAddin.Services.Interfaces
 {
@@ -11,7 +11,7 @@ namespace CsiExcelAddin.Services.Interfaces
         /// <summary>
         /// Reads all non-empty rows from the active selection.
         /// Each row is returned as an ordered list of cell values (as strings).
-        /// Returns an empty list — not null — when the selection is empty.
+        /// Returns an empty list â€” not null â€” when the selection is empty.
         /// Throws InvalidOperationException when no workbook is open.
         /// </summary>
         IReadOnlyList<IReadOnlyList<string>> ReadSelectedRange();
@@ -47,3 +47,4 @@ namespace CsiExcelAddin.Services.Interfaces
         void ClearNamedRange(string rangeName);
     }
 }
+

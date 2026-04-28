@@ -1,9 +1,9 @@
-namespace CsiExcelAddin.Services.Interfaces
+﻿namespace CsiExcelAddin.Services.Interfaces
 {
     /// <summary>
     /// Defines how the add-in attaches to and detaches from a running CSI application.
     /// Each CSI product (ETABS, SAP2000, SAFE) provides its own implementation
-    /// through a product adapter — this interface keeps the UI layer product-agnostic.
+    /// through a product adapter â€” this interface keeps the UI layer product-agnostic.
     /// </summary>
     public interface ICsiApplicationService
     {
@@ -39,3 +39,4 @@ namespace CsiExcelAddin.Services.Interfaces
         public static AttachResult Fail(string message) => new AttachResult(false, message);
     }
 }
+

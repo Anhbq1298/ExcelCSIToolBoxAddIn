@@ -1,4 +1,4 @@
-namespace CsiExcelAddin.Services.Interfaces
+﻿namespace CsiExcelAddin.Services.Interfaces
 {
     /// <summary>
     /// Top-level contract that each CSI product adapter must satisfy.
@@ -7,7 +7,7 @@ namespace CsiExcelAddin.Services.Interfaces
     /// through this single entry point.
     ///
     /// Adding support for a new CSI product means implementing this interface
-    /// — no changes required in the Ribbon, Views, or shared ViewModels.
+    /// â€” no changes required in the Ribbon, Views, or shared ViewModels.
     /// </summary>
     public interface ICsiProductAdapter
     {
@@ -21,3 +21,4 @@ namespace CsiExcelAddin.Services.Interfaces
         ICsiModelService ModelService { get; }
     }
 }
+
