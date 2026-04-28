@@ -24,6 +24,16 @@ namespace ExcelCSIToolBox.AI.Agent
             "CSI.GetSelectedObjects",
             "CSI.GetSelectedFrames",
             "CSI.GetSelectedFrameSections",
+            "shells.get_all_names",
+            "shells.get_by_name",
+            "shells.get_points",
+            "shells.get_property",
+            "shells.get_selected",
+            "shells.get_uniform_loads",
+            "shells.add_by_points",
+            "shells.add_by_coordinates",
+            "shells.assign_uniform_load",
+            "shells.delete",
             "points.add_by_coordinates",
             "frames.add_by_coordinates",
             "frames.add_by_points",
@@ -56,27 +66,57 @@ Available read tools:
 5. CSI.GetSelectedFrameSections
    Use when the user asks about section properties of selected frames.
 
+6. shells.get_all_names
+   Use when the user asks how many shell, area, wall, slab, membrane, plate, or shell elements/objects exist in the running model.
+
+7. shells.get_by_name
+   Args: {""areaName"":""A1""}
+   Use when the user asks for details of a named shell/area object.
+
+8. shells.get_points
+   Args: {""areaName"":""A1""}
+   Use when the user asks which points define a shell/area object.
+
+9. shells.get_property
+   Args: {""areaName"":""A1""}
+   Use when the user asks for the assigned shell/area property.
+
+10. shells.get_selected
+   Use when the user asks about selected shell/area/wall/slab objects.
+
+11. shells.get_uniform_loads
+   Args: {""areaName"":""A1""}
+   Use when the user asks for uniform loads assigned to a shell/area object.
+
 Available controlled write tools:
-6. points.add_by_coordinates
+12. points.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""x"":0,""y"":0,""z"":0,""userName"":""""}
-7. frames.add_by_coordinates
+13. frames.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""xi"":0,""yi"":0,""zi"":0,""xj"":0,""yj"":0,""zj"":0,""sectionName"":"""",""userName"":""""}
-8. frames.add_by_points
+14. frames.add_by_points
    Args: {""dryRun"":true,""confirmed"":false,""point1Name"":"""",""point2Name"":"""",""sectionName"":"""",""userName"":""""}
-9. frames.assign_section
+15. frames.assign_section
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""sectionName"":""""}
-10. loads.frame.assign_distributed
+16. loads.frame.assign_distributed
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""value1"":0,""value2"":0}
-11. loads.frame.assign_point_load
+17. loads.frame.assign_point_load
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""distance"":0.5,""value"":0}
-12. selection.clear
+18. selection.clear
    Args: {""dryRun"":true,""confirmed"":false}
-13. frames.delete
+19. frames.delete
    Args: {""dryRun"":true,""confirmed"":false,""objectNames"":[""F1""]}
-14. analysis.run
+20. analysis.run
    Args: {""dryRun"":true,""confirmed"":false}
-15. file.save_model
+21. file.save_model
    Dangerous and blocked by default.
+22. shells.add_by_points
+   Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1"",""P2"",""P3""],""propertyName"":""Default"",""userName"":""""}
+23. shells.add_by_coordinates
+   Args: {""dryRun"":true,""confirmed"":false,""points"":[{""x"":0,""y"":0,""z"":0},{""x"":1,""y"":0,""z"":0},{""x"":0,""y"":1,""z"":0}],""propertyName"":""Default"",""userName"":"""",""coordinateSystem"":""Global""}
+24. shells.assign_uniform_load
+   Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""],""loadPattern"":""DEAD"",""value"":1.0,""direction"":6,""replace"":true,""coordinateSystem"":""Global""}
+25. shells.delete
+   Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""]}
 
 Return JSON only:
 {
@@ -364,6 +404,17 @@ ETABS/SAP2000 is open and a model is loaded.";
                 return CreateToolDecision("CSI.GetSelectedObjects", "Heuristic route: current selection query.");
             }
 
+            if (ContainsAny(normalized, "selected shell", "selected shells", "selected area", "selected areas", "selected wall", "selected slab"))
+            {
+                return CreateToolDecision("shells.get_selected", "Heuristic route: selected shell/area query.");
+            }
+
+            if (ContainsAny(normalized, "shell", "shells", "area", "areas", "wall", "walls", "slab", "slabs", "plate", "plates", "membrane", "membranes") &&
+                ContainsAny(normalized, "how many", "count", "number", "list", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+            {
+                return CreateToolDecision("shells.get_all_names", "Heuristic route: shell/area object query.");
+            }
+
             if (ContainsAny(normalized, "model info", "model path", "model file", "file path", "attached model", "current model"))
             {
                 return CreateToolDecision("CSI.GetModelInfo", "Heuristic route: model info query.");
@@ -434,6 +485,10 @@ ETABS/SAP2000 is open and a model is loaded.";
                         return FormatSelectedObjects(result);
                     case "CSI.GetSelectedFrameSections":
                         return FormatSelectedFrameSections(result);
+                    case "shells.get_all_names":
+                        return FormatShellNames(result);
+                    case "shells.get_selected":
+                        return FormatSelectedShells(result);
                     default:
                         return null;
                 }
@@ -540,6 +595,44 @@ ETABS/SAP2000 is open and a model is loaded.";
             }
 
             return $"Retrieved sections for {count.ToString(CultureInfo.InvariantCulture)} selected frame(s): {summary}.";
+        }
+
+        private static string FormatShellNames(JObject result)
+        {
+            string product = result.Value<string>("Product") ?? "the attached model";
+            int count = result.Value<int?>("Count") ?? 0;
+            JArray shellNames = result["ShellNames"] as JArray;
+            string preview = JoinPreview(shellNames, 10);
+
+            if (count <= 0)
+            {
+                return $"No shell/area objects were found in {product}.";
+            }
+
+            return string.IsNullOrWhiteSpace(preview)
+                ? $"Found {count.ToString(CultureInfo.InvariantCulture)} shell/area object(s) in {product}."
+                : $"Found {count.ToString(CultureInfo.InvariantCulture)} shell/area object(s) in {product}: {preview}.";
+        }
+
+        private static string FormatSelectedShells(JObject result)
+        {
+            JArray names = result["Data"] as JArray;
+            if (names == null)
+            {
+                names = result["ShellNames"] as JArray;
+            }
+
+            int count = names == null ? 0 : names.Count;
+            string preview = JoinPreview(names, 10);
+
+            if (count <= 0)
+            {
+                return "No shell/area objects are currently selected.";
+            }
+
+            return string.IsNullOrWhiteSpace(preview)
+                ? $"Found {count.ToString(CultureInfo.InvariantCulture)} selected shell/area object(s)."
+                : $"Found {count.ToString(CultureInfo.InvariantCulture)} selected shell/area object(s): {preview}.";
         }
 
         private static string JoinPreview(JArray items, int maxItems)

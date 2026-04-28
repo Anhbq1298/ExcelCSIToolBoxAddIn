@@ -9,8 +9,9 @@ using ExcelCSIToolBox.AI.Mcp.Client;
 using ExcelCSIToolBox.AI.Mcp.Server;
 using ExcelCSIToolBox.AI.Ollama;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.ReadOnly;
+using ExcelCSIToolBox.Infrastructure.Etabs;
+using ExcelCSIToolBox.Infrastructure.Sap2000;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -41,11 +42,23 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         // ── Agent infrastructure ──────────────────────────────────────────────────
 
         private readonly AiAgentOrchestrator _orchestrator;
+        private readonly ICSISapModelConnectionService _etabsConnectionService;
+        private readonly ICSISapModelConnectionService _sap2000ConnectionService;
 
         // ── Constructor ───────────────────────────────────────────────────────────
 
         public AiAgentChatViewModel()
+            : this(new EtabsConnectionService(), new Sap2000ConnectionService())
         {
+        }
+
+        public AiAgentChatViewModel(
+            ICSISapModelConnectionService etabsConnectionService,
+            ICSISapModelConnectionService sap2000ConnectionService)
+        {
+            _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
+            _sap2000ConnectionService = sap2000ConnectionService ?? throw new ArgumentNullException(nameof(sap2000ConnectionService));
+
             // Build read-only Infrastructure services.
             ICsiReadOnlyConnectionService connectionService = new CsiReadOnlyConnectionService();
             ICsiReadOnlySelectionService  selectionService  = new CsiReadOnlySelectionService();
@@ -216,21 +229,25 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void RefreshConnectionStatuses()
         {
-            EtabsConnectionStatus = IsProductAttached(new EtabsModelAdapter())
+            EtabsConnectionStatus = IsProductAttached(_etabsConnectionService)
                 ? "Attached"
                 : "Not attached";
 
-            Sap2000ConnectionStatus = IsProductAttached(new Sap2000ModelAdapter())
+            Sap2000ConnectionStatus = IsProductAttached(_sap2000ConnectionService)
                 ? "Attached"
                 : "Not attached";
         }
 
-        private static bool IsProductAttached(ICsiModelAdapter adapter)
+        private static bool IsProductAttached(ICSISapModelConnectionService connectionService)
         {
             try
             {
-                CsiAttachResult result = adapter.AttachToRunningInstance();
-                return result != null && result.IsSuccess && result.SapModel != null;
+                var result = connectionService.TryAttachToRunningInstance();
+                return result != null &&
+                       result.IsSuccess &&
+                       result.Data != null &&
+                       result.Data.IsConnected &&
+                       result.Data.SapModel != null;
             }
             catch
             {

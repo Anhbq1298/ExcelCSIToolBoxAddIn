@@ -31,7 +31,32 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             ICsiReadOnlyConnectionService connectionService,
             ICsiReadOnlySelectionService  selectionService,
             ICsiReadOnlyFrameService      frameService)
-            : this(connectionService, selectionService, frameService, CreateDefaultCommandService())
+            : this(
+                connectionService,
+                selectionService,
+                frameService,
+                new EtabsConnectionService(new EtabsModelAdapter()),
+                new Sap2000ConnectionService(new Sap2000ModelAdapter()))
+        {
+        }
+
+        private LocalMcpServer(
+            ICsiReadOnlyConnectionService connectionService,
+            ICsiReadOnlySelectionService  selectionService,
+            ICsiReadOnlyFrameService      frameService,
+            ICSISapModelConnectionService etabsService,
+            ICSISapModelConnectionService sap2000Service)
+            : this(
+                connectionService,
+                selectionService,
+                frameService,
+                new CsiModelCommandService(
+                    etabsService,
+                    sap2000Service,
+                    new CsiWriteGuard(),
+                    new CsiOperationLogger()),
+                etabsService,
+                sap2000Service)
         {
         }
 
@@ -40,6 +65,23 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             ICsiReadOnlySelectionService  selectionService,
             ICsiReadOnlyFrameService      frameService,
             ICsiModelCommandService       commandService)
+            : this(
+                connectionService,
+                selectionService,
+                frameService,
+                commandService,
+                new EtabsConnectionService(new EtabsModelAdapter()),
+                new Sap2000ConnectionService(new Sap2000ModelAdapter()))
+        {
+        }
+
+        private LocalMcpServer(
+            ICsiReadOnlyConnectionService connectionService,
+            ICsiReadOnlySelectionService  selectionService,
+            ICsiReadOnlyFrameService      frameService,
+            ICsiModelCommandService       commandService,
+            ICSISapModelConnectionService etabsService,
+            ICSISapModelConnectionService sap2000Service)
         {
             _registry = new McpToolRegistry();
 
@@ -50,6 +92,16 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new CsiGetSelectedObjectsTool(selectionService));
             _registry.Register(new CsiGetSelectedFramesTool(selectionService));
             _registry.Register(new CsiGetSelectedFrameSectionsTool(frameService));
+            _registry.Register(new CsiGetShellNamesTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsGetByNameTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsGetPointsTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsGetPropertyTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsGetSelectedTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsGetUniformLoadsTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsAddByPointsTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsAddByCoordinatesTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsAssignUniformLoadTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsDeleteTool(etabsService, sap2000Service));
 
             _registry.Register(new PointsAddByCoordinatesTool(commandService));
             _registry.Register(new FramesAddByCoordinatesTool(commandService));
@@ -141,13 +193,5 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             return descriptors;
         }
 
-        private static ICsiModelCommandService CreateDefaultCommandService()
-        {
-            return new CsiModelCommandService(
-                new EtabsConnectionService(new EtabsModelAdapter()),
-                new Sap2000ConnectionService(new Sap2000ModelAdapter()),
-                new CsiWriteGuard(),
-                new CsiOperationLogger());
-        }
     }
 }
