@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class AddPointsFromExcelRangeUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public AddPointsFromExcelRangeUseCase(
-            ICsiConnectionService connectionService,
+            ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;
@@ -29,7 +29,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
 
             // Intentionally preserve Excel selection order and duplicates.
             // Each valid row becomes one independent ETABS PointObj.AddCartesian call later in the ETABS service.
-            var orderedPointCalls = new List<CsiPointCartesianInput>();
+            var orderedPointCalls = new List<CSISapModelPointCartesianInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -71,7 +71,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                orderedPointCalls.Add(new CsiPointCartesianInput
+                orderedPointCalls.Add(new CSISapModelPointCartesianInput
                 {
                     ExcelRowNumber = row.ExcelRowNumber,
                     UniqueName = uniqueName,

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
+namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 {
-    public class CsiAddPointsResult
+    public class CSISapModelAddFramesResult
     {
         public int AddedCount { get; set; }
 

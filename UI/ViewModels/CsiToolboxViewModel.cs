@@ -4,7 +4,7 @@ using System.Windows.Input;
 using ExcelCSIToolBoxAddIn.Common.Commands;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Application;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -15,10 +15,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     /// </summary>
     public class CsiToolboxViewModel : ViewModelBase
     {
-        private readonly LoadCsiConnectionUseCase _loadCsiConnectionUseCase;
+        private readonly LoadCSISapModelConnectionUseCase _loadCSISapModelConnectionUseCase;
         private readonly CloseCurrentInstanceUseCase _closeCurrentInstanceUseCase;
-        private readonly GetSelectedCsiPointsUseCase _getSelectedCsiPointsUseCase;
-        private readonly GetSelectedCsiFramesUseCase _getSelectedCsiFramesUseCase;
+        private readonly GetSelectedCSISapModelPointsUseCase _getSelectedCSISapModelPointsUseCase;
+        private readonly GetSelectedCSISapModelFramesUseCase _getSelectedCSISapModelFramesUseCase;
         private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
         private readonly SelectFramesFromExcelRangeByUniqueNameUseCase _selectFramesFromExcelRangeByUniqueNameUseCase;
         private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
@@ -43,7 +43,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly string _productName;
 
         public CsiToolboxViewModel(
-            ICsiConnectionService csiConnectionService,
+            ICSISapModelConnectionService csiConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
@@ -51,10 +51,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ? "CSI"
                 : csiConnectionService.ProductName;
 
-            _loadCsiConnectionUseCase = new LoadCsiConnectionUseCase(csiConnectionService);
+            _loadCSISapModelConnectionUseCase = new LoadCSISapModelConnectionUseCase(csiConnectionService);
             _closeCurrentInstanceUseCase = new CloseCurrentInstanceUseCase(csiConnectionService);
-            _getSelectedCsiPointsUseCase = new GetSelectedCsiPointsUseCase(csiConnectionService, excelOutputService);
-            _getSelectedCsiFramesUseCase = new GetSelectedCsiFramesUseCase(csiConnectionService, excelOutputService);
+            _getSelectedCSISapModelPointsUseCase = new GetSelectedCSISapModelPointsUseCase(csiConnectionService, excelOutputService);
+            _getSelectedCSISapModelFramesUseCase = new GetSelectedCSISapModelFramesUseCase(csiConnectionService, excelOutputService);
             _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(csiConnectionService, excelSelectionService);
             _selectFramesFromExcelRangeByUniqueNameUseCase = new SelectFramesFromExcelRangeByUniqueNameUseCase(csiConnectionService, excelSelectionService);
             _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
@@ -207,7 +207,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void LoadConnectionState(bool showMessage)
         {
-            var result = _loadCsiConnectionUseCase.Execute();
+            var result = _loadCSISapModelConnectionUseCase.Execute();
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -311,12 +311,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void GetSelectedPoints()
         {
-            ShowOperationResult(_getSelectedCsiPointsUseCase.Execute());
+            ShowOperationResult(_getSelectedCSISapModelPointsUseCase.Execute());
         }
 
         private void GetSelectedFrames()
         {
-            ShowOperationResult(_getSelectedCsiFramesUseCase.Execute());
+            ShowOperationResult(_getSelectedCSISapModelFramesUseCase.Execute());
         }
 
         private void CreateShellAreasFromSelectedFrames()

@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class CreateSteelAngleSectionsFromExcelRangeUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public CreateSteelAngleSectionsFromExcelRangeUseCase(
-            ICsiConnectionService connectionService,
+            ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;
@@ -27,7 +27,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedCalls = new List<CsiSteelAngleSectionInput>();
+            var orderedCalls = new List<CSISapModelSteelAngleSectionInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -88,7 +88,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                orderedCalls.Add(new CsiSteelAngleSectionInput
+                orderedCalls.Add(new CSISapModelSteelAngleSectionInput
                 {
                     SectionName = sectionName,
                     MaterialName = materialName,

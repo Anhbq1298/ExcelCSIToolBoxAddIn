@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
+namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 {
-    public class CsiPointData
+    public class CSISapModelPointData
     {
         public string PointUniqueName { get; set; }
 

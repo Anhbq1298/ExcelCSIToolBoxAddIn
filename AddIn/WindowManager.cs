@@ -1,6 +1,6 @@
 using System;
 using System.Windows;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
@@ -9,16 +9,16 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 {
     internal static class WindowManager
     {
-        private static ICsiConnectionService _etabsConnectionService;
-        private static ICsiConnectionService _sap2000ConnectionService;
+        private static ICSISapModelConnectionService _etabsConnectionService;
+        private static ICSISapModelConnectionService _sap2000ConnectionService;
         private static IExcelSelectionService _excelSelectionService;
         private static IExcelOutputService _excelOutputService;
         private static EtabsToolboxWindow _activeEtabsWindow;
         private static Sap2000ToolboxWindow _activeSap2000Window;
 
         internal static void Configure(
-            ICsiConnectionService etabsConnectionService,
-            ICsiConnectionService sap2000ConnectionService,
+            ICSISapModelConnectionService etabsConnectionService,
+            ICSISapModelConnectionService sap2000ConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
@@ -45,7 +45,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         }
 
         private static void ShowCsiWindow<TWindow>(
-            ICsiConnectionService connectionService,
+            ICSISapModelConnectionService connectionService,
             Func<TWindow> getActiveWindow,
             Action<TWindow> setActiveWindow)
             where TWindow : Window, new()

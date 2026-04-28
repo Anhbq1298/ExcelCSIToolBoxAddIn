@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
+namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 {
-    public class CsiPointCartesianInput
+    public class CSISapModelPointCartesianInput
     {
         public int ExcelRowNumber { get; set; }
 

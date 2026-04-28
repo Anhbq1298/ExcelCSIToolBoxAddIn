@@ -38,7 +38,7 @@ The add-in must:
 - Do not duplicate functions when a reusable service or helper is more appropriate.
 - Keep naming, file structure, patterns, and error handling consistent across the solution.
 - Do not place shared CSI contracts, result DTOs, or table-format DTOs under a single product folder such as `Etabs/` or `Sap2000/`.
-- Use a shared `Csi/` infrastructure folder for product-neutral contracts and DTOs, and product-specific folders only for product-specific services.
+- Use a shared `CSISapModel/` infrastructure folder for product-neutral contracts and DTOs that operate after a CSI `SapModel` is obtained, and product-specific folders only for product-specific services.
 
 ### Excel Add-in Pattern
 - The solution target is an Excel add-in.
@@ -145,7 +145,7 @@ Do not assume that a method available in one CSI product behaves identically in 
 - New Excel operations must go through `IExcelRangeReader` or `IExcelRangeWriter`. Do not add direct Excel interop calls outside these services.
 - New status reporting must use the existing `OperationResult` pattern. Do not create a new result or response wrapper type.
 - New data models must check whether an existing DTO in `Models/` can be reused or extended before creating a new one.
-- New Excel table-shape input DTOs must live in a shared `Csi/TableFormats/` folder when the same shape can be consumed by multiple CSI products. Examples: point Cartesian rows, frame-by-coordinate rows, frame-by-point rows, steel section rows, and concrete section rows.
+- New Excel table-shape input DTOs must live in a shared `CSISapModel/TableFormats/` folder when the same shape can be consumed by multiple CSI products after `SapModel` is obtained. Examples: point Cartesian rows, frame-by-coordinate rows, frame-by-point rows, steel section rows, and concrete section rows.
 - Keep table-format DTOs as simple property bags with no business logic. They represent parsed Excel/table input shape, not CSI attachment logic or UI state.
 - Product-specific folders such as `Etabs/` and `Sap2000/` should contain only product-specific services, unit formatters, API wrappers, or other code that truly depends on that product's API.
 - When moving existing table-format DTO files into a shared folder, rename namespaces only as far as needed to remove misleading product ownership. Avoid unrelated churn.
@@ -193,9 +193,9 @@ Use a structure similar to this when generating code:
   - business services
   - Excel services
   - attachment services
-- `Infrastructure/Csi/`
+- `Infrastructure/CSISapModel/`
   - shared CSI contracts, result DTOs, model info, object type IDs, and table formats
-- `Infrastructure/Csi/TableFormats/`
+- `Infrastructure/CSISapModel/TableFormats/`
   - parsed Excel/table input DTOs shared by ETABS, SAP2000, and future CSI products
 - `Infrastructure/Etabs/`
   - ETABS-only services and helpers
@@ -226,7 +226,7 @@ When asked to generate code for this project:
 10. Keep every method focused on one responsibility. If a method does two things, split it.
 11. Preserve extendability for ETABS, SAP2000, and SAFE.
 12. Use early binding with referenced CSI assemblies such as `ETABSv1.dll`.
-13. Store shared parsed Excel/table input DTOs in `Infrastructure/Csi/TableFormats/` and keep them separate from connection services, product adapters, and UI view models.
+13. Store shared parsed Excel/table input DTOs in `Infrastructure/CSISapModel/TableFormats/` and keep them separate from connection services, product adapters, and UI view models.
 
 ## Output Expectations
 When producing code, prefer:
@@ -244,7 +244,7 @@ When producing code, prefer:
 - business logic inside XAML code-behind
 - direct CSI calls scattered across the UI layer
 - direct Excel range parsing scattered across multiple classes
-- table-format/input DTOs mixed directly into adapter or product-specific connection-service folders when `Infrastructure/Csi/TableFormats/` exists
+- table-format/input DTOs mixed directly into adapter or product-specific connection-service folders when `Infrastructure/CSISapModel/TableFormats/` exists
 - SAP2000 services or helpers placed under an ETABS infrastructure folder, or ETABS services placed under a SAP2000 infrastructure folder
 - CSI API calls written without first verifying the signature in the official `.chm` help file
 - guessed CSI API function names, parameter order, enum values, or return types

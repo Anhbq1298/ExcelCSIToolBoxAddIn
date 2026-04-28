@@ -1,16 +1,16 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
-    public class GetSelectedCsiPointsUseCase
+    public class GetSelectedCSISapModelPointsUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelOutputService _excelOutputService;
 
-        public GetSelectedCsiPointsUseCase(
-            ICsiConnectionService connectionService,
+        public GetSelectedCSISapModelPointsUseCase(
+            ICSISapModelConnectionService connectionService,
             IExcelOutputService excelOutputService)
         {
             _connectionService = connectionService;
@@ -25,7 +25,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(pointsResult.Message);
             }
 
-            var dataFrame = CsiPointDataDataFrameMapper.Map(pointsResult.Data);
+            var dataFrame = CSISapModelPointDataDataFrameMapper.Map(pointsResult.Data);
             return _excelOutputService.WriteDataFrameToActiveCell(dataFrame);
         }
     }

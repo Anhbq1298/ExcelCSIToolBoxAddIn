@@ -1,16 +1,16 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class SelectFramesFromExcelRangeByUniqueNameUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public SelectFramesFromExcelRangeByUniqueNameUseCase(
-            ICsiConnectionService connectionService,
+            ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;

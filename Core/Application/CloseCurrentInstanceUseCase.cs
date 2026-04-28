@@ -1,13 +1,13 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class CloseCurrentInstanceUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
 
-        public CloseCurrentInstanceUseCase(ICsiConnectionService connectionService)
+        public CloseCurrentInstanceUseCase(ICSISapModelConnectionService connectionService)
         {
             _connectionService = connectionService;
         }

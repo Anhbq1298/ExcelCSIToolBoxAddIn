@@ -3,7 +3,7 @@ using ExcelCSIToolBoxAddIn.Core.Tabular;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
-    public static class CsiFrameDataDataFrameMapper
+    public static class CSISapModelFrameDataDataFrameMapper
     {
         public static DataFrame Map(IReadOnlyList<string> frameUniqueNames)
         {

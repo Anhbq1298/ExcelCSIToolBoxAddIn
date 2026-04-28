@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
+namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 {
-    public class CsiConcreteRectangleSectionInput
+    public class CSISapModelConcreteRectangleSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }
@@ -8,7 +8,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
         public double B { get; set; }
     }
 
-    public class CsiConcreteCircleSectionInput
+    public class CSISapModelConcreteCircleSectionInput
     {
         public string SectionName { get; set; }
         public string MaterialName { get; set; }

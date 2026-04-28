@@ -1,6 +1,6 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
+namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 {
-    public class CsiFrameByCoordInput
+    public class CSISapModelFrameByCoordInput
     {
         public int ExcelRowNumber { get; set; }
 

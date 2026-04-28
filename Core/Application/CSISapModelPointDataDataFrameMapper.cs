@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using ExcelCSIToolBoxAddIn.Core.Tabular;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
-    public static class CsiPointDataDataFrameMapper
+    public static class CSISapModelPointDataDataFrameMapper
     {
-        public static DataFrame Map(IReadOnlyList<CsiPointData> points)
+        public static DataFrame Map(IReadOnlyList<CSISapModelPointData> points)
         {
             var rows = new List<IReadOnlyList<object>>();
 

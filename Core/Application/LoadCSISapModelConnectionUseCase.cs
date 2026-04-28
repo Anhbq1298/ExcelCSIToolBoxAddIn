@@ -1,21 +1,21 @@
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     /// <summary>
     /// Application use case for loading CSI connection state for the toolbox shell.
     /// </summary>
-    public class LoadCsiConnectionUseCase
+    public class LoadCSISapModelConnectionUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
 
-        public LoadCsiConnectionUseCase(ICsiConnectionService connectionService)
+        public LoadCSISapModelConnectionUseCase(ICSISapModelConnectionService connectionService)
         {
             _connectionService = connectionService;
         }
 
-        public OperationResult<CsiConnectionInfo> Execute()
+        public OperationResult<CSISapModelConnectionInfo> Execute()
         {
             return _connectionService.TryAttachToRunningInstance();
         }

@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class CreateSteelPipeSectionsFromExcelRangeUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public CreateSteelPipeSectionsFromExcelRangeUseCase(
-            ICsiConnectionService connectionService,
+            ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;
@@ -27,7 +27,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedCalls = new List<CsiSteelPipeSectionInput>();
+            var orderedCalls = new List<CSISapModelSteelPipeSectionInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -78,7 +78,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                orderedCalls.Add(new CsiSteelPipeSectionInput
+                orderedCalls.Add(new CSISapModelSteelPipeSectionInput
                 {
                     SectionName = sectionName,
                     MaterialName = materialName,

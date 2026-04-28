@@ -1,18 +1,18 @@
 using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBoxAddIn.Common.Results;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.Core.Application
 {
     public class CreateConcreteRectangleSectionsFromExcelRangeUseCase
     {
-        private readonly ICsiConnectionService _connectionService;
+        private readonly ICSISapModelConnectionService _connectionService;
         private readonly IExcelSelectionService _excelSelectionService;
 
         public CreateConcreteRectangleSectionsFromExcelRangeUseCase(
-            ICsiConnectionService connectionService,
+            ICSISapModelConnectionService connectionService,
             IExcelSelectionService excelSelectionService)
         {
             _connectionService = connectionService;
@@ -27,7 +27,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                 return OperationResult.Failure(rowResult.Message);
             }
 
-            var orderedCalls = new List<CsiConcreteRectangleSectionInput>();
+            var orderedCalls = new List<CSISapModelConcreteRectangleSectionInput>();
             var failedRowMessages = new List<string>();
 
             foreach (var row in rowResult.Data)
@@ -72,7 +72,7 @@ namespace ExcelCSIToolBoxAddIn.Core.Application
                     continue;
                 }
 
-                orderedCalls.Add(new CsiConcreteRectangleSectionInput
+                orderedCalls.Add(new CSISapModelConcreteRectangleSectionInput
                 {
                     SectionName = sectionName,
                     MaterialName = materialName,

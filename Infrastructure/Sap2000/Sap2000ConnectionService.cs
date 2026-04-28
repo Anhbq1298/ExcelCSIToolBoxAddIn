@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
-using ExcelCSIToolBoxAddIn.Infrastructure.Csi;
+using ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel;
 using ExcelCSIToolBoxAddIn.UI.Views;
 using SAP2000v1;
 
@@ -16,10 +16,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
     /// SAP2000 adapter that exposes the same toolbox contract used by ETABS.
     /// The application/use-case layer stays shared; only the CSI API binding differs here.
     /// </summary>
-    public class Sap2000ConnectionService : ICsiConnectionService
+    public class Sap2000ConnectionService : ICSISapModelConnectionService
     {
         private readonly ICsiModelAdapter _modelAdapter;
-        private CsiConnectionInfo _currentConnection;
+        private CSISapModelConnectionInfo _currentConnection;
 
         public Sap2000ConnectionService()
             : this(new Sap2000ModelAdapter())
@@ -33,13 +33,13 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public string ProductName => "SAP2000";
 
-        public OperationResult<CsiConnectionInfo> TryAttachToRunningInstance()
+        public OperationResult<CSISapModelConnectionInfo> TryAttachToRunningInstance()
         {
             var attachResult = _modelAdapter.AttachToRunningInstance();
             if (!attachResult.IsSuccess)
             {
                 _currentConnection = null;
-                return OperationResult<CsiConnectionInfo>.Failure(attachResult.Message);
+                return OperationResult<CSISapModelConnectionInfo>.Failure(attachResult.Message);
             }
 
             var sapObject = attachResult.ApplicationObject as SAP2000v1.cOAPI;
@@ -47,7 +47,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             if (sapObject == null || sapModel == null)
             {
                 _currentConnection = null;
-                return OperationResult<CsiConnectionInfo>.Failure("The attached SAP2000 instance is invalid. Please reattach and try again.");
+                return OperationResult<CSISapModelConnectionInfo>.Failure("The attached SAP2000 instance is invalid. Please reattach and try again.");
             }
 
             try
@@ -74,7 +74,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 {
                 }
 
-                _currentConnection = new CsiConnectionInfo
+                _currentConnection = new CSISapModelConnectionInfo
                 {
                     IsConnected = true,
                     ModelPath = modelPath,
@@ -84,23 +84,23 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     SapModel = sapModel
                 };
 
-                return OperationResult<CsiConnectionInfo>.Success(_currentConnection);
+                return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
             }
             catch
             {
                 _currentConnection = null;
-                return OperationResult<CsiConnectionInfo>.Failure("Failed to attach to the running SAP2000 instance.");
+                return OperationResult<CSISapModelConnectionInfo>.Failure("Failed to attach to the running SAP2000 instance.");
             }
         }
 
-        public OperationResult<CsiConnectionInfo> GetCurrentConnection()
+        public OperationResult<CSISapModelConnectionInfo> GetCurrentConnection()
         {
             if (_currentConnection?.SapModel == null)
             {
-                return OperationResult<CsiConnectionInfo>.Failure("No SAP2000 model is currently connected. Please click Attach.");
+                return OperationResult<CSISapModelConnectionInfo>.Failure("No SAP2000 model is currently connected. Please click Attach.");
             }
 
-            return OperationResult<CsiConnectionInfo>.Success(_currentConnection);
+            return OperationResult<CSISapModelConnectionInfo>.Success(_currentConnection);
         }
 
         public OperationResult CloseCurrentInstance()
@@ -149,17 +149,17 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, SAP2000v1.eItemType.Objects));
         }
 
-        public OperationResult<CsiAddPointsResult> AddPointsByCartesian(IReadOnlyList<CsiPointCartesianInput> pointInputs)
+        public OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs)
         {
             if (pointInputs == null || pointInputs.Count == 0)
             {
-                return OperationResult<CsiAddPointsResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CSISapModelAddPointsResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<CsiAddPointsResult>.Failure(connectionResult.Message);
+                return OperationResult<CSISapModelAddPointsResult>.Failure(connectionResult.Message);
             }
 
             try
@@ -210,11 +210,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     var refreshResult = RefreshView(sapModel);
                     if (!refreshResult.IsSuccess)
                     {
-                        return OperationResult<CsiAddPointsResult>.Failure(refreshResult.Message);
+                        return OperationResult<CSISapModelAddPointsResult>.Failure(refreshResult.Message);
                     }
                 }
 
-                return OperationResult<CsiAddPointsResult>.Success(new CsiAddPointsResult
+                return OperationResult<CSISapModelAddPointsResult>.Success(new CSISapModelAddPointsResult
                 {
                     AddedCount = successCount,
                     FailedRowMessages = failedRowMessages
@@ -222,25 +222,25 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             }
             catch (COMException ex)
             {
-                return OperationResult<CsiAddPointsResult>.Failure($"SAP2000 COM error while adding points by Cartesian coordinates: {ex.Message}");
+                return OperationResult<CSISapModelAddPointsResult>.Failure($"SAP2000 COM error while adding points by Cartesian coordinates: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return OperationResult<CsiAddPointsResult>.Failure($"SAP2000 add-by-Cartesian failed unexpectedly: {ex.Message}");
+                return OperationResult<CSISapModelAddPointsResult>.Failure($"SAP2000 add-by-Cartesian failed unexpectedly: {ex.Message}");
             }
         }
 
-        public OperationResult<CsiAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CsiFrameByCoordInput> frameInputs)
+        public OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
-                return OperationResult<CsiAddFramesResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CSISapModelAddFramesResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<CsiAddFramesResult>.Failure(connectionResult.Message);
+                return OperationResult<CSISapModelAddFramesResult>.Failure(connectionResult.Message);
             }
 
             try
@@ -282,7 +282,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                         ctx.IncrementRan();
                     }
 
-                    return new CsiAddFramesResult
+                    return new CSISapModelAddFramesResult
                     {
                         AddedCount = successCount,
                         FailedRowMessages = failedRowMessages
@@ -291,21 +291,21 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             }
             catch (Exception ex)
             {
-                return OperationResult<CsiAddFramesResult>.Failure($"SAP2000 add-by-coordinates failed unexpectedly: {ex.Message}");
+                return OperationResult<CSISapModelAddFramesResult>.Failure($"SAP2000 add-by-coordinates failed unexpectedly: {ex.Message}");
             }
         }
 
-        public OperationResult<CsiAddFramesResult> AddFramesByPoint(IReadOnlyList<CsiFrameByPointInput> frameInputs)
+        public OperationResult<CSISapModelAddFramesResult> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs)
         {
             if (frameInputs == null || frameInputs.Count == 0)
             {
-                return OperationResult<CsiAddFramesResult>.Failure("No valid rows were found in the selected range.");
+                return OperationResult<CSISapModelAddFramesResult>.Failure("No valid rows were found in the selected range.");
             }
 
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<CsiAddFramesResult>.Failure(connectionResult.Message);
+                return OperationResult<CSISapModelAddFramesResult>.Failure(connectionResult.Message);
             }
 
             try
@@ -348,7 +348,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                         }
                     }
 
-                    return new CsiAddFramesResult
+                    return new CSISapModelAddFramesResult
                     {
                         AddedCount = successCount,
                         FailedRowMessages = failedRowMessages
@@ -357,16 +357,16 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             }
             catch (Exception ex)
             {
-                return OperationResult<CsiAddFramesResult>.Failure($"SAP2000 add-by-point failed unexpectedly: {ex.Message}");
+                return OperationResult<CSISapModelAddFramesResult>.Failure($"SAP2000 add-by-point failed unexpectedly: {ex.Message}");
             }
         }
 
-        public OperationResult<IReadOnlyList<CsiPointData>> GetSelectedPointsFromActiveModel()
+        public OperationResult<IReadOnlyList<CSISapModelPointData>> GetSelectedPointsFromActiveModel()
         {
             var connectionResult = EnsureConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
             {
-                return OperationResult<IReadOnlyList<CsiPointData>>.Failure(connectionResult.Message);
+                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure(connectionResult.Message);
             }
 
             try
@@ -378,10 +378,10 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 int selectedResult = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
                 if (selectedResult != 0)
                 {
-                    return OperationResult<IReadOnlyList<CsiPointData>>.Failure("Failed to read selected objects from SAP2000.");
+                    return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure("Failed to read selected objects from SAP2000.");
                 }
 
-                var points = new List<CsiPointData>();
+                var points = new List<CSISapModelPointData>();
                 for (int i = 0; i < numberItems; i++)
                 {
                     if (objectTypes == null || objectNames == null || i >= objectTypes.Length || i >= objectNames.Length)
@@ -389,7 +389,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                         continue;
                     }
 
-                    if (objectTypes[i] != CsiObjectTypeIds.Point || string.IsNullOrWhiteSpace(objectNames[i]))
+                    if (objectTypes[i] != CSISapModelObjectTypeIds.Point || string.IsNullOrWhiteSpace(objectNames[i]))
                     {
                         continue;
                     }
@@ -400,7 +400,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     int pointResult = sapModel.PointObj.GetCoordCartesian(objectNames[i], ref x, ref y, ref z, "Global");
                     if (pointResult == 0)
                     {
-                        points.Add(new CsiPointData
+                        points.Add(new CSISapModelPointData
                         {
                             PointUniqueName = objectNames[i],
                             PointLabel = objectNames[i],
@@ -413,14 +413,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
                 if (points.Count == 0)
                 {
-                    return OperationResult<IReadOnlyList<CsiPointData>>.Failure("No point objects are selected in SAP2000.");
+                    return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure("No point objects are selected in SAP2000.");
                 }
 
-                return OperationResult<IReadOnlyList<CsiPointData>>.Success(points);
+                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Success(points);
             }
             catch
             {
-                return OperationResult<IReadOnlyList<CsiPointData>>.Failure("Unable to read selected SAP2000 points.");
+                return OperationResult<IReadOnlyList<CSISapModelPointData>>.Failure("Unable to read selected SAP2000 points.");
             }
         }
 
@@ -453,7 +453,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     }
 
                     var frameUniqueName = objectNames[i];
-                    if (objectTypes[i] == CsiObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(frameUniqueName))
+                    if (objectTypes[i] == CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(frameUniqueName))
                     {
                         frameUniqueNames.Add(frameUniqueName);
                     }
@@ -472,43 +472,43 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             }
         }
 
-        public OperationResult AddSteelISections(IReadOnlyList<CsiSteelISectionInput> inputs)
+        public OperationResult AddSteelISections(IReadOnlyList<CSISapModelSteelISectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel I-Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf, -1, "", ""));
         }
 
-        public OperationResult AddSteelChannelSections(IReadOnlyList<CsiSteelChannelSectionInput> inputs)
+        public OperationResult AddSteelChannelSections(IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Channel Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
         }
 
-        public OperationResult AddSteelAngleSections(IReadOnlyList<CsiSteelAngleSectionInput> inputs)
+        public OperationResult AddSteelAngleSections(IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Angle Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
         }
 
-        public OperationResult AddSteelPipeSections(IReadOnlyList<CsiSteelPipeSectionInput> inputs)
+        public OperationResult AddSteelPipeSections(IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Pipe Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness, -1, "", ""));
         }
 
-        public OperationResult AddSteelTubeSections(IReadOnlyList<CsiSteelTubeSectionInput> inputs)
+        public OperationResult AddSteelTubeSections(IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Steel Tube Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", ""));
         }
 
-        public OperationResult AddConcreteRectangleSections(IReadOnlyList<CsiConcreteRectangleSectionInput> inputs)
+        public OperationResult AddConcreteRectangleSections(IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Concrete Rectangle Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B, -1, "", ""));
         }
 
-        public OperationResult AddConcreteCircleSections(IReadOnlyList<CsiConcreteCircleSectionInput> inputs)
+        public OperationResult AddConcreteCircleSections(IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs)
         {
             return CreateSections(inputs, "Creating Concrete Circle Sections...", (sapModel, input) =>
                 sapModel.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D, -1, "", ""));
@@ -713,7 +713,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             }
         }
 
-        private OperationResult<CsiConnectionInfo> EnsureConnection()
+        private OperationResult<CSISapModelConnectionInfo> EnsureConnection()
         {
             var connectionResult = GetCurrentConnection();
             if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
@@ -724,13 +724,13 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             return connectionResult;
         }
 
-        private OperationResult<CsiAddFramesResult> AddFrames(
+        private OperationResult<CSISapModelAddFramesResult> AddFrames(
             int totalItems,
             string title,
             SAP2000v1.cSapModel sapModel,
-            Func<BatchProgressContext, CsiAddFramesResult> addAction)
+            Func<BatchProgressContext, CSISapModelAddFramesResult> addAction)
         {
-            CsiAddFramesResult result = null;
+            CSISapModelAddFramesResult result = null;
             BatchProgressWindow.RunWithProgress(totalItems, title, ctx => result = addAction(ctx));
 
             if (result?.AddedCount > 0)
@@ -738,11 +738,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 var refreshResult = RefreshView(sapModel);
                 if (!refreshResult.IsSuccess)
                 {
-                    return OperationResult<CsiAddFramesResult>.Failure(refreshResult.Message);
+                    return OperationResult<CSISapModelAddFramesResult>.Failure(refreshResult.Message);
                 }
             }
 
-            return OperationResult<CsiAddFramesResult>.Success(result ?? new CsiAddFramesResult());
+            return OperationResult<CSISapModelAddFramesResult>.Success(result ?? new CSISapModelAddFramesResult());
         }
 
         private OperationResult CreateSections<T>(
@@ -828,7 +828,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                 }
 
                 var frameName = objectNames[i];
-                if (objectTypes[i] != CsiObjectTypeIds.Frame ||
+                if (objectTypes[i] != CSISapModelObjectTypeIds.Frame ||
                     string.IsNullOrWhiteSpace(frameName) ||
                     seenFrames.Contains(frameName))
                 {

@@ -1,9 +1,9 @@
-namespace ExcelCSIToolBoxAddIn.Infrastructure.Csi
+namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
 {
     /// <summary>
     /// Value object containing CSI connection details needed by the UI.
     /// </summary>
-    public class CsiConnectionInfo
+    public class CSISapModelConnectionInfo
     {
         public bool IsConnected { get; set; }
 
