@@ -66,6 +66,25 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style TargetType="DataGridCell">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#2A7BBE"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="BorderBrush" Value="#2A7BBE"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#2A7BBE"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="16">
@@ -200,7 +219,7 @@
                                           GridLinesVisibility="Horizontal"
                                           BorderBrush="#CCCCCC"
                                           BorderThickness="1"
-                                          FontSize="10"
+                                          FontSize="11"
                                           FontWeight="Normal"
                                           Foreground="Black">
                                     <DataGrid.InputBindings>
@@ -208,7 +227,7 @@
                                     </DataGrid.InputBindings>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                        <DataGridTextColumn Header="Type" Binding="{Binding ShapeType}" Width="Auto"/>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding ShapeType}" Width="*"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                                 <Button Grid.Row="1" Margin="0,8,0,0" Content="Refresh List" Command="{Binding GetFrameSectionsCommand}"/>
@@ -629,7 +648,7 @@
                                               GridLinesVisibility="Horizontal"
                                               BorderBrush="#CCCCCC"
                                               BorderThickness="1"
-                                              FontSize="10"
+                                              FontSize="11"
                                               FontWeight="Normal"
                                               Foreground="Black">
                                         <DataGrid.ContextMenu>
@@ -639,7 +658,7 @@
                                         </DataGrid.ContextMenu>
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Load Pattern Name" Binding="{Binding Name}" Width="*"/>
-                                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="Auto"/>
+                                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
                                         </DataGrid.Columns>
                                     </DataGrid>
                                     
@@ -685,7 +704,7 @@
                                               GridLinesVisibility="Horizontal"
                                               BorderBrush="#CCCCCC"
                                               BorderThickness="1"
-                                              FontSize="10"
+                                              FontSize="11"
                                               FontWeight="Normal"
                                               Foreground="Black">
                                         <DataGrid.ContextMenu>
@@ -696,7 +715,7 @@
                                         </DataGrid.ContextMenu>
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Combination Name" Binding="{Binding Name}" Width="*"/>
-                                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="Auto"/>
+                                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
                                         </DataGrid.Columns>
                                     </DataGrid>
                                     

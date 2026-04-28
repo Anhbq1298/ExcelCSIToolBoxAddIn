@@ -334,11 +334,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 case FrameSectionShapeType.Channel:
                 case FrameSectionShapeType.Angle:
+                case FrameSectionShapeType.DoubleAngle:
                     foreach (var item in DimensionItems(detail, unit,
                         Spec("h", "Total depth ( t3 )", "Depth ( t3 )"),
                         Spec("b", "Flange width ( t2 )", "Width ( t2 )"),
                         Spec("tw", "Web thickness ( tw )"),
-                        Spec("tf", "Flange thickness ( tf )")))
+                        Spec("tf", "Flange thickness ( tf )"),
+                        Spec("dis", "Spacing ( dis )")))
                     {
                         yield return item;
                     }
@@ -357,6 +359,15 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     foreach (var item in DimensionItems(detail, unit,
                         Spec("d", "Diameter ( t3 )", "Outside diameter ( t3 )"),
                         Spec("r", "Radius ( r )")))
+                    {
+                        yield return item;
+                    }
+                    break;
+
+                case FrameSectionShapeType.General:
+                    foreach (var item in DimensionItems(detail, unit,
+                        Spec("h", "Total depth ( t3 )", "Depth ( t3 )"),
+                        Spec("b", "Width ( t2 )")))
                     {
                         yield return item;
                     }
@@ -412,6 +423,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 case "t3": return sectionType == FrameSectionShapeType.Tube.ToString() ? "side wall thickness" : "local 3 dimension";
                 case "t2b": return "bottom flange width";
                 case "tfb": return "bottom flange thickness";
+                case "dis": return "spacing";
                 default: return "dimension";
             }
         }

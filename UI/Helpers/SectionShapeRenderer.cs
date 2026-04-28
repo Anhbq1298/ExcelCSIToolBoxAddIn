@@ -78,6 +78,12 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
                 case FrameSectionShapeType.Angle:
                     shapePath = BuildAngle(cx, cy, t3, Get(dims, "Flange width ( t2 )", t3), Get(dims, "Flange thickness ( tf )"), Get(dims, "Web thickness ( tw )"), ref scale);
                     break;
+                case FrameSectionShapeType.DoubleAngle:
+                    shapePath = BuildDoubleAngle(cx, cy, t3, Get(dims, "Flange width ( t2 )", t3), Get(dims, "Flange thickness ( tf )"), Get(dims, "Web thickness ( tw )"), Get(dims, "Spacing ( dis )"), ref scale);
+                    break;
+                case FrameSectionShapeType.General:
+                    shapePath = BuildGeneralEnvelope(cx, cy, t3, Get(dims, "Width ( t2 )", t3), ref scale);
+                    break;
                 default:
                     AddLabel(canvas, $"{dto.ShapeType}\n(no preview)");
                     return;
@@ -176,6 +182,59 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
             pf.Segments.Add(Seg(lx, ty + d));
 
             return new Path { Data = new PathGeometry(new[] { pf }) };
+        }
+
+        private static Path BuildDoubleAngle(double cx, double cy, double t3Raw, double t2Raw, double tfRaw, double twRaw, double disRaw, ref double scale)
+        {
+            double totalWidth = 2 * t2Raw + Math.Max(disRaw, 0);
+            LimitScale(ref scale, t3Raw, totalWidth, 80);
+
+            double d = t3Raw * scale;
+            double b = t2Raw * scale;
+            double tf = tfRaw * scale;
+            double tw = twRaw * scale;
+            double gap = Math.Max(disRaw, 0) * scale;
+            double ty = cy - d / 2;
+            double leftX = cx - gap / 2 - b;
+            double rightX = cx + gap / 2;
+
+            var group = new GeometryGroup { FillRule = FillRule.Nonzero };
+            group.Children.Add(BuildAngleGeometry(leftX, ty, b, d, tf, tw, false));
+            group.Children.Add(BuildAngleGeometry(rightX, ty, b, d, tf, tw, true));
+            return new Path { Data = group };
+        }
+
+        private static Geometry BuildAngleGeometry(double lx, double ty, double b, double d, double tf, double tw, bool mirror)
+        {
+            var pf = new PathFigure { IsClosed = true };
+
+            if (mirror)
+            {
+                pf.StartPoint = new Point(lx + b, ty);
+                pf.Segments.Add(Seg(lx + b - tw, ty));
+                pf.Segments.Add(Seg(lx + b - tw, ty + d - tf));
+                pf.Segments.Add(Seg(lx, ty + d - tf));
+                pf.Segments.Add(Seg(lx, ty + d));
+                pf.Segments.Add(Seg(lx + b, ty + d));
+            }
+            else
+            {
+                pf.StartPoint = new Point(lx, ty);
+                pf.Segments.Add(Seg(lx + tw, ty));
+                pf.Segments.Add(Seg(lx + tw, ty + d - tf));
+                pf.Segments.Add(Seg(lx + b, ty + d - tf));
+                pf.Segments.Add(Seg(lx + b, ty + d));
+                pf.Segments.Add(Seg(lx, ty + d));
+            }
+
+            return new PathGeometry(new[] { pf });
+        }
+
+        private static Path BuildGeneralEnvelope(double cx, double cy, double t3Raw, double t2Raw, ref double scale)
+        {
+            var path = BuildRect(cx, cy, Rescale(t3Raw, t2Raw, ref scale, 80));
+            path.StrokeDashArray = new DoubleCollection { 3, 2 };
+            return path;
         }
 
         // --- Helpers ---

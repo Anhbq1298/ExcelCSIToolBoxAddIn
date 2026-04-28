@@ -531,6 +531,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     case SAP2000v1.eFramePropType.Channel: shapeType = FrameSectionShapeType.Channel; break;
                     case SAP2000v1.eFramePropType.T: shapeType = FrameSectionShapeType.T; break;
                     case SAP2000v1.eFramePropType.Angle: shapeType = FrameSectionShapeType.Angle; break;
+                    case SAP2000v1.eFramePropType.DblAngle: shapeType = FrameSectionShapeType.DoubleAngle; break;
                     case SAP2000v1.eFramePropType.Box: shapeType = FrameSectionShapeType.Tube; break;
                     case SAP2000v1.eFramePropType.Pipe: shapeType = FrameSectionShapeType.Pipe; break;
                     case SAP2000v1.eFramePropType.Rectangular: shapeType = FrameSectionShapeType.Rectangular; break;
@@ -572,7 +573,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             int color = 0;
             string notes = "";
             string guid = "";
-            double t3 = 0, t2 = 0, tf = 0, tw = 0, t2b = 0, tfb = 0;
+            double t3 = 0, t2 = 0, tf = 0, tw = 0, t2b = 0, tfb = 0, dis = 0;
+            double area = 0, as2 = 0, as3 = 0, torsion = 0, i22 = 0, i33 = 0, s22 = 0, s33 = 0, z22 = 0, z33 = 0, r22 = 0, r33 = 0;
 
             switch (propType)
             {
@@ -616,6 +618,17 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     detail.Color = color;
                     detail.Notes = notes;
                     break;
+                case SAP2000v1.eFramePropType.DblAngle:
+                    detail.ShapeType = FrameSectionShapeType.DoubleAngle;
+                    sapModel.PropFrame.GetDblAngle(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref tf, ref tw, ref dis, ref color, ref notes, ref guid);
+                    detail.Dimensions["Total depth ( t3 )"] = t3;
+                    detail.Dimensions["Flange width ( t2 )"] = t2;
+                    detail.Dimensions["Flange thickness ( tf )"] = tf;
+                    detail.Dimensions["Web thickness ( tw )"] = tw;
+                    detail.Dimensions["Spacing ( dis )"] = dis;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
                 case SAP2000v1.eFramePropType.Rectangular:
                     detail.ShapeType = FrameSectionShapeType.Rectangular;
                     sapModel.PropFrame.GetRectangle(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref color, ref notes, ref guid);
@@ -638,6 +651,15 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     detail.Dimensions["Flange width ( t2 )"] = t2;
                     detail.Dimensions["Flange thickness ( tf )"] = tf;
                     detail.Dimensions["Web thickness ( tw )"] = tw;
+                    detail.Color = color;
+                    detail.Notes = notes;
+                    break;
+                case SAP2000v1.eFramePropType.General:
+                    detail.ShapeType = FrameSectionShapeType.General;
+                    sapModel.PropFrame.GetGeneral(sectionName, ref fileName, ref matProp, ref t3, ref t2, ref area, ref as2, ref as3, ref torsion, ref i22, ref i33, ref s22, ref s33, ref z22, ref z33, ref r22, ref r33, ref color, ref notes, ref guid);
+                    detail.Dimensions["Total depth ( t3 )"] = t3;
+                    detail.Dimensions["Width ( t2 )"] = t2;
+                    detail.Dimensions["Area"] = area;
                     detail.Color = color;
                     detail.Notes = notes;
                     break;
