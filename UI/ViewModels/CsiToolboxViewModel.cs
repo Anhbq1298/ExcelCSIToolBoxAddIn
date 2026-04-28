@@ -538,7 +538,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 if (result.IsSuccess)
                 {
                     var window = new ExcelCSIToolBoxAddIn.UI.Views.LoadCombinationDetailsWindow(result.Data);
-                    window.Owner = System.Windows.Application.Current.MainWindow;
                     window.ShowDialog();
                 }
                 else
