@@ -273,8 +273,16 @@
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\EtabsToolboxControl.xaml.cs">
+      <DependentUpon>EtabsToolboxControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\Views\Sap2000ToolboxWindow.xaml.cs">
       <DependentUpon>Sap2000ToolboxWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\Sap2000ToolboxControl.xaml.cs">
+      <DependentUpon>Sap2000ToolboxControl.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\BatchProgressWindow.xaml.cs">
@@ -295,7 +303,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UI\Views\EtabsToolboxControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\Views\Sap2000ToolboxWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\Sap2000ToolboxControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -320,6 +336,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\AiAgentTaskPaneHost.cs" />
+    <Compile Include="UI\Views\WpfTaskPaneHost.cs" />
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <PropertyGroup>

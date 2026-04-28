@@ -1,11 +1,10 @@
 using System;
-using System.Windows;
+using System.Windows.Controls;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
-using ExcelCSIToolBox.Infrastructure.Excel;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
+using Microsoft.Office.Core;
 
 namespace ExcelCSIToolBoxAddIn.AddIn
 {
@@ -15,8 +14,11 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static ICSISapModelConnectionService _sap2000ConnectionService;
         private static IExcelSelectionService _excelSelectionService;
         private static IExcelOutputService _excelOutputService;
-        private static EtabsToolboxWindow _activeEtabsWindow;
-        private static Sap2000ToolboxWindow _activeSap2000Window;
+
+        private static Microsoft.Office.Tools.CustomTaskPane _etabsPane;
+        private static Microsoft.Office.Tools.CustomTaskPane _sap2000Pane;
+        private static WpfTaskPaneHost _etabsHost;
+        private static WpfTaskPaneHost _sap2000Host;
 
         internal static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
@@ -32,72 +34,81 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         internal static void ShowEtabsWindow()
         {
-            ShowCsiWindow(
+            ToggleCsiPane(
+                ref _etabsPane,
+                ref _etabsHost,
+                "ETABS Toolbox",
                 _etabsConnectionService,
-                () => _activeEtabsWindow,
-                window => _activeEtabsWindow = window);
+                () => new EtabsToolboxControl());
         }
 
         internal static void ShowSap2000Window()
         {
-            ShowCsiWindow(
+            ToggleCsiPane(
+                ref _sap2000Pane,
+                ref _sap2000Host,
+                "SAP2000 Toolbox",
                 _sap2000ConnectionService,
-                () => _activeSap2000Window,
-                window => _activeSap2000Window = window);
+                () => new Sap2000ToolboxControl());
         }
 
-        private static void ShowCsiWindow<TWindow>(
-            ICSISapModelConnectionService connectionService,
-            Func<TWindow> getActiveWindow,
-            Action<TWindow> setActiveWindow)
-            where TWindow : Window, new()
+        internal static void DisposePanes()
         {
+            DisposePane(ref _etabsPane, ref _etabsHost);
+            DisposePane(ref _sap2000Pane, ref _sap2000Host);
+        }
+
+        private static void ToggleCsiPane(
+            ref Microsoft.Office.Tools.CustomTaskPane pane,
+            ref WpfTaskPaneHost host,
+            string title,
+            ICSISapModelConnectionService connectionService,
+            Func<UserControl> createControl)
+        {
+            EnsureConfigured(connectionService);
+
+            if (pane == null)
+            {
+                UserControl control = createControl();
+                control.DataContext = new CsiToolboxViewModel(connectionService, _excelSelectionService, _excelOutputService);
+
+                host = new WpfTaskPaneHost(control);
+                pane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(host, title);
+                pane.DockPosition = MsoCTPDockPosition.msoCTPDockPositionRight;
+                pane.Width = 820;
+            }
+
+            pane.Visible = !pane.Visible;
+        }
+
+        private static void EnsureConfigured(ICSISapModelConnectionService connectionService)
+        {
+            if (Globals.ExcelCSIToolBoxAddin == null)
+            {
+                throw new InvalidOperationException("The Excel add-in is not initialized.");
+            }
+
             if (connectionService == null || _excelSelectionService == null || _excelOutputService == null)
             {
                 throw new InvalidOperationException("WindowManager is not configured.");
             }
+        }
 
-            var activeWindow = getActiveWindow();
-            if (activeWindow == null)
+        private static void DisposePane(
+            ref Microsoft.Office.Tools.CustomTaskPane pane,
+            ref WpfTaskPaneHost host)
+        {
+            if (pane != null)
             {
-                var viewModel = new CsiToolboxViewModel(connectionService, _excelSelectionService, _excelOutputService);
-                activeWindow = new TWindow
-                {
-                    DataContext = viewModel
-                };
-                setActiveWindow(activeWindow);
-
-                var openedWindow = activeWindow;
-                activeWindow.Closed += (_, __) =>
-                {
-                    if (ReferenceEquals(getActiveWindow(), openedWindow))
-                    {
-                        setActiveWindow(null);
-                    }
-                };
-
-                System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(activeWindow);
-                activeWindow.Show();
-                activeWindow.Activate();
-                activeWindow.Focus();
-                return;
+                Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Remove(pane);
+                pane = null;
             }
 
-            if (activeWindow.WindowState == WindowState.Minimized)
+            if (host != null)
             {
-                activeWindow.WindowState = WindowState.Normal;
+                host.Dispose();
+                host = null;
             }
-
-            if (!activeWindow.IsVisible)
-            {
-                activeWindow.Show();
-            }
-
-            activeWindow.Topmost = true;
-            activeWindow.Topmost = false;
-            activeWindow.Activate();
-            activeWindow.Focus();
         }
     }
 }
-
