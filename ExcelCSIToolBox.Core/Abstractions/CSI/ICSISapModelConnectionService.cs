@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Geometry;
+using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
@@ -49,6 +50,20 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult CreateShellAreasFromSelectedFrames(
             string propertyName,
             ShellCreationTolerances tolerances);
+        OperationResult<IReadOnlyList<string>> GetShellNames();
+        OperationResult<CSISapModelShellObjectDTO> GetShellByName(string areaName);
+        OperationResult<IReadOnlyList<string>> GetShellPoints(string areaName);
+        OperationResult<string> GetShellProperty(string areaName);
+        OperationResult<IReadOnlyList<string>> GetSelectedShells();
+        OperationResult<IReadOnlyList<CSISapModelShellLoadDTO>> GetShellUniformLoads(string areaName);
+        CsiWritePreview PreviewAddShellByPoint(IReadOnlyList<string> pointNames, string propertyName, string userName);
+        OperationResult<string> AddShellByPoint(IReadOnlyList<string> pointNames, string propertyName, string userName, bool confirmed);
+        CsiWritePreview PreviewAddShellByCoord(IReadOnlyList<CSISapModelShellCoordinateInput> points, string propertyName, string userName, string coordinateSystem);
+        OperationResult<string> AddShellByCoord(IReadOnlyList<CSISapModelShellCoordinateInput> points, string propertyName, string userName, string coordinateSystem, bool confirmed);
+        CsiWritePreview PreviewAssignShellUniformLoad(IReadOnlyList<string> areaNames, string loadPattern, double value, int direction, bool replace, string coordinateSystem);
+        OperationResult AssignShellUniformLoad(IReadOnlyList<string> areaNames, string loadPattern, double value, int direction, bool replace, string coordinateSystem, bool confirmed);
+        CsiWritePreview PreviewDeleteShells(IReadOnlyList<string> areaNames);
+        OperationResult DeleteShells(IReadOnlyList<string> areaNames, bool confirmed);
 
         OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>> GetFrameSections();
         OperationResult<CSISapModelFrameSectionDetailDTO> GetFrameSectionDetail(string sectionName);

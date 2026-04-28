@@ -15,9 +15,9 @@ namespace ExcelCSIToolBox.Core.Geometry
         public double ZTolerance { get; set; } = 0.001 * KnMCToleranceScale;
     }
 
-    public class ShellPoint3D
+    public class ShellGeometryPoint3D
     {
-        public ShellPoint3D(double x, double y, double z)
+        public ShellGeometryPoint3D(double x, double y, double z)
         {
             X = x;
             Y = y;
@@ -34,13 +34,13 @@ namespace ExcelCSIToolBox.Core.Geometry
         public string FrameName { get; set; }
         public string StartPointName { get; set; }
         public string EndPointName { get; set; }
-        public ShellPoint3D StartPoint { get; set; }
-        public ShellPoint3D EndPoint { get; set; }
+        public ShellGeometryPoint3D StartPoint { get; set; }
+        public ShellGeometryPoint3D EndPoint { get; set; }
     }
 
     public class ShellFaceBuildResult
     {
-        public Dictionary<string, ShellPoint3D> PointCoordinates { get; set; }
+        public Dictionary<string, ShellGeometryPoint3D> PointCoordinates { get; set; }
         public Dictionary<string, string> NodeModelPoints { get; set; }
         public List<string[]> FaceLoops { get; set; }
         public int InitialRealEdgeCount { get; set; }
@@ -71,7 +71,7 @@ namespace ExcelCSIToolBox.Core.Geometry
                 .GroupBy(f => f.FrameName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
-            var pointCoords = new Dictionary<string, ShellPoint3D>(StringComparer.OrdinalIgnoreCase);
+            var pointCoords = new Dictionary<string, ShellGeometryPoint3D>(StringComparer.OrdinalIgnoreCase);
             var nodeModelPoint = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             var initialEdges = new Dictionary<string, Edge>(StringComparer.OrdinalIgnoreCase);
             var initialAdj = NewAdjacency();
@@ -133,7 +133,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         public static string[] CleanLoopBoundaryXY(
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             ShellCreationTolerances tolerances)
         {
             if (loopPts == null || loopPts.Count == 0)
@@ -161,7 +161,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         public static string[] OrderLoopUpward(
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords)
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords)
         {
             if (loopPts == null || loopPts.Count == 0)
             {
@@ -189,7 +189,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         public static bool ValidateFaceLoop(
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             IReadOnlyList<IReadOnlyList<string>> acceptedFaces,
             ShellCreationTolerances tolerances,
             out string rejectReason)
@@ -221,7 +221,7 @@ namespace ExcelCSIToolBox.Core.Geometry
         public static bool OverlapsAcceptedFacesXY(
             IReadOnlyList<string> candidateLoop,
             IReadOnlyList<IReadOnlyList<string>> acceptedFaces,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double pointTolerance)
         {
             if (acceptedFaces == null)
@@ -242,7 +242,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         public static bool IsDegenerateTriangle(
             IReadOnlyList<string> triangle,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords)
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords)
         {
             if (triangle == null || triangle.Count != 3)
             {
@@ -269,12 +269,12 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         public static double GetPolygonAreaXY(
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords)
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords)
         {
             return PolygonAreaXY(loopPts, pointCoords);
         }
 
-        public static double Distance3D(ShellPoint3D p1, ShellPoint3D p2)
+        public static double Distance3D(ShellGeometryPoint3D p1, ShellGeometryPoint3D p2)
         {
             return Distance3DXYZ(p1.X, p1.Y, p1.Z, p2.X, p2.Y, p2.Z);
         }
@@ -297,7 +297,7 @@ namespace ExcelCSIToolBox.Core.Geometry
             return adjacency;
         }
 
-        private static void AddPointIfMissing(Dictionary<string, ShellPoint3D> pointCoords, string pointName, ShellPoint3D point)
+        private static void AddPointIfMissing(Dictionary<string, ShellGeometryPoint3D> pointCoords, string pointName, ShellGeometryPoint3D point)
         {
             if (!pointCoords.ContainsKey(pointName))
             {
@@ -322,7 +322,7 @@ namespace ExcelCSIToolBox.Core.Geometry
         private static void EnrichRealGraphByGeometricIntersections(
             Dictionary<string, ShellFrameGeometry> frameMap,
             Dictionary<string, List<SplitParam>> frameSplitMap,
-            Dictionary<string, ShellPoint3D> pointCoords,
+            Dictionary<string, ShellGeometryPoint3D> pointCoords,
             Dictionary<string, string> nodeModelPoint,
             double pointTol,
             double intersectTol,
@@ -406,7 +406,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         private static void AddEndpointToFrameIfOnSegment(
             string endpointName,
-            ShellPoint3D endpoint,
+            ShellGeometryPoint3D endpoint,
             ShellFrameGeometry targetFrame,
             Dictionary<string, List<SplitParam>> frameSplitMap,
             double pointTol,
@@ -434,7 +434,7 @@ namespace ExcelCSIToolBox.Core.Geometry
         }
 
         private static bool TryGetPointProjectionParameterOnFrameXY(
-            ShellPoint3D point,
+            ShellGeometryPoint3D point,
             ShellFrameGeometry frame,
             double pointTol,
             out double t)
@@ -536,7 +536,7 @@ namespace ExcelCSIToolBox.Core.Geometry
         }
 
         private static string GetOrCreateGeomIntersectionNode(
-            Dictionary<string, ShellPoint3D> pointCoords,
+            Dictionary<string, ShellGeometryPoint3D> pointCoords,
             Dictionary<string, string> nodeModelPoint,
             double x,
             double y,
@@ -561,14 +561,14 @@ namespace ExcelCSIToolBox.Core.Geometry
                 id = "IX_" + (pointCoords.Count + 1) + "_" + Guid.NewGuid().ToString("N").Substring(0, 6);
             }
 
-            pointCoords.Add(id, new ShellPoint3D(x, y, z));
+            pointCoords.Add(id, new ShellGeometryPoint3D(x, y, z));
             nodeModelPoint.Add(id, string.Empty);
             return id;
         }
 
         private static void BuildVirtualGraph(
             Dictionary<string, HashSet<string>> realAdj,
-            Dictionary<string, ShellPoint3D> pointCoords,
+            Dictionary<string, ShellGeometryPoint3D> pointCoords,
             Dictionary<string, Edge> virtualEdgeDict,
             Dictionary<string, HashSet<string>> virtualAdj,
             double collinearTol)
@@ -602,7 +602,7 @@ namespace ExcelCSIToolBox.Core.Geometry
         private static bool IsDegree2CollinearPoint(
             string p,
             Dictionary<string, HashSet<string>> adjacency,
-            Dictionary<string, ShellPoint3D> pointCoords,
+            Dictionary<string, ShellGeometryPoint3D> pointCoords,
             double collinearTol)
         {
             HashSet<string> nbrs;
@@ -619,7 +619,7 @@ namespace ExcelCSIToolBox.Core.Geometry
             string prevPoint,
             string currentPoint,
             Dictionary<string, HashSet<string>> adjacency,
-            Dictionary<string, ShellPoint3D> pointCoords,
+            Dictionary<string, ShellGeometryPoint3D> pointCoords,
             Dictionary<string, bool> chainPointDict,
             double collinearTol)
         {
@@ -660,7 +660,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         private static Dictionary<string, string[]> BuildSortedNeighbors(
             Dictionary<string, HashSet<string>> adjacency,
-            Dictionary<string, ShellPoint3D> pointCoords)
+            Dictionary<string, ShellGeometryPoint3D> pointCoords)
         {
             var sortedNbrs = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
 
@@ -685,7 +685,7 @@ namespace ExcelCSIToolBox.Core.Geometry
             Dictionary<string, Edge> edgeDict,
             Dictionary<string, HashSet<string>> adjacency,
             Dictionary<string, string[]> sortedNbrs,
-            Dictionary<string, ShellPoint3D> pointCoords,
+            Dictionary<string, ShellGeometryPoint3D> pointCoords,
             double areaTol)
         {
             var faceDict = new Dictionary<string, FaceLoop>(StringComparer.OrdinalIgnoreCase);
@@ -705,7 +705,7 @@ namespace ExcelCSIToolBox.Core.Geometry
             string p2,
             Dictionary<string, HashSet<string>> adjacency,
             Dictionary<string, string[]> sortedNbrs,
-            Dictionary<string, ShellPoint3D> pointCoords,
+            Dictionary<string, ShellGeometryPoint3D> pointCoords,
             double areaTol,
             HashSet<string> visited,
             Dictionary<string, FaceLoop> faceDict)
@@ -813,7 +813,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         private static string[] RemoveClosingDuplicateVertex(
             string[] loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double pointTol)
         {
             if (loopPts == null || loopPts.Length == 0)
@@ -839,7 +839,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         private static string[] FixCollinearSplitPointsOnBoundary(
             string[] loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double tol)
         {
             if (loopPts == null)
@@ -865,7 +865,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         private static string[] RemoveOnePassCollinearSplitPoints(
             string[] loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double tol,
             out bool changed)
         {
@@ -904,7 +904,7 @@ namespace ExcelCSIToolBox.Core.Geometry
         private static bool PolygonsOverlapXY(
             IReadOnlyList<string> loop1,
             IReadOnlyList<string> loop2,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double pointTol)
         {
             if (PolygonsHaveProperEdgeIntersectionXY(loop1, loop2, pointCoords, pointTol))
@@ -931,7 +931,7 @@ namespace ExcelCSIToolBox.Core.Geometry
         private static bool PolygonsHaveProperEdgeIntersectionXY(
             IReadOnlyList<string> loop1,
             IReadOnlyList<string> loop2,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double pointTol)
         {
             for (var i = 0; i < loop1.Count; i++)
@@ -983,7 +983,7 @@ namespace ExcelCSIToolBox.Core.Geometry
             double px,
             double py,
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords)
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords)
         {
             var inside = false;
             var j = loopPts.Count - 1;
@@ -1011,7 +1011,7 @@ namespace ExcelCSIToolBox.Core.Geometry
             double px,
             double py,
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double tol)
         {
             for (var i = 0; i < loopPts.Count; i++)
@@ -1055,7 +1055,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         private static void GetPolygonCentroidXY(
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             out double cx,
             out double cy)
         {
@@ -1171,7 +1171,7 @@ namespace ExcelCSIToolBox.Core.Geometry
 
         private static double PolygonAreaXY(
             IReadOnlyList<string> loopPts,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords)
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords)
         {
             var area2 = 0.0;
 
@@ -1219,7 +1219,7 @@ namespace ExcelCSIToolBox.Core.Geometry
             string pPrev,
             string pMid,
             string pNext,
-            IReadOnlyDictionary<string, ShellPoint3D> pointCoords,
+            IReadOnlyDictionary<string, ShellGeometryPoint3D> pointCoords,
             double tol)
         {
             var a = pointCoords[pPrev];

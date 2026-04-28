@@ -4,6 +4,7 @@ using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Geometry;
+using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
@@ -460,6 +461,222 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                     sapModel.AreaObj.AddByCoord(nodeCount, ref x, ref y, ref z, ref areaName, propName, string.Empty, "Global"),
                 RefreshView);
             return shellResult;
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetShellNames()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.GetNameList(
+                sapModelResult.Data,
+                "SAP2000",
+                (SAP2000v1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.AreaObj.GetNameList(ref numberNames, ref names));
+        }
+
+        public OperationResult<CSISapModelShellObjectDTO> GetShellByName(string areaName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelShellObjectDTO>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.GetByName(
+                sapModelResult.Data,
+                "SAP2000",
+                areaName,
+                (SAP2000v1.cSapModel sapModel, string name, ref int numberPoints, ref string[] pointNames) =>
+                    sapModel.AreaObj.GetPoints(name, ref numberPoints, ref pointNames),
+                (SAP2000v1.cSapModel sapModel, string name, ref string propertyName) =>
+                    sapModel.AreaObj.GetProperty(name, ref propertyName),
+                (SAP2000v1.cSapModel sapModel, string name, ref bool selected) =>
+                    sapModel.AreaObj.GetSelected(name, ref selected));
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetShellPoints(string areaName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.GetPoints(
+                sapModelResult.Data,
+                "SAP2000",
+                areaName,
+                (SAP2000v1.cSapModel sapModel, string name, ref int numberPoints, ref string[] pointNames) =>
+                    sapModel.AreaObj.GetPoints(name, ref numberPoints, ref pointNames));
+        }
+
+        public OperationResult<string> GetShellProperty(string areaName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<string>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.GetProperty(
+                sapModelResult.Data,
+                "SAP2000",
+                areaName,
+                (SAP2000v1.cSapModel sapModel, string name, ref string propertyName) =>
+                    sapModel.AreaObj.GetProperty(name, ref propertyName));
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetSelectedShells()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.GetSelectedShells(
+                sapModelResult.Data,
+                "SAP2000",
+                (SAP2000v1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
+                    sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames));
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelShellLoadDTO>> GetShellUniformLoads(string areaName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelShellLoadDTO>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.GetUniformLoads(
+                sapModelResult.Data,
+                "SAP2000",
+                areaName,
+                (SAP2000v1.cSapModel sapModel, string name, ref int numberItems, ref string[] areaNames, ref string[] loadPatterns, ref string[] coordinateSystems, ref int[] directions, ref double[] values) =>
+                    sapModel.AreaObj.GetLoadUniform(name, ref numberItems, ref areaNames, ref loadPatterns, ref coordinateSystems, ref directions, ref values, SAP2000v1.eItemType.Objects));
+        }
+
+        public CsiWritePreview PreviewAddShellByPoint(IReadOnlyList<string> pointNames, string propertyName, string userName)
+        {
+            return CSISapModelShellObjectService.PreviewAddByPoint(pointNames, propertyName, userName);
+        }
+
+        public OperationResult<string> AddShellByPoint(IReadOnlyList<string> pointNames, string propertyName, string userName, bool confirmed)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<string>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.AddByPoint(
+                sapModelResult.Data,
+                "SAP2000",
+                pointNames,
+                propertyName,
+                userName,
+                confirmed,
+                new CsiWriteGuard(),
+                new CsiOperationLogger(),
+                (SAP2000v1.cSapModel sapModel, string pointName, ref double x, ref double y, ref double z) =>
+                    sapModel.PointObj.GetCoordCartesian(pointName, ref x, ref y, ref z, "Global"),
+                (SAP2000v1.cSapModel sapModel, int numberPoints, ref string[] pointNamesArray, ref string areaName, string propName, string name) =>
+                    sapModel.AreaObj.AddByPoint(numberPoints, ref pointNamesArray, ref areaName, propName, name),
+                RefreshView);
+        }
+
+        public CsiWritePreview PreviewAddShellByCoord(IReadOnlyList<CSISapModelShellCoordinateInput> points, string propertyName, string userName, string coordinateSystem)
+        {
+            return CSISapModelShellObjectService.PreviewAddByCoord(points, propertyName, userName);
+        }
+
+        public OperationResult<string> AddShellByCoord(IReadOnlyList<CSISapModelShellCoordinateInput> points, string propertyName, string userName, string coordinateSystem, bool confirmed)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<string>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.AddByCoord(
+                sapModelResult.Data,
+                "SAP2000",
+                points,
+                propertyName,
+                userName,
+                coordinateSystem,
+                confirmed,
+                new CsiWriteGuard(),
+                new CsiOperationLogger(),
+                (SAP2000v1.cSapModel sapModel, int numberPoints, ref double[] x, ref double[] y, ref double[] z, ref string areaName, string propName, string name, string cSys) =>
+                    sapModel.AreaObj.AddByCoord(numberPoints, ref x, ref y, ref z, ref areaName, propName, name, cSys),
+                RefreshView);
+        }
+
+        public CsiWritePreview PreviewAssignShellUniformLoad(IReadOnlyList<string> areaNames, string loadPattern, double value, int direction, bool replace, string coordinateSystem)
+        {
+            return CSISapModelShellObjectService.PreviewAssignUniformLoad(areaNames, loadPattern, value, direction, replace, coordinateSystem);
+        }
+
+        public OperationResult AssignShellUniformLoad(IReadOnlyList<string> areaNames, string loadPattern, double value, int direction, bool replace, string coordinateSystem, bool confirmed)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.AssignUniformLoad(
+                sapModelResult.Data,
+                "SAP2000",
+                areaNames,
+                loadPattern,
+                value,
+                direction,
+                replace,
+                coordinateSystem,
+                confirmed,
+                new CsiWriteGuard(),
+                new CsiOperationLogger(),
+                (SAP2000v1.cSapModel sapModel, string name, ref int numberPoints, ref string[] pointNames) =>
+                    sapModel.AreaObj.GetPoints(name, ref numberPoints, ref pointNames),
+                (SAP2000v1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.LoadPatterns.GetNameList(ref numberNames, ref names),
+                (SAP2000v1.cSapModel sapModel, string name, string pattern, double loadValue, int loadDirection, bool loadReplace, string cSys) =>
+                    sapModel.AreaObj.SetLoadUniform(name, pattern, loadValue, loadDirection, loadReplace, cSys, SAP2000v1.eItemType.Objects),
+                RefreshView);
+        }
+
+        public CsiWritePreview PreviewDeleteShells(IReadOnlyList<string> areaNames)
+        {
+            return CSISapModelShellObjectService.PreviewDeleteAreas(areaNames);
+        }
+
+        public OperationResult DeleteShells(IReadOnlyList<string> areaNames, bool confirmed)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelShellObjectService.DeleteAreas(
+                sapModelResult.Data,
+                "SAP2000",
+                areaNames,
+                confirmed,
+                new CsiWriteGuard(),
+                new CsiOperationLogger(),
+                (SAP2000v1.cSapModel sapModel, string name, ref int numberPoints, ref string[] pointNames) =>
+                    sapModel.AreaObj.GetPoints(name, ref numberPoints, ref pointNames),
+                (SAP2000v1.cSapModel sapModel, string name) =>
+                    sapModel.AreaObj.Delete(name, SAP2000v1.eItemType.Objects),
+                RefreshView);
         }
 
         private OperationResult<SAP2000v1.cSapModel> EnsureSap2000SapModel()
