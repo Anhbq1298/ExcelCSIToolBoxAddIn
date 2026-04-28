@@ -139,12 +139,17 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames)
         {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
             return CSISapModelOperationRunner.SelectObjectsByUniqueNames(
                 uniqueNames,
                 "point",
                 ProductName,
-                EnsureConnection,
-                sapModel => (SAP2000v1.cSapModel)sapModel,
+                sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.PointObj.SetSelected(name, true, SAP2000v1.eItemType.Objects),
                 RefreshView);
@@ -152,12 +157,17 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames)
         {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
             return CSISapModelOperationRunner.SelectObjectsByUniqueNames(
                 uniqueNames,
                 "frame",
                 ProductName,
-                EnsureConnection,
-                sapModel => (SAP2000v1.cSapModel)sapModel,
+                sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, SAP2000v1.eItemType.Objects),
                 RefreshView);
@@ -165,11 +175,16 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian(IReadOnlyList<CSISapModelPointCartesianInput> pointInputs)
         {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelAddPointsResult>.Failure(sapModelResult.Message);
+            }
+
             return CSISapModelOperationRunner.AddPointsByCartesian(
                 pointInputs,
                 ProductName,
-                EnsureConnection,
-                sapModel => (SAP2000v1.cSapModel)sapModel,
+                sapModelResult.Data,
                 (SAP2000v1.cSapModel sapModel, CSISapModelPointCartesianInput pointInput, ref string assignedName, string requestedUniqueName) =>
                     sapModel.PointObj.AddCartesian(
                         pointInput.X,
@@ -185,11 +200,16 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs)
         {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
+            }
+
             return CSISapModelOperationRunner.AddFramesByCoordinates(
                 frameInputs,
                 ProductName,
-                EnsureConnection,
-                sapModel => (SAP2000v1.cSapModel)sapModel,
+                sapModelResult.Data,
                 (SAP2000v1.cSapModel sapModel, CSISapModelFrameByCoordInput frameInput, ref string createdName, string sectionName, string userName) =>
                     sapModel.FrameObj.AddByCoord(
                         frameInput.Xi,
@@ -207,11 +227,16 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
         public OperationResult<CSISapModelAddFramesResult> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs)
         {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelAddFramesResult>.Failure(sapModelResult.Message);
+            }
+
             return CSISapModelOperationRunner.AddFramesByPoint(
                 frameInputs,
                 ProductName,
-                EnsureConnection,
-                sapModel => (SAP2000v1.cSapModel)sapModel,
+                sapModelResult.Data,
                 (SAP2000v1.cSapModel sapModel, CSISapModelFrameByPointInput frameInput, ref string createdName, string sectionName, string userName) =>
                     sapModel.FrameObj.AddByPoint(
                         frameInput.Point1Name,
@@ -509,6 +534,23 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             }
 
             return connectionResult;
+        }
+
+        private OperationResult<SAP2000v1.cSapModel> EnsureSap2000SapModel()
+        {
+            var connectionResult = EnsureConnection();
+            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
+            {
+                return OperationResult<SAP2000v1.cSapModel>.Failure(connectionResult.Message);
+            }
+
+            var sapModel = connectionResult.Data.SapModel as SAP2000v1.cSapModel;
+            if (sapModel == null)
+            {
+                return OperationResult<SAP2000v1.cSapModel>.Failure("The attached SAP2000 SapModel is invalid. Please reattach and try again.");
+            }
+
+            return OperationResult<SAP2000v1.cSapModel>.Success(sapModel);
         }
 
         private OperationResult CreateSections<T>(

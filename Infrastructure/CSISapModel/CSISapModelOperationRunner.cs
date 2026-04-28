@@ -32,8 +32,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             IReadOnlyList<string> uniqueNames,
             string objectTypeName,
             string productName,
-            Func<OperationResult<CSISapModelConnectionInfo>> ensureConnection,
-            Func<object, TSapModel> getSapModel,
+            TSapModel sapModel,
             Func<TSapModel, int> clearSelection,
             Func<TSapModel, string, int> setSelected,
             Func<TSapModel, OperationResult> refreshView)
@@ -49,15 +48,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 return OperationResult.Failure("The selected Excel range does not contain any non-empty values.");
             }
 
-            var connectionResult = ensureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult.Failure(connectionResult.Message);
-            }
-
             try
             {
-                var sapModel = getSapModel(connectionResult.Data.SapModel);
                 int clearSelectionResult = clearSelection(sapModel);
                 if (clearSelectionResult != 0)
                 {
@@ -110,8 +102,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         internal static OperationResult<CSISapModelAddPointsResult> AddPointsByCartesian<TSapModel>(
             IReadOnlyList<CSISapModelPointCartesianInput> pointInputs,
             string productName,
-            Func<OperationResult<CSISapModelConnectionInfo>> ensureConnection,
-            Func<object, TSapModel> getSapModel,
+            TSapModel sapModel,
             CSISapModelAddCartesianPoint<TSapModel> addPoint,
             Func<TSapModel, OperationResult> refreshView)
         {
@@ -120,15 +111,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 return OperationResult<CSISapModelAddPointsResult>.Failure("No valid rows were found in the selected range.");
             }
 
-            var connectionResult = ensureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult<CSISapModelAddPointsResult>.Failure(connectionResult.Message);
-            }
-
             try
             {
-                var sapModel = getSapModel(connectionResult.Data.SapModel);
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
@@ -188,8 +172,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         internal static OperationResult<CSISapModelAddFramesResult> AddFramesByCoordinates<TSapModel>(
             IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs,
             string productName,
-            Func<OperationResult<CSISapModelConnectionInfo>> ensureConnection,
-            Func<object, TSapModel> getSapModel,
+            TSapModel sapModel,
             CSISapModelAddFrameByCoord<TSapModel> addFrame,
             Func<TSapModel, OperationResult> refreshView)
         {
@@ -199,15 +182,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 productName,
                 "FrameObj.AddByCoord",
                 "coordinates",
-                ensureConnection,
-                getSapModel,
+                sapModel,
                 refreshView,
-                (sapModel, frameInput) =>
+                (model, frameInput) =>
                 {
                     string createdName = string.Empty;
                     string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
                     string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
-                    return addFrame(sapModel, frameInput, ref createdName, sectionName, userName);
+                    return addFrame(model, frameInput, ref createdName, sectionName, userName);
                 },
                 null);
         }
@@ -215,8 +197,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
         internal static OperationResult<CSISapModelAddFramesResult> AddFramesByPoint<TSapModel>(
             IReadOnlyList<CSISapModelFrameByPointInput> frameInputs,
             string productName,
-            Func<OperationResult<CSISapModelConnectionInfo>> ensureConnection,
-            Func<object, TSapModel> getSapModel,
+            TSapModel sapModel,
             CSISapModelAddFrameByPoint<TSapModel> addFrame,
             Func<TSapModel, OperationResult> refreshView)
         {
@@ -226,15 +207,14 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 productName,
                 "FrameObj.AddByPoint",
                 "point names",
-                ensureConnection,
-                getSapModel,
+                sapModel,
                 refreshView,
-                (sapModel, frameInput) =>
+                (model, frameInput) =>
                 {
                     string createdName = string.Empty;
                     string sectionName = string.IsNullOrWhiteSpace(frameInput.SectionName) ? "Default" : frameInput.SectionName;
                     string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
-                    int result = addFrame(sapModel, frameInput, ref createdName, sectionName, userName);
+                    int result = addFrame(model, frameInput, ref createdName, sectionName, userName);
                     return result == 0 &&
                            !string.IsNullOrWhiteSpace(userName) &&
                            !string.Equals(createdName, userName, StringComparison.OrdinalIgnoreCase)
@@ -250,8 +230,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
             string productName,
             string apiCallName,
             string operationName,
-            Func<OperationResult<CSISapModelConnectionInfo>> ensureConnection,
-            Func<object, TSapModel> getSapModel,
+            TSapModel sapModel,
             Func<TSapModel, OperationResult> refreshView,
             Func<TSapModel, TFrameInput, TAddResult> addFrame,
             Func<TAddResult, string> getWarningMessage)
@@ -262,15 +241,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel
                 return OperationResult<CSISapModelAddFramesResult>.Failure("No valid rows were found in the selected range.");
             }
 
-            var connectionResult = ensureConnection();
-            if (!connectionResult.IsSuccess || connectionResult.Data?.SapModel == null)
-            {
-                return OperationResult<CSISapModelAddFramesResult>.Failure(connectionResult.Message);
-            }
-
             try
             {
-                var sapModel = getSapModel(connectionResult.Data.SapModel);
                 var failedRowMessages = new List<string>();
                 var successCount = 0;
 
