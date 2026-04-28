@@ -49,7 +49,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
             double cx = 50, cy = 50;
             var dims = dto.Dimensions;
 
-            double t3 = Get(dims, "Total depth ( t3 )", "Depth ( t3 )", "Outside diameter ( t3 )", "Diameter ( t3 )", 100);
+            double t3 = Get(dims, 100, "Total depth ( t3 )", "Depth ( t3 )", "Outside diameter ( t3 )", "Diameter ( t3 )");
             double scale = t3 > 0 ? 80.0 / t3 : 1.0;
 
             Path shapePath;
@@ -69,7 +69,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
                     shapePath = BuildTube(cx, cy, t3, Get(dims, "Flange width ( t2 )", t3), Get(dims, "Flange thickness ( tf )"), Get(dims, "Web thickness ( tw )"), ref scale);
                     break;
                 case FrameSectionShapeType.I:
-                    shapePath = BuildISection(cx, cy, t3, Get(dims, "Top flange width ( t2 )", t3), Get(dims, "Top flange thickness ( tf )"), Get(dims, "Web thickness ( tw )"), Get(dims, "Bottom flange width ( t2b )", 0, "Top flange width ( t2 )", t3), Get(dims, "Bottom flange thickness ( tfb )", 0, "Top flange thickness ( tf )"), ref scale);
+                    shapePath = BuildISection(cx, cy, t3, Get(dims, "Top flange width ( t2 )", t3), Get(dims, "Top flange thickness ( tf )"), Get(dims, "Web thickness ( tw )"), Get(dims, "Bottom flange width ( t2b )", Get(dims, "Top flange width ( t2 )", t3)), Get(dims, "Bottom flange thickness ( tfb )", Get(dims, "Top flange thickness ( tf )")), ref scale);
                     break;
                 case FrameSectionShapeType.Channel:
                     shapePath = BuildChannel(cx, cy, t3, Get(dims, "Flange width ( t2 )", t3), Get(dims, "Flange thickness ( tf )"), Get(dims, "Web thickness ( tw )"), ref scale);
@@ -207,13 +207,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
             return fallback;
         }
 
-        private static double Get(System.Collections.Generic.Dictionary<string, double> d,
-            string key1, double fallback1, string key2, double fallback2)
+        private static double Get(System.Collections.Generic.Dictionary<string, double> d, double fallback, params string[] keys)
         {
-            if (d.ContainsKey(key1)) return d[key1];
-            if (fallback1 != 0) return fallback1;
-            if (d.ContainsKey(key2)) return d[key2];
-            return fallback2;
+            foreach (string key in keys)
+            {
+                if (d.ContainsKey(key)) return d[key];
+            }
+
+            return fallback;
         }
 
         private static void AddLabel(Canvas canvas, string text)

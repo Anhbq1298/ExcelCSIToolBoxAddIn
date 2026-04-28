@@ -215,15 +215,84 @@
                                 </Grid.RowDefinitions>
                                 
                                 <Border Grid.Row="0" BorderBrush="#DDDDDD" BorderThickness="1" Background="#F9F9F9" Margin="0,0,0,10" MinHeight="160">
-                                    <Grid>
+                                    <Grid Margin="10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="110"/>
+                                        </Grid.ColumnDefinitions>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="*"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-                                        <Viewbox Grid.Row="0" Margin="10" Stretch="Uniform">
-                                            <Canvas x:Name="EtabsSectionPreviewCanvas" Width="100" Height="100"/>
+                                        <Viewbox Grid.Row="0" Grid.Column="0" Stretch="Uniform">
+                                            <Canvas Width="160" Height="120">
+                                                <Canvas x:Name="EtabsSectionPreviewCanvas"
+                                                        Width="100"
+                                                        Height="100"
+                                                        Canvas.Left="30"
+                                                        Canvas.Top="10"/>
+                                                <ItemsControl ItemsSource="{Binding SectionDimensionAnnotations}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <Canvas Width="160" Height="120"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Canvas Width="160" Height="120" Visibility="{Binding Visibility}">
+                                                                <Line X1="{Binding StartPoint.X}"
+                                                                      Y1="{Binding StartPoint.Y}"
+                                                                      X2="{Binding EndPoint.X}"
+                                                                      Y2="{Binding EndPoint.Y}"
+                                                                      Stroke="#D02020"
+                                                                      StrokeThickness="1.4"/>
+                                                                <Ellipse Width="3"
+                                                                         Height="3"
+                                                                         Fill="#D02020"
+                                                                         Canvas.Left="{Binding StartPoint.X}"
+                                                                         Canvas.Top="{Binding StartPoint.Y}"/>
+                                                                <Ellipse Width="3"
+                                                                         Height="3"
+                                                                         Fill="#D02020"
+                                                                         Canvas.Left="{Binding EndPoint.X}"
+                                                                         Canvas.Top="{Binding EndPoint.Y}"/>
+                                                                <TextBlock Text="{Binding DisplayLabel}"
+                                                                           Foreground="#D02020"
+                                                                           FontSize="8"
+                                                                           FontWeight="Bold"
+                                                                           Canvas.Left="{Binding LabelPosition.X}"
+                                                                           Canvas.Top="{Binding LabelPosition.Y}"/>
+                                                            </Canvas>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Canvas>
                                         </Viewbox>
-                                        <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,6">
+                                        <Border Grid.Row="0"
+                                                Grid.Column="1"
+                                                Margin="10,0,0,0"
+                                                Padding="8"
+                                                BorderBrush="#E1E1E1"
+                                                BorderThickness="1"
+                                                Background="White">
+                                            <StackPanel>
+                                                <TextBlock Text="Dimensions"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#333333"
+                                                           Margin="0,0,0,6"/>
+                                                <ItemsControl ItemsSource="{Binding SectionDimensionAnnotations}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <TextBlock Text="{Binding DisplayLabel}"
+                                                                       Foreground="#D02020"
+                                                                       FontWeight="SemiBold"
+                                                                       Margin="0,0,0,3"/>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Border>
+                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0,6,0,0">
                                             <TextBlock x:Name="EtabsSectionNameLabel" Text="—" HorizontalAlignment="Center" FontWeight="SemiBold" Foreground="#333333" FontSize="11"/>
                                             <TextBlock x:Name="EtabsSectionTypeLabel" Text="" HorizontalAlignment="Center" Foreground="#888888" FontSize="10"/>
                                         </StackPanel>

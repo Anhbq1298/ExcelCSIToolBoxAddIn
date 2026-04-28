@@ -95,6 +95,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO>();
             FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
+            SectionDimensionAnnotations = new System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation>();
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
@@ -251,6 +252,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadPatternDTO> LoadPatterns { get; }
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBoxAddIn.Data.DTOs.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
         public System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO> FrameSections { get; }
+        public System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation> SectionDimensionAnnotations { get; }
         
         private CSISapModelFrameSectionDTO _selectedFrameSection;
         public CSISapModelFrameSectionDTO SelectedFrameSection
@@ -272,7 +274,124 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _selectedFrameSectionDetail = value;
                 OnPropertyChanged();
+                RefreshSectionDimensionAnnotations();
             }
+        }
+
+        private void RefreshSectionDimensionAnnotations()
+        {
+            SectionDimensionAnnotations.Clear();
+
+            if (SelectedFrameSectionDetail == null)
+            {
+                return;
+            }
+
+            foreach (var annotation in CreateDimensionAnnotations(SelectedFrameSectionDetail))
+            {
+                SectionDimensionAnnotations.Add(annotation);
+            }
+        }
+
+        private static System.Collections.Generic.IEnumerable<SectionDimensionAnnotation> CreateDimensionAnnotations(CSISapModelFrameSectionDetailDTO detail)
+        {
+            switch (detail.ShapeType)
+            {
+                case FrameSectionShapeType.Rectangular:
+                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
+                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
+                    break;
+
+                case FrameSectionShapeType.Tube:
+                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
+                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
+                    yield return Annotation("t2", detail, 126, 34, 126, 48, 132, 36, "Vertical");
+                    yield return Annotation("t3", detail, 100, 106, 116, 106, 104, 108, "Horizontal");
+                    break;
+
+                case FrameSectionShapeType.I:
+                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
+                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
+                    yield return Annotation("tw", detail, 74, 60, 86, 60, 76, 62, "Horizontal");
+                    yield return Annotation("tf", detail, 126, 18, 126, 32, 132, 20, "Vertical");
+
+                    if (HasAnyDimension(detail, "Bottom flange width ( t2b )"))
+                    {
+                        yield return Annotation("t2b", detail, 38, 112, 122, 112, 74, 114, "Horizontal");
+                    }
+
+                    if (HasAnyDimension(detail, "Bottom flange thickness ( tfb )"))
+                    {
+                        yield return Annotation("tfb", detail, 28, 88, 28, 102, 4, 90, "Vertical");
+                    }
+                    break;
+
+                case FrameSectionShapeType.Channel:
+                case FrameSectionShapeType.Angle:
+                    yield return Annotation("h", detail, 18, 18, 18, 102, 4, 56, "Vertical");
+                    yield return Annotation("b", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
+                    yield return Annotation("tw", detail, 74, 60, 86, 60, 76, 62, "Horizontal");
+                    yield return Annotation("tf", detail, 126, 18, 126, 32, 132, 20, "Vertical");
+                    break;
+
+                case FrameSectionShapeType.Pipe:
+                    yield return Annotation("d", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
+                    if (HasAnyDimension(detail, "Wall thickness ( tw )", "Wall thickness ( t )"))
+                    {
+                        yield return Annotation("t", detail, 118, 34, 132, 48, 134, 38, "Diagonal");
+                    }
+                    break;
+
+                case FrameSectionShapeType.Circular:
+                    yield return Annotation("d", detail, 38, 8, 122, 8, 78, 0, "Horizontal");
+                    if (HasAnyDimension(detail, "Radius ( r )"))
+                    {
+                        yield return Annotation("r", detail, 80, 60, 116, 60, 98, 62, "Horizontal");
+                    }
+                    break;
+            }
+        }
+
+        private static SectionDimensionAnnotation Annotation(
+            string key,
+            CSISapModelFrameSectionDetailDTO detail,
+            double x1,
+            double y1,
+            double x2,
+            double y2,
+            double labelX,
+            double labelY,
+            string orientation)
+        {
+            return new SectionDimensionAnnotation
+            {
+                Key = key,
+                DisplayLabel = key,
+                SectionType = detail.ShapeType.ToString(),
+                StartPoint = new Point(x1, y1),
+                EndPoint = new Point(x2, y2),
+                LabelPosition = new Point(labelX, labelY),
+                Orientation = orientation,
+                Visibility = Visibility.Visible
+            };
+        }
+
+        private static bool HasAnyDimension(CSISapModelFrameSectionDetailDTO detail, params string[] keys)
+        {
+            if (detail?.Dimensions == null)
+            {
+                return false;
+            }
+
+            foreach (string key in keys)
+            {
+                if (detail.Dimensions.ContainsKey(key))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void LoadSelectedSectionDetail(CSISapModelFrameSectionDTO section)
