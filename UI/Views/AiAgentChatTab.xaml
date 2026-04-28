@@ -1,7 +1,9 @@
 <UserControl x:Class="ExcelCSIToolBoxAddIn.UI.Views.AiAgentChatTab"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:ExcelCSIToolBoxAddIn.UI.ViewModels">
+             xmlns:vm="clr-namespace:ExcelCSIToolBoxAddIn.UI.ViewModels"
+             Loaded="UserControl_Loaded"
+             FocusManager.FocusedElement="{Binding ElementName=UserInputBox}">
 
     <UserControl.Resources>
         <!-- User message bubble style -->
@@ -38,13 +40,16 @@
 
                 <!-- Assistant message: left-aligned grey bubble -->
                 <Border Style="{StaticResource AssistantBubble}">
-                    <Border.Visibility>
-                        <Binding Path="IsUser">
-                            <Binding.Converter>
-                                <BooleanToVisibilityConverter/>
-                            </Binding.Converter>
-                        </Binding>
-                    </Border.Visibility>
+                    <Border.Style>
+                        <Style TargetType="Border" BasedOn="{StaticResource AssistantBubble}">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsUser}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <StackPanel>
                         <TextBlock Text="🤖 AI Agent"
                                    Foreground="#888888"
@@ -205,6 +210,9 @@
                      FontSize="12"
                      BorderBrush="#BBBBBB"
                      BorderThickness="1"
+                     IsTabStop="True"
+                     Focusable="True"
+                     GotKeyboardFocus="UserInputBox_GotKeyboardFocus"
                      PreviewMouseDown="UserInputBox_PreviewMouseDown"/>
 
             <Button Grid.Column="2"

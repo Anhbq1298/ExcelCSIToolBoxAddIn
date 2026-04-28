@@ -1,4 +1,6 @@
 using System.Windows.Controls;
+using System.Windows;
+using System.Windows.Threading;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
@@ -15,15 +17,41 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             DataContext = new AiAgentChatViewModel();
         }
 
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            FocusInputBox();
+        }
+
         private void UserInputBox_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            // Explicitly focus and capture the keyboard to help Excel interop
-            var textBox = sender as TextBox;
-            if (textBox != null)
+            FocusInputBox();
+        }
+
+        private void UserInputBox_GotKeyboardFocus(object sender, System.Windows.Input.KeyboardFocusChangedEventArgs e)
+        {
+            FocusInputBox();
+        }
+
+        private void FocusInputBox()
+        {
+            var hostWindow = Window.GetWindow(this);
+            if (hostWindow != null)
             {
-                textBox.Focus();
-                System.Windows.Input.Keyboard.Focus(textBox);
+                hostWindow.Activate();
+                hostWindow.Focus();
             }
+
+            Dispatcher.BeginInvoke(new System.Action(() =>
+            {
+                if (UserInputBox == null)
+                {
+                    return;
+                }
+
+                UserInputBox.Focus();
+                System.Windows.Input.Keyboard.Focus(UserInputBox);
+                UserInputBox.CaretIndex = UserInputBox.Text?.Length ?? 0;
+            }), DispatcherPriority.Input);
         }
     }
 }
