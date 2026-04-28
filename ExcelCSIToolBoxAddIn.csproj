@@ -228,6 +228,9 @@
     <EmbeddedResource Include="ExcelCSIToolBoxAddInRibbon.resx">
       <DependentUpon>ExcelCSIToolBoxAddInRibbon.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="UI\Views\AiAgentTaskPaneHost.resx">
+      <DependentUpon>AiAgentTaskPaneHost.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="ExcelCSIToolBoxAddIn_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
