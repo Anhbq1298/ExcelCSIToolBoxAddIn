@@ -395,6 +395,41 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                         }
                     }
                     return ret;
+                },
+                (SAP2000v1.cSapModel sapModel, string caseName, int typeCode) =>
+                {
+                    if (typeCode == 0) // Load Case
+                    {
+                        SAP2000v1.eLoadCaseType caseType = SAP2000v1.eLoadCaseType.LinearStatic;
+                        int subType = 0;
+                        int ret = sapModel.LoadCases.GetTypeOAPI(caseName, ref caseType, ref subType);
+                        if (ret == 0)
+                        {
+                            switch (caseType)
+                            {
+                                case SAP2000v1.eLoadCaseType.LinearStatic: return "Linear Static";
+                                case SAP2000v1.eLoadCaseType.NonlinearStatic: return "Nonlinear Static";
+                                case SAP2000v1.eLoadCaseType.Modal: return "Modal";
+                                case SAP2000v1.eLoadCaseType.ResponseSpectrum: return "Response Spectrum";
+                                case SAP2000v1.eLoadCaseType.LinearHistory: return "Linear History";
+                                case SAP2000v1.eLoadCaseType.NonlinearHistory: return "Nonlinear History";
+                                case SAP2000v1.eLoadCaseType.LinearDynamic: return "Linear Dynamic";
+                                case SAP2000v1.eLoadCaseType.NonlinearDynamic: return "Nonlinear Dynamic";
+                                case SAP2000v1.eLoadCaseType.MovingLoad: return "Moving Load";
+                                case SAP2000v1.eLoadCaseType.Buckling: return "Buckling";
+                                case SAP2000v1.eLoadCaseType.SteadyState: return "Steady State";
+                                case SAP2000v1.eLoadCaseType.PowerSpectralDensity: return "Power Spectral Density";
+                                case SAP2000v1.eLoadCaseType.LinearStaticMultiStep: return "Linear Static Multi-Step";
+                                case SAP2000v1.eLoadCaseType.HyperStatic: return "Hyper Static";
+                                default: return caseType.ToString();
+                            }
+                        }
+                        return "Load Case";
+                    }
+                    else
+                    {
+                        return "Load Combo";
+                    }
                 });
             
             return detailsResult;

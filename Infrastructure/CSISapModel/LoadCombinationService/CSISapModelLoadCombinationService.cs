@@ -59,10 +59,11 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel.LoadCombinationService
             return successResult;
         }
 
-        internal static OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>> GetLoadCombinationDetails<TSapModel>(
+        public static OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>> GetLoadCombinationDetails<TSapModel>(
             TSapModel sapModel,
             string combinationName,
-            CSISapModelGetCombinationCases<TSapModel> getCombinationCases)
+            CSISapModelGetCombinationCases<TSapModel> getCombinationCases,
+            System.Func<TSapModel, string, int, string> resolveTypeName)
         {
             int numberItems = 0;
             string[] caseNames = null;
@@ -72,27 +73,23 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.CSISapModel.LoadCombinationService
             int ret = getCombinationCases(sapModel, combinationName, ref numberItems, ref caseNames, ref caseTypes, ref scaleFactors);
             if (ret != 0)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>>.Failure($"Failed to get details for combination {combinationName}.");
-                return errorResult;
+                var failureResult = OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>>.Failure($"Failed to get load combination details for '{combinationName}'.");
+                return failureResult;
             }
 
-            var items = new List<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>();
-            if (caseNames != null)
+            var result = new System.Collections.Generic.List<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>();
+            for (int i = 0; i < numberItems; i++)
             {
-                for (int i = 0; i < caseNames.Length; i++)
+                string typeName = resolveTypeName(sapModel, caseNames[i], caseTypes[i]);
+                result.Add(new ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO
                 {
-                    // CType: 0 = Load Case, 1 = Load Combo
-                    string type = caseTypes[i] == 0 ? "Load Case" : "Load Combo";
-                    items.Add(new ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO
-                    {
-                        LoadCaseName = caseNames[i],
-                        LoadCaseType = type,
-                        ScaleFactor = scaleFactors[i]
-                    });
-                }
+                    LoadCaseName = caseNames[i],
+                    LoadCaseType = typeName,
+                    ScaleFactor = scaleFactors[i]
+                });
             }
 
-            var successResult = OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>>.Success(items);
+            var successResult = OperationResult<IReadOnlyList<ExcelCSIToolBoxAddIn.Data.DTOs.LoadCombinationItemDTO>>.Success(result);
             return successResult;
         }
 

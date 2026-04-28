@@ -401,6 +401,41 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                         }
                     }
                     return ret;
+                },
+                (ETABSv1.cSapModel sapModel, string caseName, int typeCode) =>
+                {
+                    if (typeCode == 0) // Load Case
+                    {
+                        ETABSv1.eLoadCaseType caseType = ETABSv1.eLoadCaseType.LinearStatic;
+                        int subType = 0;
+                        int ret = sapModel.LoadCases.GetTypeOAPI(caseName, ref caseType, ref subType);
+                        if (ret == 0)
+                        {
+                            switch (caseType)
+                            {
+                                case ETABSv1.eLoadCaseType.LinearStatic: return "Linear Static";
+                                case ETABSv1.eLoadCaseType.NonlinearStatic: return "Nonlinear Static";
+                                case ETABSv1.eLoadCaseType.Modal: return "Modal";
+                                case ETABSv1.eLoadCaseType.ResponseSpectrum: return "Response Spectrum";
+                                case ETABSv1.eLoadCaseType.LinearHistory: return "Linear History";
+                                case ETABSv1.eLoadCaseType.NonlinearHistory: return "Nonlinear History";
+                                case ETABSv1.eLoadCaseType.LinearDynamic: return "Linear Dynamic";
+                                case ETABSv1.eLoadCaseType.NonlinearDynamic: return "Nonlinear Dynamic";
+                                case ETABSv1.eLoadCaseType.MovingLoad: return "Moving Load";
+                                case ETABSv1.eLoadCaseType.Buckling: return "Buckling";
+                                case ETABSv1.eLoadCaseType.SteadyState: return "Steady State";
+                                case ETABSv1.eLoadCaseType.PowerSpectralDensity: return "Power Spectral Density";
+                                case ETABSv1.eLoadCaseType.LinearStaticMultiStep: return "Linear Static Multi-Step";
+                                case ETABSv1.eLoadCaseType.HyperStatic: return "Hyper Static";
+                                default: return caseType.ToString();
+                            }
+                        }
+                        return "Load Case";
+                    }
+                    else
+                    {
+                        return "Load Combo";
+                    }
                 });
             
             return detailsResult;
