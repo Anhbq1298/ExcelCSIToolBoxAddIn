@@ -241,8 +241,6 @@
     <Compile Include="Common\Results\OperationResult.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />
     <Compile Include="Core\Application\LoadCSISapModelConnectionUseCase.cs" />
-    <Compile Include="Core\Application\CSISapModelPointDataDataFrameMapper.cs" />
-    <Compile Include="Core\Application\CSISapModelFrameDataDataFrameMapper.cs" />
     <Compile Include="Core\Application\GetSelectedCSISapModelPointsUseCase.cs" />
     <Compile Include="Core\Application\GetSelectedCSISapModelFramesUseCase.cs" />
     <Compile Include="Core\Application\CloseCurrentInstanceUseCase.cs" />
@@ -262,11 +260,6 @@
     <Compile Include="Core\Geometry\ShellFaceBuilder.cs" />
     <Compile Include="Core\Tabular\ExcelSteelSectionRows.cs" />
     <Compile Include="Core\Tabular\ExcelConcreteSectionRows.cs" />
-    <Compile Include="Infrastructure\CSISapModel\CSISapModelConnectionInfo.cs" />
-    <Compile Include="Infrastructure\CSISapModel\CSISapModelPointData.cs" />
-    <Compile Include="Infrastructure\CSISapModel\CSISapModelAddPointsResult.cs" />
-    <Compile Include="Infrastructure\CSISapModel\CSISapModelAddFramesResult.cs" />
-    <Compile Include="Infrastructure\CSISapModel\CSISapModelObjectTypeIds.cs" />
     <Compile Include="Infrastructure\CSISapModel\ConnectionAdapters\ICSISapModelConnectionAdapter.cs" />
     <Compile Include="Infrastructure\CSISapModel\ConnectionAdapters\CSISapModelConnectionAdapter.cs" />
     <Compile Include="Infrastructure\CSISapModel\PointObjectService\CSISapModelPointObjectService.cs" />
@@ -274,11 +267,6 @@
     <Compile Include="Infrastructure\CSISapModel\ShellObjectService\CSISapModelShellObjectService.cs" />
     <Compile Include="Infrastructure\CSISapModel\SectionPropertiesService\CSISapModelSectionPropertiesService.cs" />
     <Compile Include="Infrastructure\CSISapModel\ICSISapModelConnectionService.cs" />
-    <Compile Include="Infrastructure\CSISapModel\TableFormats\CSISapModelConcreteSectionInputs.cs" />
-    <Compile Include="Infrastructure\CSISapModel\TableFormats\CSISapModelFrameByCoordInput.cs" />
-    <Compile Include="Infrastructure\CSISapModel\TableFormats\CSISapModelFrameByPointInput.cs" />
-    <Compile Include="Infrastructure\CSISapModel\TableFormats\CSISapModelPointCartesianInput.cs" />
-    <Compile Include="Infrastructure\CSISapModel\TableFormats\CSISapModelSteelSectionInputs.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsUnitFormatter.cs" />
     <Compile Include="Infrastructure\Etabs\EtabsConnectionService.cs" />
     <Compile Include="Infrastructure\Sap2000\Sap2000ConnectionService.cs" />
