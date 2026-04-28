@@ -188,21 +188,29 @@
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <ListView x:Name="FrameSectionList" Grid.Row="0" 
+                                <DataGrid x:Name="FrameSectionList" Grid.Row="0"
                                           ItemsSource="{Binding FrameSections}"
                                           SelectedItem="{Binding SelectedFrameSection}"
-                                          BorderBrush="#CCCCCC" BorderThickness="1"
-                                          FontWeight="Normal" Foreground="Black">
-                                    <ListView.InputBindings>
+                                          AutoGenerateColumns="False"
+                                          CanUserAddRows="False"
+                                          CanUserDeleteRows="False"
+                                          CanUserResizeRows="False"
+                                          IsReadOnly="True"
+                                          HeadersVisibility="Column"
+                                          GridLinesVisibility="Horizontal"
+                                          BorderBrush="#CCCCCC"
+                                          BorderThickness="1"
+                                          FontSize="10"
+                                          FontWeight="Normal"
+                                          Foreground="Black">
+                                    <DataGrid.InputBindings>
                                         <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding EditFrameSectionCommand}" CommandParameter="{Binding ElementName=FrameSectionList, Path=SelectedItem}" />
-                                    </ListView.InputBindings>
-                                    <ListView.View>
-                                        <GridView>
-                                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="190"/>
-                                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding ShapeType}" Width="90"/>
-                                        </GridView>
-                                    </ListView.View>
-                                </ListView>
+                                    </DataGrid.InputBindings>
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding ShapeType}" Width="Auto"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
                                 <Button Grid.Row="1" Margin="0,8,0,0" Content="Refresh List" Command="{Binding GetFrameSectionsCommand}"/>
                             </Grid>
                         </GroupBox>
@@ -608,23 +616,32 @@
                                     </Grid.RowDefinitions>
                                     
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Patterns in Model" Foreground="Black" Margin="0,0,0,4"/>
-                                    <ListView x:Name="LoadPatternList" Grid.Row="1" Grid.Column="0" 
+                                    <DataGrid x:Name="LoadPatternList" Grid.Row="1" Grid.Column="0"
                                               ItemsSource="{Binding LoadPatterns}"
                                               SelectionMode="Extended"
-                                              BorderBrush="#CCCCCC" BorderThickness="1"
-                                              FontWeight="Normal" Foreground="Black">
-                                        <ListView.ContextMenu>
+                                              SelectionUnit="FullRow"
+                                              AutoGenerateColumns="False"
+                                              CanUserAddRows="False"
+                                              CanUserDeleteRows="False"
+                                              CanUserResizeRows="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              GridLinesVisibility="Horizontal"
+                                              BorderBrush="#CCCCCC"
+                                              BorderThickness="1"
+                                              FontSize="10"
+                                              FontWeight="Normal"
+                                              Foreground="Black">
+                                        <DataGrid.ContextMenu>
                                             <ContextMenu>
                                                 <MenuItem Header="Delete" Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadPatternsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                             </ContextMenu>
-                                        </ListView.ContextMenu>
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridViewColumn Header="Load Pattern Name" DisplayMemberBinding="{Binding Name}" Width="250"/>
-                                                <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="150"/>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
+                                        </DataGrid.ContextMenu>
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Load Pattern Name" Binding="{Binding Name}" Width="*"/>
+                                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="Auto"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     
                                     <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
                                         <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" Margin="0,0,0,8"/>
@@ -655,24 +672,33 @@
                                     </Grid.RowDefinitions>
                                     
                                     <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Combinations in Model" Foreground="Black" Margin="0,0,0,4"/>
-                                    <ListView x:Name="LoadCombinationList" Grid.Row="1" Grid.Column="0" 
+                                    <DataGrid x:Name="LoadCombinationList" Grid.Row="1" Grid.Column="0"
                                               ItemsSource="{Binding LoadCombinations}"
                                               SelectionMode="Extended"
-                                              BorderBrush="#CCCCCC" BorderThickness="1"
-                                              FontWeight="Normal" Foreground="Black">
-                                        <ListView.ContextMenu>
+                                              SelectionUnit="FullRow"
+                                              AutoGenerateColumns="False"
+                                              CanUserAddRows="False"
+                                              CanUserDeleteRows="False"
+                                              CanUserResizeRows="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              GridLinesVisibility="Horizontal"
+                                              BorderBrush="#CCCCCC"
+                                              BorderThickness="1"
+                                              FontSize="10"
+                                              FontWeight="Normal"
+                                              Foreground="Black">
+                                        <DataGrid.ContextMenu>
                                             <ContextMenu>
                                                 <MenuItem Header="View" Command="{Binding PlacementTarget.DataContext.ViewLoadCombinationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                                 <MenuItem Header="Delete" Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadCombinationsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                             </ContextMenu>
-                                        </ListView.ContextMenu>
-                                        <ListView.View>
-                                            <GridView>
-                                                <GridViewColumn Header="Combination Name" DisplayMemberBinding="{Binding Name}" Width="250"/>
-                                                <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}" Width="150"/>
-                                            </GridView>
-                                        </ListView.View>
-                                    </ListView>
+                                        </DataGrid.ContextMenu>
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Combination Name" Binding="{Binding Name}" Width="*"/>
+                                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="Auto"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
                                     
                                     <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
                                         <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
