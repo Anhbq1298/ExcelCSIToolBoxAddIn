@@ -576,8 +576,8 @@
                                               FontWeight="Normal" Foreground="Black">
                                         <ListView.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem Header="View" Command="{Binding DataContext.ViewLoadCombinationCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                                <MenuItem Header="Delete" Command="{Binding DataContext.DeleteSelectedLoadCombinationsCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                <MenuItem Header="View" Command="{Binding PlacementTarget.DataContext.ViewLoadCombinationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                <MenuItem Header="Delete" Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadCombinationsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                             </ContextMenu>
                                         </ListView.ContextMenu>
                                         <ListView.View>
