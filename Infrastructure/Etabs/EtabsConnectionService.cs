@@ -765,7 +765,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     ret = sapModel.PropFrame.SetDblAngle(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Flange width ( t2 )", "Width ( t2 )"), Dim(input, "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), Dim(input, "Spacing ( dis )"), input.Color, notes, guid);
                     break;
                 case FrameSectionShapeType.Tube:
-                    ret = sapModel.PropFrame.SetTube(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Flange width ( t2 )", "Width ( t2 )"), Dim(input, "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), input.Color, notes, guid);
+                    ret = sapModel.PropFrame.SetTube_1(sectionName, input.MaterialName, Dim(input, "Total depth ( t3 )", "Depth ( t3 )"), Dim(input, "Flange width ( t2 )", "Width ( t2 )"), Dim(input, "Flange thickness ( tf )"), Dim(input, "Web thickness ( tw )"), 0.000000001, input.Color, notes, guid);
                     break;
                 case FrameSectionShapeType.Pipe:
                     ret = sapModel.PropFrame.SetPipe(sectionName, input.MaterialName, Dim(input, "Outside diameter ( t3 )", "Diameter ( t3 )"), Dim(input, "Wall thickness ( tw )"), input.Color, notes, guid);
