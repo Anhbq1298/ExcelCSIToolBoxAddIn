@@ -9,6 +9,7 @@ using ExcelCSIToolBox.AI.Mcp.Client;
 using ExcelCSIToolBox.AI.Mcp.Server;
 using ExcelCSIToolBox.AI.Ollama;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
+using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.ReadOnly;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -32,8 +33,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private string                       _userInput  = string.Empty;
         private string                       _statusText = "Ready";
         private string                       _currentModelName = OllamaChatService.DefaultModel;
-        private string                       _sap2000ConnectionStatus = "Attached";
-        private string                       _etabsConnectionStatus = "Attached";
+        private string                       _sap2000ConnectionStatus = "Not attached";
+        private string                       _etabsConnectionStatus = "Not attached";
         private bool                         _isBusy     = false;
         private AiAgentToolTraceViewModel    _lastToolTrace;
 
@@ -67,6 +68,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             // Commands.
             SendCommand  = new AiRelayCommand(ExecuteSend,  CanExecuteSend);
             ClearCommand = new AiRelayCommand(ExecuteClear);
+
+            RefreshConnectionStatuses();
         }
 
         // ── Observable properties ─────────────────────────────────────────────────
@@ -142,6 +145,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             string userMessage = _userInput.Trim();
             if (string.IsNullOrWhiteSpace(userMessage)) return;
 
+            RefreshConnectionStatuses();
+
             // Add the user message to the chat history.
             Messages.Add(new AiAgentChatMessageViewModel { Role = "User", Content = userMessage });
             var thinkingMessage = new AiAgentChatMessageViewModel
@@ -207,6 +212,30 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             Messages.Clear();
             _lastToolTrace.Clear();
             StatusText = "Ready";
+        }
+
+        private void RefreshConnectionStatuses()
+        {
+            EtabsConnectionStatus = IsProductAttached(new EtabsModelAdapter())
+                ? "Attached"
+                : "Not attached";
+
+            Sap2000ConnectionStatus = IsProductAttached(new Sap2000ModelAdapter())
+                ? "Attached"
+                : "Not attached";
+        }
+
+        private static bool IsProductAttached(ICsiModelAdapter adapter)
+        {
+            try
+            {
+                CsiAttachResult result = adapter.AttachToRunningInstance();
+                return result != null && result.IsSuccess && result.SapModel != null;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 

@@ -364,8 +364,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private void UpdateHeader()
         {
             _subtitleLabel.Text = "Powered by Ollama \u00B7 Model: " + (_viewModel.CurrentModelName ?? "Not selected") + " \u00B7 Read-only model access";
-            _sap2000BadgeLabel.Text = "SAP2000 Model: " + (_viewModel.Sap2000ConnectionStatus ?? "Attached");
-            _etabsBadgeLabel.Text = "ETABS: " + (_viewModel.EtabsConnectionStatus ?? "Attached");
+            _sap2000BadgeLabel.Text = "SAP2000: " + (_viewModel.Sap2000ConnectionStatus ?? "Not attached");
+            _etabsBadgeLabel.Text = "ETABS: " + (_viewModel.EtabsConnectionStatus ?? "Not attached");
         }
 
         private void SyncInputFromViewModel()
