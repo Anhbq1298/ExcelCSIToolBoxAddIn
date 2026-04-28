@@ -181,24 +181,6 @@ A future clean-up target is to reduce direct dependency pressure on `Core`. Idea
 4. Use the custom Excel ribbon commands to open the ETABS or SAP2000 toolbox window.
 5. Attach to a running ETABS/SAP2000 instance before running API-dependent operations.
 
-## Local directory export
-
-To generate a full local folder directory:
-
-```powershell
-tree /F /A > folder-directory.txt
-```
-
-To generate a cleaner directory list excluding build/system folders:
-
-```powershell
-Get-ChildItem -Recurse -Force |
-Where-Object {
-    $_.FullName -notmatch '\\(bin|obj|\.vs|\.git)\\'
-} |
-Select-Object FullName |
-Out-File folder-directory.txt
-```
 
 ## Notes for contributors
 
@@ -209,6 +191,3 @@ Out-File folder-directory.txt
 - Shared workflows should depend on the common `SapModel` abstraction/usage pattern after the CSI model is acquired.
 - Keep UI orchestration thin; place workflow logic in Application/Core where practical.
 
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
