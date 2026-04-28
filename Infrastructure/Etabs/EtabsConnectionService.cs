@@ -537,7 +537,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     case ETABSv1.eFramePropType.Channel: shapeType = FrameSectionShapeType.Channel; break;
                     case ETABSv1.eFramePropType.T: shapeType = FrameSectionShapeType.T; break;
                     case ETABSv1.eFramePropType.Angle: shapeType = FrameSectionShapeType.Angle; break;
-                    case ETABSv1.eFramePropType.DoubleAngle: shapeType = FrameSectionShapeType.DoubleAngle; break;
                     case ETABSv1.eFramePropType.Box: shapeType = FrameSectionShapeType.Tube; break;
                     case ETABSv1.eFramePropType.Pipe: shapeType = FrameSectionShapeType.Pipe; break;
                     case ETABSv1.eFramePropType.Rectangular: shapeType = FrameSectionShapeType.Rectangular; break;

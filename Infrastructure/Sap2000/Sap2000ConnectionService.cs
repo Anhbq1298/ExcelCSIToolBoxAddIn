@@ -531,7 +531,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
                     case SAP2000v1.eFramePropType.Channel: shapeType = FrameSectionShapeType.Channel; break;
                     case SAP2000v1.eFramePropType.T: shapeType = FrameSectionShapeType.T; break;
                     case SAP2000v1.eFramePropType.Angle: shapeType = FrameSectionShapeType.Angle; break;
-                    case SAP2000v1.eFramePropType.DoubleAngle: shapeType = FrameSectionShapeType.DoubleAngle; break;
                     case SAP2000v1.eFramePropType.Box: shapeType = FrameSectionShapeType.Tube; break;
                     case SAP2000v1.eFramePropType.Pipe: shapeType = FrameSectionShapeType.Pipe; break;
                     case SAP2000v1.eFramePropType.Rectangular: shapeType = FrameSectionShapeType.Rectangular; break;
