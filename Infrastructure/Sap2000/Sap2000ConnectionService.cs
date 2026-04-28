@@ -286,12 +286,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelISections(
-                inputs,
-                ProductName,
                 sapModel,
-                SetSectionCreationUnits,
-                FrameSectionExists,
-                SetSteelISection);
+                inputs);
 
             return result;
         }
@@ -306,12 +302,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelChannelSections(
-                inputs,
-                ProductName,
                 sapModel,
-                SetSectionCreationUnits,
-                FrameSectionExists,
-                SetSteelChannelSection);
+                inputs);
 
             return result;
         }
@@ -326,12 +318,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelAngleSections(
-                inputs,
-                ProductName,
                 sapModel,
-                SetSectionCreationUnits,
-                FrameSectionExists,
-                SetSteelAngleSection);
+                inputs);
 
             return result;
         }
@@ -346,12 +334,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelPipeSections(
-                inputs,
-                ProductName,
                 sapModel,
-                SetSectionCreationUnits,
-                FrameSectionExists,
-                SetSteelPipeSection);
+                inputs);
 
             return result;
         }
@@ -366,12 +350,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelTubeSections(
-                inputs,
-                ProductName,
                 sapModel,
-                SetSectionCreationUnits,
-                FrameSectionExists,
-                SetSteelTubeSection);
+                inputs);
 
             return result;
         }
@@ -386,12 +366,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddConcreteRectangleSections(
-                inputs,
-                ProductName,
                 sapModel,
-                SetSectionCreationUnits,
-                FrameSectionExists,
-                SetConcreteRectangleSection);
+                inputs);
 
             return result;
         }
@@ -406,12 +382,8 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddConcreteCircleSections(
-                inputs,
-                ProductName,
                 sapModel,
-                SetSectionCreationUnits,
-                FrameSectionExists,
-                SetConcreteCircleSection);
+                inputs);
 
             return result;
         }
@@ -471,99 +443,6 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
             return OperationResult<SAP2000v1.cSapModel>.Success(sapModel);
         }
 
-        private bool FrameSectionExists(SAP2000v1.cSapModel sapModel, string sectionName)
-        {
-            if (string.IsNullOrWhiteSpace(sectionName))
-            {
-                return false;
-            }
-
-            SAP2000v1.eFramePropType propType = SAP2000v1.eFramePropType.I;
-            int ret = sapModel.PropFrame.GetTypeOAPI(sectionName, ref propType);
-            return ret == 0;
-        }
-
-        private static int SetSectionCreationUnits(SAP2000v1.cSapModel sapModel)
-        {
-            return sapModel.SetPresentUnits(SAP2000v1.eUnits.N_mm_C);
-        }
-
-        private static int SetSteelISection(
-            SAP2000v1.cSapModel sapModel,
-            string sectionName,
-            string materialName,
-            double h,
-            double b,
-            double tf,
-            double tw)
-        {
-            return sapModel.PropFrame.SetISection(sectionName, materialName, h, b, tf, tw, b, tf, -1, "", "");
-        }
-
-        private static int SetSteelChannelSection(
-            SAP2000v1.cSapModel sapModel,
-            string sectionName,
-            string materialName,
-            double h,
-            double b,
-            double tf,
-            double tw)
-        {
-            return sapModel.PropFrame.SetChannel(sectionName, materialName, h, b, tf, tw, -1, "", "");
-        }
-
-        private static int SetSteelAngleSection(
-            SAP2000v1.cSapModel sapModel,
-            string sectionName,
-            string materialName,
-            double h,
-            double b,
-            double tf,
-            double tw)
-        {
-            return sapModel.PropFrame.SetAngle(sectionName, materialName, h, b, tf, tw, -1, "", "");
-        }
-
-        private static int SetSteelPipeSection(
-            SAP2000v1.cSapModel sapModel,
-            string sectionName,
-            string materialName,
-            double outsideDiameter,
-            double wallThickness)
-        {
-            return sapModel.PropFrame.SetPipe(sectionName, materialName, outsideDiameter, wallThickness, -1, "", "");
-        }
-
-        private static int SetSteelTubeSection(
-            SAP2000v1.cSapModel sapModel,
-            string sectionName,
-            string materialName,
-            double h,
-            double b,
-            double t)
-        {
-            return sapModel.PropFrame.SetTube_1(sectionName, materialName, h, b, t, t, 0.000000001, -1, "", "");
-        }
-
-        private static int SetConcreteRectangleSection(
-            SAP2000v1.cSapModel sapModel,
-            string sectionName,
-            string materialName,
-            double h,
-            double b)
-        {
-            return sapModel.PropFrame.SetRectangle(sectionName, materialName, h, b, -1, "", "");
-        }
-
-        private static int SetConcreteCircleSection(
-            SAP2000v1.cSapModel sapModel,
-            string sectionName,
-            string materialName,
-            double d)
-        {
-            return sapModel.PropFrame.SetCircle(sectionName, materialName, d, -1, "", "");
-        }
-
         private void ResetCurrentConnection()
         {
             if (_currentConnection == null)
@@ -608,4 +487,5 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Sap2000
 
     }
 }
+
 
