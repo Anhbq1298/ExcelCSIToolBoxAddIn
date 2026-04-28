@@ -58,7 +58,7 @@
             // buttonEtabs
             // 
             this.buttonEtabs.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.buttonEtabs.Label = "ETABS";
+            this.buttonEtabs.Label = "ETABS Toolbox";
             this.buttonEtabs.Name = "buttonEtabs";
             this.buttonEtabs.ShowImage = true;
             this.buttonEtabs.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonEtabs_Click);
@@ -66,7 +66,7 @@
             // buttonSap2000
             // 
             this.buttonSap2000.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.buttonSap2000.Label = "SAP2000";
+            this.buttonSap2000.Label = "SAP2000 Toolbox";
             this.buttonSap2000.Name = "buttonSap2000";
             this.buttonSap2000.ShowImage = true;
             this.buttonSap2000.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonSap2000_Click);

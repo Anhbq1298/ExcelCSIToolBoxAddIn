@@ -232,8 +232,11 @@
     <Compile Include="ThisAddIn.Designer.cs">
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
-    <Compile Include="AddIn\CsiToolboxWindowLauncher.cs" />
     <Compile Include="AddIn\WindowManager.cs" />
+    <Compile Include="Adapters\CsiAttachResult.cs" />
+    <Compile Include="Adapters\EtabsModelAdapter.cs" />
+    <Compile Include="Adapters\ICsiModelAdapter.cs" />
+    <Compile Include="Adapters\Sap2000ModelAdapter.cs" />
     <Compile Include="Common\Commands\RelayCommand.cs" />
     <Compile Include="Common\Results\OperationResult.cs" />
     <Compile Include="Core\Tabular\DataFrame.cs" />

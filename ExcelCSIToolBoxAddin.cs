@@ -1,4 +1,5 @@
 using ExcelCSIToolBoxAddIn.AddIn;
+using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Infrastructure.Etabs;
 using ExcelCSIToolBoxAddIn.Infrastructure.Excel;
 
@@ -9,8 +10,8 @@ namespace ExcelCSIToolBoxAddIn
         private void ExcelCSIToolBoxAddin_Startup(object sender, System.EventArgs e)
         {
             // Lightweight composition root for phase 1.
-            var etabsConnectionService = new EtabsConnectionService();
-            var sap2000ConnectionService = new Sap2000ConnectionService();
+            var etabsConnectionService = new EtabsConnectionService(new EtabsModelAdapter());
+            var sap2000ConnectionService = new Sap2000ConnectionService(new Sap2000ModelAdapter());
             var excelSelectionService = new ExcelSelectionService();
             var excelOutputService = new ExcelOutputService();
             WindowManager.Configure(etabsConnectionService, sap2000ConnectionService, excelSelectionService, excelOutputService);

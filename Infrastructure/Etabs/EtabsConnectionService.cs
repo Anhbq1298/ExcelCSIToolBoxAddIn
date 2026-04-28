@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using ExcelCSIToolBoxAddIn.Adapters;
 using ExcelCSIToolBoxAddIn.Common.Results;
 using ExcelCSIToolBoxAddIn.Core.Geometry;
 using ExcelCSIToolBoxAddIn.UI.Views;
@@ -15,29 +16,40 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
     /// </summary>
     public class EtabsConnectionService : ICsiConnectionService
     {
-        private const string EtabsComProgId = "CSI.ETABS.API.ETABSObject";
-
+        private readonly ICsiModelAdapter _modelAdapter;
         private CsiConnectionInfo _currentConnection;
+
+        public EtabsConnectionService()
+            : this(new EtabsModelAdapter())
+        {
+        }
+
+        public EtabsConnectionService(ICsiModelAdapter modelAdapter)
+        {
+            _modelAdapter = modelAdapter ?? throw new ArgumentNullException(nameof(modelAdapter));
+        }
 
         public string ProductName => "ETABS";
 
         public OperationResult<CsiConnectionInfo> TryAttachToRunningInstance()
         {
-            ETABSv1.cHelper myHelper = new ETABSv1.Helper();
-            ETABSv1.cOAPI myETABSObject = null;
+            var attachResult = _modelAdapter.AttachToRunningInstance();
+            if (!attachResult.IsSuccess)
+            {
+                _currentConnection = null;
+                return OperationResult<CsiConnectionInfo>.Failure(attachResult.Message);
+            }
+
+            var etabsObject = attachResult.ApplicationObject as ETABSv1.cOAPI;
+            var sapModel = attachResult.SapModel as ETABSv1.cSapModel;
+            if (etabsObject == null || sapModel == null)
+            {
+                _currentConnection = null;
+                return OperationResult<CsiConnectionInfo>.Failure("The attached ETABS instance is invalid. Please reattach and try again.");
+            }
 
             try
             {
-                myETABSObject = myHelper.GetObject(EtabsComProgId);
-
-                if (myETABSObject == null)
-                {
-                    _currentConnection = null;
-                    return OperationResult<CsiConnectionInfo>.Failure("ETABS is not running.");
-                }
-
-                ETABSv1.cSapModel sapModel = myETABSObject.SapModel;
-
                 string modelPath = string.Empty;
                 string modelName = "Unsaved Model";
                 try
@@ -76,7 +88,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
                     ModelPath = modelPath,
                     ModelFileName = modelName,
                     ModelCurrentUnit = modelCurrentUnit,
-                    CsiObject = myETABSObject,
+                    CsiObject = etabsObject,
                     SapModel = sapModel
                 };
 
@@ -85,7 +97,7 @@ namespace ExcelCSIToolBoxAddIn.Infrastructure.Etabs
             catch
             {
                 _currentConnection = null;
-                return OperationResult<CsiConnectionInfo>.Failure("ETABS is not running.");
+                return OperationResult<CsiConnectionInfo>.Failure("Failed to attach to the running ETABS instance.");
             }
         }
 
