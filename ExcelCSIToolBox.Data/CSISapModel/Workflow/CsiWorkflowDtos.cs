@@ -5,6 +5,7 @@ namespace ExcelCSIToolBox.Data.CSISapModel.Workflow
     public sealed class CsiWorkflowRequestDto
     {
         public string UserInput { get; set; }
+        public List<CsiTaskDto> PlannedTasks { get; set; }
     }
 
     public sealed class CsiTaskDto

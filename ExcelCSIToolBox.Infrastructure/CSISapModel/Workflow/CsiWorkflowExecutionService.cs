@@ -23,7 +23,9 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Workflow
             }
 
             string userInput = request == null ? null : request.UserInput;
-            List<CsiTaskDto> tasks = ParseTasks(userInput);
+            List<CsiTaskDto> tasks = request != null && request.PlannedTasks != null && request.PlannedTasks.Count > 0
+                ? NormalizePlannedTasks(request.PlannedTasks)
+                : ParseTasks(userInput);
             var result = new CsiWorkflowResultDto
             {
                 TotalTasksDetected = tasks.Count,
@@ -68,6 +70,36 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Workflow
             }
 
             return OperationResult<CsiWorkflowResultDto>.Success(result);
+        }
+
+        private static List<CsiTaskDto> NormalizePlannedTasks(List<CsiTaskDto> plannedTasks)
+        {
+            var tasks = new List<CsiTaskDto>();
+            if (plannedTasks == null)
+            {
+                return tasks;
+            }
+
+            foreach (CsiTaskDto plannedTask in plannedTasks)
+            {
+                if (plannedTask == null)
+                {
+                    continue;
+                }
+
+                tasks.Add(new CsiTaskDto
+                {
+                    TaskId = plannedTask.TaskId,
+                    TaskType = plannedTask.TaskType,
+                    Operation = plannedTask.Operation,
+                    Arguments = plannedTask.Arguments ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                    DependsOn = plannedTask.DependsOn ?? new List<string>()
+                });
+            }
+
+            ApplyTaskIds(tasks);
+            ApplyDependencies(tasks);
+            return tasks;
         }
 
         private static List<CsiTaskDto> ParseTasks(string userInput)

@@ -137,6 +137,7 @@ If this is a write preview, ask for explicit confirmation before execution.";
 
         private readonly OllamaChatService _ollamaChatService;
         private readonly LocalMcpClient _mcpClient;
+        private readonly CsiIntentPlannerService _intentPlannerService;
         private string _pendingToolName;
         private string _pendingArgumentsJson;
 
@@ -146,6 +147,7 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 ?? throw new ArgumentNullException(nameof(ollamaChatService));
             _mcpClient = mcpClient
                 ?? throw new ArgumentNullException(nameof(mcpClient));
+            _intentPlannerService = new CsiIntentPlannerService(_ollamaChatService);
         }
 
         public async Task<AiAgentResponse> SendAsync(
@@ -169,7 +171,12 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 return confirmationResponse;
             }
 
-            AiAgentToolDecision decision = TryCreateHeuristicToolDecision(userMessage);
+            AiAgentToolDecision decision = await _intentPlannerService.TryCreateToolDecisionAsync(userMessage, cancellationToken);
+            if (decision == null)
+            {
+                decision = TryCreateHeuristicToolDecision(userMessage);
+            }
+
             if (decision == null)
             {
                 // We usually don't stream the tool decision as it should be fast and JSON-only.
@@ -560,7 +567,23 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             string normalized = Normalize(userMessage);
-            if (!ContainsAny(normalized, "add frame", "create frame", "new frame", "add beam", "create beam", "new beam", "add member", "create member", "new member"))
+            if (!ContainsAny(
+                    normalized,
+                    "add frame",
+                    "create frame",
+                    "new frame",
+                    "draw frame",
+                    "draw a frame",
+                    "draw frame object",
+                    "draw a frame object",
+                    "add beam",
+                    "create beam",
+                    "new beam",
+                    "draw beam",
+                    "add member",
+                    "create member",
+                    "new member",
+                    "draw member"))
             {
                 return null;
             }
@@ -785,6 +808,10 @@ If this is a write preview, ask for explicit confirmation before execution.";
                         return FormatCount(result, "shell/area");
                     case "execute_csi_request":
                         return FormatCsiWorkflowResult(result);
+                    case "frames.add_object":
+                        return FormatFrameAddObjectResult(result);
+                    case "frames.add_objects":
+                        return FormatFrameAddObjectsResult(result);
                     default:
                         string preview = TryFormatWritePreview(result);
                         if (!string.IsNullOrWhiteSpace(preview))
@@ -854,6 +881,71 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 }
 
                 builder.AppendLine();
+            }
+
+            return builder.ToString().Trim();
+        }
+
+        private static string FormatFrameAddObjectResult(JObject result)
+        {
+            bool success = result.Value<bool?>("Success") ?? false;
+            string frameName = result.Value<string>("FrameName");
+            string addMethod = result.Value<string>("AddMethod") ?? "FrameObj";
+            string failureReason = result.Value<string>("FailureReason");
+            int? returnCode = result.Value<int?>("ReturnCode");
+
+            if (success)
+            {
+                return string.IsNullOrWhiteSpace(frameName)
+                    ? $"Added frame using {addMethod}."
+                    : $"Added frame {frameName} using {addMethod}.";
+            }
+
+            string reason = string.IsNullOrWhiteSpace(failureReason)
+                ? returnCode.HasValue ? $"CSI return code {returnCode.Value}." : "The frame was not added."
+                : failureReason;
+
+            return $"Failed to add frame using {addMethod}: {reason}";
+        }
+
+        private static string FormatFrameAddObjectsResult(JObject result)
+        {
+            int total = result.Value<int?>("TotalRequested") ?? 0;
+            int successCount = result.Value<int?>("SuccessCount") ?? 0;
+            int failureCount = result.Value<int?>("FailureCount") ?? 0;
+            JArray names = result["SuccessfulFrameNames"] as JArray;
+            JArray failedItems = result["FailedItems"] as JArray;
+
+            var builder = new StringBuilder();
+            builder.Append($"Frame add result: {successCount} added, {failureCount} failed out of {total}.");
+
+            string successfulNames = JoinPreview(names, 10);
+            if (!string.IsNullOrWhiteSpace(successfulNames))
+            {
+                builder.Append(" Added: ");
+                builder.Append(successfulNames);
+                builder.Append(".");
+            }
+
+            if (failedItems != null && failedItems.Count > 0)
+            {
+                builder.AppendLine();
+                for (int i = 0; i < failedItems.Count && i < 5; i++)
+                {
+                    JObject failed = failedItems[i] as JObject;
+                    if (failed == null)
+                    {
+                        continue;
+                    }
+
+                    string method = failed.Value<string>("AddMethod") ?? "FrameObj";
+                    string reason = failed.Value<string>("FailureReason") ?? "The frame was not added.";
+                    builder.Append("- ");
+                    builder.Append(method);
+                    builder.Append(": ");
+                    builder.Append(reason);
+                    builder.AppendLine();
+                }
             }
 
             return builder.ToString().Trim();
