@@ -159,7 +159,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         internal static OperationResult<IReadOnlyList<string>> GetNameList<TSapModel>(
             string productName,
             TSapModel sapModel,
-            CSISapModelGetPointNames<TSapModel> getNameList)
+            CSISapModelGetNameList<TSapModel> getNameList)
         {
             int numberNames = 0;
             string[] names = null;

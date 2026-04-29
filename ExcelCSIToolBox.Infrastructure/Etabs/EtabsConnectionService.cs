@@ -1370,19 +1370,29 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             try
             {
                 int pointCount = 0;
-                sapModel.PointObj.Count(ref pointCount);
+                string[] pointNames = null;
+                sapModel.PointObj.GetNameList(ref pointCount, ref pointNames);
                 stats.PointCount = pointCount;
 
                 int frameCount = 0;
-                sapModel.FrameObj.Count(ref frameCount);
+                string[] frameNames = null;
+                sapModel.FrameObj.GetNameList(ref frameCount, ref frameNames);
                 stats.FrameCount = frameCount;
 
                 int areaCount = 0;
-                sapModel.AreaObj.Count(ref areaCount);
+                string[] areaNames = null;
+                sapModel.AreaObj.GetNameList(ref areaCount, ref areaNames);
                 stats.ShellCount = areaCount;
 
-                stats.LoadPatternCount = sapModel.LoadPatterns.Count();
-                stats.LoadCombinationCount = sapModel.RespCombo.Count();
+                int lpCount = 0;
+                string[] lpNames = null;
+                sapModel.LoadPatterns.GetNameList(ref lpCount, ref lpNames);
+                stats.LoadPatternCount = lpCount;
+
+                int comboCount = 0;
+                string[] comboNames = null;
+                sapModel.RespCombo.GetNameList(ref comboCount, ref comboNames);
+                stats.LoadCombinationCount = comboCount;
 
                 return OperationResult<CSISapModelStatisticsDTO>.Success(stats);
             }

@@ -23,11 +23,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         string sectionName,
         string userName);
 
-    internal delegate int CSISapModelGetFrameNames<TSapModel>(
-        TSapModel sapModel,
-        ref int numberNames,
-        ref string[] names);
-
     internal delegate int CSISapModelReadFramePoints<TSapModel>(
         TSapModel sapModel,
         string frameName,
@@ -196,7 +191,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         internal static OperationResult<IReadOnlyList<string>> GetNameList<TSapModel>(
             string productName,
             TSapModel sapModel,
-            CSISapModelGetFrameNames<TSapModel> getNameList)
+            CSISapModelGetNameList<TSapModel> getNameList)
         {
             int numberNames = 0;
             string[] names = null;

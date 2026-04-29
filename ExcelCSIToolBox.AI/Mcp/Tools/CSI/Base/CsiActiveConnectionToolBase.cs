@@ -86,6 +86,11 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Base
             return Ok(preview.Summary, preview);
         }
 
+        protected ToolCallResponse Ok(string message)
+        {
+            return Ok(message, null);
+        }
+
         protected ToolCallResponse Ok(string message, object payload)
         {
             return new ToolCallResponse

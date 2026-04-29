@@ -1355,7 +1355,7 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
 
         public OperationResult<CSISapModelStatisticsDTO> GetModelStatistics()
         {
-            var sapModelResult = EnsureSapModel();
+            var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess) return OperationResult<CSISapModelStatisticsDTO>.Failure(sapModelResult.Message);
             var sapModel = sapModelResult.Data;
 
@@ -1364,19 +1364,24 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             try
             {
                 int pointCount = 0;
-                sapModel.PointObj.Count(ref pointCount);
+                string[] pointNames = null;
+                sapModel.PointObj.GetNameList(ref pointCount, ref pointNames);
                 stats.PointCount = pointCount;
 
                 int frameCount = 0;
-                sapModel.FrameObj.Count(ref frameCount);
+                string[] frameNames = null;
+                sapModel.FrameObj.GetNameList(ref frameCount, ref frameNames);
                 stats.FrameCount = frameCount;
 
                 int areaCount = 0;
-                sapModel.AreaObj.Count(ref areaCount);
+                string[] areaNames = null;
+                sapModel.AreaObj.GetNameList(ref areaCount, ref areaNames);
                 stats.ShellCount = areaCount;
 
-                stats.LoadPatterns.Count(ref pointCount); // Reusing pointCount as temp
-                stats.LoadPatternCount = pointCount;
+                int lpCount = 0;
+                string[] lpNames = null;
+                sapModel.LoadPatterns.GetNameList(ref lpCount, ref lpNames);
+                stats.LoadPatternCount = lpCount;
                 
                 // For combos, SAP2000 might be different. Let's check.
                 // In SAP2000 OAPI, RespCombo.Count doesn't exist? 
@@ -1397,14 +1402,14 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
 
         public OperationResult RefreshView(bool zoomAll = false)
         {
-            var sapModelResult = EnsureSapModel();
+            var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
             return RefreshView(sapModelResult.Data, zoomAll);
         }
 
         public OperationResult SetPresentUnits(int unitsCode)
         {
-            var sapModelResult = EnsureSapModel();
+            var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
             int ret = sapModelResult.Data.SetPresentUnits((SAP2000v1.eUnits)unitsCode);
             return ret == 0 ? OperationResult.Success() : OperationResult.Failure($"Failed to set units (return code {ret}).");
