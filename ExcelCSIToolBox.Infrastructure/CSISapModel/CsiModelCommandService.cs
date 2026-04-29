@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
+using ExcelCSIToolBox.Data.CSISapModel.PointObject;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
 
@@ -38,17 +39,50 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         {
             return Execute("points.add_by_coordinates", "Points", "Creation", CsiMethodRiskLevel.Low, confirmed, One(CleanName(userName)),
                 $"x={x}, y={y}, z={z}, userName={CleanName(userName)}",
-                service => service.AddPointsByCartesian(new[]
+                service =>
                 {
-                    new CSISapModelPointCartesianInput
+                    string requestedName = CleanName(userName);
+                    OperationResult<CSISapModelAddPointsResultDTO> addResult = service.AddPointsByCartesian(new[]
                     {
-                        ExcelRowNumber = 1,
-                        UniqueName = CleanName(userName),
-                        X = x,
-                        Y = y,
-                        Z = z
+                        new CSISapModelPointCartesianInput
+                        {
+                            ExcelRowNumber = 1,
+                            UniqueName = requestedName,
+                            X = x,
+                            Y = y,
+                            Z = z
+                        }
+                    });
+
+                    if (!addResult.IsSuccess)
+                    {
+                        return OperationResult.Failure(addResult.Message);
                     }
-                }));
+
+                    if (addResult.Data == null || addResult.Data.AddedCount <= 0)
+                    {
+                        return OperationResult.Failure("PointObj.AddCartesian returned without adding a point.");
+                    }
+
+                    string failedMessages = JoinMessages(addResult.Data.FailedRowMessages);
+                    if (!string.IsNullOrWhiteSpace(requestedName))
+                    {
+                        OperationResult<PointObjectInfo> verifyResult = service.GetPointCoordinates(requestedName);
+                        if (!verifyResult.IsSuccess)
+                        {
+                            string detail = string.IsNullOrWhiteSpace(failedMessages) ? string.Empty : " " + failedMessages;
+                            return OperationResult.Failure("ETABS/SAP2000 reported success, but the requested point '" + requestedName + "' could not be verified in the active model." + detail);
+                        }
+                    }
+
+                    string message = "Added point '" + (string.IsNullOrWhiteSpace(requestedName) ? "(auto name)" : requestedName) + "' at (" + x + ", " + y + ", " + z + ").";
+                    if (!string.IsNullOrWhiteSpace(failedMessages))
+                    {
+                        message += " Note: " + failedMessages;
+                    }
+
+                    return OperationResult.Success(message);
+                });
         }
 
         public CsiWritePreview PreviewAddFrameByCoordinates(double xi, double yi, double zi, double xj, double yj, double zj, string sectionName, string userName)
@@ -388,6 +422,16 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         private static int Count(IReadOnlyList<string> values)
         {
             return values == null ? 0 : values.Count;
+        }
+
+        private static string JoinMessages(IReadOnlyList<string> values)
+        {
+            if (values == null || values.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(" ", values);
         }
     }
 }

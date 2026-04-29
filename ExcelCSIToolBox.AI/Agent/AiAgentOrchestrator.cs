@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ExcelCSIToolBox.AI.Mcp.Client;
@@ -370,6 +371,12 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 return null;
             }
 
+            AiAgentToolDecision addPointDecision = TryCreateAddPointDecision(userMessage);
+            if (addPointDecision != null)
+            {
+                return addPointDecision;
+            }
+
             if (ContainsAny(normalized, "unit", "units", "present unit", "current unit", "don vi"))
             {
                 return CreateToolDecision("CSI.GetPresentUnits", "Heuristic route: units query.");
@@ -455,6 +462,67 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             return null;
+        }
+
+        private static AiAgentToolDecision TryCreateAddPointDecision(string userMessage)
+        {
+            if (string.IsNullOrWhiteSpace(userMessage))
+            {
+                return null;
+            }
+
+            string normalized = Normalize(userMessage);
+            if (!ContainsAny(normalized, "add point", "create point", "new point"))
+            {
+                return null;
+            }
+
+            Match coordinateMatch = Regex.Match(
+                userMessage,
+                @"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)",
+                RegexOptions.CultureInvariant);
+            if (!coordinateMatch.Success)
+            {
+                return null;
+            }
+
+            double x;
+            double y;
+            double z;
+            if (!double.TryParse(coordinateMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out x) ||
+                !double.TryParse(coordinateMatch.Groups[2].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out y) ||
+                !double.TryParse(coordinateMatch.Groups[3].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out z))
+            {
+                return null;
+            }
+
+            string pointName = string.Empty;
+            Match nameMatch = Regex.Match(
+                userMessage,
+                @"(?:name\s+it\s+(?:as\s+)?|named\s+|name\s*[:=]\s*)([A-Za-z_][A-Za-z0-9_\-\.]*)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (nameMatch.Success)
+            {
+                pointName = nameMatch.Groups[1].Value;
+            }
+
+            JObject args = new JObject
+            {
+                ["x"] = x,
+                ["y"] = y,
+                ["z"] = z,
+                ["userName"] = pointName,
+                ["dryRun"] = false,
+                ["confirmed"] = true
+            };
+
+            return new AiAgentToolDecision
+            {
+                ShouldCallTool = true,
+                ToolName = "points.add_by_coordinates",
+                ArgumentsJson = args.ToString(Newtonsoft.Json.Formatting.None),
+                Reason = "Heuristic route: add point by coordinates."
+            };
         }
 
         private static AiAgentToolDecision CreateToolDecision(string toolName, string reason)

@@ -22,9 +22,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
 
         protected override ToolCallResponse Execute(PointByCoordinatesArgs args)
         {
+            string userName = args.GetUserName();
             return args.DryRun
-                ? Preview(CommandService.PreviewAddPoint(args.X, args.Y, args.Z, args.UserName))
-                : Result(CommandService.AddPoint(args.X, args.Y, args.Z, args.UserName, args.Confirmed));
+                ? Preview(CommandService.PreviewAddPoint(args.X, args.Y, args.Z, userName))
+                : Result(CommandService.AddPoint(args.X, args.Y, args.Z, userName, args.Confirmed));
         }
     }
 
@@ -42,9 +43,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
 
         protected override ToolCallResponse Execute(PointByCoordinatesArgs args)
         {
+            string userName = args.GetUserName();
             return args.DryRun
-                ? Preview(CommandService.PreviewAddPoint(args.X, args.Y, args.Z, args.UserName))
-                : Result(CommandService.AddPoint(args.X, args.Y, args.Z, args.UserName, args.Confirmed));
+                ? Preview(CommandService.PreviewAddPoint(args.X, args.Y, args.Z, userName))
+                : Result(CommandService.AddPoint(args.X, args.Y, args.Z, userName, args.Confirmed));
         }
     }
 
@@ -146,6 +148,29 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
         public double Y { get; set; }
         public double Z { get; set; }
         public string UserName { get; set; }
+        public string Name { get; set; }
+        public string PointName { get; set; }
+        public string UniqueName { get; set; }
+
+        public string GetUserName()
+        {
+            if (!string.IsNullOrWhiteSpace(UserName))
+            {
+                return UserName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(UniqueName))
+            {
+                return UniqueName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(PointName))
+            {
+                return PointName;
+            }
+
+            return Name;
+        }
     }
 
     public sealed class PointRestraintArgs : DryRunConfirmedArgs
