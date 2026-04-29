@@ -6,7 +6,8 @@ using ExcelCSIToolBox.AI.Mcp.Contracts;
 using ExcelCSIToolBox.AI.Mcp.Tools;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames;
-using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads.LoadCombinations;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads.LoadPatterns;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells;
@@ -115,6 +116,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new LoadCombinationsGetAllTool(etabsService, sap2000Service));
             _registry.Register(new LoadCombinationsGetDetailsTool(etabsService, sap2000Service));
             _registry.Register(new LoadCombinationsDeleteTool(etabsService, sap2000Service));
+            _registry.Register(new LoadPatternsGetAllTool(etabsService, sap2000Service));
+            _registry.Register(new LoadPatternsDeleteTool(etabsService, sap2000Service));
 
             _registry.Register(new PointsAddByCoordinatesTool(commandService));
             _registry.Register(new FramesAddByCoordinatesTool(commandService));

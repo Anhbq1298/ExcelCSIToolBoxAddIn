@@ -43,6 +43,8 @@ namespace ExcelCSIToolBox.AI.Agent
             "loads.combinations.get_all",
             "loads.combinations.get_details",
             "loads.combinations.delete",
+            "loads.patterns.get_all",
+            "loads.patterns.delete",
             "points.add_by_coordinates",
             "frames.add_by_coordinates",
             "frames.add_by_points",
@@ -117,41 +119,46 @@ Available read tools:
    Args: {""combinationName"":""COMB1""}
    Use when the user asks for cases/scale factors inside one load combination.
 
+18. loads.patterns.get_all
+   Use when the user asks to list/count load patterns.
+
 Available controlled write tools:
-18. points.add_by_coordinates
+19. points.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""x"":0,""y"":0,""z"":0,""userName"":""""}
-19. frames.add_by_coordinates
+20. frames.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""xi"":0,""yi"":0,""zi"":0,""xj"":0,""yj"":0,""zj"":0,""sectionName"":"""",""userName"":""""}
-20. frames.add_by_points
+21. frames.add_by_points
    Args: {""dryRun"":true,""confirmed"":false,""point1Name"":"""",""point2Name"":"""",""sectionName"":"""",""userName"":""""}
-21. frames.assign_section
+22. frames.assign_section
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""sectionName"":""""}
-22. loads.frame.assign_distributed
+23. loads.frame.assign_distributed
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""value1"":0,""value2"":0}
-23. loads.frame.assign_point_load
+24. loads.frame.assign_point_load
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""distance"":0.5,""value"":0}
-24. selection.clear
+25. selection.clear
    Args: {""dryRun"":true,""confirmed"":false}
-25. frames.delete
+26. frames.delete
    Args: {""dryRun"":true,""confirmed"":false,""objectNames"":[""F1""]}
-26. analysis.run
+27. analysis.run
    Args: {""dryRun"":true,""confirmed"":false}
-27. file.save_model
+28. file.save_model
    Dangerous and blocked by default.
-28. shells.add_by_points
+29. shells.add_by_points
    Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1"",""P2"",""P3""],""propertyName"":""Default"",""userName"":""""}
-29. shells.add_by_coordinates
+30. shells.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""points"":[{""x"":0,""y"":0,""z"":0},{""x"":1,""y"":0,""z"":0},{""x"":0,""y"":1,""z"":0}],""propertyName"":""Default"",""userName"":"""",""coordinateSystem"":""Global""}
-30. shells.assign_uniform_load
+31. shells.assign_uniform_load
    Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""],""loadPattern"":""DEAD"",""value"":1.0,""direction"":6,""replace"":true,""coordinateSystem"":""Global""}
-31. shells.delete
+32. shells.delete
    Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""]}
-32. points.set_selected
+33. points.set_selected
    Args: {""dryRun"":true,""confirmed"":false,""names"":[""P1"",""P2""]}
-33. frames.set_selected
+34. frames.set_selected
    Args: {""dryRun"":true,""confirmed"":false,""names"":[""F1"",""F2""]}
-34. loads.combinations.delete
+35. loads.combinations.delete
    Args: {""dryRun"":true,""confirmed"":false,""names"":[""COMB1""]}
+36. loads.patterns.delete
+   Args: {""dryRun"":true,""confirmed"":false,""names"":[""DEAD""]}
 
 Return JSON only:
 {
@@ -435,6 +442,12 @@ ETABS/SAP2000 is open and a model is loaded.";
                 return CreateToolDecision("loads.combinations.get_all", "Heuristic route: load combinations query.");
             }
 
+            if (ContainsAny(normalized, "load pattern", "load patterns", "pattern", "patterns") &&
+                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+            {
+                return CreateToolDecision("loads.patterns.get_all", "Heuristic route: load patterns query.");
+            }
+
             if (ContainsAny(normalized, "selected point", "selected joint", "point selected", "joint selected"))
             {
                 return CreateToolDecision("points.get_selected", "Heuristic route: selected points query.");
@@ -537,6 +550,8 @@ ETABS/SAP2000 is open and a model is loaded.";
                         return FormatNames(result, "selected frame");
                     case "loads.combinations.get_all":
                         return FormatLoadCombinations(result);
+                    case "loads.patterns.get_all":
+                        return FormatLoadPatterns(result);
                     case "shells.get_all_names":
                         return FormatShellNames(result);
                     case "shells.get_selected":
@@ -742,6 +757,37 @@ ETABS/SAP2000 is open and a model is loaded.";
             }
 
             return $"Found {combinations.Count.ToString(CultureInfo.InvariantCulture)} load combination(s): {summary}.";
+        }
+
+        private static string FormatLoadPatterns(JObject result)
+        {
+            JArray patterns = result["Data"] as JArray;
+            if (patterns == null || patterns.Count == 0)
+            {
+                return "No load patterns were found.";
+            }
+
+            var preview = new List<string>();
+            for (int i = 0; i < patterns.Count && i < 10; i++)
+            {
+                JObject item = patterns[i] as JObject;
+                if (item == null)
+                {
+                    continue;
+                }
+
+                string name = item.Value<string>("Name") ?? "?";
+                string type = item.Value<string>("Type") ?? "Unknown";
+                preview.Add(name + " (" + type + ")");
+            }
+
+            string summary = string.Join(", ", preview);
+            if (patterns.Count > preview.Count)
+            {
+                summary += ", ...";
+            }
+
+            return $"Found {patterns.Count.ToString(CultureInfo.InvariantCulture)} load pattern(s): {summary}.";
         }
 
         private static string FormatSelectedShells(JObject result)

@@ -6,7 +6,7 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 
-namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads
+namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads.LoadCombinations
 {
     public sealed class LoadCombinationsGetAllTool : CsiActiveConnectionToolBase
     {
