@@ -24,8 +24,11 @@ namespace ExcelCSIToolBox.AI.Agent
             "CSI.GetSelectedObjects",
             "CSI.GetSelectedFrames",
             "CSI.GetSelectedFrameSections",
+            "csi.get_model_statistics",
+            "csi.refresh_view",
             "points.get_selected",
             "points.get_all_names",
+            "points.get_count",
             "points.get_by_name",
             "points.get_coordinates",
             "points.get_restraint",
@@ -36,6 +39,7 @@ namespace ExcelCSIToolBox.AI.Agent
             "points.set_load_force",
             "frames.get_selected",
             "frames.get_all_names",
+            "frames.get_count",
             "frames.get_by_name",
             "frames.get_points",
             "frames.get_section",
@@ -46,6 +50,7 @@ namespace ExcelCSIToolBox.AI.Agent
             "frames.get_section_detail",
             "frames.analyze_selected",
             "shells.get_all_names",
+            "shells.get_count",
             "shells.get_by_name",
             "shells.get_points",
             "shells.get_property",
@@ -79,19 +84,23 @@ namespace ExcelCSIToolBox.AI.Agent
 Prefer MCP tools over guessing model data.
 Be concise and engineering-focused.
 Treat all model operations as read-only unless the user explicitly requests a write action.
-Never modify ETABS/SAP2000 models without explicit confirmation.
 
 Available tools:
 - CSI.GetModelInfo: File path, product info.
+- csi.get_model_statistics: Counts for points, frames, shells, loads. Use for ""how many"" questions.
 - CSI.GetPresentUnits: Current model units.
 - CSI.GetSelectedObjects: List current selection.
+- csi.refresh_view: Refresh graphics.
 - frames.analyze_selected: COMPLETE workflow for selected frames (sections, geometry, assignments).
-- points.get_all_names, points.get_coordinates, points.get_selected: Point queries.
-- frames.get_all_names, frames.get_sections, frames.get_section_detail: Frame queries.
-- shells.get_all_names, shells.get_selected, shells.get_property: Shell queries.
+- points.get_all_names, points.get_coordinates, points.get_selected, points.get_count: Point queries.
+- frames.get_all_names, frames.get_sections, frames.get_section_detail, frames.get_count: Frame queries.
+- shells.get_all_names, shells.get_selected, shells.get_property, shells.get_count: Shell queries.
 - loads.combinations.get_all, loads.patterns.get_all: Loading queries.
+- points.add_by_coordinates, frames.add_by_coordinates, frames.add_by_points: Creation tools.
 
-For ANY model modification (Assign, Create, Delete, Update, Modify), you MUST run a dry-run preview first and wait for confirmation.
+SAFETY POLICY:
+1. For HIGH/MEDIUM risk (Delete, Run Analysis, Save, Large Assignments), you MUST run a dry-run preview first.
+2. For LOW risk (Add Point, Add Frame, Clear Selection), you may execute directly (dryRun: false, confirmed: true) to be fast, unless the user specifically asks to preview first.
 
 Return JSON only:
 {
@@ -312,9 +321,10 @@ If this is a write preview, ask for explicit confirmation before execution.";
             {
                 JObject result = JObject.Parse(toolResponse.ResultJson);
                 bool requiresConfirmation = result.Value<bool?>("RequiresConfirmation") ?? false;
+                bool supportsDryRun = result.Value<bool?>("SupportsDryRun") ?? false;
                 string operationName = result.Value<string>("OperationName");
 
-                if (requiresConfirmation && !string.IsNullOrWhiteSpace(operationName))
+                if ((requiresConfirmation || supportsDryRun) && !string.IsNullOrWhiteSpace(operationName))
                 {
                     _pendingToolName = operationName;
                     _pendingArgumentsJson = argumentsJson ?? "{}";
@@ -380,9 +390,15 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             if (ContainsAny(normalized, "point", "points", "joint", "joints") &&
-                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "count", "how many", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
-                return CreateToolDecision("points.get_all_names", "Heuristic route: point object query.");
+                return CreateToolDecision("points.get_count", "Heuristic route: point count query.");
+            }
+
+            if (ContainsAny(normalized, "point", "points", "joint", "joints") &&
+                ContainsAny(normalized, "list", "all", "names"))
+            {
+                return CreateToolDecision("points.get_all_names", "Heuristic route: point object list.");
             }
 
             if (ContainsAny(normalized, "selected frame", "selected member", "frame selected", "selected beam", "selected column"))
@@ -391,9 +407,15 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             if (ContainsAny(normalized, "frame", "frames", "member", "members", "beam", "beams", "column", "columns", "brace", "braces") &&
-                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "count", "how many", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
-                return CreateToolDecision("frames.get_all_names", "Heuristic route: frame object query.");
+                return CreateToolDecision("frames.get_count", "Heuristic route: frame count query.");
+            }
+
+            if (ContainsAny(normalized, "frame", "frames", "member", "members", "beam", "beams", "column", "columns", "brace", "braces") &&
+                ContainsAny(normalized, "list", "all", "names"))
+            {
+                return CreateToolDecision("frames.get_all_names", "Heuristic route: frame object list.");
             }
 
             if (ContainsAny(normalized, "selected object", "current selection", "objects selected"))
@@ -407,9 +429,15 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             if (ContainsAny(normalized, "shell", "shells", "area", "areas", "wall", "walls", "slab", "slabs", "plate", "plates", "membrane", "membranes") &&
-                ContainsAny(normalized, "how many", "count", "number", "list", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "how many", "count", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
-                return CreateToolDecision("shells.get_all_names", "Heuristic route: shell/area object query.");
+                return CreateToolDecision("shells.get_count", "Heuristic route: shell count query.");
+            }
+
+            if (ContainsAny(normalized, "shell", "shells", "area", "areas", "wall", "walls", "slab", "slabs", "plate", "plates", "membrane", "membranes") &&
+                ContainsAny(normalized, "list", "all", "names"))
+            {
+                return CreateToolDecision("shells.get_all_names", "Heuristic route: shell object list.");
             }
 
             if (ContainsAny(normalized, "model info", "model path", "model file", "file path", "attached model", "current model"))
@@ -498,6 +526,14 @@ If this is a write preview, ask for explicit confirmation before execution.";
                         return FormatShellNames(result);
                     case "shells.get_selected":
                         return FormatSelectedShells(result);
+                    case "csi.get_model_statistics":
+                        return FormatModelStatistics(result);
+                    case "points.get_count":
+                        return FormatCount(result, "point");
+                    case "frames.get_count":
+                        return FormatCount(result, "frame");
+                    case "shells.get_count":
+                        return FormatCount(result, "shell/area");
                     default:
                         return null;
                 }
@@ -777,6 +813,23 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             return summary;
+        }
+
+        private static string FormatModelStatistics(JObject result)
+        {
+            int points = result.Value<int?>("PointCount") ?? 0;
+            int frames = result.Value<int?>("FrameCount") ?? 0;
+            int shells = result.Value<int?>("ShellCount") ?? 0;
+            int patterns = result.Value<int?>("LoadPatternCount") ?? 0;
+            int combos = result.Value<int?>("LoadCombinationCount") ?? 0;
+
+            return $"Model Statistics: {points} point(s), {frames} frame(s), {shells} shell/area(s), {patterns} load pattern(s), {combos} load combination(s).";
+        }
+
+        private static string FormatCount(JObject result, string label)
+        {
+            int count = result.Value<int?>("Count") ?? 0;
+            return $"There are {count} {label} object(s) in the active model.";
         }
     }
 }

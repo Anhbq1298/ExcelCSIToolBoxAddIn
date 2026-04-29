@@ -29,7 +29,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
         public CsiWritePreview PreviewAddPoint(double x, double y, double z, string userName)
         {
-            return Preview("points.add_by_coordinates", CsiMethodRiskLevel.Low, false, true,
+            return Preview("points.add_by_coordinates", CsiMethodRiskLevel.Low, true, true,
                 $"This will add one point at ({x}, {y}, {z}) with name '{CleanName(userName)}'.",
                 One(CleanName(userName)));
         }
@@ -53,7 +53,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
         public CsiWritePreview PreviewAddFrameByCoordinates(double xi, double yi, double zi, double xj, double yj, double zj, string sectionName, string userName)
         {
-            return Preview("frames.add_by_coordinates", CsiMethodRiskLevel.Low, false, true,
+            return Preview("frames.add_by_coordinates", CsiMethodRiskLevel.Low, true, true,
                 $"This will add one frame from ({xi}, {yi}, {zi}) to ({xj}, {yj}, {zj}) using section '{sectionName}'.",
                 One(CleanName(userName)));
         }
@@ -86,7 +86,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
         public CsiWritePreview PreviewAddFrameByPoints(string point1Name, string point2Name, string sectionName, string userName)
         {
-            return Preview("frames.add_by_points", CsiMethodRiskLevel.Low, false, true,
+            return Preview("frames.add_by_points", CsiMethodRiskLevel.Low, true, true,
                 $"This will add one frame between points '{point1Name}' and '{point2Name}' using section '{sectionName}'.",
                 One(CleanName(userName)));
         }
@@ -192,7 +192,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
         public CsiWritePreview PreviewSetObjectSelection(IReadOnlyList<string> objectNames, string objectType)
         {
-            return Preview("selection.set_objects", CsiMethodRiskLevel.Low, false, true,
+            return Preview("selection.set_objects", CsiMethodRiskLevel.Low, true, true,
                 $"This will select {Count(objectNames)} {objectType} object(s).",
                 objectNames);
         }
@@ -225,7 +225,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
         public CsiWritePreview PreviewClearSelection()
         {
-            return Preview("selection.clear", CsiMethodRiskLevel.Low, false, true,
+            return Preview("selection.clear", CsiMethodRiskLevel.Low, true, true,
                 "This will clear the active CSI object selection.",
                 new string[0]);
         }
