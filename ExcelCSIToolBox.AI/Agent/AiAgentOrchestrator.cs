@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -737,11 +738,6 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 return null;
             }
 
-            if (!toolResponse.Success)
-            {
-                return toolResponse.Message;
-            }
-
             if (string.IsNullOrWhiteSpace(toolResponse.ResultJson))
             {
                 return toolResponse.Message;
@@ -787,6 +783,8 @@ If this is a write preview, ask for explicit confirmation before execution.";
                         return FormatCount(result, "frame");
                     case "shells.get_count":
                         return FormatCount(result, "shell/area");
+                    case "execute_csi_request":
+                        return FormatCsiWorkflowResult(result);
                     default:
                         string preview = TryFormatWritePreview(result);
                         if (!string.IsNullOrWhiteSpace(preview))
@@ -799,8 +797,66 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
             catch
             {
-                return null;
+                return toolResponse.Success ? null : toolResponse.Message;
             }
+        }
+
+        private static string FormatCsiWorkflowResult(JObject result)
+        {
+            int total = result.Value<int?>("TotalTasksDetected") ?? 0;
+            int succeeded = result.Value<int?>("Succeeded") ?? 0;
+            int failed = result.Value<int?>("Failed") ?? 0;
+            int skipped = result.Value<int?>("Skipped") ?? 0;
+
+            var builder = new StringBuilder();
+            builder.AppendLine($"Workflow execution: {succeeded} succeeded, {failed} failed, {skipped} skipped out of {total} task(s).");
+
+            JArray results = result["Results"] as JArray;
+            if (results == null || results.Count == 0)
+            {
+                return builder.ToString().Trim();
+            }
+
+            for (int i = 0; i < results.Count; i++)
+            {
+                JObject item = results[i] as JObject;
+                if (item == null)
+                {
+                    continue;
+                }
+
+                string taskType = item.Value<string>("TaskType") ?? "Task";
+                string operation = item.Value<string>("Operation") ?? "Execute";
+                bool success = item.Value<bool?>("Success") ?? false;
+                bool itemSkipped = item.Value<bool?>("Skipped") ?? false;
+                string objectName = item.Value<string>("ObjectName");
+                string reason = item.Value<string>("FailureReason");
+                string status = itemSkipped ? "skipped" : success ? "success" : "failed";
+
+                builder.Append("- ");
+                builder.Append(taskType);
+                builder.Append(".");
+                builder.Append(operation);
+                builder.Append(": ");
+                builder.Append(status);
+
+                if (!string.IsNullOrWhiteSpace(objectName))
+                {
+                    builder.Append(" (");
+                    builder.Append(objectName);
+                    builder.Append(")");
+                }
+
+                if (!string.IsNullOrWhiteSpace(reason))
+                {
+                    builder.Append(" - ");
+                    builder.Append(reason);
+                }
+
+                builder.AppendLine();
+            }
+
+            return builder.ToString().Trim();
         }
 
         private static string FormatPresentUnits(JObject result)
