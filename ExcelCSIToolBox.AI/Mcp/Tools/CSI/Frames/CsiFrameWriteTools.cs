@@ -86,7 +86,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
         }
     }
 
-    public sealed class FrameByCoordinatesArgs : DryRunConfirmedArgs
+    public sealed class FrameByCoordinatesArgs : LowRiskWriteArgs
     {
         public double Xi { get; set; }
         public double Yi { get; set; }
@@ -98,7 +98,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
         public string UserName { get; set; }
     }
 
-    public sealed class FrameByPointsArgs : DryRunConfirmedArgs
+    public sealed class FrameByPointsArgs : LowRiskWriteArgs
     {
         public string Point1Name { get; set; }
         public string Point2Name { get; set; }

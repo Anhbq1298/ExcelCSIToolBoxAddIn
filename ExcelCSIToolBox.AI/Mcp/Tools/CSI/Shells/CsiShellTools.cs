@@ -335,14 +335,14 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells
         public string AreaName { get; set; }
     }
 
-    public sealed class ShellByPointsArgs : DryRunConfirmedArgs
+    public sealed class ShellByPointsArgs : LowRiskWriteArgs
     {
         public List<string> PointNames { get; set; }
         public string PropertyName { get; set; }
         public string UserName { get; set; }
     }
 
-    public sealed class ShellByCoordinatesArgs : DryRunConfirmedArgs
+    public sealed class ShellByCoordinatesArgs : LowRiskWriteArgs
     {
         public List<CSISapModelShellCoordinateInput> Points { get; set; }
         public string PropertyName { get; set; }

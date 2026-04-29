@@ -94,7 +94,16 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Base
 
     public class DryRunConfirmedArgs
     {
-        public bool DryRun { get; set; } = true;
+        public bool DryRun { get; set; } = false;
         public bool Confirmed { get; set; }
+    }
+
+    public class LowRiskWriteArgs : DryRunConfirmedArgs
+    {
+        public LowRiskWriteArgs()
+        {
+            DryRun = false;
+            Confirmed = true;
+        }
     }
 }

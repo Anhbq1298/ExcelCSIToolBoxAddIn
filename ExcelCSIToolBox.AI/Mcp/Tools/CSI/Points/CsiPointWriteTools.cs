@@ -140,7 +140,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
         }
     }
 
-    public sealed class PointByCoordinatesArgs : DryRunConfirmedArgs
+    public sealed class PointByCoordinatesArgs : LowRiskWriteArgs
     {
         public double X { get; set; }
         public double Y { get; set; }

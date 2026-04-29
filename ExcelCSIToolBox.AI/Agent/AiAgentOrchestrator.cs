@@ -108,8 +108,9 @@ Available tools:
 - points.add_by_coordinates, frames.add_by_coordinates, frames.add_by_points: Creation tools.
 
 SAFETY POLICY:
-1. For HIGH/MEDIUM risk (Delete, Run Analysis, Save, Large Assignments), you MUST run a dry-run preview first.
-2. For LOW risk (Add Point, Add Frame, Clear Selection), you may execute directly (dryRun: false, confirmed: true) to be fast, unless the user specifically asks to preview first.
+1. Do not use dryRun unless the user explicitly asks for preview/check only.
+2. For LOW risk (Add Point, Add Frame, Clear Selection), execute directly with dryRun: false and confirmed: true.
+3. For HIGH/MEDIUM risk (Delete, Run Analysis, Save, Large Assignments), ask for explicit user confirmation before execution. When confirmed, call the tool with dryRun: false and confirmed: true.
 
 Return JSON only:
 {
@@ -330,10 +331,9 @@ If this is a write preview, ask for explicit confirmation before execution.";
             {
                 JObject result = JObject.Parse(toolResponse.ResultJson);
                 bool requiresConfirmation = result.Value<bool?>("RequiresConfirmation") ?? false;
-                bool supportsDryRun = result.Value<bool?>("SupportsDryRun") ?? false;
                 string operationName = result.Value<string>("OperationName");
 
-                if ((requiresConfirmation || supportsDryRun) && !string.IsNullOrWhiteSpace(operationName))
+                if (requiresConfirmation && !string.IsNullOrWhiteSpace(operationName))
                 {
                     _pendingToolName = operationName;
                     _pendingArgumentsJson = argumentsJson ?? "{}";
@@ -544,6 +544,12 @@ If this is a write preview, ask for explicit confirmation before execution.";
                     case "shells.get_count":
                         return FormatCount(result, "shell/area");
                     default:
+                        string preview = TryFormatWritePreview(result);
+                        if (!string.IsNullOrWhiteSpace(preview))
+                        {
+                            return preview;
+                        }
+
                         return null;
                 }
             }
@@ -839,6 +845,25 @@ If this is a write preview, ask for explicit confirmation before execution.";
         {
             int count = result.Value<int?>("Count") ?? 0;
             return $"There are {count} {label} object(s) in the active model.";
+        }
+
+        private static string TryFormatWritePreview(JObject result)
+        {
+            string operationName = result.Value<string>("OperationName");
+            if (string.IsNullOrWhiteSpace(operationName))
+            {
+                return null;
+            }
+
+            string summary = result.Value<string>("Summary");
+            bool requiresConfirmation = result.Value<bool?>("RequiresConfirmation") ?? false;
+
+            if (requiresConfirmation)
+            {
+                return "Preview: " + (summary ?? "This operation requires confirmation.") + " Confirm to proceed?";
+            }
+
+            return "Preview only: " + (summary ?? "No model changes were made.");
         }
     }
 }
