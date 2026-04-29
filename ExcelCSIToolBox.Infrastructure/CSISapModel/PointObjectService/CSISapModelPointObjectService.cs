@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Data.CSISapModel.PointObject;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
 
@@ -38,6 +39,49 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         string pointName,
         ref string pointLabel,
         ref string pointStory);
+
+    internal delegate int CSISapModelGetPointNames<TSapModel>(
+        TSapModel sapModel,
+        ref int numberNames,
+        ref string[] names);
+
+    internal delegate int CSISapModelReadPointSelected<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref bool selected);
+
+    internal delegate int CSISapModelReadPointRestraint<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref bool[] restraints);
+
+    internal delegate int CSISapModelReadPointLoadForce<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref int numberItems,
+        ref string[] pointNames,
+        ref string[] loadPatterns,
+        ref int[] caseSteps,
+        ref string[] coordinateSystems,
+        ref double[] f1,
+        ref double[] f2,
+        ref double[] f3,
+        ref double[] m1,
+        ref double[] m2,
+        ref double[] m3);
+
+    internal delegate int CSISapModelSetPointRestraint<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref bool[] restraints);
+
+    internal delegate int CSISapModelSetPointLoadForce<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        string loadPattern,
+        ref double[] forceValues,
+        bool replace,
+        string coordinateSystem);
 
     internal static class CSISapModelPointObjectService
     {
@@ -127,6 +171,248 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             {
                 return OperationResult<CSISapModelAddPointsResultDTO>.Failure($"{productName} add-by-Cartesian failed unexpectedly: {ex.Message}");
             }
+        }
+
+        internal static OperationResult<IReadOnlyList<string>> GetNameList<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            CSISapModelGetPointNames<TSapModel> getNameList)
+        {
+            int numberNames = 0;
+            string[] names = null;
+            int result = getNameList(sapModel, ref numberNames, ref names);
+            if (result != 0)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure($"{productName} PointObj.GetNameList failed (return code {result}).");
+            }
+
+            return OperationResult<IReadOnlyList<string>>.Success(names ?? new string[0]);
+        }
+
+        internal static OperationResult<PointObjectInfo> GetByName<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointCoordinates<TSapModel> getPointCoordinates,
+            CSISapModelReadPointSelected<TSapModel> getSelected)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointObjectInfo>.Failure("Point name is required.");
+            }
+
+            double x = 0;
+            double y = 0;
+            double z = 0;
+            int coordResult = getPointCoordinates(sapModel, pointName, ref x, ref y, ref z);
+            if (coordResult != 0)
+            {
+                return OperationResult<PointObjectInfo>.Failure($"{productName} point '{pointName}' was not found (return code {coordResult}).");
+            }
+
+            bool selected = false;
+            if (getSelected != null)
+            {
+                getSelected(sapModel, pointName, ref selected);
+            }
+
+            return OperationResult<PointObjectInfo>.Success(new PointObjectInfo
+            {
+                Name = pointName,
+                X = x,
+                Y = y,
+                Z = z,
+                IsSelected = selected,
+                CoordinateSystem = "Global"
+            });
+        }
+
+        internal static OperationResult<PointRestraintInfo> GetRestraint<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointRestraint<TSapModel> getRestraint)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointRestraintInfo>.Failure("Point name is required.");
+            }
+
+            bool[] values = null;
+            int result = getRestraint(sapModel, pointName, ref values);
+            if (result != 0 || values == null || values.Length < 6)
+            {
+                return OperationResult<PointRestraintInfo>.Failure($"{productName} PointObj.GetRestraint failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<PointRestraintInfo>.Success(new PointRestraintInfo
+            {
+                PointName = pointName,
+                U1 = values[0],
+                U2 = values[1],
+                U3 = values[2],
+                R1 = values[3],
+                R2 = values[4],
+                R3 = values[5]
+            });
+        }
+
+        internal static OperationResult<IReadOnlyList<PointLoadInfo>> GetLoadForces<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointLoadForce<TSapModel> getLoadForce)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<IReadOnlyList<PointLoadInfo>>.Failure("Point name is required.");
+            }
+
+            int numberItems = 0;
+            string[] pointNames = null;
+            string[] loadPatterns = null;
+            int[] caseSteps = null;
+            string[] coordinateSystems = null;
+            double[] f1 = null;
+            double[] f2 = null;
+            double[] f3 = null;
+            double[] m1 = null;
+            double[] m2 = null;
+            double[] m3 = null;
+
+            int result = getLoadForce(sapModel, pointName, ref numberItems, ref pointNames, ref loadPatterns, ref caseSteps, ref coordinateSystems, ref f1, ref f2, ref f3, ref m1, ref m2, ref m3);
+            if (result != 0)
+            {
+                return OperationResult<IReadOnlyList<PointLoadInfo>>.Failure($"{productName} PointObj.GetLoadForce failed for '{pointName}' (return code {result}).");
+            }
+
+            var loads = new List<PointLoadInfo>();
+            for (int i = 0; i < numberItems; i++)
+            {
+                loads.Add(new PointLoadInfo
+                {
+                    PointName = GetArrayValue(pointNames, i, pointName),
+                    LoadPattern = GetArrayValue(loadPatterns, i, string.Empty),
+                    CoordinateSystem = GetArrayValue(coordinateSystems, i, "Global"),
+                    F1 = GetArrayValue(f1, i),
+                    F2 = GetArrayValue(f2, i),
+                    F3 = GetArrayValue(f3, i),
+                    M1 = GetArrayValue(m1, i),
+                    M2 = GetArrayValue(m2, i),
+                    M3 = GetArrayValue(m3, i)
+                });
+            }
+
+            return OperationResult<IReadOnlyList<PointLoadInfo>>.Success(loads);
+        }
+
+        internal static OperationResult SetRestraint<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            IReadOnlyList<string> pointNames,
+            IReadOnlyList<bool> restraints,
+            CSISapModelSetPointRestraint<TSapModel> setRestraint,
+            Func<TSapModel, OperationResult> refreshView)
+        {
+            if (pointNames == null || pointNames.Count == 0)
+            {
+                return OperationResult.Failure("At least one point name is required.");
+            }
+
+            if (restraints == null || restraints.Count != 6)
+            {
+                return OperationResult.Failure("Point restraints must contain exactly 6 boolean values.");
+            }
+
+            int success = 0;
+            var failures = new List<string>();
+            foreach (string rawName in pointNames)
+            {
+                string pointName = CleanName(rawName);
+                if (string.IsNullOrWhiteSpace(pointName))
+                {
+                    continue;
+                }
+
+                bool[] values = ToArray(restraints);
+                int result = setRestraint(sapModel, pointName, ref values);
+                if (result == 0)
+                {
+                    success++;
+                }
+                else
+                {
+                    failures.Add($"{pointName}: return code {result}");
+                }
+            }
+
+            refreshView(sapModel);
+            string message = $"Set restraints for {success} point object(s).";
+            if (failures.Count > 0)
+            {
+                message += " Failed: " + string.Join("; ", failures);
+            }
+
+            return failures.Count == 0 ? OperationResult.Success(message) : OperationResult.Failure(message);
+        }
+
+        internal static OperationResult SetLoadForce<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            IReadOnlyList<string> pointNames,
+            string loadPattern,
+            IReadOnlyList<double> forceValues,
+            bool replace,
+            string coordinateSystem,
+            CSISapModelSetPointLoadForce<TSapModel> setLoadForce,
+            Func<TSapModel, OperationResult> refreshView)
+        {
+            if (pointNames == null || pointNames.Count == 0)
+            {
+                return OperationResult.Failure("At least one point name is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(loadPattern))
+            {
+                return OperationResult.Failure("Load pattern is required.");
+            }
+
+            if (forceValues == null || forceValues.Count != 6)
+            {
+                return OperationResult.Failure("Point load force values must contain exactly 6 numbers.");
+            }
+
+            string cSys = string.IsNullOrWhiteSpace(coordinateSystem) ? "Global" : coordinateSystem.Trim();
+            int success = 0;
+            var failures = new List<string>();
+            foreach (string rawName in pointNames)
+            {
+                string pointName = CleanName(rawName);
+                if (string.IsNullOrWhiteSpace(pointName))
+                {
+                    continue;
+                }
+
+                double[] values = ToArray(forceValues);
+                int result = setLoadForce(sapModel, pointName, loadPattern.Trim(), ref values, replace, cSys);
+                if (result == 0)
+                {
+                    success++;
+                }
+                else
+                {
+                    failures.Add($"{pointName}: return code {result}");
+                }
+            }
+
+            refreshView(sapModel);
+            string message = $"Assigned point load '{loadPattern}' to {success} point object(s).";
+            if (failures.Count > 0)
+            {
+                message += " Failed: " + string.Join("; ", failures);
+            }
+
+            return failures.Count == 0 ? OperationResult.Success(message) : OperationResult.Failure(message);
         }
 
         internal static OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel<TSapModel>(
@@ -291,6 +577,45 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             return uniqueNames;
+        }
+
+        private static string CleanName(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static bool[] ToArray(IReadOnlyList<bool> values)
+        {
+            var result = new bool[values.Count];
+            for (int i = 0; i < values.Count; i++)
+            {
+                result[i] = values[i];
+            }
+
+            return result;
+        }
+
+        private static double[] ToArray(IReadOnlyList<double> values)
+        {
+            var result = new double[values.Count];
+            for (int i = 0; i < values.Count; i++)
+            {
+                result[i] = values[i];
+            }
+
+            return result;
+        }
+
+        private static string GetArrayValue(string[] values, int index, string fallback)
+        {
+            return values == null || index < 0 || index >= values.Length || string.IsNullOrWhiteSpace(values[index])
+                ? fallback
+                : values[index];
+        }
+
+        private static double GetArrayValue(double[] values, int index)
+        {
+            return values == null || index < 0 || index >= values.Length ? 0 : values[index];
         }
     }
 }

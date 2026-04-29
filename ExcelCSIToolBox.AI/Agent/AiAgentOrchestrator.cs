@@ -25,8 +25,22 @@ namespace ExcelCSIToolBox.AI.Agent
             "CSI.GetSelectedFrames",
             "CSI.GetSelectedFrameSections",
             "points.get_selected",
+            "points.get_all_names",
+            "points.get_by_name",
+            "points.get_coordinates",
+            "points.get_restraint",
+            "points.get_load_forces",
             "points.set_selected",
+            "points.add_cartesian",
+            "points.set_restraint",
+            "points.set_load_force",
             "frames.get_selected",
+            "frames.get_all_names",
+            "frames.get_by_name",
+            "frames.get_points",
+            "frames.get_section",
+            "frames.get_distributed_loads",
+            "frames.get_point_loads",
             "frames.set_selected",
             "frames.get_sections",
             "frames.get_section_detail",
@@ -51,6 +65,8 @@ namespace ExcelCSIToolBox.AI.Agent
             "frames.assign_section",
             "loads.frame.assign_distributed",
             "loads.frame.assign_point_load",
+            "frames.assign_distributed_load",
+            "frames.assign_point_load",
             "selection.clear",
             "frames.delete",
             "analysis.run",
@@ -102,28 +118,54 @@ Available read tools:
 12. points.get_selected
    Use when the user asks about selected points/joints or their coordinates.
 
-13. frames.get_selected
+13. points.get_all_names
+   Use when the user asks to list/count all point/joint objects.
+
+14. points.get_by_name
+   Args: {""pointName"":""P1""}
+   Use when the user asks for details of a named point/joint object.
+
+15. points.get_coordinates
+   Args: {""pointName"":""P1""}
+   Use when the user asks for coordinates of a named point/joint object.
+
+16. frames.get_selected
    Use when the user asks about selected frames/beams/columns.
 
-14. frames.get_sections
+17. frames.get_all_names
+   Use when the user asks to list/count all frame/beam/column/brace objects.
+
+18. frames.get_by_name
+   Args: {""frameName"":""F1""}
+   Use when the user asks for details of a named frame object.
+
+19. frames.get_points
+   Args: {""frameName"":""F1""}
+   Use when the user asks for end points of a named frame object.
+
+20. frames.get_section
+   Args: {""frameName"":""F1""}
+   Use when the user asks for section assignment of a named frame object.
+
+21. frames.get_sections
    Use when the user asks for available frame section properties.
 
-15. frames.get_section_detail
+22. frames.get_section_detail
    Args: {""sectionName"":""W18X35""}
    Use when the user asks for dimensions or material of a frame section.
 
-16. loads.combinations.get_all
+23. loads.combinations.get_all
    Use when the user asks to list/count load combinations.
 
-17. loads.combinations.get_details
+24. loads.combinations.get_details
    Args: {""combinationName"":""COMB1""}
    Use when the user asks for cases/scale factors inside one load combination.
 
-18. loads.patterns.get_all
+25. loads.patterns.get_all
    Use when the user asks to list/count load patterns.
 
 Available controlled write tools:
-19. points.add_by_coordinates
+26. points.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""x"":0,""y"":0,""z"":0,""userName"":""""}
 20. frames.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""xi"":0,""yi"":0,""zi"":0,""xj"":0,""yj"":0,""zj"":0,""sectionName"":"""",""userName"":""""}
@@ -159,6 +201,14 @@ Available controlled write tools:
    Args: {""dryRun"":true,""confirmed"":false,""names"":[""COMB1""]}
 36. loads.patterns.delete
    Args: {""dryRun"":true,""confirmed"":false,""names"":[""DEAD""]}
+37. points.set_restraint
+   Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1""],""restraints"":[true,true,true,false,false,false]}
+38. points.set_load_force
+   Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1""],""loadPattern"":""DEAD"",""forceValues"":[0,0,-10,0,0,0],""replace"":true,""coordinateSystem"":""Global""}
+39. frames.assign_distributed_load
+   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":""DEAD"",""direction"":6,""value1"":0,""value2"":0}
+40. frames.assign_point_load
+   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":""DEAD"",""direction"":6,""distance"":0.5,""value"":0}
 
 Return JSON only:
 {
@@ -453,9 +503,21 @@ ETABS/SAP2000 is open and a model is loaded.";
                 return CreateToolDecision("points.get_selected", "Heuristic route: selected points query.");
             }
 
+            if (ContainsAny(normalized, "point", "points", "joint", "joints") &&
+                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+            {
+                return CreateToolDecision("points.get_all_names", "Heuristic route: point object query.");
+            }
+
             if (ContainsAny(normalized, "selected frame", "selected member", "frame selected", "selected beam", "selected column"))
             {
                 return CreateToolDecision("frames.get_selected", "Heuristic route: selected frames query.");
+            }
+
+            if (ContainsAny(normalized, "frame", "frames", "member", "members", "beam", "beams", "column", "columns", "brace", "braces") &&
+                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+            {
+                return CreateToolDecision("frames.get_all_names", "Heuristic route: frame object query.");
             }
 
             if (ContainsAny(normalized, "selected object", "current selection", "objects selected"))
@@ -546,8 +608,12 @@ ETABS/SAP2000 is open and a model is loaded.";
                         return FormatSelectedFrameSections(result);
                     case "points.get_selected":
                         return FormatSelectedPoints(result);
+                    case "points.get_all_names":
+                        return FormatNames(result, "point");
                     case "frames.get_selected":
                         return FormatNames(result, "selected frame");
+                    case "frames.get_all_names":
+                        return FormatNames(result, "frame");
                     case "loads.combinations.get_all":
                         return FormatLoadCombinations(result);
                     case "loads.patterns.get_all":

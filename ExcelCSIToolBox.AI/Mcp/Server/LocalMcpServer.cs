@@ -97,8 +97,19 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new CsiGetSelectedObjectsTool(selectionService));
             _registry.Register(new CsiGetSelectedFramesTool(selectionService));
             _registry.Register(new CsiGetSelectedFrameSectionsTool(frameService));
+            _registry.Register(new PointsGetAllNamesTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetByNameTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetCoordinatesTool(etabsService, sap2000Service));
             _registry.Register(new PointsGetSelectedTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetRestraintTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetLoadForcesTool(etabsService, sap2000Service));
             _registry.Register(new PointsSetSelectedTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetAllNamesTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetByNameTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetPointsTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetSectionTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetDistributedLoadsTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetPointLoadsTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetSelectedTool(etabsService, sap2000Service));
             _registry.Register(new FramesSetSelectedTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetSectionsTool(etabsService, sap2000Service));
@@ -120,11 +131,16 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new LoadPatternsDeleteTool(etabsService, sap2000Service));
 
             _registry.Register(new PointsAddByCoordinatesTool(commandService));
+            _registry.Register(new PointsAddCartesianTool(commandService));
+            _registry.Register(new PointsSetRestraintTool(etabsService, sap2000Service));
+            _registry.Register(new PointsSetLoadForceTool(etabsService, sap2000Service));
             _registry.Register(new FramesAddByCoordinatesTool(commandService));
             _registry.Register(new FramesAddByPointsTool(commandService));
             _registry.Register(new FramesAssignSectionTool(commandService));
             _registry.Register(new LoadsFrameAssignDistributedTool(commandService));
             _registry.Register(new LoadsFrameAssignPointLoadTool(commandService));
+            _registry.Register(new FramesAssignDistributedLoadTool(commandService));
+            _registry.Register(new FramesAssignPointLoadTool(commandService));
             _registry.Register(new SelectionClearTool(commandService));
             _registry.Register(new FramesDeleteTool(commandService));
             _registry.Register(new AnalysisRunTool(commandService));

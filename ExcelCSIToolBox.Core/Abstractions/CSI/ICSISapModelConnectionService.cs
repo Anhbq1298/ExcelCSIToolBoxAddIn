@@ -3,6 +3,8 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
+using ExcelCSIToolBox.Data.CSISapModel.PointObject;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
 
@@ -36,7 +38,20 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult SaveModel();
 
         OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel();
+        OperationResult<IReadOnlyList<string>> GetPointNames();
+        OperationResult<PointObjectInfo> GetPointByName(string pointName);
+        OperationResult<PointObjectInfo> GetPointCoordinates(string pointName);
+        OperationResult<PointRestraintInfo> GetPointRestraint(string pointName);
+        OperationResult<IReadOnlyList<PointLoadInfo>> GetPointLoadForces(string pointName);
+        OperationResult SetPointRestraint(IReadOnlyList<string> pointNames, IReadOnlyList<bool> restraints);
+        OperationResult SetPointLoadForce(IReadOnlyList<string> pointNames, string loadPattern, IReadOnlyList<double> forceValues, bool replace, string coordinateSystem);
         OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel();
+        OperationResult<IReadOnlyList<string>> GetFrameNames();
+        OperationResult<FrameObjectInfo> GetFrameByName(string frameName);
+        OperationResult<FrameEndPointInfo> GetFramePoints(string frameName);
+        OperationResult<FrameSectionInfo> GetFrameSection(string frameName);
+        OperationResult<IReadOnlyList<FrameLoadInfo>> GetFrameDistributedLoads(string frameName);
+        OperationResult<IReadOnlyList<FrameLoadInfo>> GetFramePointLoads(string frameName);
 
         OperationResult AddSteelISections(IReadOnlyList<CSISapModelSteelISectionInput> inputs);
         OperationResult AddSteelChannelSections(IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs);

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
 
@@ -21,6 +22,57 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         ref string createdName,
         string sectionName,
         string userName);
+
+    internal delegate int CSISapModelGetFrameNames<TSapModel>(
+        TSapModel sapModel,
+        ref int numberNames,
+        ref string[] names);
+
+    internal delegate int CSISapModelReadFramePoints<TSapModel>(
+        TSapModel sapModel,
+        string frameName,
+        ref string pointI,
+        ref string pointJ);
+
+    internal delegate int CSISapModelReadFrameSection<TSapModel>(
+        TSapModel sapModel,
+        string frameName,
+        ref string sectionName,
+        ref string autoSelectList);
+
+    internal delegate int CSISapModelReadFrameSelected<TSapModel>(
+        TSapModel sapModel,
+        string frameName,
+        ref bool selected);
+
+    internal delegate int CSISapModelReadFrameDistributedLoads<TSapModel>(
+        TSapModel sapModel,
+        string frameName,
+        ref int numberItems,
+        ref string[] frameNames,
+        ref string[] loadPatterns,
+        ref int[] loadTypes,
+        ref string[] coordinateSystems,
+        ref int[] directions,
+        ref double[] relativeDistance1,
+        ref double[] relativeDistance2,
+        ref double[] distance1,
+        ref double[] distance2,
+        ref double[] value1,
+        ref double[] value2);
+
+    internal delegate int CSISapModelReadFramePointLoads<TSapModel>(
+        TSapModel sapModel,
+        string frameName,
+        ref int numberItems,
+        ref string[] frameNames,
+        ref string[] loadPatterns,
+        ref int[] loadTypes,
+        ref string[] coordinateSystems,
+        ref int[] directions,
+        ref double[] relativeDistance,
+        ref double[] distance,
+        ref double[] value);
 
     internal static class CSISapModelFrameObjectService
     {
@@ -139,6 +191,210 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             {
                 return OperationResult<IReadOnlyList<string>>.Failure($"Unable to read selected {productName} frames.");
             }
+        }
+
+        internal static OperationResult<IReadOnlyList<string>> GetNameList<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            CSISapModelGetFrameNames<TSapModel> getNameList)
+        {
+            int numberNames = 0;
+            string[] names = null;
+            int result = getNameList(sapModel, ref numberNames, ref names);
+            if (result != 0)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure($"{productName} FrameObj.GetNameList failed (return code {result}).");
+            }
+
+            return OperationResult<IReadOnlyList<string>>.Success(names ?? new string[0]);
+        }
+
+        internal static OperationResult<FrameEndPointInfo> GetPoints<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string frameName,
+            CSISapModelReadFramePoints<TSapModel> getPoints)
+        {
+            if (string.IsNullOrWhiteSpace(frameName))
+            {
+                return OperationResult<FrameEndPointInfo>.Failure("Frame name is required.");
+            }
+
+            string pointI = string.Empty;
+            string pointJ = string.Empty;
+            int result = getPoints(sapModel, frameName, ref pointI, ref pointJ);
+            if (result != 0)
+            {
+                return OperationResult<FrameEndPointInfo>.Failure($"{productName} FrameObj.GetPoints failed for '{frameName}' (return code {result}).");
+            }
+
+            return OperationResult<FrameEndPointInfo>.Success(new FrameEndPointInfo
+            {
+                FrameName = frameName,
+                PointI = pointI,
+                PointJ = pointJ
+            });
+        }
+
+        internal static OperationResult<FrameSectionInfo> GetSection<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string frameName,
+            CSISapModelReadFrameSection<TSapModel> getSection)
+        {
+            if (string.IsNullOrWhiteSpace(frameName))
+            {
+                return OperationResult<FrameSectionInfo>.Failure("Frame name is required.");
+            }
+
+            string sectionName = string.Empty;
+            string autoSelectList = string.Empty;
+            int result = getSection(sapModel, frameName, ref sectionName, ref autoSelectList);
+            if (result != 0)
+            {
+                return OperationResult<FrameSectionInfo>.Failure($"{productName} FrameObj.GetSection failed for '{frameName}' (return code {result}).");
+            }
+
+            return OperationResult<FrameSectionInfo>.Success(new FrameSectionInfo
+            {
+                FrameName = frameName,
+                SectionName = sectionName,
+                AutoSelectList = autoSelectList
+            });
+        }
+
+        internal static OperationResult<FrameObjectInfo> GetByName<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string frameName,
+            CSISapModelReadFramePoints<TSapModel> getPoints,
+            CSISapModelReadFrameSection<TSapModel> getSection,
+            CSISapModelReadFrameSelected<TSapModel> getSelected)
+        {
+            var pointsResult = GetPoints(productName, sapModel, frameName, getPoints);
+            if (!pointsResult.IsSuccess)
+            {
+                return OperationResult<FrameObjectInfo>.Failure(pointsResult.Message);
+            }
+
+            var sectionResult = GetSection(productName, sapModel, frameName, getSection);
+            if (!sectionResult.IsSuccess)
+            {
+                return OperationResult<FrameObjectInfo>.Failure(sectionResult.Message);
+            }
+
+            bool selected = false;
+            if (getSelected != null)
+            {
+                getSelected(sapModel, frameName, ref selected);
+            }
+
+            return OperationResult<FrameObjectInfo>.Success(new FrameObjectInfo
+            {
+                Name = frameName,
+                PointI = pointsResult.Data.PointI,
+                PointJ = pointsResult.Data.PointJ,
+                SectionName = sectionResult.Data.SectionName,
+                IsSelected = selected
+            });
+        }
+
+        internal static OperationResult<IReadOnlyList<FrameLoadInfo>> GetDistributedLoads<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string frameName,
+            CSISapModelReadFrameDistributedLoads<TSapModel> getLoadDistributed)
+        {
+            if (string.IsNullOrWhiteSpace(frameName))
+            {
+                return OperationResult<IReadOnlyList<FrameLoadInfo>>.Failure("Frame name is required.");
+            }
+
+            int numberItems = 0;
+            string[] frameNames = null;
+            string[] loadPatterns = null;
+            int[] loadTypes = null;
+            string[] coordinateSystems = null;
+            int[] directions = null;
+            double[] rd1 = null;
+            double[] rd2 = null;
+            double[] dist1 = null;
+            double[] dist2 = null;
+            double[] val1 = null;
+            double[] val2 = null;
+
+            int result = getLoadDistributed(sapModel, frameName, ref numberItems, ref frameNames, ref loadPatterns, ref loadTypes, ref coordinateSystems, ref directions, ref rd1, ref rd2, ref dist1, ref dist2, ref val1, ref val2);
+            if (result != 0)
+            {
+                return OperationResult<IReadOnlyList<FrameLoadInfo>>.Failure($"{productName} FrameObj.GetLoadDistributed failed for '{frameName}' (return code {result}).");
+            }
+
+            var loads = new List<FrameLoadInfo>();
+            for (int i = 0; i < numberItems; i++)
+            {
+                loads.Add(new FrameLoadInfo
+                {
+                    FrameName = GetArrayValue(frameNames, i, frameName),
+                    LoadPattern = GetArrayValue(loadPatterns, i, string.Empty),
+                    LoadType = "Distributed",
+                    CoordinateSystem = GetArrayValue(coordinateSystems, i, "Global"),
+                    Direction = GetArrayValue(directions, i),
+                    Distance1 = GetArrayValue(dist1, i),
+                    Distance2 = GetArrayValue(dist2, i),
+                    Value1 = GetArrayValue(val1, i),
+                    Value2 = GetArrayValue(val2, i),
+                    IsRelativeDistance = GetArrayValue(rd1, i) >= 0 || GetArrayValue(rd2, i) >= 0
+                });
+            }
+
+            return OperationResult<IReadOnlyList<FrameLoadInfo>>.Success(loads);
+        }
+
+        internal static OperationResult<IReadOnlyList<FrameLoadInfo>> GetPointLoads<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string frameName,
+            CSISapModelReadFramePointLoads<TSapModel> getLoadPoint)
+        {
+            if (string.IsNullOrWhiteSpace(frameName))
+            {
+                return OperationResult<IReadOnlyList<FrameLoadInfo>>.Failure("Frame name is required.");
+            }
+
+            int numberItems = 0;
+            string[] frameNames = null;
+            string[] loadPatterns = null;
+            int[] loadTypes = null;
+            string[] coordinateSystems = null;
+            int[] directions = null;
+            double[] relativeDistance = null;
+            double[] distance = null;
+            double[] value = null;
+
+            int result = getLoadPoint(sapModel, frameName, ref numberItems, ref frameNames, ref loadPatterns, ref loadTypes, ref coordinateSystems, ref directions, ref relativeDistance, ref distance, ref value);
+            if (result != 0)
+            {
+                return OperationResult<IReadOnlyList<FrameLoadInfo>>.Failure($"{productName} FrameObj.GetLoadPoint failed for '{frameName}' (return code {result}).");
+            }
+
+            var loads = new List<FrameLoadInfo>();
+            for (int i = 0; i < numberItems; i++)
+            {
+                loads.Add(new FrameLoadInfo
+                {
+                    FrameName = GetArrayValue(frameNames, i, frameName),
+                    LoadPattern = GetArrayValue(loadPatterns, i, string.Empty),
+                    LoadType = "Point",
+                    CoordinateSystem = GetArrayValue(coordinateSystems, i, "Global"),
+                    Direction = GetArrayValue(directions, i),
+                    Distance1 = GetArrayValue(distance, i),
+                    Distance2 = GetArrayValue(relativeDistance, i),
+                    Value1 = GetArrayValue(value, i),
+                    IsRelativeDistance = GetArrayValue(relativeDistance, i) >= 0
+                });
+            }
+
+            return OperationResult<IReadOnlyList<FrameLoadInfo>>.Success(loads);
         }
 
         private static OperationResult<CSISapModelAddFramesResultDTO> AddFrames<TSapModel, TFrameInput, TAddResult>(
@@ -326,6 +582,23 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             return uniqueNames;
+        }
+
+        private static string GetArrayValue(string[] values, int index, string fallback)
+        {
+            return values == null || index < 0 || index >= values.Length || string.IsNullOrWhiteSpace(values[index])
+                ? fallback
+                : values[index];
+        }
+
+        private static int GetArrayValue(int[] values, int index)
+        {
+            return values == null || index < 0 || index >= values.Length ? 0 : values[index];
+        }
+
+        private static double GetArrayValue(double[] values, int index)
+        {
+            return values == null || index < 0 || index >= values.Length ? 0 : values[index];
         }
 
         private class FrameAddResult

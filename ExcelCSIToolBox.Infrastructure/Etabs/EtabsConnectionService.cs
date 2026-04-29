@@ -6,6 +6,8 @@ using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
+using ExcelCSIToolBox.Data.CSISapModel.PointObject;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
@@ -312,6 +314,115 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return pointsResult;
         }
 
+        public OperationResult<IReadOnlyList<string>> GetPointNames()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetNameList(
+                ProductName,
+                sapModelResult.Data,
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.PointObj.GetNameList(ref numberNames, ref names));
+        }
+
+        public OperationResult<PointObjectInfo> GetPointByName(string pointName)
+        {
+            return GetPointCoordinates(pointName);
+        }
+
+        public OperationResult<PointObjectInfo> GetPointCoordinates(string pointName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PointObjectInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetByName(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (ETABSv1.cSapModel sapModel, string name, ref double x, ref double y, ref double z) =>
+                    sapModel.PointObj.GetCoordCartesian(name, ref x, ref y, ref z, "Global"),
+                (ETABSv1.cSapModel sapModel, string name, ref bool selected) =>
+                    sapModel.PointObj.GetSelected(name, ref selected));
+        }
+
+        public OperationResult<PointRestraintInfo> GetPointRestraint(string pointName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PointRestraintInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetRestraint(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (ETABSv1.cSapModel sapModel, string name, ref bool[] values) =>
+                    sapModel.PointObj.GetRestraint(name, ref values));
+        }
+
+        public OperationResult<IReadOnlyList<PointLoadInfo>> GetPointLoadForces(string pointName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<PointLoadInfo>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetLoadForces(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (ETABSv1.cSapModel sapModel, string name, ref int numberItems, ref string[] pointNames, ref string[] loadPatterns, ref int[] caseSteps, ref string[] coordinateSystems, ref double[] f1, ref double[] f2, ref double[] f3, ref double[] m1, ref double[] m2, ref double[] m3) =>
+                    sapModel.PointObj.GetLoadForce(name, ref numberItems, ref pointNames, ref loadPatterns, ref caseSteps, ref coordinateSystems, ref f1, ref f2, ref f3, ref m1, ref m2, ref m3, ETABSv1.eItemType.Objects));
+        }
+
+        public OperationResult SetPointRestraint(IReadOnlyList<string> pointNames, IReadOnlyList<bool> restraints)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.SetRestraint(
+                ProductName,
+                sapModelResult.Data,
+                pointNames,
+                restraints,
+                (ETABSv1.cSapModel sapModel, string name, ref bool[] values) =>
+                    sapModel.PointObj.SetRestraint(name, ref values, ETABSv1.eItemType.Objects),
+                RefreshView);
+        }
+
+        public OperationResult SetPointLoadForce(IReadOnlyList<string> pointNames, string loadPattern, IReadOnlyList<double> forceValues, bool replace, string coordinateSystem)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.SetLoadForce(
+                ProductName,
+                sapModelResult.Data,
+                pointNames,
+                loadPattern,
+                forceValues,
+                replace,
+                coordinateSystem,
+                (ETABSv1.cSapModel sapModel, string name, string pattern, ref double[] values, bool replaceExisting, string cSys) =>
+                    sapModel.PointObj.SetLoadForce(name, pattern, ref values, replaceExisting, cSys, ETABSv1.eItemType.Objects),
+                RefreshView);
+        }
+
         public OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel()
         {
             var sapModelResult = EnsureEtabsSapModel();
@@ -326,6 +437,105 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 (ETABSv1.cSapModel sapModel, ref int numberItems, ref int[] objectTypes, ref string[] objectNames) =>
                     sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames));
             return framesResult;
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetFrameNames()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelFrameObjectService.GetNameList(
+                ProductName,
+                sapModelResult.Data,
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.FrameObj.GetNameList(ref numberNames, ref names));
+        }
+
+        public OperationResult<FrameObjectInfo> GetFrameByName(string frameName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<FrameObjectInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelFrameObjectService.GetByName(
+                ProductName,
+                sapModelResult.Data,
+                frameName,
+                (ETABSv1.cSapModel sapModel, string name, ref string pointI, ref string pointJ) =>
+                    sapModel.FrameObj.GetPoints(name, ref pointI, ref pointJ),
+                (ETABSv1.cSapModel sapModel, string name, ref string sectionName, ref string autoSelectList) =>
+                    sapModel.FrameObj.GetSection(name, ref sectionName, ref autoSelectList),
+                (ETABSv1.cSapModel sapModel, string name, ref bool selected) =>
+                    sapModel.FrameObj.GetSelected(name, ref selected));
+        }
+
+        public OperationResult<FrameEndPointInfo> GetFramePoints(string frameName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<FrameEndPointInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelFrameObjectService.GetPoints(
+                ProductName,
+                sapModelResult.Data,
+                frameName,
+                (ETABSv1.cSapModel sapModel, string name, ref string pointI, ref string pointJ) =>
+                    sapModel.FrameObj.GetPoints(name, ref pointI, ref pointJ));
+        }
+
+        public OperationResult<FrameSectionInfo> GetFrameSection(string frameName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<FrameSectionInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelFrameObjectService.GetSection(
+                ProductName,
+                sapModelResult.Data,
+                frameName,
+                (ETABSv1.cSapModel sapModel, string name, ref string sectionName, ref string autoSelectList) =>
+                    sapModel.FrameObj.GetSection(name, ref sectionName, ref autoSelectList));
+        }
+
+        public OperationResult<IReadOnlyList<FrameLoadInfo>> GetFrameDistributedLoads(string frameName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<FrameLoadInfo>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelFrameObjectService.GetDistributedLoads(
+                ProductName,
+                sapModelResult.Data,
+                frameName,
+                (ETABSv1.cSapModel sapModel, string name, ref int numberItems, ref string[] frameNames, ref string[] loadPatterns, ref int[] loadTypes, ref string[] coordinateSystems, ref int[] directions, ref double[] rd1, ref double[] rd2, ref double[] dist1, ref double[] dist2, ref double[] val1, ref double[] val2) =>
+                    sapModel.FrameObj.GetLoadDistributed(name, ref numberItems, ref frameNames, ref loadPatterns, ref loadTypes, ref coordinateSystems, ref directions, ref rd1, ref rd2, ref dist1, ref dist2, ref val1, ref val2, ETABSv1.eItemType.Objects));
+        }
+
+        public OperationResult<IReadOnlyList<FrameLoadInfo>> GetFramePointLoads(string frameName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<FrameLoadInfo>>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelFrameObjectService.GetPointLoads(
+                ProductName,
+                sapModelResult.Data,
+                frameName,
+                (ETABSv1.cSapModel sapModel, string name, ref int numberItems, ref string[] frameNames, ref string[] loadPatterns, ref int[] loadTypes, ref string[] coordinateSystems, ref int[] directions, ref double[] relativeDistance, ref double[] distance, ref double[] value) =>
+                    sapModel.FrameObj.GetLoadPoint(name, ref numberItems, ref frameNames, ref loadPatterns, ref loadTypes, ref coordinateSystems, ref directions, ref relativeDistance, ref distance, ref value, ETABSv1.eItemType.Objects));
         }
 
         private OperationResult<ETABSv1.cSapModel> EnsureEtabsSapModel()

@@ -25,6 +25,105 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
         }
     }
 
+    public sealed class PointsGetAllNamesTool : CsiActiveConnectionToolBase
+    {
+        public PointsGetAllNamesTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "points.get_all_names";
+        public override string Title => "Get Point Names";
+        public override string Category => "Points";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns all point object names from the active CSI model.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            return Result(service.GetPointNames());
+        }
+    }
+
+    public sealed class PointsGetByNameTool : CsiActiveConnectionToolBase
+    {
+        public PointsGetByNameTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "points.get_by_name";
+        public override string Title => "Get Point By Name";
+        public override string Category => "Points";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns point object coordinates and selection state by name.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            PointNameArgs args = ReadArgs<PointNameArgs>(argumentsJson);
+            return Result(service.GetPointByName(args.PointName));
+        }
+    }
+
+    public sealed class PointsGetCoordinatesTool : CsiActiveConnectionToolBase
+    {
+        public PointsGetCoordinatesTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "points.get_coordinates";
+        public override string Title => "Get Point Coordinates";
+        public override string Category => "Points";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns Cartesian coordinates for one point object.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            PointNameArgs args = ReadArgs<PointNameArgs>(argumentsJson);
+            return Result(service.GetPointCoordinates(args.PointName));
+        }
+    }
+
+    public sealed class PointsGetRestraintTool : CsiActiveConnectionToolBase
+    {
+        public PointsGetRestraintTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "points.get_restraint";
+        public override string Title => "Get Point Restraint";
+        public override string Category => "Points";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns restraint assignments for one point object.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            PointNameArgs args = ReadArgs<PointNameArgs>(argumentsJson);
+            return Result(service.GetPointRestraint(args.PointName));
+        }
+    }
+
+    public sealed class PointsGetLoadForcesTool : CsiActiveConnectionToolBase
+    {
+        public PointsGetLoadForcesTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "points.get_load_forces";
+        public override string Title => "Get Point Load Forces";
+        public override string Category => "Points";
+        public override string SubCategory => "Loads";
+        public override string Description => "Returns point force load assignments for one point object.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            PointNameArgs args = ReadArgs<PointNameArgs>(argumentsJson);
+            return Result(service.GetPointLoadForces(args.PointName));
+        }
+    }
+
     public sealed class PointsSetSelectedTool : CsiActiveConnectionToolBase
     {
         public PointsSetSelectedTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
@@ -56,5 +155,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
 
             return Result(service.SelectPointsByUniqueNames(args.Names));
         }
+    }
+
+    public sealed class PointNameArgs
+    {
+        public string PointName { get; set; }
     }
 }

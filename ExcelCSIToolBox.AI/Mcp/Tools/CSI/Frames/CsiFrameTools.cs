@@ -25,6 +25,125 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
         }
     }
 
+    public sealed class FramesGetAllNamesTool : CsiActiveConnectionToolBase
+    {
+        public FramesGetAllNamesTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "frames.get_all_names";
+        public override string Title => "Get Frame Names";
+        public override string Category => "Frames";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns all frame object names from the active CSI model.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            return Result(service.GetFrameNames());
+        }
+    }
+
+    public sealed class FramesGetByNameTool : CsiActiveConnectionToolBase
+    {
+        public FramesGetByNameTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "frames.get_by_name";
+        public override string Title => "Get Frame By Name";
+        public override string Category => "Frames";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns points, section, and selection state for one frame object.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            FrameNameArgs args = ReadArgs<FrameNameArgs>(argumentsJson);
+            return Result(service.GetFrameByName(args.FrameName));
+        }
+    }
+
+    public sealed class FramesGetPointsTool : CsiActiveConnectionToolBase
+    {
+        public FramesGetPointsTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "frames.get_points";
+        public override string Title => "Get Frame Points";
+        public override string Category => "Frames";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns end point object names for one frame.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            FrameNameArgs args = ReadArgs<FrameNameArgs>(argumentsJson);
+            return Result(service.GetFramePoints(args.FrameName));
+        }
+    }
+
+    public sealed class FramesGetSectionTool : CsiActiveConnectionToolBase
+    {
+        public FramesGetSectionTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "frames.get_section";
+        public override string Title => "Get Frame Section";
+        public override string Category => "Frames";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns section assignment for one frame object.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            FrameNameArgs args = ReadArgs<FrameNameArgs>(argumentsJson);
+            return Result(service.GetFrameSection(args.FrameName));
+        }
+    }
+
+    public sealed class FramesGetDistributedLoadsTool : CsiActiveConnectionToolBase
+    {
+        public FramesGetDistributedLoadsTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "frames.get_distributed_loads";
+        public override string Title => "Get Frame Distributed Loads";
+        public override string Category => "Frames";
+        public override string SubCategory => "Loads";
+        public override string Description => "Returns distributed load assignments for one frame object.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            FrameNameArgs args = ReadArgs<FrameNameArgs>(argumentsJson);
+            return Result(service.GetFrameDistributedLoads(args.FrameName));
+        }
+    }
+
+    public sealed class FramesGetPointLoadsTool : CsiActiveConnectionToolBase
+    {
+        public FramesGetPointLoadsTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "frames.get_point_loads";
+        public override string Title => "Get Frame Point Loads";
+        public override string Category => "Frames";
+        public override string SubCategory => "Loads";
+        public override string Description => "Returns point load assignments for one frame object.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            FrameNameArgs args = ReadArgs<FrameNameArgs>(argumentsJson);
+            return Result(service.GetFramePointLoads(args.FrameName));
+        }
+    }
+
     public sealed class FramesSetSelectedTool : CsiActiveConnectionToolBase
     {
         public FramesSetSelectedTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
@@ -100,5 +219,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
     public sealed class SectionNameArgs
     {
         public string SectionName { get; set; }
+    }
+
+    public sealed class FrameNameArgs
+    {
+        public string FrameName { get; set; }
     }
 }
