@@ -512,6 +512,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             bool isUser = message.IsUser;
             int maxBubbleWidth = Math.Max(190, (int)(fullWidth * 0.78));
             maxBubbleWidth = Math.Min(maxBubbleWidth, fullWidth - 28);
+            int maxContentHeight = GetMaxMessageContentHeight();
 
             Font nameFont = new Font("Segoe UI Semibold", 8.25F, FontStyle.Bold);
             Font textFont = message.IsTemporary
@@ -525,10 +526,12 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 body,
                 textFont,
                 new Size(maxBubbleWidth - 24, int.MaxValue),
-                TextFormatFlags.WordBreak | TextFormatFlags.NoPadding);
+                TextFormatFlags.WordBreak | TextFormatFlags.TextBoxControl | TextFormatFlags.NoPadding);
             int bubbleWidth = Math.Max(118, Math.Max(nameSize.Width, bodySize.Width) + 26);
             bubbleWidth = Math.Min(bubbleWidth, maxBubbleWidth);
-            int bubbleHeight = nameSize.Height + bodySize.Height + 24;
+            int contentHeight = Math.Min(bodySize.Height + 4, maxContentHeight);
+            bool contentIsScrollable = bodySize.Height + 4 > maxContentHeight;
+            int bubbleHeight = nameSize.Height + contentHeight + 28;
 
             var row = new Panel
             {
@@ -558,15 +561,10 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 Text = speaker
             };
 
-            var content = new Label
-            {
-                BackColor = bubble.BackColor,
-                Font = textFont,
-                ForeColor = isUser ? Color.White : Ink,
-                Location = new Point(11, label.Bottom + 4),
-                Size = new Size(bubbleWidth - 22, bodySize.Height + 2),
-                Text = body
-            };
+            Control content = contentIsScrollable
+                ? CreateScrollableMessageContent(body, textFont, isUser, bubble.BackColor, bubbleWidth - 22, contentHeight)
+                : CreateMessageContentLabel(body, textFont, isUser, bubble.BackColor, bubbleWidth - 22, contentHeight);
+            content.Location = new Point(11, label.Bottom + 4);
 
             bubble.Controls.Add(label);
             bubble.Controls.Add(content);
@@ -574,6 +572,61 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             bubble.Top = 0;
             row.Controls.Add(bubble);
             return row;
+        }
+
+        private static Control CreateMessageContentLabel(
+            string body,
+            Font textFont,
+            bool isUser,
+            Color backColor,
+            int width,
+            int height)
+        {
+            return new Label
+            {
+                AutoEllipsis = false,
+                BackColor = backColor,
+                Font = textFont,
+                ForeColor = isUser ? Color.White : Ink,
+                Size = new Size(width, height),
+                Text = body
+            };
+        }
+
+        private static Control CreateScrollableMessageContent(
+            string body,
+            Font textFont,
+            bool isUser,
+            Color backColor,
+            int width,
+            int height)
+        {
+            return new TextBox
+            {
+                BackColor = backColor,
+                BorderStyle = BorderStyle.None,
+                Font = textFont,
+                ForeColor = isUser ? Color.White : Ink,
+                Multiline = true,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Vertical,
+                ShortcutsEnabled = true,
+                Size = new Size(width, height),
+                TabStop = false,
+                Text = body,
+                WordWrap = true
+            };
+        }
+
+        private int GetMaxMessageContentHeight()
+        {
+            int viewportHeight = _conversationPanel.ClientSize.Height;
+            if (viewportHeight <= 0)
+            {
+                return 260;
+            }
+
+            return Math.Max(110, Math.Min(360, (int)(viewportHeight * 0.55)));
         }
 
         private int GetConversationWidth()
