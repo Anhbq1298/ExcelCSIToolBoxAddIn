@@ -7,7 +7,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     internal static class AiTaskPaneManager
     {
         private static Microsoft.Office.Tools.CustomTaskPane _aiTaskPane;
-        private static AiAgentTaskPaneHost _aiTaskPaneHost;
+        private static WpfTaskPaneHost _aiTaskPaneHost;
 
         internal static void TogglePane()
         {
@@ -53,7 +53,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 throw new InvalidOperationException("The Excel add-in is not initialized.");
             }
 
-            _aiTaskPaneHost = new AiAgentTaskPaneHost();
+            _aiTaskPaneHost = new WpfTaskPaneHost(new AiAgentChatControl());
             _aiTaskPane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(_aiTaskPaneHost, "MHT AI Assistant");
             _aiTaskPane.DockPosition = MsoCTPDockPosition.msoCTPDockPositionRight;
             _aiTaskPane.Width = 420;

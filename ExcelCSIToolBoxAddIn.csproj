@@ -300,6 +300,10 @@
       <DependentUpon>FrameSectionDetailWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\AiAgentChatControl.xaml.cs">
+      <DependentUpon>AiAgentChatControl.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <None Include="_ref\CSI API ETABS v1.chm" />
     <None Include="_ref\CSI_OAPI_Documentation.chm" />
     <Page Include="UI\Views\EtabsToolboxWindow.xaml">
@@ -327,6 +331,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\FrameSectionDetailWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\AiAgentChatControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
