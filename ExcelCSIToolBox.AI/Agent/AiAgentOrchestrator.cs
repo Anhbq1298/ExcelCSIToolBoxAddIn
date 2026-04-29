@@ -33,6 +33,14 @@ namespace ExcelCSIToolBox.AI.Agent
             "points.get_coordinates",
             "points.get_restraint",
             "points.get_load_forces",
+            "points.get_selected_by_name",
+            "points.get_guid",
+            "points.get_group_assignments",
+            "points.get_connectivity",
+            "points.get_spring",
+            "points.get_mass",
+            "points.get_local_axes",
+            "points.get_diaphragm",
             "points.set_selected",
             "points.add_cartesian",
             "points.set_restraint",
@@ -93,6 +101,7 @@ Available tools:
 - csi.refresh_view: Refresh graphics.
 - frames.analyze_selected: COMPLETE workflow for selected frames (sections, geometry, assignments).
 - points.get_all_names, points.get_coordinates, points.get_selected, points.get_count: Point queries.
+- points.get_guid, points.get_connectivity, points.get_group_assignments, points.get_spring, points.get_mass, points.get_local_axes, points.get_diaphragm: Point detail queries.
 - frames.get_all_names, frames.get_sections, frames.get_section_detail, frames.get_count: Frame queries.
 - shells.get_all_names, shells.get_selected, shells.get_property, shells.get_count: Shell queries.
 - loads.combinations.get_all, loads.patterns.get_all: Loading queries.
@@ -373,13 +382,13 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             if (ContainsAny(normalized, "load combination", "load combinations", "combo", "combination") &&
-                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "list", "count", "how many", "howmany", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
                 return CreateToolDecision("loads.combinations.get_all", "Heuristic route: load combinations query.");
             }
 
             if (ContainsAny(normalized, "load pattern", "load patterns", "pattern", "patterns") &&
-                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "list", "count", "how many", "howmany", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
                 return CreateToolDecision("loads.patterns.get_all", "Heuristic route: load patterns query.");
             }
@@ -390,7 +399,7 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             if (ContainsAny(normalized, "point", "points", "joint", "joints") &&
-                ContainsAny(normalized, "count", "how many", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "count", "how many", "howmany", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
                 return CreateToolDecision("points.get_count", "Heuristic route: point count query.");
             }
@@ -407,7 +416,7 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             if (ContainsAny(normalized, "frame", "frames", "member", "members", "beam", "beams", "column", "columns", "brace", "braces") &&
-                ContainsAny(normalized, "count", "how many", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "count", "how many", "howmany", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
                 return CreateToolDecision("frames.get_count", "Heuristic route: frame count query.");
             }
@@ -429,7 +438,7 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             if (ContainsAny(normalized, "shell", "shells", "area", "areas", "wall", "walls", "slab", "slabs", "plate", "plates", "membrane", "membranes") &&
-                ContainsAny(normalized, "how many", "count", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+                ContainsAny(normalized, "how many", "howmany", "count", "number", "bao nhieu", "bao nhiêu", "dem", "đếm"))
             {
                 return CreateToolDecision("shells.get_count", "Heuristic route: shell count query.");
             }

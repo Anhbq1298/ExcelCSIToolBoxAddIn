@@ -42,4 +42,45 @@ namespace ExcelCSIToolBox.Data.CSISapModel.PointObject
         public IReadOnlyList<double> Stiffness { get; set; }
         public string CoordinateSystem { get; set; }
     }
+
+    public sealed class PointGroupAssignmentInfo
+    {
+        public string PointName { get; set; }
+        public IReadOnlyList<string> GroupNames { get; set; }
+    }
+
+    public sealed class PointConnectivityInfo
+    {
+        public string PointName { get; set; }
+        public IReadOnlyList<PointConnectedObjectInfo> ConnectedObjects { get; set; }
+    }
+
+    public sealed class PointConnectedObjectInfo
+    {
+        public int ObjectType { get; set; }
+        public string ObjectName { get; set; }
+        public int PointNumber { get; set; }
+    }
+
+    public sealed class PointLocalAxesInfo
+    {
+        public string PointName { get; set; }
+        public double A { get; set; }
+        public double B { get; set; }
+        public double C { get; set; }
+        public bool Advanced { get; set; }
+    }
+
+    public sealed class PointMassInfo
+    {
+        public string PointName { get; set; }
+        public IReadOnlyList<double> MassValues { get; set; }
+    }
+
+    public sealed class PointDiaphragmInfo
+    {
+        public string PointName { get; set; }
+        public int DiaphragmOption { get; set; }
+        public string DiaphragmName { get; set; }
+    }
 }

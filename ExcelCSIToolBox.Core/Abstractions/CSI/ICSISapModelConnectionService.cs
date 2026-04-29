@@ -43,6 +43,14 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<PointObjectInfo> GetPointCoordinates(string pointName);
         OperationResult<PointRestraintInfo> GetPointRestraint(string pointName);
         OperationResult<IReadOnlyList<PointLoadInfo>> GetPointLoadForces(string pointName);
+        OperationResult<bool> GetPointSelected(string pointName);
+        OperationResult<string> GetPointGuid(string pointName);
+        OperationResult<PointGroupAssignmentInfo> GetPointGroupAssignments(string pointName);
+        OperationResult<PointConnectivityInfo> GetPointConnectivity(string pointName);
+        OperationResult<PointSpringInfo> GetPointSpring(string pointName);
+        OperationResult<PointMassInfo> GetPointMass(string pointName);
+        OperationResult<PointLocalAxesInfo> GetPointLocalAxes(string pointName);
+        OperationResult<PointDiaphragmInfo> GetPointDiaphragm(string pointName);
         OperationResult SetPointRestraint(IReadOnlyList<string> pointNames, IReadOnlyList<bool> restraints);
         OperationResult SetPointLoadForce(IReadOnlyList<string> pointNames, string loadPattern, IReadOnlyList<double> forceValues, bool replace, string coordinateSystem);
         OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel();

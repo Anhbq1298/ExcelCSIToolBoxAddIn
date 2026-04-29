@@ -69,7 +69,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         ref double[] distance,
         ref double[] value);
 
-    internal static class CSISapModelFrameObjectService
+    internal static partial class CSISapModelFrameObjectService
     {
         internal static OperationResult SelectFramesByUniqueNames<TSapModel>(
             IReadOnlyList<string> uniqueNames,

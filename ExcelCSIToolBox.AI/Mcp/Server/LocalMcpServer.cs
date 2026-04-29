@@ -106,6 +106,14 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new PointsGetSelectedTool(etabsService, sap2000Service));
             _registry.Register(new PointsGetRestraintTool(etabsService, sap2000Service));
             _registry.Register(new PointsGetLoadForcesTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetSelectedByNameTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetGuidTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetGroupAssignmentsTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetConnectivityTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetSpringTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetMassTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetLocalAxesTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetDiaphragmTool(etabsService, sap2000Service));
             _registry.Register(new PointsSetSelectedTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetAllNamesTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetCountTool(etabsService, sap2000Service));

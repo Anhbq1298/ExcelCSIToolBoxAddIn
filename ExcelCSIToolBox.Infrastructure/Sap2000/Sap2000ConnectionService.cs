@@ -379,6 +379,123 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                     sapModel.PointObj.GetLoadForce(name, ref numberItems, ref pointNames, ref loadPatterns, ref caseSteps, ref coordinateSystems, ref f1, ref f2, ref f3, ref m1, ref m2, ref m3, SAP2000v1.eItemType.Objects));
         }
 
+        public OperationResult<bool> GetPointSelected(string pointName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<bool>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetSelected(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (SAP2000v1.cSapModel sapModel, string name, ref bool selected) =>
+                    sapModel.PointObj.GetSelected(name, ref selected));
+        }
+
+        public OperationResult<string> GetPointGuid(string pointName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<string>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetGuid(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (SAP2000v1.cSapModel sapModel, string name, ref string guid) =>
+                    sapModel.PointObj.GetGUID(name, ref guid));
+        }
+
+        public OperationResult<PointGroupAssignmentInfo> GetPointGroupAssignments(string pointName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PointGroupAssignmentInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetGroupAssign(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (SAP2000v1.cSapModel sapModel, string name, ref int numberItems, ref string[] groupNames) =>
+                    sapModel.PointObj.GetGroupAssign(name, ref numberItems, ref groupNames));
+        }
+
+        public OperationResult<PointConnectivityInfo> GetPointConnectivity(string pointName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PointConnectivityInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetConnectivity(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (SAP2000v1.cSapModel sapModel, string name, ref int numberItems, ref int[] objectTypes, ref string[] objectNames, ref int[] pointNumbers) =>
+                    sapModel.PointObj.GetConnectivity(name, ref numberItems, ref objectTypes, ref objectNames, ref pointNumbers));
+        }
+
+        public OperationResult<PointSpringInfo> GetPointSpring(string pointName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PointSpringInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetSpring(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (SAP2000v1.cSapModel sapModel, string name, ref double[] stiffness) =>
+                    sapModel.PointObj.GetSpring(name, ref stiffness));
+        }
+
+        public OperationResult<PointMassInfo> GetPointMass(string pointName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PointMassInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetMass(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (SAP2000v1.cSapModel sapModel, string name, ref double[] masses) =>
+                    sapModel.PointObj.GetMass(name, ref masses));
+        }
+
+        public OperationResult<PointLocalAxesInfo> GetPointLocalAxes(string pointName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PointLocalAxesInfo>.Failure(sapModelResult.Message);
+            }
+
+            return CSISapModelPointObjectService.GetLocalAxes(
+                ProductName,
+                sapModelResult.Data,
+                pointName,
+                (SAP2000v1.cSapModel sapModel, string name, ref double a, ref double b, ref double c, ref bool advanced) =>
+                    sapModel.PointObj.GetLocalAxes(name, ref a, ref b, ref c, ref advanced));
+        }
+
+        public OperationResult<PointDiaphragmInfo> GetPointDiaphragm(string pointName)
+        {
+            return OperationResult<PointDiaphragmInfo>.Failure("SAP2000 PointObj.GetDiaphragm is not available in the referenced SAP2000 API.");
+        }
+
         public OperationResult SetPointRestraint(IReadOnlyList<string> pointNames, IReadOnlyList<bool> restraints)
         {
             var sapModelResult = EnsureSap2000SapModel();

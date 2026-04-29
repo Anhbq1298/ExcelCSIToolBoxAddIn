@@ -89,7 +89,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         TSapModel sapModel,
         string areaName);
 
-    internal static class CSISapModelShellObjectService
+    internal static partial class CSISapModelShellObjectService
     {
         internal static OperationResult<IReadOnlyList<string>> GetNameList<TSapModel>(
             TSapModel sapModel,

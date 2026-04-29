@@ -3,8 +3,13 @@ using ExcelCSIToolBox.Core.Models.CSI;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 {
-    public sealed class CsiMethodCatalog
+    public sealed partial class CsiMethodCatalog
     {
+        public IReadOnlyList<CsiMethodDescriptor> GetAllReferenceDescriptors()
+        {
+            return GetGeneratedReferenceDescriptors();
+        }
+
         public IReadOnlyList<CsiMethodDescriptor> GetReviewedToolDescriptors()
         {
             return new[]

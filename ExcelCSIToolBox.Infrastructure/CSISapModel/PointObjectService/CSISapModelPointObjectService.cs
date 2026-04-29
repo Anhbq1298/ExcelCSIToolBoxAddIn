@@ -53,6 +53,49 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         ref double[] m2,
         ref double[] m3);
 
+    internal delegate int CSISapModelReadPointGuid<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref string guid);
+
+    internal delegate int CSISapModelReadPointGroupAssign<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref int numberItems,
+        ref string[] groupNames);
+
+    internal delegate int CSISapModelReadPointConnectivity<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref int numberItems,
+        ref int[] objectTypes,
+        ref string[] objectNames,
+        ref int[] pointNumbers);
+
+    internal delegate int CSISapModelReadPointSpring<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref double[] stiffness);
+
+    internal delegate int CSISapModelReadPointMass<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref double[] masses);
+
+    internal delegate int CSISapModelReadPointLocalAxes<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref double a,
+        ref double b,
+        ref double c,
+        ref bool advanced);
+
+    internal delegate int CSISapModelReadPointDiaphragm<TSapModel>(
+        TSapModel sapModel,
+        string pointName,
+        ref int diaphragmOption,
+        ref string diaphragmName);
+
     internal delegate int CSISapModelSetPointRestraint<TSapModel>(
         TSapModel sapModel,
         string pointName,
@@ -66,7 +109,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         bool replace,
         string coordinateSystem);
 
-    internal static class CSISapModelPointObjectService
+    internal static partial class CSISapModelPointObjectService
     {
         internal static OperationResult SelectPointsByUniqueNames<TSapModel>(
             IReadOnlyList<string> uniqueNames,
@@ -302,6 +345,222 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             return OperationResult<IReadOnlyList<PointLoadInfo>>.Success(loads);
+        }
+
+        internal static OperationResult<bool> GetSelected<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointSelected<TSapModel> getSelected)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<bool>.Failure("Point name is required.");
+            }
+
+            bool selected = false;
+            int result = getSelected(sapModel, pointName.Trim(), ref selected);
+            if (result != 0)
+            {
+                return OperationResult<bool>.Failure($"{productName} PointObj.GetSelected failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<bool>.Success(selected);
+        }
+
+        internal static OperationResult<string> GetGuid<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointGuid<TSapModel> getGuid)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<string>.Failure("Point name is required.");
+            }
+
+            string guid = string.Empty;
+            int result = getGuid(sapModel, pointName.Trim(), ref guid);
+            if (result != 0)
+            {
+                return OperationResult<string>.Failure($"{productName} PointObj.GetGUID failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<string>.Success(guid ?? string.Empty);
+        }
+
+        internal static OperationResult<PointGroupAssignmentInfo> GetGroupAssign<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointGroupAssign<TSapModel> getGroupAssign)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointGroupAssignmentInfo>.Failure("Point name is required.");
+            }
+
+            int numberItems = 0;
+            string[] groupNames = null;
+            int result = getGroupAssign(sapModel, pointName.Trim(), ref numberItems, ref groupNames);
+            if (result != 0)
+            {
+                return OperationResult<PointGroupAssignmentInfo>.Failure($"{productName} PointObj.GetGroupAssign failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<PointGroupAssignmentInfo>.Success(new PointGroupAssignmentInfo
+            {
+                PointName = pointName.Trim(),
+                GroupNames = TakeStrings(groupNames, numberItems)
+            });
+        }
+
+        internal static OperationResult<PointConnectivityInfo> GetConnectivity<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointConnectivity<TSapModel> getConnectivity)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointConnectivityInfo>.Failure("Point name is required.");
+            }
+
+            int numberItems = 0;
+            int[] objectTypes = null;
+            string[] objectNames = null;
+            int[] pointNumbers = null;
+            int result = getConnectivity(sapModel, pointName.Trim(), ref numberItems, ref objectTypes, ref objectNames, ref pointNumbers);
+            if (result != 0)
+            {
+                return OperationResult<PointConnectivityInfo>.Failure($"{productName} PointObj.GetConnectivity failed for '{pointName}' (return code {result}).");
+            }
+
+            var items = new List<PointConnectedObjectInfo>();
+            for (int i = 0; i < numberItems; i++)
+            {
+                items.Add(new PointConnectedObjectInfo
+                {
+                    ObjectType = GetArrayValue(objectTypes, i),
+                    ObjectName = GetArrayValue(objectNames, i, string.Empty),
+                    PointNumber = GetArrayValue(pointNumbers, i)
+                });
+            }
+
+            return OperationResult<PointConnectivityInfo>.Success(new PointConnectivityInfo
+            {
+                PointName = pointName.Trim(),
+                ConnectedObjects = items
+            });
+        }
+
+        internal static OperationResult<PointSpringInfo> GetSpring<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointSpring<TSapModel> getSpring)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointSpringInfo>.Failure("Point name is required.");
+            }
+
+            double[] values = null;
+            int result = getSpring(sapModel, pointName.Trim(), ref values);
+            if (result != 0)
+            {
+                return OperationResult<PointSpringInfo>.Failure($"{productName} PointObj.GetSpring failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<PointSpringInfo>.Success(new PointSpringInfo
+            {
+                PointName = pointName.Trim(),
+                Stiffness = ToList(values),
+                CoordinateSystem = "Local"
+            });
+        }
+
+        internal static OperationResult<PointMassInfo> GetMass<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointMass<TSapModel> getMass)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointMassInfo>.Failure("Point name is required.");
+            }
+
+            double[] values = null;
+            int result = getMass(sapModel, pointName.Trim(), ref values);
+            if (result != 0)
+            {
+                return OperationResult<PointMassInfo>.Failure($"{productName} PointObj.GetMass failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<PointMassInfo>.Success(new PointMassInfo
+            {
+                PointName = pointName.Trim(),
+                MassValues = ToList(values)
+            });
+        }
+
+        internal static OperationResult<PointLocalAxesInfo> GetLocalAxes<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointLocalAxes<TSapModel> getLocalAxes)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointLocalAxesInfo>.Failure("Point name is required.");
+            }
+
+            double a = 0;
+            double b = 0;
+            double c = 0;
+            bool advanced = false;
+            int result = getLocalAxes(sapModel, pointName.Trim(), ref a, ref b, ref c, ref advanced);
+            if (result != 0)
+            {
+                return OperationResult<PointLocalAxesInfo>.Failure($"{productName} PointObj.GetLocalAxes failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<PointLocalAxesInfo>.Success(new PointLocalAxesInfo
+            {
+                PointName = pointName.Trim(),
+                A = a,
+                B = b,
+                C = c,
+                Advanced = advanced
+            });
+        }
+
+        internal static OperationResult<PointDiaphragmInfo> GetDiaphragm<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            string pointName,
+            CSISapModelReadPointDiaphragm<TSapModel> getDiaphragm)
+        {
+            if (string.IsNullOrWhiteSpace(pointName))
+            {
+                return OperationResult<PointDiaphragmInfo>.Failure("Point name is required.");
+            }
+
+            int option = 0;
+            string diaphragmName = string.Empty;
+            int result = getDiaphragm(sapModel, pointName.Trim(), ref option, ref diaphragmName);
+            if (result != 0)
+            {
+                return OperationResult<PointDiaphragmInfo>.Failure($"{productName} PointObj.GetDiaphragm failed for '{pointName}' (return code {result}).");
+            }
+
+            return OperationResult<PointDiaphragmInfo>.Success(new PointDiaphragmInfo
+            {
+                PointName = pointName.Trim(),
+                DiaphragmOption = option,
+                DiaphragmName = diaphragmName ?? string.Empty
+            });
         }
 
         internal static OperationResult SetRestraint<TSapModel>(
@@ -614,6 +873,36 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         private static double GetArrayValue(double[] values, int index)
         {
             return values == null || index < 0 || index >= values.Length ? 0 : values[index];
+        }
+
+        private static int GetArrayValue(int[] values, int index)
+        {
+            return values == null || index < 0 || index >= values.Length ? 0 : values[index];
+        }
+
+        private static IReadOnlyList<string> TakeStrings(string[] values, int count)
+        {
+            var result = new List<string>();
+            if (values == null || count <= 0)
+            {
+                return result;
+            }
+
+            int length = Math.Min(count, values.Length);
+            for (int i = 0; i < length; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(values[i]))
+                {
+                    result.Add(values[i]);
+                }
+            }
+
+            return result;
+        }
+
+        private static IReadOnlyList<double> ToList(double[] values)
+        {
+            return values == null ? new double[0] : values;
         }
     }
 }
