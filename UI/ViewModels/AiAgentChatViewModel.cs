@@ -44,6 +44,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly AiAgentOrchestrator _orchestrator;
         private readonly ICSISapModelConnectionService _etabsConnectionService;
         private readonly ICSISapModelConnectionService _sap2000ConnectionService;
+        private readonly System.Windows.Threading.Dispatcher _dispatcher;
 
         // ── Constructor ───────────────────────────────────────────────────────────
 
@@ -81,6 +82,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             // Commands.
             SendCommand  = new AiRelayCommand(ExecuteSend,  CanExecuteSend);
             ClearCommand = new AiRelayCommand(ExecuteClear);
+
+            // Capture dispatcher for UI updates
+            _dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
 
             RefreshConnectionStatuses();
         }
@@ -176,18 +180,22 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             try
             {
+                thinkingMessage.Content = string.Empty;
+
                 AiAgentResponse response = await _orchestrator.SendAsync(
                     userMessage,
+                    token =>
+                    {
+                        _dispatcher.Invoke(() =>
+                        {
+                            thinkingMessage.Content += token;
+                        });
+                    },
                     CancellationToken.None);
 
-                Messages.Remove(thinkingMessage);
-
-                // Add assistant reply.
-                Messages.Add(new AiAgentChatMessageViewModel
-                {
-                    Role    = "Assistant",
-                    Content = response.AssistantText
-                });
+                // Now that it's finished streaming, mark it as permanent and update final content if needed.
+                thinkingMessage.IsTemporary = false;
+                thinkingMessage.Content = response.AssistantText;
 
                 // Update tool trace panel.
                 if (response.ToolWasCalled && response.ToolResponse != null)

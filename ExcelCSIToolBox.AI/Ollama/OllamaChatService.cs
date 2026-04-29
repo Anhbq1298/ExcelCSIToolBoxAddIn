@@ -13,7 +13,7 @@ namespace ExcelCSIToolBox.AI.Ollama
     ///
     /// Configuration:
     ///   Endpoint : http://localhost:11434/api/chat   (change OllamaEndpoint to override)
-    ///   Model    : qwen2.5-coder:7b                  (change DefaultModel to override)
+    ///   Model    : qwen2.5-coder:3b                  (change DefaultModel to override)
     ///   Stream   : false (always — we collect the full response at once)
     /// </summary>
     public class OllamaChatService
@@ -23,8 +23,8 @@ namespace ExcelCSIToolBox.AI.Ollama
         /// <summary>Base URL of the Ollama /api/chat endpoint.</summary>
         public static string OllamaEndpoint = "http://localhost:11434/api/chat";
 
-        /// <summary>Default model pulled from Ollama ("ollama pull qwen2.5-coder:7b").</summary>
-        public static string DefaultModel = "qwen2.5-coder:7b";
+        /// <summary>Default model pulled from Ollama ("ollama pull qwen2.5-coder:3b").</summary>
+        public static string DefaultModel = "qwen2.5-coder:3b";
 
         // ── Private state ─────────────────────────────────────────────────────────
 
@@ -48,7 +48,8 @@ namespace ExcelCSIToolBox.AI.Ollama
             {
                 model    = string.IsNullOrWhiteSpace(model) ? DefaultModel : model,
                 messages = messages,
-                stream   = false
+                stream   = false,
+                keep_alive = "30m"
             };
 
             string requestJson = JsonConvert.SerializeObject(request);
@@ -61,6 +62,52 @@ namespace ExcelCSIToolBox.AI.Ollama
             OllamaChatResponse ollamaResponse = JsonConvert.DeserializeObject<OllamaChatResponse>(responseBody);
 
             return ollamaResponse?.message?.content ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Streams tokens from Ollama progressively.
+        /// </summary>
+        public async Task ChatStreamAsync(
+            List<OllamaMessage> messages,
+            Action<string>      onTokenReceived,
+            CancellationToken   cancellationToken,
+            string              model = null)
+        {
+            OllamaChatRequest request = new OllamaChatRequest
+            {
+                model      = string.IsNullOrWhiteSpace(model) ? DefaultModel : model,
+                messages   = messages,
+                stream     = true,
+                keep_alive = "30m"
+            };
+
+            string requestJson = JsonConvert.SerializeObject(request);
+            StringContent content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+            using (var requestMessage = new HttpRequestMessage(HttpMethod.Post, OllamaEndpoint) { Content = content })
+            using (var httpResponse = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
+            {
+                httpResponse.EnsureSuccessStatusCode();
+
+                using (var stream = await httpResponse.Content.ReadAsStreamAsync())
+                using (var reader = new System.IO.StreamReader(stream))
+                {
+                    while (!reader.EndOfStream && !cancellationToken.IsCancellationRequested)
+                    {
+                        string line = await reader.ReadLineAsync();
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+
+                        var chunk = JsonConvert.DeserializeObject<OllamaChatResponse>(line);
+                        string token = chunk?.message?.content;
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            onTokenReceived(token);
+                        }
+
+                        if (chunk?.done == true) break;
+                    }
+                }
+            }
         }
     }
 }

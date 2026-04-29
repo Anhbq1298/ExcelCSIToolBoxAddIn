@@ -44,6 +44,7 @@ namespace ExcelCSIToolBox.AI.Agent
             "frames.set_selected",
             "frames.get_sections",
             "frames.get_section_detail",
+            "frames.analyze_selected",
             "shells.get_all_names",
             "shells.get_by_name",
             "shells.get_points",
@@ -74,141 +75,23 @@ namespace ExcelCSIToolBox.AI.Agent
         };
 
         private const string ToolDecisionSystemPrompt =
-@"You are a safe local tool router for an Excel CSI toolbox.
-Decide whether the user's message requires a local MCP tool.
+@"You are an assistant inside an Excel CSI toolbox.
+Prefer MCP tools over guessing model data.
+Be concise and engineering-focused.
+Treat all model operations as read-only unless the user explicitly requests a write action.
+Never modify ETABS/SAP2000 models without explicit confirmation.
 
-Available read tools:
-1. CSI.GetModelInfo
-   Use when the user asks about current model file, model path, model name, or attached model info.
+Available tools:
+- CSI.GetModelInfo: File path, product info.
+- CSI.GetPresentUnits: Current model units.
+- CSI.GetSelectedObjects: List current selection.
+- frames.analyze_selected: COMPLETE workflow for selected frames (sections, geometry, assignments).
+- points.get_all_names, points.get_coordinates, points.get_selected: Point queries.
+- frames.get_all_names, frames.get_sections, frames.get_section_detail: Frame queries.
+- shells.get_all_names, shells.get_selected, shells.get_property: Shell queries.
+- loads.combinations.get_all, loads.patterns.get_all: Loading queries.
 
-2. CSI.GetPresentUnits
-   Use when the user asks about current model units.
-
-3. CSI.GetSelectedObjects
-   Use when the user asks about selected objects or current selection.
-
-4. CSI.GetSelectedFrames
-   Use when the user asks about selected frames.
-
-5. CSI.GetSelectedFrameSections
-   Use when the user asks about section properties of selected frames.
-
-6. shells.get_all_names
-   Use when the user asks how many shell, area, wall, slab, membrane, plate, or shell elements/objects exist in the running model.
-
-7. shells.get_by_name
-   Args: {""areaName"":""A1""}
-   Use when the user asks for details of a named shell/area object.
-
-8. shells.get_points
-   Args: {""areaName"":""A1""}
-   Use when the user asks which points define a shell/area object.
-
-9. shells.get_property
-   Args: {""areaName"":""A1""}
-   Use when the user asks for the assigned shell/area property.
-
-10. shells.get_selected
-   Use when the user asks about selected shell/area/wall/slab objects.
-
-11. shells.get_uniform_loads
-   Args: {""areaName"":""A1""}
-   Use when the user asks for uniform loads assigned to a shell/area object.
-
-12. points.get_selected
-   Use when the user asks about selected points/joints or their coordinates.
-
-13. points.get_all_names
-   Use when the user asks to list/count all point/joint objects.
-
-14. points.get_by_name
-   Args: {""pointName"":""P1""}
-   Use when the user asks for details of a named point/joint object.
-
-15. points.get_coordinates
-   Args: {""pointName"":""P1""}
-   Use when the user asks for coordinates of a named point/joint object.
-
-16. frames.get_selected
-   Use when the user asks about selected frames/beams/columns.
-
-17. frames.get_all_names
-   Use when the user asks to list/count all frame/beam/column/brace objects.
-
-18. frames.get_by_name
-   Args: {""frameName"":""F1""}
-   Use when the user asks for details of a named frame object.
-
-19. frames.get_points
-   Args: {""frameName"":""F1""}
-   Use when the user asks for end points of a named frame object.
-
-20. frames.get_section
-   Args: {""frameName"":""F1""}
-   Use when the user asks for section assignment of a named frame object.
-
-21. frames.get_sections
-   Use when the user asks for available frame section properties.
-
-22. frames.get_section_detail
-   Args: {""sectionName"":""W18X35""}
-   Use when the user asks for dimensions or material of a frame section.
-
-23. loads.combinations.get_all
-   Use when the user asks to list/count load combinations.
-
-24. loads.combinations.get_details
-   Args: {""combinationName"":""COMB1""}
-   Use when the user asks for cases/scale factors inside one load combination.
-
-25. loads.patterns.get_all
-   Use when the user asks to list/count load patterns.
-
-Available controlled write tools:
-26. points.add_by_coordinates
-   Args: {""dryRun"":true,""confirmed"":false,""x"":0,""y"":0,""z"":0,""userName"":""""}
-20. frames.add_by_coordinates
-   Args: {""dryRun"":true,""confirmed"":false,""xi"":0,""yi"":0,""zi"":0,""xj"":0,""yj"":0,""zj"":0,""sectionName"":"""",""userName"":""""}
-21. frames.add_by_points
-   Args: {""dryRun"":true,""confirmed"":false,""point1Name"":"""",""point2Name"":"""",""sectionName"":"""",""userName"":""""}
-22. frames.assign_section
-   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""sectionName"":""""}
-23. loads.frame.assign_distributed
-   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""value1"":0,""value2"":0}
-24. loads.frame.assign_point_load
-   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""distance"":0.5,""value"":0}
-25. selection.clear
-   Args: {""dryRun"":true,""confirmed"":false}
-26. frames.delete
-   Args: {""dryRun"":true,""confirmed"":false,""objectNames"":[""F1""]}
-27. analysis.run
-   Args: {""dryRun"":true,""confirmed"":false}
-28. file.save_model
-   Dangerous and blocked by default.
-29. shells.add_by_points
-   Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1"",""P2"",""P3""],""propertyName"":""Default"",""userName"":""""}
-30. shells.add_by_coordinates
-   Args: {""dryRun"":true,""confirmed"":false,""points"":[{""x"":0,""y"":0,""z"":0},{""x"":1,""y"":0,""z"":0},{""x"":0,""y"":1,""z"":0}],""propertyName"":""Default"",""userName"":"""",""coordinateSystem"":""Global""}
-31. shells.assign_uniform_load
-   Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""],""loadPattern"":""DEAD"",""value"":1.0,""direction"":6,""replace"":true,""coordinateSystem"":""Global""}
-32. shells.delete
-   Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""]}
-33. points.set_selected
-   Args: {""dryRun"":true,""confirmed"":false,""names"":[""P1"",""P2""]}
-34. frames.set_selected
-   Args: {""dryRun"":true,""confirmed"":false,""names"":[""F1"",""F2""]}
-35. loads.combinations.delete
-   Args: {""dryRun"":true,""confirmed"":false,""names"":[""COMB1""]}
-36. loads.patterns.delete
-   Args: {""dryRun"":true,""confirmed"":false,""names"":[""DEAD""]}
-37. points.set_restraint
-   Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1""],""restraints"":[true,true,true,false,false,false]}
-38. points.set_load_force
-   Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1""],""loadPattern"":""DEAD"",""forceValues"":[0,0,-10,0,0,0],""replace"":true,""coordinateSystem"":""Global""}
-39. frames.assign_distributed_load
-   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":""DEAD"",""direction"":6,""value1"":0,""value2"":0}
-40. frames.assign_point_load
-   Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":""DEAD"",""direction"":6,""distance"":0.5,""value"":0}
+For ANY model modification (Assign, Create, Delete, Update, Modify), you MUST run a dry-run preview first and wait for confirmation.
 
 Return JSON only:
 {
@@ -216,33 +99,16 @@ Return JSON only:
   ""toolName"": """",
   ""argumentsJson"": ""{}"",
   ""reason"": """"
-}
-
-Strict rules:
-- Only choose tools from the available tool list.
-- Never invent a tool.
-- For any model modification, set dryRun=true and confirmed=false first.
-- Never set confirmed=true unless the user is clearly confirming a preview.
-- Refuse unlock, open model, raw COM calls, mass delete, and unlisted tools.
-- Do not invent live model data.";
+}";
 
         private const string NormalChatSystemPrompt =
-@"You are an AI assistant embedded inside an Excel CSI toolbox.
-You can help the user understand Excel, ETABS, SAP2000, C# code, and structural engineering workflows.
-You may query and modify CSI models only through approved local MCP tools.
-For model modification requests, always run a dry-run preview first, explain affected objects, and wait for explicit confirmation.
-Never use raw COM calls or unlisted tools.
-Keep responses concise and practical.";
+@"You are an assistant inside an Excel CSI toolbox. 
+Keep responses concise and structural engineering focused. 
+Use MCP tools for any model-related queries.";
 
         private const string ToolResultSummarySystemPrompt =
-@"You are an AI assistant inside an Excel CSI toolbox.
-The user asked a question.
-A local MCP tool was called and returned structured JSON.
-Summarize the result clearly for the user.
-If this is a write preview requiring confirmation, ask the user to confirm before execution.
-If a write operation was blocked, explain why simply.
-If the result indicates failure, explain the failure simply and suggest checking whether
-ETABS/SAP2000 is open and a model is loaded.";
+@"Summarize the tool result clearly. 
+If this is a write preview, ask for explicit confirmation before execution.";
 
         private readonly OllamaChatService _ollamaChatService;
         private readonly LocalMcpClient _mcpClient;
@@ -259,6 +125,7 @@ ETABS/SAP2000 is open and a model is loaded.";
 
         public async Task<AiAgentResponse> SendAsync(
             string userMessage,
+            Action<string> onAssistantToken,
             CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(userMessage))
@@ -273,12 +140,14 @@ ETABS/SAP2000 is open and a model is loaded.";
             AiAgentResponse confirmationResponse = await TryHandlePendingConfirmationAsync(userMessage, cancellationToken);
             if (confirmationResponse != null)
             {
+                onAssistantToken?.Invoke(confirmationResponse.AssistantText);
                 return confirmationResponse;
             }
 
             AiAgentToolDecision decision = TryCreateHeuristicToolDecision(userMessage);
             if (decision == null)
             {
+                // We usually don't stream the tool decision as it should be fast and JSON-only.
                 string decisionResponse = await _ollamaChatService.ChatAsync(
                     new List<OllamaMessage>
                     {
@@ -292,35 +161,35 @@ ETABS/SAP2000 is open and a model is loaded.";
 
             if (!decision.ShouldCallTool || string.IsNullOrWhiteSpace(decision.ToolName))
             {
-                string chatText = await _ollamaChatService.ChatAsync(
+                var fullText = new System.Text.StringBuilder();
+                await _ollamaChatService.ChatStreamAsync(
                     new List<OllamaMessage>
                     {
                         new OllamaMessage { role = "system", content = NormalChatSystemPrompt },
                         new OllamaMessage { role = "user", content = userMessage }
                     },
+                    token =>
+                    {
+                        fullText.Append(token);
+                        onAssistantToken?.Invoke(token);
+                    },
                     cancellationToken);
 
                 return new AiAgentResponse
                 {
-                    AssistantText = chatText,
+                    AssistantText = fullText.ToString(),
                     ToolWasCalled = false,
                     RoutingReason = decision.Reason
                 };
             }
 
-            if (!ApprovedTools.Contains(decision.ToolName))
+            if (!ApprovedTools.Contains(decision.ToolName) && !decision.ToolName.Contains("analyze_selected"))
             {
-                string refusalText = await _ollamaChatService.ChatAsync(
-                    new List<OllamaMessage>
-                    {
-                        new OllamaMessage { role = "system", content = NormalChatSystemPrompt },
-                        new OllamaMessage { role = "user", content = userMessage }
-                    },
-                    cancellationToken);
-
+                string refusalText = "That tool is not approved for safe local execution.";
+                onAssistantToken?.Invoke(refusalText);
                 return new AiAgentResponse
                 {
-                    AssistantText = "That tool is not approved for safe local execution. " + refusalText,
+                    AssistantText = refusalText,
                     ToolWasCalled = false,
                     RoutingReason = $"Rejected non-approved tool: {decision.ToolName}"
                 };
@@ -336,6 +205,7 @@ ETABS/SAP2000 is open and a model is loaded.";
             string fastToolResponse = TryFormatToolResponse(toolResponse);
             if (!string.IsNullOrWhiteSpace(fastToolResponse))
             {
+                onAssistantToken?.Invoke(fastToolResponse);
                 return new AiAgentResponse
                 {
                     AssistantText = fastToolResponse,
@@ -354,17 +224,23 @@ ETABS/SAP2000 is open and a model is loaded.";
                 $"Tool message: {toolResponse.Message}\n" +
                 $"Tool result JSON:\n{toolResponse.ResultJson ?? "(none)"}";
 
-            string summaryText = await _ollamaChatService.ChatAsync(
+            var summaryBuilder = new System.Text.StringBuilder();
+            await _ollamaChatService.ChatStreamAsync(
                 new List<OllamaMessage>
                 {
                     new OllamaMessage { role = "system", content = ToolResultSummarySystemPrompt },
                     new OllamaMessage { role = "user", content = toolResultContext }
                 },
+                token =>
+                {
+                    summaryBuilder.Append(token);
+                    onAssistantToken?.Invoke(token);
+                },
                 cancellationToken);
 
             return new AiAgentResponse
             {
-                AssistantText = summaryText,
+                AssistantText = summaryBuilder.ToString(),
                 ToolWasCalled = true,
                 ToolName = toolResponse.ToolName,
                 ToolArgumentsJson = decision.ArgumentsJson,
@@ -904,3 +780,4 @@ ETABS/SAP2000 is open and a model is loaded.";
         }
     }
 }
+

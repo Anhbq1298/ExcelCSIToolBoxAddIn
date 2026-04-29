@@ -118,6 +118,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new FramesSetSelectedTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetSectionsTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetSectionDetailTool(etabsService, sap2000Service));
+            _registry.Register(new AnalyzeSelectedFramesTool(etabsService, sap2000Service));
             _registry.Register(new CsiGetShellNamesTool(etabsService, sap2000Service));
             _registry.Register(new ShellsGetCountTool(etabsService, sap2000Service));
             _registry.Register(new ShellsGetByNameTool(etabsService, sap2000Service));
