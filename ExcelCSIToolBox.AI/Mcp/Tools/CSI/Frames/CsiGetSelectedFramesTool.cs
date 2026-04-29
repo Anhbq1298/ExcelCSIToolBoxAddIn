@@ -8,29 +8,28 @@ using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using Newtonsoft.Json;
 
-namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI
+namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
 {
     /// <summary>
-    /// Read-only MCP tool: returns all currently selected objects (points, frames, shells)
-    /// from the attached running ETABS or SAP2000 model.
+    /// Read-only MCP tool: returns the unique names of currently selected frame objects.
     /// </summary>
-    public class CsiGetSelectedObjectsTool : IMcpTool
+    public class CsiGetSelectedFramesTool : IMcpTool
     {
         private readonly ICsiReadOnlySelectionService _selectionService;
 
-        public CsiGetSelectedObjectsTool(ICsiReadOnlySelectionService selectionService)
+        public CsiGetSelectedFramesTool(ICsiReadOnlySelectionService selectionService)
         {
             _selectionService = selectionService
                 ?? throw new ArgumentNullException(nameof(selectionService));
         }
 
-        public string Name        => "CSI.GetSelectedObjects";
-        public string Description => "Returns all currently selected objects (points, frames, shells) from the attached running model.";
+        public string Name        => "CSI.GetSelectedFrames";
+        public string Description => "Returns unique names of currently selected frame objects from the attached running model.";
         public bool   IsReadOnly  => true;
 
         public Task<ToolCallResponse> ExecuteAsync(string argumentsJson, CancellationToken cancellationToken)
         {
-            OperationResult<List<CsiSelectedObjectDto>> result = _selectionService.GetSelectedObjects();
+            OperationResult<List<string>> result = _selectionService.GetSelectedFrameNames();
 
             if (!result.IsSuccess)
             {
@@ -45,15 +44,15 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI
 
             var payload = new
             {
-                Count   = result.Data.Count,
-                Objects = result.Data
+                Count      = result.Data.Count,
+                FrameNames = result.Data
             };
 
             return Task.FromResult(new ToolCallResponse
             {
                 ToolName   = Name,
                 Success    = true,
-                Message    = $"Found {result.Data.Count} selected object(s).",
+                Message    = $"Found {result.Data.Count} selected frame(s).",
                 ResultJson = JsonConvert.SerializeObject(payload)
             });
         }

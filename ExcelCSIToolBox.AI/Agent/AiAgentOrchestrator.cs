@@ -24,6 +24,12 @@ namespace ExcelCSIToolBox.AI.Agent
             "CSI.GetSelectedObjects",
             "CSI.GetSelectedFrames",
             "CSI.GetSelectedFrameSections",
+            "points.get_selected",
+            "points.set_selected",
+            "frames.get_selected",
+            "frames.set_selected",
+            "frames.get_sections",
+            "frames.get_section_detail",
             "shells.get_all_names",
             "shells.get_by_name",
             "shells.get_points",
@@ -34,6 +40,9 @@ namespace ExcelCSIToolBox.AI.Agent
             "shells.add_by_coordinates",
             "shells.assign_uniform_load",
             "shells.delete",
+            "loads.combinations.get_all",
+            "loads.combinations.get_details",
+            "loads.combinations.delete",
             "points.add_by_coordinates",
             "frames.add_by_coordinates",
             "frames.add_by_points",
@@ -88,35 +97,61 @@ Available read tools:
    Args: {""areaName"":""A1""}
    Use when the user asks for uniform loads assigned to a shell/area object.
 
+12. points.get_selected
+   Use when the user asks about selected points/joints or their coordinates.
+
+13. frames.get_selected
+   Use when the user asks about selected frames/beams/columns.
+
+14. frames.get_sections
+   Use when the user asks for available frame section properties.
+
+15. frames.get_section_detail
+   Args: {""sectionName"":""W18X35""}
+   Use when the user asks for dimensions or material of a frame section.
+
+16. loads.combinations.get_all
+   Use when the user asks to list/count load combinations.
+
+17. loads.combinations.get_details
+   Args: {""combinationName"":""COMB1""}
+   Use when the user asks for cases/scale factors inside one load combination.
+
 Available controlled write tools:
-12. points.add_by_coordinates
+18. points.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""x"":0,""y"":0,""z"":0,""userName"":""""}
-13. frames.add_by_coordinates
+19. frames.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""xi"":0,""yi"":0,""zi"":0,""xj"":0,""yj"":0,""zj"":0,""sectionName"":"""",""userName"":""""}
-14. frames.add_by_points
+20. frames.add_by_points
    Args: {""dryRun"":true,""confirmed"":false,""point1Name"":"""",""point2Name"":"""",""sectionName"":"""",""userName"":""""}
-15. frames.assign_section
+21. frames.assign_section
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""sectionName"":""""}
-16. loads.frame.assign_distributed
+22. loads.frame.assign_distributed
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""value1"":0,""value2"":0}
-17. loads.frame.assign_point_load
+23. loads.frame.assign_point_load
    Args: {""dryRun"":true,""confirmed"":false,""frameNames"":[""F1""],""loadPattern"":"""",""direction"":6,""distance"":0.5,""value"":0}
-18. selection.clear
+24. selection.clear
    Args: {""dryRun"":true,""confirmed"":false}
-19. frames.delete
+25. frames.delete
    Args: {""dryRun"":true,""confirmed"":false,""objectNames"":[""F1""]}
-20. analysis.run
+26. analysis.run
    Args: {""dryRun"":true,""confirmed"":false}
-21. file.save_model
+27. file.save_model
    Dangerous and blocked by default.
-22. shells.add_by_points
+28. shells.add_by_points
    Args: {""dryRun"":true,""confirmed"":false,""pointNames"":[""P1"",""P2"",""P3""],""propertyName"":""Default"",""userName"":""""}
-23. shells.add_by_coordinates
+29. shells.add_by_coordinates
    Args: {""dryRun"":true,""confirmed"":false,""points"":[{""x"":0,""y"":0,""z"":0},{""x"":1,""y"":0,""z"":0},{""x"":0,""y"":1,""z"":0}],""propertyName"":""Default"",""userName"":"""",""coordinateSystem"":""Global""}
-24. shells.assign_uniform_load
+30. shells.assign_uniform_load
    Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""],""loadPattern"":""DEAD"",""value"":1.0,""direction"":6,""replace"":true,""coordinateSystem"":""Global""}
-25. shells.delete
+31. shells.delete
    Args: {""dryRun"":true,""confirmed"":false,""areaNames"":[""A1""]}
+32. points.set_selected
+   Args: {""dryRun"":true,""confirmed"":false,""names"":[""P1"",""P2""]}
+33. frames.set_selected
+   Args: {""dryRun"":true,""confirmed"":false,""names"":[""F1"",""F2""]}
+34. loads.combinations.delete
+   Args: {""dryRun"":true,""confirmed"":false,""names"":[""COMB1""]}
 
 Return JSON only:
 {
@@ -394,9 +429,20 @@ ETABS/SAP2000 is open and a model is loaded.";
                 return CreateToolDecision("CSI.GetSelectedFrameSections", "Heuristic route: selected frame sections query.");
             }
 
+            if (ContainsAny(normalized, "load combination", "load combinations", "combo", "combination") &&
+                ContainsAny(normalized, "list", "count", "how many", "number", "all", "names", "bao nhieu", "bao nhiêu", "dem", "đếm"))
+            {
+                return CreateToolDecision("loads.combinations.get_all", "Heuristic route: load combinations query.");
+            }
+
+            if (ContainsAny(normalized, "selected point", "selected joint", "point selected", "joint selected"))
+            {
+                return CreateToolDecision("points.get_selected", "Heuristic route: selected points query.");
+            }
+
             if (ContainsAny(normalized, "selected frame", "selected member", "frame selected", "selected beam", "selected column"))
             {
-                return CreateToolDecision("CSI.GetSelectedFrames", "Heuristic route: selected frames query.");
+                return CreateToolDecision("frames.get_selected", "Heuristic route: selected frames query.");
             }
 
             if (ContainsAny(normalized, "selected object", "current selection", "objects selected"))
@@ -485,6 +531,12 @@ ETABS/SAP2000 is open and a model is loaded.";
                         return FormatSelectedObjects(result);
                     case "CSI.GetSelectedFrameSections":
                         return FormatSelectedFrameSections(result);
+                    case "points.get_selected":
+                        return FormatSelectedPoints(result);
+                    case "frames.get_selected":
+                        return FormatNames(result, "selected frame");
+                    case "loads.combinations.get_all":
+                        return FormatLoadCombinations(result);
                     case "shells.get_all_names":
                         return FormatShellNames(result);
                     case "shells.get_selected":
@@ -612,6 +664,84 @@ ETABS/SAP2000 is open and a model is loaded.";
             return string.IsNullOrWhiteSpace(preview)
                 ? $"Found {count.ToString(CultureInfo.InvariantCulture)} shell/area object(s) in {product}."
                 : $"Found {count.ToString(CultureInfo.InvariantCulture)} shell/area object(s) in {product}: {preview}.";
+        }
+
+        private static string FormatSelectedPoints(JObject result)
+        {
+            JArray points = result["Data"] as JArray;
+            if (points == null || points.Count == 0)
+            {
+                return "No point objects are currently selected.";
+            }
+
+            var preview = new List<string>();
+            for (int i = 0; i < points.Count && i < 8; i++)
+            {
+                JObject item = points[i] as JObject;
+                if (item == null)
+                {
+                    continue;
+                }
+
+                string name = item.Value<string>("PointUniqueName") ?? item.Value<string>("PointLabel") ?? "?";
+                double x = item.Value<double?>("X") ?? 0;
+                double y = item.Value<double?>("Y") ?? 0;
+                double z = item.Value<double?>("Z") ?? 0;
+                preview.Add($"{name} ({x.ToString(CultureInfo.InvariantCulture)}, {y.ToString(CultureInfo.InvariantCulture)}, {z.ToString(CultureInfo.InvariantCulture)})");
+            }
+
+            string summary = string.Join(", ", preview);
+            if (points.Count > preview.Count)
+            {
+                summary += ", ...";
+            }
+
+            return $"Found {points.Count.ToString(CultureInfo.InvariantCulture)} selected point(s): {summary}.";
+        }
+
+        private static string FormatNames(JObject result, string itemLabel)
+        {
+            JArray names = result["Data"] as JArray;
+            if (names == null || names.Count == 0)
+            {
+                return $"No {itemLabel} objects were found.";
+            }
+
+            string preview = JoinPreview(names, 10);
+            return string.IsNullOrWhiteSpace(preview)
+                ? $"Found {names.Count.ToString(CultureInfo.InvariantCulture)} {itemLabel}(s)."
+                : $"Found {names.Count.ToString(CultureInfo.InvariantCulture)} {itemLabel}(s): {preview}.";
+        }
+
+        private static string FormatLoadCombinations(JObject result)
+        {
+            JArray combinations = result["Data"] as JArray;
+            if (combinations == null || combinations.Count == 0)
+            {
+                return "No load combinations were found.";
+            }
+
+            var preview = new List<string>();
+            for (int i = 0; i < combinations.Count && i < 10; i++)
+            {
+                JObject item = combinations[i] as JObject;
+                if (item == null)
+                {
+                    continue;
+                }
+
+                string name = item.Value<string>("Name") ?? "?";
+                string type = item.Value<string>("Type") ?? "Unknown";
+                preview.Add(name + " (" + type + ")");
+            }
+
+            string summary = string.Join(", ", preview);
+            if (combinations.Count > preview.Count)
+            {
+                summary += ", ...";
+            }
+
+            return $"Found {combinations.Count.ToString(CultureInfo.InvariantCulture)} load combination(s): {summary}.";
         }
 
         private static string FormatSelectedShells(JObject result)

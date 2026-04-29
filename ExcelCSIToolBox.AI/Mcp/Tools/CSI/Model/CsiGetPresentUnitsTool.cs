@@ -7,7 +7,7 @@ using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using Newtonsoft.Json;
 
-namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI
+namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model
 {
     /// <summary>
     /// Read-only MCP tool: returns the current units from the attached running model.

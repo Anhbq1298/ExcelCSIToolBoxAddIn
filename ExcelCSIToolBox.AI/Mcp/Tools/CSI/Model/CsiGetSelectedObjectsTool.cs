@@ -8,28 +8,29 @@ using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using Newtonsoft.Json;
 
-namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI
+namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model
 {
     /// <summary>
-    /// Read-only MCP tool: returns section names assigned to currently selected frame objects.
+    /// Read-only MCP tool: returns all currently selected objects (points, frames, shells)
+    /// from the attached running ETABS or SAP2000 model.
     /// </summary>
-    public class CsiGetSelectedFrameSectionsTool : IMcpTool
+    public class CsiGetSelectedObjectsTool : IMcpTool
     {
-        private readonly ICsiReadOnlyFrameService _frameService;
+        private readonly ICsiReadOnlySelectionService _selectionService;
 
-        public CsiGetSelectedFrameSectionsTool(ICsiReadOnlyFrameService frameService)
+        public CsiGetSelectedObjectsTool(ICsiReadOnlySelectionService selectionService)
         {
-            _frameService = frameService
-                ?? throw new ArgumentNullException(nameof(frameService));
+            _selectionService = selectionService
+                ?? throw new ArgumentNullException(nameof(selectionService));
         }
 
-        public string Name        => "CSI.GetSelectedFrameSections";
-        public string Description => "Returns section property names assigned to currently selected frame objects.";
+        public string Name        => "CSI.GetSelectedObjects";
+        public string Description => "Returns all currently selected objects (points, frames, shells) from the attached running model.";
         public bool   IsReadOnly  => true;
 
         public Task<ToolCallResponse> ExecuteAsync(string argumentsJson, CancellationToken cancellationToken)
         {
-            OperationResult<List<FrameSectionAssignmentDto>> result = _frameService.GetSelectedFrameSections();
+            OperationResult<List<CsiSelectedObjectDto>> result = _selectionService.GetSelectedObjects();
 
             if (!result.IsSuccess)
             {
@@ -44,15 +45,15 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI
 
             var payload = new
             {
-                Count       = result.Data.Count,
-                Assignments = result.Data
+                Count   = result.Data.Count,
+                Objects = result.Data
             };
 
             return Task.FromResult(new ToolCallResponse
             {
                 ToolName   = Name,
                 Success    = true,
-                Message    = $"Retrieved sections for {result.Data.Count} selected frame(s).",
+                Message    = $"Found {result.Data.Count} selected object(s).",
                 ResultJson = JsonConvert.SerializeObject(payload)
             });
         }

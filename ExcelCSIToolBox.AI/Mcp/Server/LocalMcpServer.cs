@@ -5,7 +5,11 @@ using System.Threading.Tasks;
 using ExcelCSIToolBox.AI.Mcp.Contracts;
 using ExcelCSIToolBox.AI.Mcp.Tools;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
-using ExcelCSIToolBox.AI.Mcp.Tools.CSI;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Infrastructure.Etabs;
@@ -92,6 +96,12 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new CsiGetSelectedObjectsTool(selectionService));
             _registry.Register(new CsiGetSelectedFramesTool(selectionService));
             _registry.Register(new CsiGetSelectedFrameSectionsTool(frameService));
+            _registry.Register(new PointsGetSelectedTool(etabsService, sap2000Service));
+            _registry.Register(new PointsSetSelectedTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetSelectedTool(etabsService, sap2000Service));
+            _registry.Register(new FramesSetSelectedTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetSectionsTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetSectionDetailTool(etabsService, sap2000Service));
             _registry.Register(new CsiGetShellNamesTool(etabsService, sap2000Service));
             _registry.Register(new ShellsGetByNameTool(etabsService, sap2000Service));
             _registry.Register(new ShellsGetPointsTool(etabsService, sap2000Service));
@@ -102,6 +112,9 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new ShellsAddByCoordinatesTool(etabsService, sap2000Service));
             _registry.Register(new ShellsAssignUniformLoadTool(etabsService, sap2000Service));
             _registry.Register(new ShellsDeleteTool(etabsService, sap2000Service));
+            _registry.Register(new LoadCombinationsGetAllTool(etabsService, sap2000Service));
+            _registry.Register(new LoadCombinationsGetDetailsTool(etabsService, sap2000Service));
+            _registry.Register(new LoadCombinationsDeleteTool(etabsService, sap2000Service));
 
             _registry.Register(new PointsAddByCoordinatesTool(commandService));
             _registry.Register(new FramesAddByCoordinatesTool(commandService));

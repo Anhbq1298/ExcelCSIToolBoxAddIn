@@ -9,7 +9,7 @@ using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using Newtonsoft.Json;
 
-namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI
+namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells
 {
     /// <summary>
     /// Read-only MCP tool: returns shell/area object names from the active CSI model.

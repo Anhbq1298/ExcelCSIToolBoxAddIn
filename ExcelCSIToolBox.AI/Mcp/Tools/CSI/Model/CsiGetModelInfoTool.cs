@@ -9,7 +9,7 @@ using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using Newtonsoft.Json;
 
-namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI
+namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model
 {
     /// <summary>
     /// Read-only MCP tool: returns the current model file path and product info
