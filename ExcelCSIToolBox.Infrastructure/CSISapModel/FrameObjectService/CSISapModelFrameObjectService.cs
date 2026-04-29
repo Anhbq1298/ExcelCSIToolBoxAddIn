@@ -152,7 +152,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         internal static OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel<TSapModel>(
             string productName,
             TSapModel sapModel,
-            CSISapModelReadSelectedObjects<TSapModel> getSelectedObjects)
+            CSISapModelGetSelectedObjects<TSapModel> getSelectedObjects)
         {
             try
             {
