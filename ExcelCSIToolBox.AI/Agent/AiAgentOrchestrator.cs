@@ -84,6 +84,7 @@ namespace ExcelCSIToolBox.AI.Agent
             "frames.assign_section",
             "loads.frame.assign_distributed",
             "loads.frame.assign_point_load",
+            "random.generate_objects",
             "frames.assign_distributed_load",
             "frames.assign_point_load",
             "selection.clear",
@@ -112,6 +113,7 @@ Available tools:
 - loads.combinations.get_all, loads.patterns.get_all: Loading queries.
 - execute_csi_request: Multi-step CSI workflow tool. Use when the user asks for multiple actions in one request.
 - points.add_by_coordinates, frames.add_object, frames.add_objects: Creation tools.
+- random.generate_objects: Generate random CSI points, frames, and shell/area objects using safe defaults.
 
 SAFETY POLICY:
 1. Do not use dryRun unless the user explicitly asks for preview/check only.
@@ -212,6 +214,18 @@ If this is a write preview, ask for explicit confirmation before execution.";
                     AssistantText = fullText.ToString(),
                     ToolWasCalled = false,
                     RoutingReason = decision.Reason
+                };
+            }
+
+            string decisionValidationFailure = TryRepairOrRejectInvalidFrameAddDecision(userMessage, ref decision);
+            if (!string.IsNullOrWhiteSpace(decisionValidationFailure))
+            {
+                onAssistantToken?.Invoke(decisionValidationFailure);
+                return new AiAgentResponse
+                {
+                    AssistantText = decisionValidationFailure,
+                    ToolWasCalled = false,
+                    RoutingReason = "Rejected invalid frame add tool arguments before MCP execution."
                 };
             }
 
@@ -680,9 +694,70 @@ If this is a write preview, ask for explicit confirmation before execution.";
             };
         }
 
+        private static string TryRepairOrRejectInvalidFrameAddDecision(string userMessage, ref AiAgentToolDecision decision)
+        {
+            if (decision == null ||
+                !string.Equals(decision.ToolName, "frames.add_object", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            JObject args;
+            try
+            {
+                args = JObject.Parse(decision.ArgumentsJson ?? "{}");
+            }
+            catch
+            {
+                return "Failed to add frame: the tool arguments were not valid JSON.";
+            }
+
+            string pointI = ReadString(args, "PointIName", "pointIName");
+            string pointJ = ReadString(args, "PointJName", "pointJName");
+            if (string.IsNullOrWhiteSpace(pointI) && string.IsNullOrWhiteSpace(pointJ))
+            {
+                return null;
+            }
+
+            if (IsValidCsiPointName(pointI) && IsValidCsiPointName(pointJ))
+            {
+                return null;
+            }
+
+            AiAgentToolDecision coordinateDecision = TryCreateAddFrameByCoordinatesDecision(userMessage);
+            if (coordinateDecision != null)
+            {
+                decision = coordinateDecision;
+                return null;
+            }
+
+            return "Failed to add frame: the endpoints look like coordinates, but I could not find six valid coordinate values. Use this format: add frame from (0,0,0) to (10000,10000,1000).";
+        }
+
         private static string Normalize(string text)
         {
             return (text ?? string.Empty).Trim().ToLowerInvariant();
+        }
+
+        private static string ReadString(JObject obj, params string[] names)
+        {
+            for (int i = 0; i < names.Length; i++)
+            {
+                JToken token = obj[names[i]];
+                string value = token == null ? null : token.ToString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsValidCsiPointName(string value)
+        {
+            return !string.IsNullOrWhiteSpace(value) &&
+                   Regex.IsMatch(value.Trim(), @"^[A-Za-z_][A-Za-z0-9_\-\.]*$", RegexOptions.CultureInvariant);
         }
 
         private static bool ContainsAny(string text, params string[] values)
@@ -812,6 +887,8 @@ If this is a write preview, ask for explicit confirmation before execution.";
                         return FormatFrameAddObjectResult(result);
                     case "frames.add_objects":
                         return FormatFrameAddObjectsResult(result);
+                    case "random.generate_objects":
+                        return FormatRandomGenerationResult(result);
                     default:
                         string preview = TryFormatWritePreview(result);
                         if (!string.IsNullOrWhiteSpace(preview))
@@ -884,6 +961,68 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             return builder.ToString().Trim();
+        }
+
+        private static string FormatRandomGenerationResult(JObject result)
+        {
+            int requestedPoints = result.Value<int?>("RequestedPoints") ?? 0;
+            int requestedFrames = result.Value<int?>("RequestedFrames") ?? 0;
+            int requestedShells = result.Value<int?>("RequestedShells") ?? 0;
+            int addedPoints = result.Value<int?>("AddedPoints") ?? 0;
+            int addedFrames = result.Value<int?>("AddedFrames") ?? 0;
+            int addedShells = result.Value<int?>("AddedShells") ?? 0;
+            int failedItems = result.Value<int?>("FailedItems") ?? 0;
+            int seed = result.Value<int?>("Seed") ?? 0;
+
+            var builder = new StringBuilder();
+            builder.Append("Random generation: ");
+            builder.Append(addedPoints);
+            builder.Append("/");
+            builder.Append(requestedPoints);
+            builder.Append(" point(s), ");
+            builder.Append(addedFrames);
+            builder.Append("/");
+            builder.Append(requestedFrames);
+            builder.Append(" frame(s), ");
+            builder.Append(addedShells);
+            builder.Append("/");
+            builder.Append(requestedShells);
+            builder.Append(" shell(s). Seed: ");
+            builder.Append(seed.ToString(CultureInfo.InvariantCulture));
+            builder.Append(".");
+
+            string pointNames = JoinPreview(result["PointNames"] as JArray, 8);
+            string frameNames = JoinPreview(result["FrameNames"] as JArray, 8);
+            string shellNames = JoinPreview(result["ShellNames"] as JArray, 8);
+            if (!string.IsNullOrWhiteSpace(pointNames))
+            {
+                builder.Append(" Points: ");
+                builder.Append(pointNames);
+                builder.Append(".");
+            }
+
+            if (!string.IsNullOrWhiteSpace(frameNames))
+            {
+                builder.Append(" Frames: ");
+                builder.Append(frameNames);
+                builder.Append(".");
+            }
+
+            if (!string.IsNullOrWhiteSpace(shellNames))
+            {
+                builder.Append(" Shells: ");
+                builder.Append(shellNames);
+                builder.Append(".");
+            }
+
+            if (failedItems > 0)
+            {
+                string failures = JoinPreview(result["FailureReasons"] as JArray, 3);
+                builder.Append(" Failed: ");
+                builder.Append(string.IsNullOrWhiteSpace(failures) ? failedItems.ToString(CultureInfo.InvariantCulture) + " item(s)." : failures);
+            }
+
+            return builder.ToString();
         }
 
         private static string FormatFrameAddObjectResult(JObject result)

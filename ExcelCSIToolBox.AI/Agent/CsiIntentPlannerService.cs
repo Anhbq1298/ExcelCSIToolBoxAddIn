@@ -37,6 +37,7 @@ Rules:
 - FrameObj/Add by coordinates arguments: userName, xi, yi, zi, xj, yj, zj, propName.
 - Synonyms such as draw, model, place, insert, create, add, connect can mean Add.
 - If the user gives two coordinate triples like 0,0,0 to 6900,6900,6900 for a frame, use coordinate arguments.
+- Never use pointIName or pointJName for values that look like coordinates, numbers, or parenthesized coordinate text.
 - Use FrameObj/AssignSection for section/property assignment. Arguments: frameNames, sectionName.
 - Use FrameLoad/AssignDistributed for UDL/distributed load. Arguments: frameNames, loadPattern, direction, value1, value2.
 - Use Query/ExtractFrameLengths for frame length requests. Arguments: frameNames.
@@ -61,6 +62,18 @@ Rules:
             if (!ShouldUsePlanner(userMessage))
             {
                 return null;
+            }
+
+            AiAgentToolDecision randomDecision = TryCreateRandomGenerationDecision(userMessage);
+            if (randomDecision != null)
+            {
+                return randomDecision;
+            }
+
+            AiAgentToolDecision deterministicDecision = TryCreateDeterministicFrameCoordinateDecision(userMessage);
+            if (deterministicDecision != null)
+            {
+                return deterministicDecision;
             }
 
             CsiIntentPlanDto plan = await TryCreatePlanAsync(userMessage, cancellationToken);
@@ -185,7 +198,7 @@ Rules:
 
             if (IsTask(task, "FrameObj", "Add"))
             {
-                return HasText(task, "pointIName") && HasText(task, "pointJName") ||
+                return HasValidPointName(task, "pointIName") && HasValidPointName(task, "pointJName") ||
                        HasNumber(task, "xi") && HasNumber(task, "yi") && HasNumber(task, "zi") &&
                        HasNumber(task, "xj") && HasNumber(task, "yj") && HasNumber(task, "zj");
             }
@@ -309,6 +322,13 @@ Rules:
             return !string.IsNullOrWhiteSpace(Get(task, key));
         }
 
+        private static bool HasValidPointName(CsiTaskDto task, string key)
+        {
+            string value = Get(task, key);
+            return !string.IsNullOrWhiteSpace(value) &&
+                   Regex.IsMatch(value, @"^[A-Za-z_][A-Za-z0-9_\-\.]*$", RegexOptions.CultureInvariant);
+        }
+
         private static bool HasNumber(CsiTaskDto task, string key)
         {
             double value;
@@ -339,6 +359,107 @@ Rules:
             return start >= 0 && end > start ? text.Substring(start, end - start + 1) : null;
         }
 
+        private static AiAgentToolDecision TryCreateDeterministicFrameCoordinateDecision(string userMessage)
+        {
+            if (string.IsNullOrWhiteSpace(userMessage) ||
+                !Regex.IsMatch(userMessage, @"\b(frame|beam|member)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return null;
+            }
+
+            MatchCollection coordinateMatches = Regex.Matches(
+                userMessage,
+                @"\(?\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)?",
+                RegexOptions.CultureInvariant);
+            if (coordinateMatches.Count < 2)
+            {
+                return null;
+            }
+
+            JObject args = new JObject
+            {
+                ["Xi"] = coordinateMatches[0].Groups[1].Value,
+                ["Yi"] = coordinateMatches[0].Groups[2].Value,
+                ["Zi"] = coordinateMatches[0].Groups[3].Value,
+                ["Xj"] = coordinateMatches[1].Groups[1].Value,
+                ["Yj"] = coordinateMatches[1].Groups[2].Value,
+                ["Zj"] = coordinateMatches[1].Groups[3].Value
+            };
+
+            return new AiAgentToolDecision
+            {
+                ShouldCallTool = true,
+                ToolName = "frames.add_object",
+                ArgumentsJson = args.ToString(Formatting.None),
+                Reason = "Intent planner deterministic route: add frame by coordinate triples."
+            };
+        }
+
+        private static AiAgentToolDecision TryCreateRandomGenerationDecision(string userMessage)
+        {
+            if (string.IsNullOrWhiteSpace(userMessage) ||
+                !Regex.IsMatch(userMessage, @"\brandom\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return null;
+            }
+
+            bool points = Regex.IsMatch(userMessage, @"\b(point|points|joint|joints)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            bool frames = Regex.IsMatch(userMessage, @"\b(frame|frames|beam|beams|member|members|column|columns|brace|braces)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            bool shells = Regex.IsMatch(userMessage, @"\b(shell|shells|area|areas|slab|slabs|wall|walls|panel|panels)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!points && !frames && !shells)
+            {
+                return null;
+            }
+
+            JObject args = new JObject
+            {
+                ["AddPoints"] = points,
+                ["AddFrames"] = frames,
+                ["AddShells"] = shells
+            };
+
+            int count = ExtractFirstInteger(userMessage);
+            if (count > 0)
+            {
+                if (points)
+                {
+                    args["PointCount"] = count;
+                }
+
+                if (frames)
+                {
+                    args["FrameCount"] = count;
+                }
+
+                if (shells)
+                {
+                    args["ShellCount"] = count;
+                }
+            }
+
+            return new AiAgentToolDecision
+            {
+                ShouldCallTool = true,
+                ToolName = "random.generate_objects",
+                ArgumentsJson = args.ToString(Formatting.None),
+                Reason = "Intent planner deterministic route: random CSI object generation."
+            };
+        }
+
+        private static int ExtractFirstInteger(string text)
+        {
+            Match match = Regex.Match(text ?? string.Empty, @"\b(?<count>\d{1,3})\b", RegexOptions.CultureInvariant);
+            if (!match.Success)
+            {
+                return 0;
+            }
+
+            int value;
+            return int.TryParse(match.Groups["count"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out value)
+                ? value
+                : 0;
+        }
+
         private static bool ShouldUsePlanner(string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage))
@@ -348,7 +469,7 @@ Rules:
 
             return Regex.IsMatch(
                 userMessage,
-                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|section|property|load|udl|select|selection|length)\b|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
+                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|shell|area|slab|wall|panel|section|property|load|udl|select|selection|length|random)\b|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
     }
