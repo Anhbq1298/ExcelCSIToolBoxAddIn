@@ -377,6 +377,12 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 return addPointDecision;
             }
 
+            AiAgentToolDecision addFrameDecision = TryCreateAddFrameDecision(userMessage);
+            if (addFrameDecision != null)
+            {
+                return addFrameDecision;
+            }
+
             if (ContainsAny(normalized, "unit", "units", "present unit", "current unit", "don vi"))
             {
                 return CreateToolDecision("CSI.GetPresentUnits", "Heuristic route: units query.");
@@ -525,6 +531,104 @@ If this is a write preview, ask for explicit confirmation before execution.";
             };
         }
 
+        private static AiAgentToolDecision TryCreateAddFrameDecision(string userMessage)
+        {
+            if (string.IsNullOrWhiteSpace(userMessage))
+            {
+                return null;
+            }
+
+            string normalized = Normalize(userMessage);
+            if (!ContainsAny(normalized, "add frame", "create frame", "new frame", "add beam", "create beam", "new beam", "add member", "create member", "new member"))
+            {
+                return null;
+            }
+
+            AiAgentToolDecision coordinateDecision = TryCreateAddFrameByCoordinatesDecision(userMessage);
+            if (coordinateDecision != null)
+            {
+                return coordinateDecision;
+            }
+
+            return TryCreateAddFrameByPointsDecision(userMessage);
+        }
+
+        private static AiAgentToolDecision TryCreateAddFrameByCoordinatesDecision(string userMessage)
+        {
+            MatchCollection coordinateMatches = Regex.Matches(
+                userMessage,
+                @"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)",
+                RegexOptions.CultureInvariant);
+            if (coordinateMatches.Count < 2)
+            {
+                return null;
+            }
+
+            double xi;
+            double yi;
+            double zi;
+            double xj;
+            double yj;
+            double zj;
+            if (!TryParseCoordinateTriple(coordinateMatches[0], out xi, out yi, out zi) ||
+                !TryParseCoordinateTriple(coordinateMatches[1], out xj, out yj, out zj))
+            {
+                return null;
+            }
+
+            JObject args = new JObject
+            {
+                ["xi"] = xi,
+                ["yi"] = yi,
+                ["zi"] = zi,
+                ["xj"] = xj,
+                ["yj"] = yj,
+                ["zj"] = zj,
+                ["sectionName"] = ExtractSectionName(userMessage),
+                ["userName"] = ExtractObjectName(userMessage),
+                ["dryRun"] = false,
+                ["confirmed"] = true
+            };
+
+            return new AiAgentToolDecision
+            {
+                ShouldCallTool = true,
+                ToolName = "frames.add_by_coordinates",
+                ArgumentsJson = args.ToString(Newtonsoft.Json.Formatting.None),
+                Reason = "Heuristic route: add frame by coordinates."
+            };
+        }
+
+        private static AiAgentToolDecision TryCreateAddFrameByPointsDecision(string userMessage)
+        {
+            Match pointsMatch = Regex.Match(
+                userMessage,
+                @"(?:between|from)\s+(?:point\s+)?([A-Za-z_][A-Za-z0-9_\-\.]*)\s+(?:and|to)\s+(?:point\s+)?([A-Za-z_][A-Za-z0-9_\-\.]*)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!pointsMatch.Success)
+            {
+                return null;
+            }
+
+            JObject args = new JObject
+            {
+                ["point1Name"] = pointsMatch.Groups[1].Value,
+                ["point2Name"] = pointsMatch.Groups[2].Value,
+                ["sectionName"] = ExtractSectionName(userMessage),
+                ["userName"] = ExtractObjectName(userMessage),
+                ["dryRun"] = false,
+                ["confirmed"] = true
+            };
+
+            return new AiAgentToolDecision
+            {
+                ShouldCallTool = true,
+                ToolName = "frames.add_by_points",
+                ArgumentsJson = args.ToString(Newtonsoft.Json.Formatting.None),
+                Reason = "Heuristic route: add frame by points."
+            };
+        }
+
         private static AiAgentToolDecision CreateToolDecision(string toolName, string reason)
         {
             return new AiAgentToolDecision
@@ -552,6 +656,37 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             return false;
+        }
+
+        private static bool TryParseCoordinateTriple(Match match, out double x, out double y, out double z)
+        {
+            x = 0;
+            y = 0;
+            z = 0;
+
+            return match != null &&
+                match.Success &&
+                double.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out x) &&
+                double.TryParse(match.Groups[2].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out y) &&
+                double.TryParse(match.Groups[3].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out z);
+        }
+
+        private static string ExtractObjectName(string userMessage)
+        {
+            Match nameMatch = Regex.Match(
+                userMessage ?? string.Empty,
+                @"(?:name\s+it\s+(?:as\s+)?|named\s+|name\s*[:=]\s*)([A-Za-z_][A-Za-z0-9_\-\.]*)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            return nameMatch.Success ? nameMatch.Groups[1].Value : string.Empty;
+        }
+
+        private static string ExtractSectionName(string userMessage)
+        {
+            Match sectionMatch = Regex.Match(
+                userMessage ?? string.Empty,
+                @"(?:section|property|prop)\s*(?:name)?\s*(?:as|=|:)?\s*([A-Za-z_][A-Za-z0-9_\-\.]*)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            return sectionMatch.Success ? sectionMatch.Groups[1].Value : "Default";
         }
 
         private static string TryFormatToolResponse(ToolCallResponse toolResponse)

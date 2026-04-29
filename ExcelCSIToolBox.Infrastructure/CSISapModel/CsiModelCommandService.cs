@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
+using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
 using ExcelCSIToolBox.Data.CSISapModel.PointObject;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
@@ -87,33 +88,128 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
         public CsiWritePreview PreviewAddFrameByCoordinates(double xi, double yi, double zi, double xj, double yj, double zj, string sectionName, string userName)
         {
+            string normalizedSection = NormalizeSectionName(sectionName);
             return Preview("frames.add_by_coordinates", CsiMethodRiskLevel.Low, false, true,
-                $"This will add one frame from ({xi}, {yi}, {zi}) to ({xj}, {yj}, {zj}) using section '{sectionName}'.",
+                $"This will add one frame from ({xi}, {yi}, {zi}) to ({xj}, {yj}, {zj}) using section '{normalizedSection}'.",
                 One(CleanName(userName)));
         }
 
         public OperationResult AddFrameByCoordinates(double xi, double yi, double zi, double xj, double yj, double zj, string sectionName, string userName, bool confirmed)
         {
-            if (string.IsNullOrWhiteSpace(sectionName))
-            {
-                return OperationResult.Failure("SectionName is required.");
-            }
+            string normalizedSection = NormalizeSectionName(sectionName);
 
             return Execute("frames.add_by_coordinates", "Frames", "Creation", CsiMethodRiskLevel.Low, confirmed, One(CleanName(userName)),
-                $"section={sectionName}, userName={CleanName(userName)}",
-                service => service.AddFramesByCoordinates(new[]
+                $"section={normalizedSection}, userName={CleanName(userName)}",
+                service =>
                 {
-                    new CSISapModelFrameByCoordInput
+                    string requestedName = CleanName(userName);
+                    OperationResult<CSISapModelAddFramesResultDTO> addResult = service.AddFramesByCoordinates(new[]
                     {
-                        ExcelRowNumber = 1,
-                        UniqueName = CleanName(userName),
-                        SectionName = sectionName,
-                        Xi = xi,
-                        Yi = yi,
-                        Zi = zi,
-                        Xj = xj,
-                        Yj = yj,
-                        Zj = zj
+                        new CSISapModelFrameByCoordInput
+                        {
+                            ExcelRowNumber = 1,
+                            UniqueName = requestedName,
+                            SectionName = normalizedSection,
+                            Xi = xi,
+                            Yi = yi,
+                            Zi = zi,
+                            Xj = xj,
+                            Yj = yj,
+                            Zj = zj
+                        }
+                    });
+
+                    return ToVerifiedFrameAddResult(service, addResult, requestedName, "Added frame '" + DisplayName(requestedName) + "' by coordinates.");
+                });
+        }
+
+        public CsiWritePreview PreviewAddFrameByPoints(string point1Name, string point2Name, string sectionName, string userName)
+        {
+            string normalizedSection = NormalizeSectionName(sectionName);
+            return Preview("frames.add_by_points", CsiMethodRiskLevel.Low, false, true,
+                $"This will add one frame between points '{point1Name}' and '{point2Name}' using section '{normalizedSection}'.",
+                One(CleanName(userName)));
+        }
+
+        public OperationResult AddFrameByPoints(string point1Name, string point2Name, string sectionName, string userName, bool confirmed)
+        {
+            if (string.IsNullOrWhiteSpace(point1Name) || string.IsNullOrWhiteSpace(point2Name))
+            {
+                return OperationResult.Failure("Point1Name and Point2Name are required.");
+            }
+
+            string normalizedSection = NormalizeSectionName(sectionName);
+
+            return Execute("frames.add_by_points", "Frames", "Creation", CsiMethodRiskLevel.Low, confirmed, One(CleanName(userName)),
+                $"point1={point1Name}, point2={point2Name}, section={normalizedSection}, userName={CleanName(userName)}",
+                service =>
+                {
+                    string requestedName = CleanName(userName);
+                    OperationResult<CSISapModelAddFramesResultDTO> addResult = service.AddFramesByPoint(new[]
+                    {
+                        new CSISapModelFrameByPointInput
+                        {
+                            ExcelRowNumber = 1,
+                            UniqueName = requestedName,
+                            SectionName = normalizedSection,
+                            Point1Name = point1Name,
+                            Point2Name = point2Name
+                        }
+                    });
+
+                    return ToVerifiedFrameAddResult(service, addResult, requestedName, "Added frame '" + DisplayName(requestedName) + "' between points '" + point1Name + "' and '" + point2Name + "'.");
+                });
+        }
+
+        private static OperationResult ToVerifiedFrameAddResult(
+            ICSISapModelConnectionService service,
+            OperationResult<CSISapModelAddFramesResultDTO> addResult,
+            string requestedName,
+            string successMessage)
+        {
+            if (!addResult.IsSuccess)
+            {
+                return OperationResult.Failure(addResult.Message);
+            }
+
+            if (addResult.Data == null || addResult.Data.AddedCount <= 0)
+            {
+                return OperationResult.Failure("Frame add API returned without adding a frame.");
+            }
+
+            string failedMessages = JoinMessages(addResult.Data.FailedRowMessages);
+            if (!string.IsNullOrWhiteSpace(requestedName))
+            {
+                OperationResult<FrameObjectInfo> verifyResult = service.GetFrameByName(requestedName);
+                if (!verifyResult.IsSuccess)
+                {
+                    string detail = string.IsNullOrWhiteSpace(failedMessages) ? string.Empty : " " + failedMessages;
+                    return OperationResult.Failure("ETABS/SAP2000 reported success, but the requested frame '" + requestedName + "' could not be verified in the active model." + detail);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(failedMessages))
+            {
+                successMessage += " Note: " + failedMessages;
+            }
+
+            return OperationResult.Success(successMessage);
+        }
+
+        private static string DisplayName(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? "(auto name)" : value;
+        }
+
+        private static string NormalizeSectionName(string sectionName)
+        {
+            return string.IsNullOrWhiteSpace(sectionName) ? "Default" : sectionName.Trim();
+        }
+
+        /*
+         * Legacy implementation removed: frame creation now verifies the created frame before reporting success.
+         */
+        /*
                     }
                 }));
         }
@@ -151,6 +247,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                     }
                 }));
         }
+        */
 
         public CsiWritePreview PreviewAssignFrameSection(IReadOnlyList<string> frameNames, string sectionName)
         {

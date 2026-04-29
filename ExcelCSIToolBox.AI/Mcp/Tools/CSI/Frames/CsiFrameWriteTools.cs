@@ -20,9 +20,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
 
         protected override ToolCallResponse Execute(FrameByCoordinatesArgs args)
         {
+            string userName = args.GetUserName();
             return args.DryRun
-                ? Preview(CommandService.PreviewAddFrameByCoordinates(args.Xi, args.Yi, args.Zi, args.Xj, args.Yj, args.Zj, args.SectionName, args.UserName))
-                : Result(CommandService.AddFrameByCoordinates(args.Xi, args.Yi, args.Zi, args.Xj, args.Yj, args.Zj, args.SectionName, args.UserName, args.Confirmed));
+                ? Preview(CommandService.PreviewAddFrameByCoordinates(args.Xi, args.Yi, args.Zi, args.Xj, args.Yj, args.Zj, args.SectionName, userName))
+                : Result(CommandService.AddFrameByCoordinates(args.Xi, args.Yi, args.Zi, args.Xj, args.Yj, args.Zj, args.SectionName, userName, args.Confirmed));
         }
     }
 
@@ -40,9 +41,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
 
         protected override ToolCallResponse Execute(FrameByPointsArgs args)
         {
+            string userName = args.GetUserName();
             return args.DryRun
-                ? Preview(CommandService.PreviewAddFrameByPoints(args.Point1Name, args.Point2Name, args.SectionName, args.UserName))
-                : Result(CommandService.AddFrameByPoints(args.Point1Name, args.Point2Name, args.SectionName, args.UserName, args.Confirmed));
+                ? Preview(CommandService.PreviewAddFrameByPoints(args.GetPoint1Name(), args.GetPoint2Name(), args.SectionName, userName))
+                : Result(CommandService.AddFrameByPoints(args.GetPoint1Name(), args.GetPoint2Name(), args.SectionName, userName, args.Confirmed));
         }
     }
 
@@ -96,14 +98,94 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
         public double Zj { get; set; }
         public string SectionName { get; set; }
         public string UserName { get; set; }
+        public string Name { get; set; }
+        public string FrameName { get; set; }
+        public string UniqueName { get; set; }
+
+        public string GetUserName()
+        {
+            if (!string.IsNullOrWhiteSpace(UserName))
+            {
+                return UserName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(UniqueName))
+            {
+                return UniqueName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(FrameName))
+            {
+                return FrameName;
+            }
+
+            return Name;
+        }
     }
 
     public sealed class FrameByPointsArgs : LowRiskWriteArgs
     {
         public string Point1Name { get; set; }
         public string Point2Name { get; set; }
+        public string PointI { get; set; }
+        public string PointJ { get; set; }
+        public string IEndPoint { get; set; }
+        public string JEndPoint { get; set; }
         public string SectionName { get; set; }
         public string UserName { get; set; }
+        public string Name { get; set; }
+        public string FrameName { get; set; }
+        public string UniqueName { get; set; }
+
+        public string GetPoint1Name()
+        {
+            if (!string.IsNullOrWhiteSpace(Point1Name))
+            {
+                return Point1Name;
+            }
+
+            if (!string.IsNullOrWhiteSpace(PointI))
+            {
+                return PointI;
+            }
+
+            return IEndPoint;
+        }
+
+        public string GetPoint2Name()
+        {
+            if (!string.IsNullOrWhiteSpace(Point2Name))
+            {
+                return Point2Name;
+            }
+
+            if (!string.IsNullOrWhiteSpace(PointJ))
+            {
+                return PointJ;
+            }
+
+            return JEndPoint;
+        }
+
+        public string GetUserName()
+        {
+            if (!string.IsNullOrWhiteSpace(UserName))
+            {
+                return UserName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(UniqueName))
+            {
+                return UniqueName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(FrameName))
+            {
+                return FrameName;
+            }
+
+            return Name;
+        }
     }
 
     public sealed class FramesAssignSectionArgs : DryRunConfirmedArgs
