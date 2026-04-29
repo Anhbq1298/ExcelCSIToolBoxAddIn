@@ -152,6 +152,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new PointsSetLoadForceTool(etabsService, sap2000Service));
             _registry.Register(new FramesAddByCoordinatesTool(commandService));
             _registry.Register(new FramesAddByPointsTool(commandService));
+            _registry.Register(new FramesAddObjectTool(etabsService, sap2000Service));
+            _registry.Register(new FramesAddObjectsTool(etabsService, sap2000Service));
             _registry.Register(new FramesAssignSectionTool(commandService));
             _registry.Register(new LoadsFrameAssignDistributedTool(commandService));
             _registry.Register(new LoadsFrameAssignPointLoadTool(commandService));

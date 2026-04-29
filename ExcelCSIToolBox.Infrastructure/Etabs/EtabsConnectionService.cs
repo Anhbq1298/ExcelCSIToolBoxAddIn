@@ -294,6 +294,40 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return addResult;
         }
 
+        public OperationResult<FrameAddBatchResultDto> AddFrameObjects(FrameAddBatchRequestDto request)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<FrameAddBatchResultDto>.Failure("active CSI model is not available.");
+            }
+
+            return CSISapModelFrameObjectService.AddFrameObjects(
+                request,
+                ProductName,
+                sapModelResult.Data,
+                (ETABSv1.cSapModel sapModel, CSISapModelFrameByPointInput frameInput, ref string createdName, string sectionName, string userName) =>
+                    sapModel.FrameObj.AddByPoint(
+                        frameInput.Point1Name,
+                        frameInput.Point2Name,
+                        ref createdName,
+                        sectionName,
+                        userName),
+                (ETABSv1.cSapModel sapModel, CSISapModelFrameByCoordInput frameInput, ref string createdName, string sectionName, string userName) =>
+                    sapModel.FrameObj.AddByCoord(
+                        frameInput.Xi,
+                        frameInput.Yi,
+                        frameInput.Zi,
+                        frameInput.Xj,
+                        frameInput.Yj,
+                        frameInput.Zj,
+                        ref createdName,
+                        sectionName,
+                        userName,
+                        "Global"),
+                RefreshView);
+        }
+
         public OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel()
         {
             var sapModelResult = EnsureEtabsSapModel();

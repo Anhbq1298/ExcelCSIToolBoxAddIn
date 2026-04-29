@@ -290,6 +290,40 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                 RefreshView);
         }
 
+        public OperationResult<FrameAddBatchResultDto> AddFrameObjects(FrameAddBatchRequestDto request)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<FrameAddBatchResultDto>.Failure("active CSI model is not available.");
+            }
+
+            return CSISapModelFrameObjectService.AddFrameObjects(
+                request,
+                ProductName,
+                sapModelResult.Data,
+                (SAP2000v1.cSapModel sapModel, CSISapModelFrameByPointInput frameInput, ref string createdName, string sectionName, string userName) =>
+                    sapModel.FrameObj.AddByPoint(
+                        frameInput.Point1Name,
+                        frameInput.Point2Name,
+                        ref createdName,
+                        sectionName,
+                        userName),
+                (SAP2000v1.cSapModel sapModel, CSISapModelFrameByCoordInput frameInput, ref string createdName, string sectionName, string userName) =>
+                    sapModel.FrameObj.AddByCoord(
+                        frameInput.Xi,
+                        frameInput.Yi,
+                        frameInput.Zi,
+                        frameInput.Xj,
+                        frameInput.Yj,
+                        frameInput.Zj,
+                        ref createdName,
+                        sectionName,
+                        userName,
+                        "Global"),
+                RefreshView);
+        }
+
         public OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel()
         {
             var sapModelResult = EnsureSap2000SapModel();

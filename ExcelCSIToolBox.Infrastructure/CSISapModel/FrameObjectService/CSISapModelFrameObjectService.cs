@@ -144,6 +144,89 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 result => result.WarningMessage);
         }
 
+        internal static OperationResult<FrameAddBatchResultDto> AddFrameObjects<TSapModel>(
+            FrameAddBatchRequestDto request,
+            string productName,
+            TSapModel sapModel,
+            CSISapModelAddFrameByPoint<TSapModel> addByPoint,
+            CSISapModelAddFrameByCoord<TSapModel> addByCoord,
+            Func<TSapModel, OperationResult> refreshView)
+        {
+            if (sapModel == null)
+            {
+                return OperationResult<FrameAddBatchResultDto>.Failure("active CSI model is not available.");
+            }
+
+            var frames = request == null ? null : request.Frames;
+            if (frames == null || frames.Count == 0)
+            {
+                return OperationResult<FrameAddBatchResultDto>.Success(new FrameAddBatchResultDto
+                {
+                    TotalRequested = 0,
+                    SuccessCount = 0,
+                    FailureCount = 0,
+                    SuccessfulFrameNames = new List<string>(),
+                    FailedItems = new List<FrameAddResultDto>(),
+                    Results = new List<FrameAddResultDto>()
+                });
+            }
+
+            var batchResult = new FrameAddBatchResultDto
+            {
+                TotalRequested = frames.Count,
+                SuccessfulFrameNames = new List<string>(),
+                FailedItems = new List<FrameAddResultDto>(),
+                Results = new List<FrameAddResultDto>()
+            };
+
+            try
+            {
+                foreach (FrameAddRequestDto frame in frames)
+                {
+                    FrameAddResultDto itemResult = AddOneFrameObject(
+                        frame,
+                        productName,
+                        sapModel,
+                        addByPoint,
+                        addByCoord);
+
+                    batchResult.Results.Add(itemResult);
+                    if (itemResult.Success)
+                    {
+                        batchResult.SuccessCount++;
+                        if (!string.IsNullOrWhiteSpace(itemResult.FrameName))
+                        {
+                            batchResult.SuccessfulFrameNames.Add(itemResult.FrameName);
+                        }
+                    }
+                    else
+                    {
+                        batchResult.FailureCount++;
+                        batchResult.FailedItems.Add(itemResult);
+                    }
+                }
+
+                if (batchResult.SuccessCount > 0)
+                {
+                    OperationResult refreshResult = refreshView(sapModel);
+                    if (!refreshResult.IsSuccess)
+                    {
+                        return OperationResult<FrameAddBatchResultDto>.Failure(refreshResult.Message);
+                    }
+                }
+
+                return OperationResult<FrameAddBatchResultDto>.Success(batchResult);
+            }
+            catch (COMException ex)
+            {
+                return OperationResult<FrameAddBatchResultDto>.Failure($"{productName} COM error while adding frame objects: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<FrameAddBatchResultDto>.Failure($"{productName} frame add failed unexpectedly: {ex.Message}");
+            }
+        }
+
         internal static OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel<TSapModel>(
             string productName,
             TSapModel sapModel,
@@ -574,6 +657,116 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             return property == null ? 0 : (int)property.GetValue(frameInput, null);
         }
 
+        private static FrameAddResultDto AddOneFrameObject<TSapModel>(
+            FrameAddRequestDto request,
+            string productName,
+            TSapModel sapModel,
+            CSISapModelAddFrameByPoint<TSapModel> addByPoint,
+            CSISapModelAddFrameByCoord<TSapModel> addByCoord)
+        {
+            if (request == null)
+            {
+                return Failed(null, null, "Frame definition is required.", null);
+            }
+
+            string userName = FirstCleanName(request.UserName, request.UniqueName, request.FrameName, request.Name);
+            string propName = FirstCleanName(request.PropName, request.SectionName);
+            if (string.IsNullOrWhiteSpace(propName))
+            {
+                propName = "Default";
+            }
+
+            string pointIName = CleanName(request.PointIName);
+            string pointJName = CleanName(request.PointJName);
+            if (!string.IsNullOrWhiteSpace(pointIName) && !string.IsNullOrWhiteSpace(pointJName))
+            {
+                string createdName = string.Empty;
+                int result = addByPoint(
+                    sapModel,
+                    new CSISapModelFrameByPointInput
+                    {
+                        Point1Name = pointIName,
+                        Point2Name = pointJName,
+                        SectionName = propName,
+                        UniqueName = userName
+                    },
+                    ref createdName,
+                    propName,
+                    userName);
+
+                return result == 0
+                    ? Succeeded("AddByPoint", createdName, userName)
+                    : Failed("AddByPoint", createdName, $"{productName} FrameObj.AddByPoint failed (return code {result}).", result);
+            }
+
+            if (HasAllCoordinates(request))
+            {
+                string createdName = string.Empty;
+                int result = addByCoord(
+                    sapModel,
+                    new CSISapModelFrameByCoordInput
+                    {
+                        Xi = request.Xi.Value,
+                        Yi = request.Yi.Value,
+                        Zi = request.Zi.Value,
+                        Xj = request.Xj.Value,
+                        Yj = request.Yj.Value,
+                        Zj = request.Zj.Value,
+                        SectionName = propName,
+                        UniqueName = userName
+                    },
+                    ref createdName,
+                    propName,
+                    userName);
+
+                return result == 0
+                    ? Succeeded("AddByCoord", createdName, userName)
+                    : Failed("AddByCoord", createdName, $"{productName} FrameObj.AddByCoord failed (return code {result}).", result);
+            }
+
+            return Failed(null, null, "Provide PointIName and PointJName, or all six coordinates Xi, Yi, Zi, Xj, Yj, Zj.", null);
+        }
+
+        private static bool HasAllCoordinates(FrameAddRequestDto request)
+        {
+            return request.Xi.HasValue &&
+                   request.Yi.HasValue &&
+                   request.Zi.HasValue &&
+                   request.Xj.HasValue &&
+                   request.Yj.HasValue &&
+                   request.Zj.HasValue;
+        }
+
+        private static FrameAddResultDto Succeeded(string addMethod, string createdName, string userName)
+        {
+            string frameName = CleanName(createdName);
+            if (string.IsNullOrWhiteSpace(frameName))
+            {
+                frameName = CleanName(userName);
+            }
+
+            return new FrameAddResultDto
+            {
+                Success = true,
+                FrameName = frameName,
+                AddMethod = addMethod,
+                FailureReason = null,
+                ReturnCode = 0
+            };
+        }
+
+        private static FrameAddResultDto Failed(string addMethod, string frameName, string failureReason, int? returnCode)
+        {
+            return new FrameAddResultDto
+            {
+                Success = false,
+                FrameName = CleanName(frameName),
+                AddMethod = addMethod,
+                FailureReason = failureReason,
+                ReturnCode = returnCode
+            };
+        }
+
         private static IReadOnlyList<string> GetOrderedDistinctNames(IReadOnlyList<string> names)
         {
             var uniqueNames = new List<string>();
@@ -592,6 +785,30 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             return uniqueNames;
+        }
+
+        private static string CleanName(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static string FirstCleanName(params string[] values)
+        {
+            if (values == null)
+            {
+                return null;
+            }
+
+            foreach (string value in values)
+            {
+                string clean = CleanName(value);
+                if (!string.IsNullOrWhiteSpace(clean))
+                {
+                    return clean;
+                }
+            }
+
+            return null;
         }
 
         private static string GetArrayValue(string[] values, int index, string fallback)

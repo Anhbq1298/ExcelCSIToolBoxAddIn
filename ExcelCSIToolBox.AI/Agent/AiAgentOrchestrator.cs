@@ -77,6 +77,8 @@ namespace ExcelCSIToolBox.AI.Agent
             "points.add_by_coordinates",
             "frames.add_by_coordinates",
             "frames.add_by_points",
+            "frames.add_object",
+            "frames.add_objects",
             "frames.assign_section",
             "loads.frame.assign_distributed",
             "loads.frame.assign_point_load",
@@ -106,7 +108,7 @@ Available tools:
 - frames.get_all_names, frames.get_sections, frames.get_section_detail, frames.get_count: Frame queries.
 - shells.get_all_names, shells.get_selected, shells.get_property, shells.get_count: Shell queries.
 - loads.combinations.get_all, loads.patterns.get_all: Loading queries.
-- points.add_by_coordinates, frames.add_by_coordinates, frames.add_by_points: Creation tools.
+- points.add_by_coordinates, frames.add_object, frames.add_objects: Creation tools.
 
 SAFETY POLICY:
 1. Do not use dryRun unless the user explicitly asks for preview/check only.
@@ -584,16 +586,14 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 ["xj"] = xj,
                 ["yj"] = yj,
                 ["zj"] = zj,
-                ["sectionName"] = ExtractSectionName(userMessage),
+                ["propName"] = ExtractSectionName(userMessage),
                 ["userName"] = ExtractObjectName(userMessage),
-                ["dryRun"] = false,
-                ["confirmed"] = true
             };
 
             return new AiAgentToolDecision
             {
                 ShouldCallTool = true,
-                ToolName = "frames.add_by_coordinates",
+                ToolName = "frames.add_object",
                 ArgumentsJson = args.ToString(Newtonsoft.Json.Formatting.None),
                 Reason = "Heuristic route: add frame by coordinates."
             };
@@ -612,18 +612,16 @@ If this is a write preview, ask for explicit confirmation before execution.";
 
             JObject args = new JObject
             {
-                ["point1Name"] = pointsMatch.Groups[1].Value,
-                ["point2Name"] = pointsMatch.Groups[2].Value,
-                ["sectionName"] = ExtractSectionName(userMessage),
+                ["pointIName"] = pointsMatch.Groups[1].Value,
+                ["pointJName"] = pointsMatch.Groups[2].Value,
+                ["propName"] = ExtractSectionName(userMessage),
                 ["userName"] = ExtractObjectName(userMessage),
-                ["dryRun"] = false,
-                ["confirmed"] = true
             };
 
             return new AiAgentToolDecision
             {
                 ShouldCallTool = true,
-                ToolName = "frames.add_by_points",
+                ToolName = "frames.add_object",
                 ArgumentsJson = args.ToString(Newtonsoft.Json.Formatting.None),
                 Reason = "Heuristic route: add frame by points."
             };

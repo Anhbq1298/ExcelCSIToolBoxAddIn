@@ -2,6 +2,48 @@ using System.Collections.Generic;
 
 namespace ExcelCSIToolBox.Data.CSISapModel.FrameObject
 {
+    public sealed class FrameAddRequestDto
+    {
+        public string UserName { get; set; }
+        public string Name { get; set; }
+        public string FrameName { get; set; }
+        public string UniqueName { get; set; }
+        public string PropName { get; set; }
+        public string SectionName { get; set; }
+        public string PointIName { get; set; }
+        public string PointJName { get; set; }
+        public double? Xi { get; set; }
+        public double? Yi { get; set; }
+        public double? Zi { get; set; }
+        public double? Xj { get; set; }
+        public double? Yj { get; set; }
+        public double? Zj { get; set; }
+    }
+
+    public sealed class FrameAddBatchRequestDto
+    {
+        public List<FrameAddRequestDto> Frames { get; set; }
+    }
+
+    public sealed class FrameAddResultDto
+    {
+        public bool Success { get; set; }
+        public string FrameName { get; set; }
+        public string AddMethod { get; set; }
+        public string FailureReason { get; set; }
+        public int? ReturnCode { get; set; }
+    }
+
+    public sealed class FrameAddBatchResultDto
+    {
+        public int TotalRequested { get; set; }
+        public int SuccessCount { get; set; }
+        public int FailureCount { get; set; }
+        public List<string> SuccessfulFrameNames { get; set; }
+        public List<FrameAddResultDto> FailedItems { get; set; }
+        public List<FrameAddResultDto> Results { get; set; }
+    }
+
     public sealed class FrameObjectInfo
     {
         public string Name { get; set; }

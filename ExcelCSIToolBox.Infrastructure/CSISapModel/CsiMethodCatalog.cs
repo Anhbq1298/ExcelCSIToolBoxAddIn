@@ -17,6 +17,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 Tool("Both", "Points", "Creation", "cPointObj", "AddCartesian", "points.add_by_coordinates", CsiMethodRiskLevel.Low, false, true, "Adds one point by Cartesian coordinates."),
                 Tool("Both", "Frames", "Creation", "cFrameObj", "AddByCoord", "frames.add_by_coordinates", CsiMethodRiskLevel.Low, false, true, "Adds one frame by end coordinates."),
                 Tool("Both", "Frames", "Creation", "cFrameObj", "AddByPoint", "frames.add_by_points", CsiMethodRiskLevel.Low, false, true, "Adds one frame by existing point names."),
+                Tool("Both", "Frames", "Creation", "cFrameObj", "AddByPoint/AddByCoord", "frames.add_object", CsiMethodRiskLevel.Low, false, false, "Adds one frame and chooses AddByPoint or AddByCoord from the request."),
+                Tool("Both", "Frames", "Creation", "cFrameObj", "AddByPoint/AddByCoord", "frames.add_objects", CsiMethodRiskLevel.Low, false, false, "Adds multiple frames and chooses AddByPoint or AddByCoord for each item."),
                 Tool("Both", "Frames", "Assignments", "cFrameObj", "SetSection", "frames.assign_section", CsiMethodRiskLevel.Medium, true, true, "Assigns section property to frame objects."),
                 Tool("Both", "Loads", "Frame", "cFrameObj", "SetLoadDistributed", "loads.frame.assign_distributed", CsiMethodRiskLevel.Medium, true, true, "Assigns distributed frame load."),
                 Tool("Both", "Loads", "Frame", "cFrameObj", "SetLoadPoint", "loads.frame.assign_point_load", CsiMethodRiskLevel.Medium, true, true, "Assigns frame point load."),
