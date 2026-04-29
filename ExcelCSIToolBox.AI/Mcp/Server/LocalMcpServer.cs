@@ -151,6 +151,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new ExecuteCsiRequestTool(etabsService, sap2000Service));
             _registry.Register(new RandomGenerateObjectsTool(etabsService, sap2000Service));
             _registry.Register(new TrussGenerateHoweTool(etabsService, sap2000Service));
+            _registry.Register(new TrussGeneratePrattTool(etabsService, sap2000Service));
 
             _registry.Register(new PointsAddByCoordinatesTool(commandService));
             _registry.Register(new PointsAddCartesianTool(commandService));

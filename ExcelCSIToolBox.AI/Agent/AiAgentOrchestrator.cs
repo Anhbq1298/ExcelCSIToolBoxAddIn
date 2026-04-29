@@ -86,6 +86,7 @@ namespace ExcelCSIToolBox.AI.Agent
             "loads.frame.assign_point_load",
             "random.generate_objects",
             "truss.generate_howe",
+            "truss.generate_pratt",
             "frames.assign_distributed_load",
             "frames.assign_point_load",
             "selection.clear",
@@ -115,7 +116,8 @@ Available tools:
 - execute_csi_request: Multi-step CSI workflow tool. Use when the user asks for multiple actions in one request.
 - points.add_by_coordinates, frames.add_object, frames.add_objects: Creation tools.
 - random.generate_objects: Generate random CSI points, frames, and shell/area objects using safe defaults.
-- truss.generate_howe: Generate a symmetric Howe truss with continuous chords and released vertical/brace members.
+- truss.generate_howe: Generate a Howe truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
+- truss.generate_pratt: Generate a Pratt truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
 
 SAFETY POLICY:
 1. Do not use dryRun unless the user explicitly asks for preview/check only.
@@ -142,6 +144,8 @@ If this is a write preview, ask for explicit confirmation before execution.";
         private readonly OllamaChatService _ollamaChatService;
         private readonly LocalMcpClient _mcpClient;
         private readonly CsiIntentPlannerService _intentPlannerService;
+        private readonly AgentTaskPlannerService _taskPlannerService;
+        private readonly AgentTaskExecutorService _taskExecutorService;
         private string _pendingToolName;
         private string _pendingArgumentsJson;
 
@@ -152,6 +156,9 @@ If this is a write preview, ask for explicit confirmation before execution.";
             _mcpClient = mcpClient
                 ?? throw new ArgumentNullException(nameof(mcpClient));
             _intentPlannerService = new CsiIntentPlannerService(_ollamaChatService);
+            _taskPlannerService = new AgentTaskPlannerService();
+            _taskExecutorService = new AgentTaskExecutorService(
+                (taskText, token) => ExecuteSingleRequestAsync(taskText, null, token));
         }
 
         public async Task<AiAgentResponse> SendAsync(
@@ -175,6 +182,32 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 return confirmationResponse;
             }
 
+            IReadOnlyList<AgentTaskItem> plannedTasks = _taskPlannerService.CreateTasks(userMessage);
+            if (plannedTasks.Count > 1)
+            {
+                string detectedText = AgentTaskExecutorService.FormatDetectedTasks(plannedTasks) + Environment.NewLine;
+                onAssistantToken?.Invoke(detectedText);
+
+                AgentTaskExecutionSummary taskSummary = await _taskExecutorService.ExecuteAsync(plannedTasks, cancellationToken);
+                string outcomeText = AgentTaskExecutorService.FormatFinalResponse(taskSummary, false);
+                onAssistantToken?.Invoke(outcomeText);
+
+                return new AiAgentResponse
+                {
+                    AssistantText = detectedText + outcomeText,
+                    ToolWasCalled = HasAnyToolCall(taskSummary),
+                    RoutingReason = "Request decomposition route: multiple tasks detected and executed in order."
+                };
+            }
+
+            return await ExecuteSingleRequestAsync(userMessage, onAssistantToken, cancellationToken);
+        }
+
+        private async Task<AiAgentResponse> ExecuteSingleRequestAsync(
+            string userMessage,
+            Action<string> onAssistantToken,
+            CancellationToken cancellationToken)
+        {
             AiAgentToolDecision decision = await _intentPlannerService.TryCreateToolDecisionAsync(userMessage, cancellationToken);
             if (decision == null)
             {
@@ -295,6 +328,27 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 ToolResponse = toolResponse,
                 RoutingReason = decision.Reason
             };
+        }
+
+        private static bool HasAnyToolCall(AgentTaskExecutionSummary summary)
+        {
+            if (summary == null || summary.Tasks == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < summary.Tasks.Count; i++)
+            {
+                AgentTaskItem task = summary.Tasks[i];
+                if (task != null &&
+                    !string.Equals(task.Status, "NeedsClarification", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(task.ResultMessage, "Applied as a response-format instruction.", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private async Task<AiAgentResponse> TryHandlePendingConfirmationAsync(
@@ -892,7 +946,8 @@ If this is a write preview, ask for explicit confirmation before execution.";
                     case "random.generate_objects":
                         return FormatRandomGenerationResult(result);
                     case "truss.generate_howe":
-                        return FormatHoweTrussResult(result);
+                    case "truss.generate_pratt":
+                        return FormatTrussResult(result);
                     default:
                         string preview = TryFormatWritePreview(result);
                         if (!string.IsNullOrWhiteSpace(preview))
@@ -936,14 +991,22 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 : summary + $" {failedItems} item(s) failed.";
         }
 
-        private static string FormatHoweTrussResult(JObject result)
+        private static string FormatTrussResult(JObject result)
         {
             bool success = result.Value<bool?>("Success") ?? false;
             int bayCount = result.Value<int?>("BayCount") ?? 0;
             int added = result.Value<int?>("AddedFrameCount") ?? 0;
             int released = result.Value<int?>("ReleasedWebMemberCount") ?? 0;
+            int loaded = result.Value<int?>("LoadedFrameCount") ?? 0;
             double span = result.Value<double?>("Span") ?? 0;
-            string summary = $"Task completed. Howe truss generated with {bayCount} bay(s), span {span.ToString("0.###", CultureInfo.InvariantCulture)}. Added {added} frame(s); released {released} web member(s).";
+            string trussType = result.Value<string>("TrussType") ?? "Howe";
+            string slopeMode = result.Value<string>("SlopeMode");
+            double slope = result.Value<double?>("Slope") ?? 0;
+            string slopeText = slope > 0
+                ? $", slope mode {slopeMode ?? "Gable"} ({slope.ToString("0.###", CultureInfo.InvariantCulture)})"
+                : string.Empty;
+            string loadText = loaded > 0 ? $" Assigned distributed load to {loaded} frame(s)." : string.Empty;
+            string summary = $"Task completed. {trussType} truss generated with {bayCount} bay(s), span {span.ToString("0.###", CultureInfo.InvariantCulture)}{slopeText}. Added {added} frame(s); released {released} web member(s).{loadText}";
             return success ? summary : "Task completed with issues. " + summary;
         }
 

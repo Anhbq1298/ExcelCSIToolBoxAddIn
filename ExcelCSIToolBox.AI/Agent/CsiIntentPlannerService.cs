@@ -455,12 +455,17 @@ Rules:
         private static AiAgentToolDecision TryCreateHoweTrussDecision(string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage) ||
-                !Regex.IsMatch(userMessage, @"\b(howe|truss)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                !Regex.IsMatch(userMessage, @"\b(howe|pratt|truss)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 return null;
             }
 
-            JObject args = new JObject();
+            bool isPratt = Regex.IsMatch(userMessage, @"\bpratt\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            string trussType = isPratt ? "Pratt" : "Howe";
+            JObject args = new JObject
+            {
+                ["TrussType"] = trussType
+            };
             int bayCount = ExtractBayCount(userMessage);
             if (bayCount > 0)
             {
@@ -479,25 +484,62 @@ Rules:
                 args["Height"] = height;
             }
 
+            double slope = ExtractSlope(userMessage);
+            if (slope > 0)
+            {
+                args["Slope"] = slope;
+                args["SlopeMode"] = ExtractSlopeMode(userMessage);
+                args["MonoSlopeDirection"] = ExtractMonoSlopeDirection(userMessage);
+            }
+
             string prefix = ExtractName(userMessage, @"\b(?:prefix|name)\s*(?:=|:|is|as)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)");
             if (!string.IsNullOrWhiteSpace(prefix))
             {
                 args["NamePrefix"] = prefix;
             }
 
+            string chordSection = ExtractName(userMessage, @"\b(?:chord|chords|top\s+chord|bottom\s+chord)\s+(?:section|property|prop)\s*(?:=|:|is|as)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)");
+            if (!string.IsNullOrWhiteSpace(chordSection))
+            {
+                args["ChordPropName"] = chordSection;
+            }
+
+            string webSection = ExtractName(userMessage, @"\b(?:web|webs|brace|braces|vertical|verticals)\s+(?:section|property|prop)\s*(?:=|:|is|as)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)");
+            if (!string.IsNullOrWhiteSpace(webSection))
+            {
+                args["WebPropName"] = webSection;
+            }
+
             string section = ExtractName(userMessage, @"\b(?:section|property|prop)\s*(?:=|:|is|as)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)");
             if (!string.IsNullOrWhiteSpace(section))
             {
-                args["ChordPropName"] = section;
-                args["WebPropName"] = section;
+                if (string.IsNullOrWhiteSpace(chordSection))
+                {
+                    args["ChordPropName"] = section;
+                }
+
+                if (string.IsNullOrWhiteSpace(webSection))
+                {
+                    args["WebPropName"] = section;
+                }
+            }
+
+            double distributedLoad = ExtractDistributedLoadValue(userMessage);
+            if (distributedLoad != 0)
+            {
+                args["DistributedLoadPattern"] = ExtractLoadPattern(userMessage) ?? "DEAD";
+                args["DistributedLoadDirection"] = ExtractLoadDirection(userMessage);
+                args["DistributedLoadValue1"] = distributedLoad;
+                args["DistributedLoadValue2"] = distributedLoad;
+                args["DistributedLoadTarget"] = ExtractDistributedLoadTarget(userMessage);
             }
 
             return new AiAgentToolDecision
             {
                 ShouldCallTool = true,
-                ToolName = "truss.generate_howe",
+                ToolName = isPratt ? "truss.generate_pratt" : "truss.generate_howe",
                 ArgumentsJson = args.ToString(Formatting.None),
-                Reason = "Intent planner deterministic route: Howe truss generation."
+                Reason = $"Intent planner deterministic route: {trussType} truss generation."
             };
         }
 
@@ -535,6 +577,199 @@ Rules:
             return match.Success ? match.Groups["name"].Value : null;
         }
 
+        private static double ExtractDistributedLoadValue(string text)
+        {
+            string source = text ?? string.Empty;
+            if (!Regex.IsMatch(source, @"\b(?:load|udl|distributed)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return 0;
+            }
+
+            Match afterKeyword = Regex.Match(
+                source,
+                @"\b(?:udl|distributed\s+load|load)\s*(?:=|:|is|of)?\s*(?<value>-?\d+(?:\.\d+)?)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (afterKeyword.Success && !IsLikelyLoadPatternValue(source, afterKeyword.Index))
+            {
+                double value;
+                if (double.TryParse(afterKeyword.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                {
+                    return value;
+                }
+            }
+
+            Match beforeKeyword = Regex.Match(
+                source,
+                @"(?<value>-?\d+(?:\.\d+)?)\s*(?:kn/m|n/m|kip/ft|plf|k/ft)?\s*(?:udl|distributed\s+load|load)\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (beforeKeyword.Success)
+            {
+                double value;
+                if (double.TryParse(beforeKeyword.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                {
+                    return value;
+                }
+            }
+
+            return 0;
+        }
+
+        private static bool IsLikelyLoadPatternValue(string text, int matchIndex)
+        {
+            int start = Math.Max(0, matchIndex - 12);
+            string prefix = text.Substring(start, matchIndex - start);
+            return Regex.IsMatch(prefix, @"pattern\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        private static string ExtractLoadPattern(string text)
+        {
+            string pattern = ExtractName(text, @"\b(?:load\s+pattern|pattern|loadpat)\s*(?:=|:|is|as)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)");
+            if (!string.IsNullOrWhiteSpace(pattern))
+            {
+                return pattern;
+            }
+
+            if (Regex.IsMatch(text ?? string.Empty, @"\bdead\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "DEAD";
+            }
+
+            if (Regex.IsMatch(text ?? string.Empty, @"\blive\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "LIVE";
+            }
+
+            return null;
+        }
+
+        private static int ExtractLoadDirection(string text)
+        {
+            Match direction = Regex.Match(
+                text ?? string.Empty,
+                @"\b(?:dir|direction)\s*(?:=|:|is)?\s*(?<value>\d{1,2})\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (direction.Success)
+            {
+                int value;
+                if (int.TryParse(direction.Groups["value"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out value) &&
+                    value > 0)
+                {
+                    return value;
+                }
+            }
+
+            return 6;
+        }
+
+        private static string ExtractDistributedLoadTarget(string text)
+        {
+            string source = text ?? string.Empty;
+            if (Regex.IsMatch(source, @"\b(?:load|udl|distributed\s+load)\b[^.;]*(?:to|on|onto|for)?\s*(?:all\s+members|all\s+frames|entire\s+truss)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "All";
+            }
+
+            if (Regex.IsMatch(source, @"\b(?:web|webs|brace|braces|vertical|verticals)\s+(?:load|udl)\b|\b(?:load|udl|distributed\s+load)\b[^.;]*(?:to|on|onto|for)\s+(?:web|webs|brace|braces|vertical|verticals)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Web";
+            }
+
+            if (Regex.IsMatch(source, @"\b(?:bottom\s+chord|bottom)\s+(?:load|udl)\b|\b(?:load|udl|distributed\s+load)\b[^.;]*(?:to|on|onto|for)\s+(?:bottom\s+chord|bottom)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "BottomChord";
+            }
+
+            if (Regex.IsMatch(source, @"\b(?:chords|both\s+chords)\s+(?:load|udl)\b|\b(?:load|udl|distributed\s+load)\b[^.;]*(?:to|on|onto|for)\s+(?:chords|both\s+chords)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Chord";
+            }
+
+            return "TopChord";
+        }
+
+        private static double ExtractSlope(string text)
+        {
+            string source = text ?? string.Empty;
+
+            Match ratio = Regex.Match(
+                source,
+                @"\b(?:slope|pitch)\s*(?:=|:|is|of)?\s*(?<rise>\d+(?:\.\d+)?)\s*[:/]\s*(?<run>\d+(?:\.\d+)?)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (ratio.Success)
+            {
+                double rise;
+                double run;
+                if (double.TryParse(ratio.Groups["rise"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out rise) &&
+                    double.TryParse(ratio.Groups["run"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out run) &&
+                    run > 0)
+                {
+                    return rise / run;
+                }
+            }
+
+            Match percent = Regex.Match(
+                source,
+                @"\b(?:slope|pitch)\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)\s*%",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (percent.Success)
+            {
+                double value;
+                return double.TryParse(percent.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+                    ? value / 100.0
+                    : 0;
+            }
+
+            Match degree = Regex.Match(
+                source,
+                @"\b(?:slope|pitch)\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)\s*(?:deg|degree|degrees)\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (degree.Success)
+            {
+                double value;
+                return double.TryParse(degree.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value)
+                    ? Math.Tan(value * Math.PI / 180.0)
+                    : 0;
+            }
+
+            return ExtractDimension(source, @"\b(?:slope|pitch)\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)");
+        }
+
+        private static string ExtractSlopeMode(string text)
+        {
+            string source = text ?? string.Empty;
+            if (Regex.IsMatch(
+                source,
+                @"\b(?:mono\s*slope|monoslope|one\s*side|single\s*slope|from\s+(?:one|1)\s+side)\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Mono";
+            }
+
+            if (Regex.IsMatch(
+                source,
+                @"\b(?:middle|center|centre|both\s+sides?|two\s+sides?|gable|double\s*slope)\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Gable";
+            }
+
+            return "Gable";
+        }
+
+        private static string ExtractMonoSlopeDirection(string text)
+        {
+            string source = text ?? string.Empty;
+            if (Regex.IsMatch(
+                source,
+                @"\b(?:from\s+right|right\s+to\s+left|high\s+(?:at|on)\s+left|low\s+(?:at|on)\s+right)\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "RightToLeft";
+            }
+
+            return "LeftToRight";
+        }
+
         private static int ExtractFirstInteger(string text)
         {
             Match match = Regex.Match(text ?? string.Empty, @"\b(?<count>\d{1,3})\b", RegexOptions.CultureInvariant);
@@ -558,7 +793,7 @@ Rules:
 
             return Regex.IsMatch(
                 userMessage,
-                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|shell|area|slab|wall|panel|section|property|load|udl|select|selection|length|random|truss|howe)\b|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
+                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|shell|area|slab|wall|panel|section|property|load|udl|select|selection|length|random|truss|howe|pratt)\b|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
     }
