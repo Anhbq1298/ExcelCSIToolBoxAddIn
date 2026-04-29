@@ -22,6 +22,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 Tool("Both", "Frames", "Assignments", "cFrameObj", "SetSection", "frames.assign_section", CsiMethodRiskLevel.Medium, true, true, "Assigns section property to frame objects."),
                 Tool("Both", "Loads", "Frame", "cFrameObj", "SetLoadDistributed", "loads.frame.assign_distributed", CsiMethodRiskLevel.Medium, true, true, "Assigns distributed frame load."),
                 Tool("Both", "Loads", "Frame", "cFrameObj", "SetLoadPoint", "loads.frame.assign_point_load", CsiMethodRiskLevel.Medium, true, true, "Assigns frame point load."),
+                Tool("Both", "Workflow", "Orchestration", "Multiple", "Execute", "execute_csi_request", CsiMethodRiskLevel.Medium, false, false, "Executes a parsed multi-step CSI workflow request."),
                 Tool("Both", "Shells / Areas", "Read", "cAreaObj", "GetNameList", "shells.get_all_names", CsiMethodRiskLevel.None, false, false, "Reads all shell/area object names."),
                 Tool("Both", "Shells / Areas", "Read", "cAreaObj", "GetPoints", "shells.get_points", CsiMethodRiskLevel.None, false, false, "Reads shell/area point names."),
                 Tool("Both", "Shells / Areas", "Read", "cAreaObj", "GetProperty", "shells.get_property", CsiMethodRiskLevel.None, false, false, "Reads shell/area property assignment."),

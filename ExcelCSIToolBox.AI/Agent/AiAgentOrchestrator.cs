@@ -74,6 +74,7 @@ namespace ExcelCSIToolBox.AI.Agent
             "loads.combinations.delete",
             "loads.patterns.get_all",
             "loads.patterns.delete",
+            "execute_csi_request",
             "points.add_by_coordinates",
             "frames.add_by_coordinates",
             "frames.add_by_points",
@@ -108,6 +109,7 @@ Available tools:
 - frames.get_all_names, frames.get_sections, frames.get_section_detail, frames.get_count: Frame queries.
 - shells.get_all_names, shells.get_selected, shells.get_property, shells.get_count: Shell queries.
 - loads.combinations.get_all, loads.patterns.get_all: Loading queries.
+- execute_csi_request: Multi-step CSI workflow tool. Use when the user asks for multiple actions in one request.
 - points.add_by_coordinates, frames.add_object, frames.add_objects: Creation tools.
 
 SAFETY POLICY:
@@ -371,6 +373,22 @@ If this is a write preview, ask for explicit confirmation before execution.";
             if (string.IsNullOrWhiteSpace(normalized))
             {
                 return null;
+            }
+
+            if (LooksLikeWorkflow(normalized))
+            {
+                JObject args = new JObject
+                {
+                    ["userInput"] = userMessage
+                };
+
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = true,
+                    ToolName = "execute_csi_request",
+                    ArgumentsJson = args.ToString(Newtonsoft.Json.Formatting.None),
+                    Reason = "Heuristic route: multi-step CSI workflow."
+                };
             }
 
             AiAgentToolDecision addPointDecision = TryCreateAddPointDecision(userMessage);
@@ -654,6 +672,31 @@ If this is a write preview, ask for explicit confirmation before execution.";
             }
 
             return false;
+        }
+
+        private static bool LooksLikeWorkflow(string normalized)
+        {
+            int verbCount = CountKeywordHits(normalized, "add", "create", "assign", "apply", "set", "get", "extract", "select", "update", "delete", "connect");
+            int sequenceCount = CountKeywordHits(normalized, " then ", " after that ", " next ", " also ", " finally ", " followed by ");
+            int objectTypeCount = CountKeywordHits(normalized, "point", "frame", "beam", "load", "section", "shell", "area", "combination", "case");
+
+            return verbCount > 1 ||
+                   sequenceCount > 0 ||
+                   objectTypeCount > 1 && ContainsAny(normalized, " and ", " then ", " also ", ",");
+        }
+
+        private static int CountKeywordHits(string text, params string[] keywords)
+        {
+            int count = 0;
+            for (int i = 0; i < keywords.Length; i++)
+            {
+                if (text.IndexOf(keywords[i], StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         private static bool TryParseCoordinateTriple(Match match, out double x, out double y, out double z)

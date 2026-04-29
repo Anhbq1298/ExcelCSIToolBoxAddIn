@@ -11,6 +11,7 @@ using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads.LoadPatterns;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Workflow;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Infrastructure.Etabs;
@@ -145,6 +146,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new LoadCombinationsDeleteTool(etabsService, sap2000Service));
             _registry.Register(new LoadPatternsGetAllTool(etabsService, sap2000Service));
             _registry.Register(new LoadPatternsDeleteTool(etabsService, sap2000Service));
+            _registry.Register(new ExecuteCsiRequestTool(etabsService, sap2000Service));
 
             _registry.Register(new PointsAddByCoordinatesTool(commandService));
             _registry.Register(new PointsAddCartesianTool(commandService));
