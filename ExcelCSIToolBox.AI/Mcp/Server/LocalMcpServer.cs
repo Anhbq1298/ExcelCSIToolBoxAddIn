@@ -12,6 +12,7 @@ using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Random;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells;
+using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Truss;
 using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Workflow;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
@@ -149,6 +150,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new LoadPatternsDeleteTool(etabsService, sap2000Service));
             _registry.Register(new ExecuteCsiRequestTool(etabsService, sap2000Service));
             _registry.Register(new RandomGenerateObjectsTool(etabsService, sap2000Service));
+            _registry.Register(new TrussGenerateHoweTool(etabsService, sap2000Service));
 
             _registry.Register(new PointsAddByCoordinatesTool(commandService));
             _registry.Register(new PointsAddCartesianTool(commandService));

@@ -11,6 +11,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool   _toolSucceeded;
         private string _toolMessage;
         private string _toolResultJson;
+        private string _routingReason;
 
         /// <summary>Whether the last response involved a tool call.</summary>
         public bool ToolWasCalled
@@ -54,6 +55,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             set { _toolResultJson = value; OnPropertyChanged(); }
         }
 
+        /// <summary>Short explanation of how the agent routed the request.</summary>
+        public string RoutingReason
+        {
+            get { return _routingReason; }
+            set { _routingReason = value; OnPropertyChanged(); }
+        }
+
         /// <summary>Reset all fields to empty state.</summary>
         public void Clear()
         {
@@ -63,6 +71,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ToolSucceeded   = false;
             ToolMessage     = string.Empty;
             ToolResultJson  = string.Empty;
+            RoutingReason   = string.Empty;
         }
     }
 }

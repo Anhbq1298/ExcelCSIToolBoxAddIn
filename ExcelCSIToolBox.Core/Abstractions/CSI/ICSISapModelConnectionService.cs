@@ -31,6 +31,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs);
         OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs);
         OperationResult<FrameAddBatchResultDto> AddFrameObjects(FrameAddBatchRequestDto request);
+        OperationResult SetFrameReleases(IReadOnlyList<string> frameNames, IReadOnlyList<bool> startReleases, IReadOnlyList<bool> endReleases);
         OperationResult AssignFrameSection(IReadOnlyList<string> frameNames, string sectionName);
         OperationResult AssignFrameDistributedLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double value1, double value2);
         OperationResult AssignFramePointLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double distance, double value);

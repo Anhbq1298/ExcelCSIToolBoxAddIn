@@ -324,6 +324,53 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                 RefreshView);
         }
 
+        public OperationResult SetFrameReleases(IReadOnlyList<string> frameNames, IReadOnlyList<bool> startReleases, IReadOnlyList<bool> endReleases)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure("active CSI model is not available.");
+            }
+
+            if (frameNames == null || frameNames.Count == 0)
+            {
+                return OperationResult.Failure("At least one frame name is required.");
+            }
+
+            bool[] ii = ToReleaseArray(startReleases);
+            bool[] jj = ToReleaseArray(endReleases);
+            double[] startValues = new double[6];
+            double[] endValues = new double[6];
+            var failures = new List<string>();
+            int success = 0;
+
+            foreach (string frameName in frameNames)
+            {
+                if (string.IsNullOrWhiteSpace(frameName))
+                {
+                    continue;
+                }
+
+                int ret = sapModelResult.Data.FrameObj.SetReleases(frameName, ref ii, ref jj, ref startValues, ref endValues, SAP2000v1.eItemType.Objects);
+                if (ret == 0)
+                {
+                    success++;
+                }
+                else
+                {
+                    failures.Add($"{frameName}: return code {ret}");
+                }
+            }
+
+            if (failures.Count > 0)
+            {
+                return OperationResult.Failure($"Set releases for {success} frame(s), failed {failures.Count}: {string.Join("; ", failures)}");
+            }
+
+            RefreshView(sapModelResult.Data);
+            return OperationResult.Success($"Set releases for {success} frame(s).");
+        }
+
         public OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel()
         {
             var sapModelResult = EnsureSap2000SapModel();
@@ -1580,6 +1627,22 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             }
 
             return OperationResult.Success();
+        }
+
+        private static bool[] ToReleaseArray(IReadOnlyList<bool> releases)
+        {
+            var values = new bool[6];
+            if (releases == null)
+            {
+                return values;
+            }
+
+            for (int i = 0; i < releases.Count && i < values.Length; i++)
+            {
+                values[i] = releases[i];
+            }
+
+            return values;
         }
 
     }

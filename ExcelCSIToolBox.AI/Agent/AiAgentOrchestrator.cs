@@ -85,6 +85,7 @@ namespace ExcelCSIToolBox.AI.Agent
             "loads.frame.assign_distributed",
             "loads.frame.assign_point_load",
             "random.generate_objects",
+            "truss.generate_howe",
             "frames.assign_distributed_load",
             "frames.assign_point_load",
             "selection.clear",
@@ -114,6 +115,7 @@ Available tools:
 - execute_csi_request: Multi-step CSI workflow tool. Use when the user asks for multiple actions in one request.
 - points.add_by_coordinates, frames.add_object, frames.add_objects: Creation tools.
 - random.generate_objects: Generate random CSI points, frames, and shell/area objects using safe defaults.
+- truss.generate_howe: Generate a symmetric Howe truss with continuous chords and released vertical/brace members.
 
 SAFETY POLICY:
 1. Do not use dryRun unless the user explicitly asks for preview/check only.
@@ -889,6 +891,8 @@ If this is a write preview, ask for explicit confirmation before execution.";
                         return FormatFrameAddObjectsResult(result);
                     case "random.generate_objects":
                         return FormatRandomGenerationResult(result);
+                    case "truss.generate_howe":
+                        return FormatHoweTrussResult(result);
                     default:
                         string preview = TryFormatWritePreview(result);
                         if (!string.IsNullOrWhiteSpace(preview))
@@ -912,55 +916,9 @@ If this is a write preview, ask for explicit confirmation before execution.";
             int failed = result.Value<int?>("Failed") ?? 0;
             int skipped = result.Value<int?>("Skipped") ?? 0;
 
-            var builder = new StringBuilder();
-            builder.AppendLine($"Workflow execution: {succeeded} succeeded, {failed} failed, {skipped} skipped out of {total} task(s).");
-
-            JArray results = result["Results"] as JArray;
-            if (results == null || results.Count == 0)
-            {
-                return builder.ToString().Trim();
-            }
-
-            for (int i = 0; i < results.Count; i++)
-            {
-                JObject item = results[i] as JObject;
-                if (item == null)
-                {
-                    continue;
-                }
-
-                string taskType = item.Value<string>("TaskType") ?? "Task";
-                string operation = item.Value<string>("Operation") ?? "Execute";
-                bool success = item.Value<bool?>("Success") ?? false;
-                bool itemSkipped = item.Value<bool?>("Skipped") ?? false;
-                string objectName = item.Value<string>("ObjectName");
-                string reason = item.Value<string>("FailureReason");
-                string status = itemSkipped ? "skipped" : success ? "success" : "failed";
-
-                builder.Append("- ");
-                builder.Append(taskType);
-                builder.Append(".");
-                builder.Append(operation);
-                builder.Append(": ");
-                builder.Append(status);
-
-                if (!string.IsNullOrWhiteSpace(objectName))
-                {
-                    builder.Append(" (");
-                    builder.Append(objectName);
-                    builder.Append(")");
-                }
-
-                if (!string.IsNullOrWhiteSpace(reason))
-                {
-                    builder.Append(" - ");
-                    builder.Append(reason);
-                }
-
-                builder.AppendLine();
-            }
-
-            return builder.ToString().Trim();
+            return failed == 0 && skipped == 0
+                ? $"Task completed. {succeeded}/{total} workflow task(s) succeeded."
+                : $"Task completed with issues. {succeeded}/{total} succeeded, {failed} failed, {skipped} skipped.";
         }
 
         private static string FormatRandomGenerationResult(JObject result)
@@ -972,57 +930,21 @@ If this is a write preview, ask for explicit confirmation before execution.";
             int addedFrames = result.Value<int?>("AddedFrames") ?? 0;
             int addedShells = result.Value<int?>("AddedShells") ?? 0;
             int failedItems = result.Value<int?>("FailedItems") ?? 0;
-            int seed = result.Value<int?>("Seed") ?? 0;
+            string summary = $"Task completed. Added {addedPoints}/{requestedPoints} point(s), {addedFrames}/{requestedFrames} frame(s), {addedShells}/{requestedShells} shell(s).";
+            return failedItems == 0
+                ? summary
+                : summary + $" {failedItems} item(s) failed.";
+        }
 
-            var builder = new StringBuilder();
-            builder.Append("Random generation: ");
-            builder.Append(addedPoints);
-            builder.Append("/");
-            builder.Append(requestedPoints);
-            builder.Append(" point(s), ");
-            builder.Append(addedFrames);
-            builder.Append("/");
-            builder.Append(requestedFrames);
-            builder.Append(" frame(s), ");
-            builder.Append(addedShells);
-            builder.Append("/");
-            builder.Append(requestedShells);
-            builder.Append(" shell(s). Seed: ");
-            builder.Append(seed.ToString(CultureInfo.InvariantCulture));
-            builder.Append(".");
-
-            string pointNames = JoinPreview(result["PointNames"] as JArray, 8);
-            string frameNames = JoinPreview(result["FrameNames"] as JArray, 8);
-            string shellNames = JoinPreview(result["ShellNames"] as JArray, 8);
-            if (!string.IsNullOrWhiteSpace(pointNames))
-            {
-                builder.Append(" Points: ");
-                builder.Append(pointNames);
-                builder.Append(".");
-            }
-
-            if (!string.IsNullOrWhiteSpace(frameNames))
-            {
-                builder.Append(" Frames: ");
-                builder.Append(frameNames);
-                builder.Append(".");
-            }
-
-            if (!string.IsNullOrWhiteSpace(shellNames))
-            {
-                builder.Append(" Shells: ");
-                builder.Append(shellNames);
-                builder.Append(".");
-            }
-
-            if (failedItems > 0)
-            {
-                string failures = JoinPreview(result["FailureReasons"] as JArray, 3);
-                builder.Append(" Failed: ");
-                builder.Append(string.IsNullOrWhiteSpace(failures) ? failedItems.ToString(CultureInfo.InvariantCulture) + " item(s)." : failures);
-            }
-
-            return builder.ToString();
+        private static string FormatHoweTrussResult(JObject result)
+        {
+            bool success = result.Value<bool?>("Success") ?? false;
+            int bayCount = result.Value<int?>("BayCount") ?? 0;
+            int added = result.Value<int?>("AddedFrameCount") ?? 0;
+            int released = result.Value<int?>("ReleasedWebMemberCount") ?? 0;
+            double span = result.Value<double?>("Span") ?? 0;
+            string summary = $"Task completed. Howe truss generated with {bayCount} bay(s), span {span.ToString("0.###", CultureInfo.InvariantCulture)}. Added {added} frame(s); released {released} web member(s).";
+            return success ? summary : "Task completed with issues. " + summary;
         }
 
         private static string FormatFrameAddObjectResult(JObject result)
@@ -1036,15 +958,15 @@ If this is a write preview, ask for explicit confirmation before execution.";
             if (success)
             {
                 return string.IsNullOrWhiteSpace(frameName)
-                    ? $"Added frame using {addMethod}."
-                    : $"Added frame {frameName} using {addMethod}.";
+                    ? "Task completed. Added 1 frame."
+                    : $"Task completed. Added frame {frameName}.";
             }
 
             string reason = string.IsNullOrWhiteSpace(failureReason)
                 ? returnCode.HasValue ? $"CSI return code {returnCode.Value}." : "The frame was not added."
                 : failureReason;
 
-            return $"Failed to add frame using {addMethod}: {reason}";
+            return $"Task failed. Frame was not added: {reason}";
         }
 
         private static string FormatFrameAddObjectsResult(JObject result)
@@ -1052,42 +974,9 @@ If this is a write preview, ask for explicit confirmation before execution.";
             int total = result.Value<int?>("TotalRequested") ?? 0;
             int successCount = result.Value<int?>("SuccessCount") ?? 0;
             int failureCount = result.Value<int?>("FailureCount") ?? 0;
-            JArray names = result["SuccessfulFrameNames"] as JArray;
-            JArray failedItems = result["FailedItems"] as JArray;
-
-            var builder = new StringBuilder();
-            builder.Append($"Frame add result: {successCount} added, {failureCount} failed out of {total}.");
-
-            string successfulNames = JoinPreview(names, 10);
-            if (!string.IsNullOrWhiteSpace(successfulNames))
-            {
-                builder.Append(" Added: ");
-                builder.Append(successfulNames);
-                builder.Append(".");
-            }
-
-            if (failedItems != null && failedItems.Count > 0)
-            {
-                builder.AppendLine();
-                for (int i = 0; i < failedItems.Count && i < 5; i++)
-                {
-                    JObject failed = failedItems[i] as JObject;
-                    if (failed == null)
-                    {
-                        continue;
-                    }
-
-                    string method = failed.Value<string>("AddMethod") ?? "FrameObj";
-                    string reason = failed.Value<string>("FailureReason") ?? "The frame was not added.";
-                    builder.Append("- ");
-                    builder.Append(method);
-                    builder.Append(": ");
-                    builder.Append(reason);
-                    builder.AppendLine();
-                }
-            }
-
-            return builder.ToString().Trim();
+            return failureCount == 0
+                ? $"Task completed. Added {successCount}/{total} frame(s)."
+                : $"Task completed with issues. Added {successCount}/{total} frame(s); {failureCount} failed.";
         }
 
         private static string FormatPresentUnits(JObject result)

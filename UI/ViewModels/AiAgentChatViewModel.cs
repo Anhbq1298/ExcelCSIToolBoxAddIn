@@ -179,6 +179,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             IsBusy     = true;
             StatusText = "Thinking…";
             _lastToolTrace.Clear();
+            _lastToolTrace.RoutingReason = "Planning request...";
+            _lastToolTrace.ToolMessage = "Waiting for agent route.";
 
             try
             {
@@ -258,6 +260,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 thinkingMessage.Content = response.AssistantText;
 
                 // Update tool trace panel.
+                _lastToolTrace.RoutingReason = string.IsNullOrWhiteSpace(response.RoutingReason)
+                    ? "(no routing reason returned)"
+                    : response.RoutingReason;
+
                 if (response.ToolWasCalled && response.ToolResponse != null)
                 {
                     _lastToolTrace.ToolWasCalled  = true;
@@ -266,6 +272,15 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     _lastToolTrace.ToolSucceeded   = response.ToolResponse.Success;
                     _lastToolTrace.ToolMessage     = response.ToolResponse.Message;
                     _lastToolTrace.ToolResultJson  = response.ToolResponse.ResultJson ?? "(none)";
+                }
+                else
+                {
+                    _lastToolTrace.ToolWasCalled = false;
+                    _lastToolTrace.ToolName = "(none)";
+                    _lastToolTrace.ToolArguments = "{}";
+                    _lastToolTrace.ToolSucceeded = false;
+                    _lastToolTrace.ToolMessage = "No MCP tool was called.";
+                    _lastToolTrace.ToolResultJson = "(none)";
                 }
 
                 StatusText = "Ready";
@@ -280,6 +295,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     Content = "⚠️ Error: " + ex.Message +
                               "\n\nMake sure Ollama is running and the model is pulled."
                 });
+                _lastToolTrace.RoutingReason = "Agent execution failed before a normal response was completed.";
+                _lastToolTrace.ToolMessage = ex.Message;
                 StatusText = "Error";
             }
             finally

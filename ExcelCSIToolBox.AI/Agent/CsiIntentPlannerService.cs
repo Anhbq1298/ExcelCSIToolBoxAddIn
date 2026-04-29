@@ -70,6 +70,12 @@ Rules:
                 return randomDecision;
             }
 
+            AiAgentToolDecision trussDecision = TryCreateHoweTrussDecision(userMessage);
+            if (trussDecision != null)
+            {
+                return trussDecision;
+            }
+
             AiAgentToolDecision deterministicDecision = TryCreateDeterministicFrameCoordinateDecision(userMessage);
             if (deterministicDecision != null)
             {
@@ -446,6 +452,89 @@ Rules:
             };
         }
 
+        private static AiAgentToolDecision TryCreateHoweTrussDecision(string userMessage)
+        {
+            if (string.IsNullOrWhiteSpace(userMessage) ||
+                !Regex.IsMatch(userMessage, @"\b(howe|truss)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return null;
+            }
+
+            JObject args = new JObject();
+            int bayCount = ExtractBayCount(userMessage);
+            if (bayCount > 0)
+            {
+                args["BayCount"] = bayCount;
+            }
+
+            double span = ExtractDimension(userMessage, @"\b(?:span|length)\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)");
+            if (span > 0)
+            {
+                args["Span"] = span;
+            }
+
+            double height = ExtractDimension(userMessage, @"\bheight\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)");
+            if (height > 0)
+            {
+                args["Height"] = height;
+            }
+
+            string prefix = ExtractName(userMessage, @"\b(?:prefix|name)\s*(?:=|:|is|as)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)");
+            if (!string.IsNullOrWhiteSpace(prefix))
+            {
+                args["NamePrefix"] = prefix;
+            }
+
+            string section = ExtractName(userMessage, @"\b(?:section|property|prop)\s*(?:=|:|is|as)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)");
+            if (!string.IsNullOrWhiteSpace(section))
+            {
+                args["ChordPropName"] = section;
+                args["WebPropName"] = section;
+            }
+
+            return new AiAgentToolDecision
+            {
+                ShouldCallTool = true,
+                ToolName = "truss.generate_howe",
+                ArgumentsJson = args.ToString(Formatting.None),
+                Reason = "Intent planner deterministic route: Howe truss generation."
+            };
+        }
+
+        private static int ExtractBayCount(string text)
+        {
+            Match match = Regex.Match(
+                text ?? string.Empty,
+                @"\b(?<count>\d{1,3})\s*(?:bay|bays)\b|\b(?:bay|bays)\s*(?:=|:)?\s*(?<count2>\d{1,3})\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!match.Success)
+            {
+                return 0;
+            }
+
+            string valueText = match.Groups["count"].Success ? match.Groups["count"].Value : match.Groups["count2"].Value;
+            int value;
+            return int.TryParse(valueText, NumberStyles.Integer, CultureInfo.InvariantCulture, out value) ? value : 0;
+        }
+
+        private static double ExtractDimension(string text, string pattern)
+        {
+            Match match = Regex.Match(text ?? string.Empty, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!match.Success)
+            {
+                return 0;
+            }
+
+            double value;
+            return double.TryParse(match.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value) ? value : 0;
+        }
+
+        private static string ExtractName(string text, string pattern)
+        {
+            Match match = Regex.Match(text ?? string.Empty, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            return match.Success ? match.Groups["name"].Value : null;
+        }
+
         private static int ExtractFirstInteger(string text)
         {
             Match match = Regex.Match(text ?? string.Empty, @"\b(?<count>\d{1,3})\b", RegexOptions.CultureInvariant);
@@ -469,7 +558,7 @@ Rules:
 
             return Regex.IsMatch(
                 userMessage,
-                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|shell|area|slab|wall|panel|section|property|load|udl|select|selection|length|random)\b|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
+                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|shell|area|slab|wall|panel|section|property|load|udl|select|selection|length|random|truss|howe)\b|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
     }
