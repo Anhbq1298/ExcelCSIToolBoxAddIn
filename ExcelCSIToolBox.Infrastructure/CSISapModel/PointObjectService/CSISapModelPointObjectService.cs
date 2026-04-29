@@ -15,18 +15,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         ref string assignedName,
         string requestedUniqueName);
 
-    internal delegate int CSISapModelClearSelection<TSapModel>(TSapModel sapModel);
-
-    internal delegate int CSISapModelSetSelectedByName<TSapModel>(
-        TSapModel sapModel,
-        string objectName);
-
-    internal delegate int CSISapModelReadSelectedObjects<TSapModel>(
-        TSapModel sapModel,
-        ref int numberItems,
-        ref int[] objectTypes,
-        ref string[] objectNames);
-
     internal delegate int CSISapModelReadPointCoordinates<TSapModel>(
         TSapModel sapModel,
         string pointName,
@@ -39,11 +27,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         string pointName,
         ref string pointLabel,
         ref string pointStory);
-
-    internal delegate int CSISapModelGetPointNames<TSapModel>(
-        TSapModel sapModel,
-        ref int numberNames,
-        ref string[] names);
 
     internal delegate int CSISapModelReadPointSelected<TSapModel>(
         TSapModel sapModel,
@@ -187,6 +170,21 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             return OperationResult<IReadOnlyList<string>>.Success(names ?? new string[0]);
+        }
+
+        internal static OperationResult<int> GetCount<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            CSISapModelReadCount<TSapModel> getCount)
+        {
+            int count = 0;
+            int result = getCount(sapModel, ref count);
+            if (result != 0)
+            {
+                return OperationResult<int>.Failure($"{productName} PointObj.Count failed (return code {result}).");
+            }
+
+            return OperationResult<int>.Success(count);
         }
 
         internal static OperationResult<PointObjectInfo> GetByName<TSapModel>(
@@ -418,7 +416,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         internal static OperationResult<IReadOnlyList<CSISapModelPointDataDTO>> GetSelectedPointsFromActiveModel<TSapModel>(
             string productName,
             TSapModel sapModel,
-            CSISapModelReadSelectedObjects<TSapModel> getSelectedObjects,
+            CSISapModelGetSelectedObjects<TSapModel> getSelectedObjects,
             CSISapModelReadPointCoordinates<TSapModel> getPointCoordinates,
             CSISapModelReadPointLabel<TSapModel> getPointLabel)
         {

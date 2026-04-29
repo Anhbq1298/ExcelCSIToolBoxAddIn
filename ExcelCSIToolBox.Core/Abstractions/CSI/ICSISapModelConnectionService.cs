@@ -91,6 +91,9 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
 
         OperationResult<IReadOnlyList<CSISapModelLoadPatternDTO>> GetLoadPatterns();
         OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames);
+        OperationResult<CSISapModelStatisticsDTO> GetModelStatistics();
+        OperationResult RefreshView(bool zoomAll = false);
+        OperationResult SetPresentUnits(int unitsCode);
     }
 }
 

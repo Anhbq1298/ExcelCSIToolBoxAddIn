@@ -44,6 +44,30 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
         }
     }
 
+    public sealed class PointsGetCountTool : CsiActiveConnectionToolBase
+    {
+        public PointsGetCountTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "points.get_count";
+        public override string Title => "Get Point Count";
+        public override string Category => "Points";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns the total number of point objects in the active CSI model.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            var result = service.GetModelStatistics();
+            if (result.IsSuccess)
+            {
+                return Ok(result.Message, new { Count = result.Data.PointCount });
+            }
+            return Fail(result.Message);
+        }
+    }
+
     public sealed class PointsGetByNameTool : CsiActiveConnectionToolBase
     {
         public PointsGetByNameTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }

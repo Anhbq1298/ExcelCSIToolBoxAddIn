@@ -1353,9 +1353,71 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return 0;
         }
 
+        public OperationResult<CSISapModelStatisticsDTO> GetModelStatistics()
+        {
+            var sapModelResult = EnsureSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult<CSISapModelStatisticsDTO>.Failure(sapModelResult.Message);
+            var sapModel = sapModelResult.Data;
+
+            var stats = new CSISapModelStatisticsDTO();
+
+            try
+            {
+                int pointCount = 0;
+                sapModel.PointObj.Count(ref pointCount);
+                stats.PointCount = pointCount;
+
+                int frameCount = 0;
+                sapModel.FrameObj.Count(ref frameCount);
+                stats.FrameCount = frameCount;
+
+                int areaCount = 0;
+                sapModel.AreaObj.Count(ref areaCount);
+                stats.ShellCount = areaCount;
+
+                stats.LoadPatterns.Count(ref pointCount); // Reusing pointCount as temp
+                stats.LoadPatternCount = pointCount;
+                
+                // For combos, SAP2000 might be different. Let's check.
+                // In SAP2000 OAPI, RespCombo.Count doesn't exist? 
+                // Actually it is usually GetNameList and checking the count.
+                
+                int comboCount = 0;
+                string[] comboNames = null;
+                sapModel.RespCombo.GetNameList(ref comboCount, ref comboNames);
+                stats.LoadCombinationCount = comboCount;
+
+                return OperationResult<CSISapModelStatisticsDTO>.Success(stats);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<CSISapModelStatisticsDTO>.Failure($"Failed to get model statistics: {ex.Message}");
+            }
+        }
+
+        public OperationResult RefreshView(bool zoomAll = false)
+        {
+            var sapModelResult = EnsureSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            return RefreshView(sapModelResult.Data, zoomAll);
+        }
+
+        public OperationResult SetPresentUnits(int unitsCode)
+        {
+            var sapModelResult = EnsureSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            int ret = sapModelResult.Data.SetPresentUnits((SAP2000v1.eUnits)unitsCode);
+            return ret == 0 ? OperationResult.Success() : OperationResult.Failure($"Failed to set units (return code {ret}).");
+        }
+
         private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel)
         {
-            int refreshResult = sapModel.View.RefreshView(0, false);
+            return RefreshView(sapModel, false);
+        }
+
+        private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel, bool zoomAll)
+        {
+            int refreshResult = sapModel.View.RefreshView(0, zoomAll);
             if (refreshResult != 0)
             {
                 return OperationResult.Failure($"SAP2000 model changed successfully, but View.RefreshView failed (return code {refreshResult}).");
@@ -1366,6 +1428,3 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
 
     }
 }
-
-
-

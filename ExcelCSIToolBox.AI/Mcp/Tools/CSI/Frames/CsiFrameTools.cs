@@ -44,6 +44,30 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
         }
     }
 
+    public sealed class FramesGetCountTool : CsiActiveConnectionToolBase
+    {
+        public FramesGetCountTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public override string Name => "frames.get_count";
+        public override string Title => "Get Frame Count";
+        public override string Category => "Frames";
+        public override string SubCategory => "Read";
+        public override string Description => "Returns the total number of frame objects in the active CSI model.";
+        public override bool IsReadOnly => true;
+        public override CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.None;
+        public override bool RequiresConfirmation => false;
+        public override bool SupportsDryRun => false;
+
+        protected override ToolCallResponse Execute(ICSISapModelConnectionService service, string argumentsJson)
+        {
+            var result = service.GetModelStatistics();
+            if (result.IsSuccess)
+            {
+                return Ok(result.Message, new { Count = result.Data.FrameCount });
+            }
+            return Fail(result.Message);
+        }
+    }
+
     public sealed class FramesGetByNameTool : CsiActiveConnectionToolBase
     {
         public FramesGetByNameTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }

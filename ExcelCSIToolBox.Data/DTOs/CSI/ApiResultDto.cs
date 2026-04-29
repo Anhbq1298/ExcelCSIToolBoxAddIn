@@ -1,4 +1,4 @@
-﻿using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 using System.Collections.Generic;
 
 namespace ExcelCSIToolBox.Data.DTOs.CSI
@@ -23,6 +23,15 @@ namespace ExcelCSIToolBox.Data.DTOs.CSI
         public string ModelCurrentUnit { get; set; }
         public object CsiObject { get; set; }
         public object SapModel { get; set; }
+    }
+
+    public class CSISapModelStatisticsDTO
+    {
+        public int PointCount { get; set; }
+        public int FrameCount { get; set; }
+        public int ShellCount { get; set; }
+        public int LoadPatternCount { get; set; }
+        public int LoadCombinationCount { get; set; }
     }
 }
 

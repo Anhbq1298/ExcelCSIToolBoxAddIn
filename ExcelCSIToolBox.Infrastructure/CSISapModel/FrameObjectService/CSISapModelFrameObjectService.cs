@@ -209,6 +209,21 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             return OperationResult<IReadOnlyList<string>>.Success(names ?? new string[0]);
         }
 
+        internal static OperationResult<int> GetCount<TSapModel>(
+            string productName,
+            TSapModel sapModel,
+            CSISapModelReadCount<TSapModel> getCount)
+        {
+            int count = 0;
+            int result = getCount(sapModel, ref count);
+            if (result != 0)
+            {
+                return OperationResult<int>.Failure($"{productName} FrameObj.Count failed (return code {result}).");
+            }
+
+            return OperationResult<int>.Success(count);
+        }
+
         internal static OperationResult<FrameEndPointInfo> GetPoints<TSapModel>(
             string productName,
             TSapModel sapModel,

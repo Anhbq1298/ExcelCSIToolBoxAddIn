@@ -1,4 +1,4 @@
-﻿using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
 using System.Collections.Generic;
 
@@ -41,6 +41,15 @@ namespace ExcelCSIToolBox.Data
         public double X { get; set; }
         public double Y { get; set; }
         public double Z { get; set; }
+    }
+
+    public class CSISapModelStatisticsDTO
+    {
+        public int PointCount { get; set; }
+        public int FrameCount { get; set; }
+        public int ShellCount { get; set; }
+        public int LoadPatternCount { get; set; }
+        public int LoadCombinationCount { get; set; }
     }
 
     #endregion

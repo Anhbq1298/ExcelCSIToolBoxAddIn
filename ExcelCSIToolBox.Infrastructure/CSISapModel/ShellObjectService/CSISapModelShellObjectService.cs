@@ -11,24 +11,11 @@ using ExcelCSIToolBox.Data.Models;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 {
-    internal delegate int CSISapModelGetSelectedObjects<TSapModel>(
-        TSapModel sapModel,
-        ref int numberItems,
-        ref int[] objectTypes,
-        ref string[] objectNames);
-
     internal delegate int CSISapModelGetFramePoints<TSapModel>(
         TSapModel sapModel,
         string frameName,
         ref string point1Name,
         ref string point2Name);
-
-    internal delegate int CSISapModelGetPointCoordinates<TSapModel>(
-        TSapModel sapModel,
-        string pointName,
-        ref double x,
-        ref double y,
-        ref double z);
 
     internal delegate int CSISapModelAddAreaByCoordinates<TSapModel>(
         TSapModel sapModel,
@@ -128,6 +115,32 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             catch (Exception ex)
             {
                 return OperationResult<IReadOnlyList<string>>.Failure($"Failed to read shell/area names: {ex.Message}");
+            }
+        }
+
+        internal static OperationResult<int> GetCount<TSapModel>(
+            TSapModel sapModel,
+            string productName,
+            CSISapModelReadCount<TSapModel> getCount)
+        {
+            try
+            {
+                int count = 0;
+                int result = getCount(sapModel, ref count);
+                if (result != 0)
+                {
+                    return OperationResult<int>.Failure($"{productName} AreaObj.Count failed (return code {result}).");
+                }
+
+                return OperationResult<int>.Success(count);
+            }
+            catch (COMException ex)
+            {
+                return OperationResult<int>.Failure($"{productName} COM error while reading shell/area count: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<int>.Failure($"Failed to read shell/area count: {ex.Message}");
             }
         }
 

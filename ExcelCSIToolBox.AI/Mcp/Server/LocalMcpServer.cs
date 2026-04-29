@@ -93,11 +93,14 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             // Register all approved read-only tools.
             // The registry itself will throw if any tool reports IsReadOnly = false.
             _registry.Register(new CsiGetModelInfoTool(connectionService));
+            _registry.Register(new CsiGetModelStatisticsTool(etabsService, sap2000Service));
+            _registry.Register(new CsiRefreshViewTool(etabsService, sap2000Service));
             _registry.Register(new CsiGetPresentUnitsTool(connectionService));
             _registry.Register(new CsiGetSelectedObjectsTool(selectionService));
             _registry.Register(new CsiGetSelectedFramesTool(selectionService));
             _registry.Register(new CsiGetSelectedFrameSectionsTool(frameService));
             _registry.Register(new PointsGetAllNamesTool(etabsService, sap2000Service));
+            _registry.Register(new PointsGetCountTool(etabsService, sap2000Service));
             _registry.Register(new PointsGetByNameTool(etabsService, sap2000Service));
             _registry.Register(new PointsGetCoordinatesTool(etabsService, sap2000Service));
             _registry.Register(new PointsGetSelectedTool(etabsService, sap2000Service));
@@ -105,6 +108,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new PointsGetLoadForcesTool(etabsService, sap2000Service));
             _registry.Register(new PointsSetSelectedTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetAllNamesTool(etabsService, sap2000Service));
+            _registry.Register(new FramesGetCountTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetByNameTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetPointsTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetSectionTool(etabsService, sap2000Service));
@@ -115,6 +119,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new FramesGetSectionsTool(etabsService, sap2000Service));
             _registry.Register(new FramesGetSectionDetailTool(etabsService, sap2000Service));
             _registry.Register(new CsiGetShellNamesTool(etabsService, sap2000Service));
+            _registry.Register(new ShellsGetCountTool(etabsService, sap2000Service));
             _registry.Register(new ShellsGetByNameTool(etabsService, sap2000Service));
             _registry.Register(new ShellsGetPointsTool(etabsService, sap2000Service));
             _registry.Register(new ShellsGetPropertyTool(etabsService, sap2000Service));
