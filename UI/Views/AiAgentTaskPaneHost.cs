@@ -30,6 +30,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private readonly Button _sendButton;
         private readonly Button _clearButton;
         private readonly Label _statusLabel;
+        private readonly Timer _conversationUpdateTimer;
         private bool _syncingInput;
 
         public AiAgentTaskPaneHost()
@@ -73,6 +74,11 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 ForeColor = MutedInk,
                 TextAlign = ContentAlignment.MiddleLeft
             };
+            _conversationUpdateTimer = new Timer
+            {
+                Interval = 60
+            };
+            _conversationUpdateTimer.Tick += ConversationUpdateTimer_Tick;
 
             BuildLayout();
             WireEvents();
@@ -294,12 +300,65 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private void Messages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            RunOnUiThread(UpdateConversation);
+            if (e.OldItems != null)
+            {
+                foreach (AiAgentChatMessageViewModel message in e.OldItems)
+                {
+                    message.PropertyChanged -= Message_PropertyChanged;
+                }
+            }
+
+            if (e.NewItems != null)
+            {
+                foreach (AiAgentChatMessageViewModel message in e.NewItems)
+                {
+                    message.PropertyChanged += Message_PropertyChanged;
+                }
+            }
+
+            ScheduleConversationUpdate();
+        }
+
+        private void Message_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AiAgentChatMessageViewModel.Content) ||
+                e.PropertyName == nameof(AiAgentChatMessageViewModel.IsTemporary) ||
+                e.PropertyName == nameof(AiAgentChatMessageViewModel.Role) ||
+                string.IsNullOrWhiteSpace(e.PropertyName))
+            {
+                ScheduleConversationUpdate();
+            }
         }
 
         private void ViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            RunOnUiThread(UpdateAll);
+            RunOnUiThread(() =>
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(AiAgentChatViewModel.UserInput):
+                        SyncInputFromViewModel();
+                        UpdateButtons();
+                        break;
+                    case nameof(AiAgentChatViewModel.CurrentModelName):
+                    case nameof(AiAgentChatViewModel.Sap2000ConnectionStatus):
+                    case nameof(AiAgentChatViewModel.EtabsConnectionStatus):
+                        UpdateHeader();
+                        break;
+                    case nameof(AiAgentChatViewModel.IsBusy):
+                        UpdateButtons();
+                        UpdateStatus();
+                        break;
+                    case nameof(AiAgentChatViewModel.StatusText):
+                        UpdateStatus();
+                        break;
+                    default:
+                        UpdateHeader();
+                        UpdateButtons();
+                        UpdateStatus();
+                        break;
+                }
+            });
         }
 
         private void Command_CanExecuteChanged(object sender, EventArgs e)
@@ -309,6 +368,12 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private void ConversationPanel_Resize(object sender, EventArgs e)
         {
+            ScheduleConversationUpdate();
+        }
+
+        private void ConversationUpdateTimer_Tick(object sender, EventArgs e)
+        {
+            _conversationUpdateTimer.Stop();
             UpdateConversation();
         }
 
@@ -358,7 +423,25 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             UpdateHeader();
             UpdateConversation();
             UpdateButtons();
+            UpdateStatus();
+        }
+
+        private void UpdateStatus()
+        {
             _statusLabel.Text = _viewModel.IsBusy ? "Thinking..." : _viewModel.StatusText;
+        }
+
+        private void ScheduleConversationUpdate()
+        {
+            RunOnUiThread(() =>
+            {
+                if (_conversationUpdateTimer.Enabled)
+                {
+                    return;
+                }
+
+                _conversationUpdateTimer.Start();
+            });
         }
 
         private void UpdateHeader()
@@ -539,6 +622,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 _viewModel.Messages.CollectionChanged -= Messages_CollectionChanged;
                 _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
                 _viewModel.SendCommand.CanExecuteChanged -= Command_CanExecuteChanged;
+                foreach (AiAgentChatMessageViewModel message in _viewModel.Messages)
+                {
+                    message.PropertyChanged -= Message_PropertyChanged;
+                }
+
+                _conversationUpdateTimer.Stop();
+                _conversationUpdateTimer.Tick -= ConversationUpdateTimer_Tick;
+                _conversationUpdateTimer.Dispose();
             }
 
             base.Dispose(disposing);

@@ -330,14 +330,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\AiAgentChatTab.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="UI\Views\AiAgentChatTab.xaml.cs">
-      <DependentUpon>AiAgentChatTab.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="UI\Views\AiAgentTaskPaneHost.cs">
       <SubType>UserControl</SubType>
     </Compile>

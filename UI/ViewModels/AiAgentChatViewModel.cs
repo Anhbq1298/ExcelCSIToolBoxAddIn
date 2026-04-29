@@ -1,9 +1,11 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 using ExcelCSIToolBox.AI.Agent;
 using ExcelCSIToolBox.AI.Mcp.Client;
 using ExcelCSIToolBox.AI.Mcp.Server;
@@ -44,7 +46,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly AiAgentOrchestrator _orchestrator;
         private readonly ICSISapModelConnectionService _etabsConnectionService;
         private readonly ICSISapModelConnectionService _sap2000ConnectionService;
-        private readonly System.Windows.Threading.Dispatcher _dispatcher;
+        private readonly Dispatcher _dispatcher;
 
         // ── Constructor ───────────────────────────────────────────────────────────
 
@@ -84,7 +86,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ClearCommand = new AiRelayCommand(ExecuteClear);
 
             // Capture dispatcher for UI updates
-            _dispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+            _dispatcher = Dispatcher.CurrentDispatcher;
 
             RefreshConnectionStatuses();
         }
@@ -181,17 +183,75 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             try
             {
                 thinkingMessage.Content = string.Empty;
+                StringBuilder tokenBuffer = new StringBuilder();
+                object tokenBufferLock = new object();
+                bool flushScheduled = false;
+                bool streamCompleted = false;
+
+                Action flushBufferedTokens = () =>
+                {
+                    string chunk;
+                    lock (tokenBufferLock)
+                    {
+                        if (streamCompleted)
+                        {
+                            tokenBuffer.Clear();
+                            flushScheduled = false;
+                            return;
+                        }
+
+                        chunk = tokenBuffer.ToString();
+                        tokenBuffer.Clear();
+                        flushScheduled = false;
+                    }
+
+                    if (!string.IsNullOrEmpty(chunk))
+                    {
+                        thinkingMessage.Content += chunk;
+                    }
+                };
 
                 AiAgentResponse response = await _orchestrator.SendAsync(
                     userMessage,
                     token =>
                     {
-                        _dispatcher.Invoke(() =>
+                        if (string.IsNullOrEmpty(token))
                         {
-                            thinkingMessage.Content += token;
-                        });
+                            return;
+                        }
+
+                        bool shouldScheduleFlush = false;
+                        lock (tokenBufferLock)
+                        {
+                            if (streamCompleted)
+                            {
+                                return;
+                            }
+
+                            tokenBuffer.Append(token);
+                            if (!flushScheduled)
+                            {
+                                flushScheduled = true;
+                                shouldScheduleFlush = true;
+                            }
+                        }
+
+                        if (shouldScheduleFlush)
+                        {
+                            Task.Delay(40).ContinueWith(task =>
+                            {
+                                _dispatcher.BeginInvoke(flushBufferedTokens, DispatcherPriority.Background);
+                            });
+                        }
                     },
                     CancellationToken.None);
+
+                lock (tokenBufferLock)
+                {
+                    streamCompleted = true;
+                    tokenBuffer.Clear();
+                    flushScheduled = false;
+                }
 
                 // Now that it's finished streaming, mark it as permanent and update final content if needed.
                 thinkingMessage.IsTemporary = false;

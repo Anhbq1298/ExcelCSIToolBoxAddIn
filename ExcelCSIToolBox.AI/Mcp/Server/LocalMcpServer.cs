@@ -28,6 +28,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
     public class LocalMcpServer
     {
         private readonly IMcpToolRegistry _registry;
+        private readonly SynchronizationContext _toolSynchronizationContext;
 
         /// <summary>
         /// Create the server and register all approved read-only CSI tools.
@@ -88,6 +89,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             ICSISapModelConnectionService etabsService,
             ICSISapModelConnectionService sap2000Service)
         {
+            _toolSynchronizationContext = SynchronizationContext.Current;
             _registry = new McpToolRegistry();
 
             // Register all approved read-only tools.
@@ -193,6 +195,51 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
                 };
             }
 
+            return await ExecuteToolOnCapturedContextAsync(tool, request, cancellationToken);
+        }
+
+        /// <summary>Returns the registry so the orchestrator can inspect available tools.</summary>
+        public IMcpToolRegistry Registry => _registry;
+
+        private Task<ToolCallResponse> ExecuteToolOnCapturedContextAsync(
+            IMcpTool tool,
+            ToolCallRequest request,
+            CancellationToken cancellationToken)
+        {
+            if (_toolSynchronizationContext == null ||
+                SynchronizationContext.Current == _toolSynchronizationContext)
+            {
+                return ExecuteToolCoreAsync(tool, request, cancellationToken);
+            }
+
+            var completion = new TaskCompletionSource<ToolCallResponse>();
+            _toolSynchronizationContext.Post(async state =>
+            {
+                try
+                {
+                    ToolCallResponse response = await ExecuteToolCoreAsync(tool, request, cancellationToken);
+                    completion.TrySetResult(response);
+                }
+                catch (Exception ex)
+                {
+                    completion.TrySetResult(new ToolCallResponse
+                    {
+                        ToolName = request.ToolName,
+                        Success = false,
+                        Message = $"Tool '{request.ToolName}' threw an unexpected exception: {ex.Message}",
+                        ResultJson = null
+                    });
+                }
+            }, null);
+
+            return completion.Task;
+        }
+
+        private static async Task<ToolCallResponse> ExecuteToolCoreAsync(
+            IMcpTool tool,
+            ToolCallRequest request,
+            CancellationToken cancellationToken)
+        {
             try
             {
                 return await tool.ExecuteAsync(request.ArgumentsJson ?? "{}", cancellationToken);
@@ -201,16 +248,13 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             {
                 return new ToolCallResponse
                 {
-                    ToolName   = request.ToolName,
-                    Success    = false,
-                    Message    = $"Tool '{request.ToolName}' threw an unexpected exception: {ex.Message}",
+                    ToolName = request.ToolName,
+                    Success = false,
+                    Message = $"Tool '{request.ToolName}' threw an unexpected exception: {ex.Message}",
                     ResultJson = null
                 };
             }
         }
-
-        /// <summary>Returns the registry so the orchestrator can inspect available tools.</summary>
-        public IMcpToolRegistry Registry => _registry;
 
         public IReadOnlyList<McpToolDescriptor> ListTools()
         {
