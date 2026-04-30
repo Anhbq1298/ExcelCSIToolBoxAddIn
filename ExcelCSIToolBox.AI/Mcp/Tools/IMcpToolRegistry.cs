@@ -10,6 +10,9 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools
         /// <summary>Register a typed tool.</summary>
         void Register(IMcpTool tool);
 
+        /// <summary>Register an alternate name that resolves to an existing typed tool.</summary>
+        void RegisterAlias(string alias, string toolName);
+
         /// <summary>Retrieve a tool by its unique name. Returns null if not found.</summary>
         IMcpTool GetTool(string toolName);
 

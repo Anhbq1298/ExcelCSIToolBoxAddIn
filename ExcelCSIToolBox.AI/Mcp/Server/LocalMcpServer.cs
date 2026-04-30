@@ -170,6 +170,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _registry.Register(new FramesDeleteTool(commandService));
             _registry.Register(new AnalysisRunTool(commandService));
             _registry.Register(new FileSaveModelTool(commandService));
+
+            RegisterBackwardCompatibleToolAliases(_registry);
         }
 
         /// <summary>
@@ -209,6 +211,29 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
 
         /// <summary>Returns the registry so the orchestrator can inspect available tools.</summary>
         public IMcpToolRegistry Registry => _registry;
+
+        private static void RegisterBackwardCompatibleToolAliases(IMcpToolRegistry registry)
+        {
+            registry.RegisterAlias("PointObj_AddCartesian", "points.add_by_coordinates");
+            registry.RegisterAlias("PointObject_AddCartesian", "points.add_by_coordinates");
+            registry.RegisterAlias("FrameObj_AddByPoint", "frames.add_object");
+            registry.RegisterAlias("FrameObject_AddByPoint", "frames.add_object");
+            registry.RegisterAlias("FrameObj_AddByCoordinate", "frames.add_object");
+            registry.RegisterAlias("FrameObject_AddByCoordinate", "frames.add_object");
+            registry.RegisterAlias("FrameObj_SetSection", "frames.assign_section");
+            registry.RegisterAlias("FrameObject_AssignSection", "frames.assign_section");
+            registry.RegisterAlias("SectionProperty_AssignToFrame", "frames.assign_section");
+            registry.RegisterAlias("ShellObj_AddByPoint", "shells.add_by_points");
+            registry.RegisterAlias("ShellObject_AddByPoint", "shells.add_by_points");
+            registry.RegisterAlias("ShellObject_AddByCoordinate", "shells.add_by_coordinates");
+            registry.RegisterAlias("Model_GetPresentUnits", "CSI.GetPresentUnits");
+            registry.RegisterAlias("Model_GetFileName", "CSI.GetModelInfo");
+            registry.RegisterAlias("Model_RefreshView", "csi.refresh_view");
+            registry.RegisterAlias("Selection_Clear", "selection.clear");
+            registry.RegisterAlias("Selection_GetSelectedObjects", "CSI.GetSelectedObjects");
+            registry.RegisterAlias("LoadPattern_GetList", "loads.patterns.get_all");
+            registry.RegisterAlias("LoadCombination_GetList", "loads.combinations.get_all");
+        }
 
         private Task<ToolCallResponse> ExecuteToolOnCapturedContextAsync(
             IMcpTool tool,

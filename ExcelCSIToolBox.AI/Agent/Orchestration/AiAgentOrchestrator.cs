@@ -143,6 +143,8 @@ If this is a write preview, ask for explicit confirmation before execution.";
 
         private readonly OllamaChatService _ollamaChatService;
         private readonly LocalMcpClient _mcpClient;
+        private readonly IAiToolDispatcher _toolDispatcher;
+        private readonly AiAgentResponseBuilder _responseBuilder;
         private readonly CsiIntentPlannerService _intentPlannerService;
         private readonly AgentTaskPlannerService _taskPlannerService;
         private readonly AgentTaskExecutorService _taskExecutorService;
@@ -155,6 +157,8 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 ?? throw new ArgumentNullException(nameof(ollamaChatService));
             _mcpClient = mcpClient
                 ?? throw new ArgumentNullException(nameof(mcpClient));
+            _toolDispatcher = new AiToolDispatcher(_mcpClient);
+            _responseBuilder = new AiAgentResponseBuilder();
             _intentPlannerService = new CsiIntentPlannerService(_ollamaChatService);
             _taskPlannerService = new AgentTaskPlannerService();
             _taskExecutorService = new AgentTaskExecutorService(
@@ -215,12 +219,7 @@ If this is a write preview, ask for explicit confirmation before execution.";
                     ? "Please provide the missing action, target object, and required parameters."
                     : decision.ClarificationMessage;
                 onAssistantToken?.Invoke(clarificationText);
-                return new AiAgentResponse
-                {
-                    AssistantText = clarificationText,
-                    ToolWasCalled = false,
-                    RoutingReason = decision.Reason
-                };
+                return _responseBuilder.Clarification(clarificationText, decision.Reason);
             }
 
             if (decision == null)
@@ -290,10 +289,7 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 };
             }
 
-            ToolCallResponse toolResponse = await _mcpClient.CallToolAsync(
-                decision.ToolName,
-                decision.ArgumentsJson,
-                cancellationToken);
+            ToolCallResponse toolResponse = await _toolDispatcher.DispatchAsync(decision, cancellationToken);
 
             TryRememberPendingWritePreview(toolResponse, decision.ArgumentsJson);
 

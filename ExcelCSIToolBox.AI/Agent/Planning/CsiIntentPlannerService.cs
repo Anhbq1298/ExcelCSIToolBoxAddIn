@@ -4,10 +4,12 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using ExcelCSIToolBox.Application.Tooling.Contracts;
+using ExcelCSIToolBox.Application.Tooling.Registry;
+using ExcelCSIToolBox.Application.Tooling.Validation;
 using ExcelCSIToolBox.AI.Ollama;
 using ExcelCSIToolBox.Data.CSISapModel.Intent;
 using ExcelCSIToolBox.Data.CSISapModel.Workflow;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Intent;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -51,11 +53,17 @@ Rules:
 
         private readonly OllamaChatService _ollamaChatService;
         private readonly ToolSchemaRegistry _toolSchemaRegistry;
+        private readonly ToolRequestValidator _toolRequestValidator;
+        private readonly IntentTaskSplitter _taskSplitter;
+        private readonly IntentClarificationFactory _clarificationFactory;
 
         public CsiIntentPlannerService(OllamaChatService ollamaChatService)
         {
             _ollamaChatService = ollamaChatService ?? throw new ArgumentNullException(nameof(ollamaChatService));
-            _toolSchemaRegistry = new ToolSchemaRegistry();
+            _toolSchemaRegistry = DefaultToolSchemaRegistryFactory.Create();
+            _toolRequestValidator = new ToolRequestValidator(_toolSchemaRegistry);
+            _taskSplitter = new IntentTaskSplitter();
+            _clarificationFactory = new IntentClarificationFactory();
         }
 
         public async Task<AiAgentToolDecision> TryCreateToolDecisionAsync(
@@ -146,12 +154,12 @@ Rules:
                 Tasks = new List<CsiRequestTaskClassificationDto>()
             };
 
-            foreach (string taskText in SplitTaskTexts(userMessage))
+            foreach (string taskText in _taskSplitter.Split(userMessage))
             {
                 CsiRequestTaskClassificationDto task = ClassifyTaskText(taskText);
                 if (task != null)
                 {
-                    _toolSchemaRegistry.Validate(task);
+                    ValidateTaskClassification(task);
                     classification.Tasks.Add(task);
                 }
             }
@@ -231,7 +239,7 @@ Rules:
                     MissingParameters = new List<string>()
                 };
 
-                _toolSchemaRegistry.Validate(task);
+                ValidateTaskClassification(task);
                 classification.Tasks.Add(task);
             }
 
@@ -290,7 +298,7 @@ Rules:
                 return null;
             }
 
-            if (string.Equals(task.ToolName, "PointObj_AddCartesian", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(task.ToolName, "PointObject_AddCartesian", StringComparison.OrdinalIgnoreCase))
             {
                 JObject args = new JObject
                 {
@@ -311,7 +319,7 @@ Rules:
                 };
             }
 
-            if (string.Equals(task.ToolName, "FrameObj_AddByPoint", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(task.ToolName, "FrameObject_AddByPoint", StringComparison.OrdinalIgnoreCase))
             {
                 JObject args = new JObject();
                 CopyParameter(args, task, "frameName", "UserName");
@@ -328,7 +336,7 @@ Rules:
                 };
             }
 
-            if (string.Equals(task.ToolName, "FrameObj_AddByCoordinate", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(task.ToolName, "FrameObject_AddByCoordinate", StringComparison.OrdinalIgnoreCase))
             {
                 JObject args = new JObject();
                 CopyParameter(args, task, "frameName", "UserName");
@@ -349,7 +357,8 @@ Rules:
                 };
             }
 
-            if (string.Equals(task.ToolName, "FrameObj_SetSection", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(task.ToolName, "FrameObject_AssignSection", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(task.ToolName, "SectionProperty_AssignToFrame", StringComparison.OrdinalIgnoreCase))
             {
                 JObject args = new JObject
                 {
@@ -371,6 +380,28 @@ Rules:
             return null;
         }
 
+        private void ValidateTaskClassification(CsiRequestTaskClassificationDto task)
+        {
+            if (task == null)
+            {
+                return;
+            }
+
+            ExcelCSIToolBox.Application.Tooling.Contracts.ToolValidationResult validationResult = _toolRequestValidator.Validate(new ToolRequest
+            {
+                RawText = task.RawText,
+                Action = task.Action,
+                TargetObject = task.TargetObject,
+                Parameters = task.Parameters
+            });
+
+            task.Action = validationResult.Schema == null ? task.Action : validationResult.Schema.Action;
+            task.TargetObject = validationResult.Schema == null ? NormalizeTargetObjectName(task.TargetObject) : validationResult.Schema.TargetObject;
+            task.ToolName = validationResult.IsValid ? validationResult.ToolName : null;
+            task.MissingParameters = validationResult.MissingParameters ?? new List<string>();
+            task.ClarificationMessage = validationResult.ClarificationMessage;
+        }
+
         private static AiAgentToolDecision TryCreateClarificationDecision(CsiRequestClassificationDto classification)
         {
             if (classification == null ||
@@ -385,7 +416,7 @@ Rules:
             {
                 ShouldCallTool = false,
                 ClarificationRequired = true,
-                ClarificationMessage = FormatClarifications(classification.Tasks),
+                ClarificationMessage = new IntentClarificationFactory().CreateMessage(classification.Tasks),
                 Reason = "Intent classifier required clarification before tool dispatch."
             };
         }
@@ -788,6 +819,27 @@ Rules:
         private static string NormalizeText(string text)
         {
             return Regex.Replace((text ?? string.Empty).Trim().ToLowerInvariant(), @"\s+", " ");
+        }
+
+        private static string NormalizeTargetObjectName(string targetObject)
+        {
+            if (string.Equals(targetObject, "PointObj", StringComparison.OrdinalIgnoreCase))
+            {
+                return "PointObject";
+            }
+
+            if (string.Equals(targetObject, "FrameObj", StringComparison.OrdinalIgnoreCase))
+            {
+                return "FrameObject";
+            }
+
+            if (string.Equals(targetObject, "AreaObj", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(targetObject, "ShellObj", StringComparison.OrdinalIgnoreCase))
+            {
+                return "ShellObject";
+            }
+
+            return targetObject;
         }
 
         private static string GetParameter(CsiRequestTaskClassificationDto task, string key)

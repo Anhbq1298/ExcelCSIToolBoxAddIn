@@ -3,6 +3,10 @@ ExcelCSIToolBoxAddIn/
 +---ExcelCSIToolBox.AI
 |   +---Abstractions
 |   +---Agent
+|   |   +---Decision
+|   |   +---Dispatch
+|   |   +---Orchestration
+|   |   \---Planning
 |   +---Chat
 |   +---Mcp
 |   |   +---Client
@@ -14,13 +18,17 @@ ExcelCSIToolBoxAddIn/
 |   |   +---Tools
 |   |   |   +---CSI
 |   |   |   |   +---Base
+|   |   |   |   +---Experimental
 |   |   |   |   +---Frames
 |   |   |   |   +---Loads
+|   |   |   |   |   +---LoadCases
 |   |   |   |   |   +---LoadCombinations
 |   |   |   |   |   \---LoadPatterns
 |   |   |   |   +---Model
 |   |   |   |   +---Points
 |   |   |   |   +---Random
+|   |   |   |   +---Sections
+|   |   |   |   +---Selection
 |   |   |   |   +---Shared
 |   |   |   |   +---Shells
 |   |   |   |   +---Truss
@@ -32,7 +40,37 @@ ExcelCSIToolBoxAddIn/
 |   +---Ollama
 |   \---OpenAI
 +---ExcelCSIToolBox.Application
+|   +---Tooling
+|   |   +---Contracts
+|   |   +---Registry
+|   |   |   \---Modules
+|   |   |       \---CSI
+|   |   |           +---FrameObject
+|   |   |           +---LoadCase
+|   |   |           +---LoadCombination
+|   |   |           +---LoadPattern
+|   |   |           +---Model
+|   |   |           +---PointObject
+|   |   |           +---SectionProperty
+|   |   |           +---Selection
+|   |   |           +---ShellObject
+|   |   |           \---Workflow
+|   |   \---Validation
 |   \---UseCases
+|       +---CSI
+|       |   +---Frames
+|       |   +---Loads
+|       |   |   +---LoadCases
+|       |   |   +---LoadCombinations
+|       |   |   \---LoadPatterns
+|       |   +---Model
+|       |   +---Points
+|       |   +---Sections
+|       |   +---Selection
+|       |   +---Shells
+|       |   \---Workflow
+|       +---Excel
+|       \---Project
 +---ExcelCSIToolBox.Core
 |   +---Abstractions
 |   |   +---Application
@@ -49,8 +87,13 @@ ExcelCSIToolBoxAddIn/
 |   +---CSISapModel
 |   |   +---FrameObject
 |   |   +---Intent
+|   |   +---LoadCase
+|   |   +---LoadCombination
+|   |   +---LoadPattern
 |   |   +---PointObject
 |   |   +---Random
+|   |   +---SectionProperty
+|   |   +---ShellObject
 |   |   +---Truss
 |   |   \---Workflow
 |   +---DataFrames
@@ -65,14 +108,16 @@ ExcelCSIToolBoxAddIn/
 |   |   +---Adapters
 |   |   +---ConnectionAdapters
 |   |   +---FrameObjectService
-|   |   +---Intent
+|   |   +---LoadCaseService
 |   |   +---LoadCombinationService
 |   |   +---LoadingService
 |   |   +---LoadPatternService
+|   |   +---ModelService
 |   |   +---PointObjectService
 |   |   +---Random
 |   |   +---ReadOnly
 |   |   +---SectionPropertiesService
+|   |   +---SelectionService
 |   |   +---ShellObjectService
 |   |   +---Truss
 |   |   \---Workflow
@@ -92,25 +137,5 @@ ExcelCSIToolBoxAddIn/
 |   \---Views
 \---_ref
     +---developing-skill
-    |   \---CsiExcelAddin
-    |       +---Bootstrap
-    |       +---Commands
-    |       +---CsiAdapters
-    |       |   +---Etabs
-    |       |   +---Safe
-    |       |   \---Sap2000
-    |       +---Helpers
-    |       +---Models
-    |       +---Ribbon
-    |       +---Services
-    |       |   +---Attachment
-    |       |   +---Business
-    |       |   +---Excel
-    |       |   \---Interfaces
-    |       +---TableFormats
-    |       +---ViewModels
-    |       \---Views
     +---ETABS
-    |   \---index
     \---SAP2000
-        \---index
