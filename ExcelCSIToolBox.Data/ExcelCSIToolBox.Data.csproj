@@ -6,8 +6,6 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Mappers\FrameMapper.cs" />
-    <Compile Remove="Mappers\PointMapper.cs" />
     <Compile Remove="ToolBoxDTO.cs" />
   </ItemGroup>
 </Project>

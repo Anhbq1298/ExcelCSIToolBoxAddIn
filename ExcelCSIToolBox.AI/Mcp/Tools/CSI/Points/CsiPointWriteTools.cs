@@ -3,7 +3,6 @@ using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Base;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using System.Collections.Generic;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
@@ -52,10 +51,19 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
 
     public sealed class PointsSetRestraintTool : CsiActiveConnectionToolBase
     {
-        private readonly CsiWriteGuard _writeGuard = new CsiWriteGuard();
-        private readonly CsiOperationLogger _logger = new CsiOperationLogger();
+        private readonly IMcpWriteGuard _writeGuard;
+        private readonly ICsiOperationLogger _logger;
 
-        public PointsSetRestraintTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public PointsSetRestraintTool(
+            ICSISapModelConnectionService etabsService,
+            ICSISapModelConnectionService sap2000Service,
+            IMcpWriteGuard writeGuard,
+            ICsiOperationLogger logger)
+            : base(etabsService, sap2000Service)
+        {
+            _writeGuard = writeGuard ?? throw new System.ArgumentNullException(nameof(writeGuard));
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+        }
         public override string Name => "points.set_restraint";
         public override string Title => "Set Point Restraint";
         public override string Category => "Points";
@@ -98,10 +106,19 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
 
     public sealed class PointsSetLoadForceTool : CsiActiveConnectionToolBase
     {
-        private readonly CsiWriteGuard _writeGuard = new CsiWriteGuard();
-        private readonly CsiOperationLogger _logger = new CsiOperationLogger();
+        private readonly IMcpWriteGuard _writeGuard;
+        private readonly ICsiOperationLogger _logger;
 
-        public PointsSetLoadForceTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public PointsSetLoadForceTool(
+            ICSISapModelConnectionService etabsService,
+            ICSISapModelConnectionService sap2000Service,
+            IMcpWriteGuard writeGuard,
+            ICsiOperationLogger logger)
+            : base(etabsService, sap2000Service)
+        {
+            _writeGuard = writeGuard ?? throw new System.ArgumentNullException(nameof(writeGuard));
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+        }
         public override string Name => "points.set_load_force";
         public override string Title => "Set Point Load Force";
         public override string Category => "Points";

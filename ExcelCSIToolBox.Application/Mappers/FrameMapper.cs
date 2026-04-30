@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Tabular;
 
-namespace ExcelCSIToolBox.Data.Mappers
+namespace ExcelCSIToolBox.Application.Mappers
 {
     public static class CSISapModelFrameDataDataFrameMapper
     {

@@ -8,7 +8,6 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data.CSISapModel.Truss;
 using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Truss;
 using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Truss
@@ -17,15 +16,16 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Truss
     {
         private readonly ICSISapModelConnectionService _etabsService;
         private readonly ICSISapModelConnectionService _sap2000Service;
-        private readonly CsiHoweTrussGenerationService _trussService;
+        private readonly ICsiTrussGenerationService _trussService;
 
         public TrussGenerateHoweTool(
             ICSISapModelConnectionService etabsService,
-            ICSISapModelConnectionService sap2000Service)
+            ICSISapModelConnectionService sap2000Service,
+            ICsiTrussGenerationService trussService)
         {
             _etabsService = etabsService ?? throw new ArgumentNullException(nameof(etabsService));
             _sap2000Service = sap2000Service ?? throw new ArgumentNullException(nameof(sap2000Service));
-            _trussService = new CsiHoweTrussGenerationService();
+            _trussService = trussService ?? throw new ArgumentNullException(nameof(trussService));
         }
 
         public string Name => "truss.generate_howe";
@@ -124,15 +124,16 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Truss
     {
         private readonly ICSISapModelConnectionService _etabsService;
         private readonly ICSISapModelConnectionService _sap2000Service;
-        private readonly CsiHoweTrussGenerationService _trussService;
+        private readonly ICsiTrussGenerationService _trussService;
 
         public TrussGeneratePrattTool(
             ICSISapModelConnectionService etabsService,
-            ICSISapModelConnectionService sap2000Service)
+            ICSISapModelConnectionService sap2000Service,
+            ICsiTrussGenerationService trussService)
         {
             _etabsService = etabsService ?? throw new ArgumentNullException(nameof(etabsService));
             _sap2000Service = sap2000Service ?? throw new ArgumentNullException(nameof(sap2000Service));
-            _trussService = new CsiHoweTrussGenerationService();
+            _trussService = trussService ?? throw new ArgumentNullException(nameof(trussService));
         }
 
         public string Name => "truss.generate_pratt";

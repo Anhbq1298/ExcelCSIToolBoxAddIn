@@ -4,20 +4,21 @@ using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data.CSISapModel.Workflow;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Workflow;
 using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Workflow
 {
     public sealed class ExecuteCsiRequestTool : CsiActiveConnectionToolBase
     {
-        private readonly CsiWorkflowExecutionService _workflowService = new CsiWorkflowExecutionService();
+        private readonly ICsiWorkflowExecutionService _workflowService;
 
         public ExecuteCsiRequestTool(
             ICSISapModelConnectionService etabsService,
-            ICSISapModelConnectionService sap2000Service)
+            ICSISapModelConnectionService sap2000Service,
+            ICsiWorkflowExecutionService workflowService)
             : base(etabsService, sap2000Service)
         {
+            _workflowService = workflowService ?? throw new System.ArgumentNullException(nameof(workflowService));
         }
 
         public override string Name => "execute_csi_request";

@@ -1,4 +1,0 @@
-﻿namespace ExcelCSIToolBox.Data.Mappers
-{
-}
-

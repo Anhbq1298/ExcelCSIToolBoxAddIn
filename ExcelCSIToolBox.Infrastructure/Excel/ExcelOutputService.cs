@@ -17,7 +17,7 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
 
             try
             {
-                Application excelApp = ExcelApplicationProvider.GetApplication();
+                Microsoft.Office.Interop.Excel.Application excelApp = ExcelApplicationProvider.GetApplication();
                 if (excelApp == null)
                 {
                     return OperationResult.Failure("Excel application is not available.");

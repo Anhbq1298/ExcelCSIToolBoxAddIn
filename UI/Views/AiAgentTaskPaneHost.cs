@@ -33,13 +33,13 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private readonly Timer _conversationUpdateTimer;
         private bool _syncingInput;
 
-        public AiAgentTaskPaneHost()
+        public AiAgentTaskPaneHost(AiAgentChatViewModel viewModel)
         {
             Dock = DockStyle.Fill;
             BackColor = MainBackground;
             DoubleBuffered = true;
 
-            _viewModel = new AiAgentChatViewModel();
+            _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             _subtitleLabel = CreateHeaderSubtitle();
             _sap2000BadgeLabel = CreateBadgeLabel();
             _etabsBadgeLabel = CreateBadgeLabel();

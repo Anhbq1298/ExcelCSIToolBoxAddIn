@@ -3,7 +3,7 @@
 - This project is reserved for future offline AI/MCP/Ollama integration.
 - No production AI logic is implemented yet.
 - Future MCP server should run locally/offline.
-- Future MCP tools should call services from ExcelCSIToolBox.Application or ExcelCSIToolBox.Infrastructure through clean abstractions.
+- MCP tools should call services through Core/Application abstractions. Infrastructure implementations are supplied by the Add-in composition root.
 - AI/MCP must not reference UI/ViewModels/Views/Ribbon code.
 - AI/MCP must not expose raw SapModel directly.
 - Tool outputs should be structured and serialization-friendly.

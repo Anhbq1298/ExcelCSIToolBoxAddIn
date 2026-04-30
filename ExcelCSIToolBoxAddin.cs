@@ -1,7 +1,6 @@
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Infrastructure.Etabs;
-using ExcelCSIToolBox.Infrastructure.Excel;
 using ExcelCSIToolBox.Infrastructure.Sap2000;
 using ExcelCSIToolBoxAddIn.AddIn;
 using ExcelCSIToolBoxAddIn.UI.Views;
@@ -12,14 +11,11 @@ namespace ExcelCSIToolBoxAddIn
     {
         private void ExcelCSIToolBoxAddin_Startup(object sender, System.EventArgs e)
         {
-            // Lightweight composition root for phase 1.
             var etabsConnectionService = new EtabsConnectionService(new EtabsModelAdapter());
             var sap2000ConnectionService = new Sap2000ConnectionService(new Sap2000ModelAdapter());
-            var excelSelectionService = new ExcelSelectionService();
-            var excelOutputService = new ExcelOutputService();
 
             BatchProgressHost.ProgressRunner = BatchProgressWindow.RunForInfrastructure;
-            WindowManager.Configure(etabsConnectionService, sap2000ConnectionService, excelSelectionService, excelOutputService);
+            AddInCompositionRoot.Configure(etabsConnectionService, sap2000ConnectionService);
         }
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)

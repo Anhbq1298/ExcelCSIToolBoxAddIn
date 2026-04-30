@@ -11,7 +11,7 @@ using ExcelCSIToolBox.Data.Models;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Workflow
 {
-    public sealed class CsiWorkflowExecutionService
+    public sealed class CsiWorkflowExecutionService : ICsiWorkflowExecutionService
     {
         public OperationResult<CsiWorkflowResultDto> Execute(
             ICSISapModelConnectionService service,

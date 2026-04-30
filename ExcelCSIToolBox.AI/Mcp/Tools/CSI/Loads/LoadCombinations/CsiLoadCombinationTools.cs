@@ -4,7 +4,6 @@ using ExcelCSIToolBox.AI.Mcp.Tools.CSI.Base;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads.LoadCombinations
 {
@@ -49,10 +48,19 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads.LoadCombinations
 
     public sealed class LoadCombinationsDeleteTool : CsiActiveConnectionToolBase
     {
-        private readonly CsiWriteGuard _writeGuard = new CsiWriteGuard();
-        private readonly CsiOperationLogger _logger = new CsiOperationLogger();
+        private readonly IMcpWriteGuard _writeGuard;
+        private readonly ICsiOperationLogger _logger;
 
-        public LoadCombinationsDeleteTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
+        public LoadCombinationsDeleteTool(
+            ICSISapModelConnectionService etabsService,
+            ICSISapModelConnectionService sap2000Service,
+            IMcpWriteGuard writeGuard,
+            ICsiOperationLogger logger)
+            : base(etabsService, sap2000Service)
+        {
+            _writeGuard = writeGuard ?? throw new System.ArgumentNullException(nameof(writeGuard));
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+        }
         public override string Name => "loads.combinations.delete";
         public override string Title => "Delete Load Combinations";
         public override string Category => "Loads";

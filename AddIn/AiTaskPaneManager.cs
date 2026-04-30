@@ -8,6 +8,12 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     {
         private static Microsoft.Office.Tools.CustomTaskPane _aiTaskPane;
         private static WpfTaskPaneHost _aiTaskPaneHost;
+        private static Func<AiAgentChatControl> _createAiAgentChatControl;
+
+        internal static void Configure(Func<AiAgentChatControl> createAiAgentChatControl)
+        {
+            _createAiAgentChatControl = createAiAgentChatControl ?? throw new ArgumentNullException(nameof(createAiAgentChatControl));
+        }
 
         internal static void TogglePane()
         {
@@ -53,7 +59,12 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 throw new InvalidOperationException("The Excel add-in is not initialized.");
             }
 
-            _aiTaskPaneHost = new WpfTaskPaneHost(new AiAgentChatControl());
+            if (_createAiAgentChatControl == null)
+            {
+                throw new InvalidOperationException("AiTaskPaneManager is not configured.");
+            }
+
+            _aiTaskPaneHost = new WpfTaskPaneHost(_createAiAgentChatControl());
             _aiTaskPane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(_aiTaskPaneHost, "MHT AI Assistant");
             _aiTaskPane.DockPosition = MsoCTPDockPosition.msoCTPDockPositionRight;
             _aiTaskPane.Width = 420;

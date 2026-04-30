@@ -9,7 +9,6 @@
     <ProjectReference Include="..\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj" />
     <ProjectReference Include="..\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
     <ProjectReference Include="..\ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj" />
-    <ProjectReference Include="..\ExcelCSIToolBox.Infrastructure\ExcelCSIToolBox.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- Newtonsoft.Json is used for JSON serialization in Ollama and MCP tool contracts -->

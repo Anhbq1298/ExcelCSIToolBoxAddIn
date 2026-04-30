@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Models.CSI;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 {
-    public sealed class CsiOperationLogger
+    public sealed class CsiOperationLogger : ICsiOperationLogger
     {
         private readonly string _logFilePath;
 

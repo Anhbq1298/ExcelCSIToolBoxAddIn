@@ -2,7 +2,7 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Data.Models;
-using ExcelCSIToolBox.Data.Mappers;
+using ExcelCSIToolBox.Application.Mappers;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 

@@ -2,7 +2,7 @@
 using ExcelCSIToolBox.Core.Tabular;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 
-namespace ExcelCSIToolBox.Data.Mappers
+namespace ExcelCSIToolBox.Application.Mappers
 {
     public static class CSISapModelPointDataDataFrameMapper
     {

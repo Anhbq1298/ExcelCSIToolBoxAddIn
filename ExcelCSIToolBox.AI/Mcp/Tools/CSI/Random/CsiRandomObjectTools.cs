@@ -8,7 +8,6 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Data.CSISapModel.Random;
 using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Random;
 using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Random
@@ -17,15 +16,16 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Random
     {
         private readonly ICSISapModelConnectionService _etabsService;
         private readonly ICSISapModelConnectionService _sap2000Service;
-        private readonly CsiRandomObjectGenerationService _randomService;
+        private readonly ICsiRandomObjectGenerationService _randomService;
 
         public RandomGenerateObjectsTool(
             ICSISapModelConnectionService etabsService,
-            ICSISapModelConnectionService sap2000Service)
+            ICSISapModelConnectionService sap2000Service,
+            ICsiRandomObjectGenerationService randomService)
         {
             _etabsService = etabsService ?? throw new ArgumentNullException(nameof(etabsService));
             _sap2000Service = sap2000Service ?? throw new ArgumentNullException(nameof(sap2000Service));
-            _randomService = new CsiRandomObjectGenerationService();
+            _randomService = randomService ?? throw new ArgumentNullException(nameof(randomService));
         }
 
         public string Name => "random.generate_objects";

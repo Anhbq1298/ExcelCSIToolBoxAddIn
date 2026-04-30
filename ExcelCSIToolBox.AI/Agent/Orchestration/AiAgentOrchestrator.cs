@@ -24,6 +24,22 @@ namespace ExcelCSIToolBox.AI.Agent
             "CSI.GetModelInfo",
             "CSI.GetPresentUnits",
             "CSI.GetSelectedObjects",
+            "csi.model.get_info",
+            "csi.model.get_present_units",
+            "csi.selection.get_selected_objects",
+            "csi.points.get_selected",
+            "csi.points.add_by_coordinates",
+            "csi.frames.add_by_coordinates",
+            "csi.frames.add_by_points",
+            "csi.frames.assign_section",
+            "csi.frames.assign_distributed_load",
+            "csi.frames.assign_point_load",
+            "csi.shells.add_by_points",
+            "csi.shells.add_by_coordinates",
+            "csi.loads.patterns.get_all",
+            "csi.loads.combinations.get_all",
+            "csi.truss.generate_howe",
+            "csi.truss.generate_pratt",
             "CSI.GetSelectedFrames",
             "CSI.GetSelectedFrameSections",
             "csi.get_model_statistics",
@@ -104,22 +120,22 @@ Be concise and engineering-focused.
 Treat all model operations as read-only unless the user explicitly requests a write action.
 
 Available tools:
-- CSI.GetModelInfo: File path, product info.
+- csi.model.get_info: File path, product info.
 - csi.get_model_statistics: Counts for points, frames, shells, loads. Use for ""how many"" questions.
-- CSI.GetPresentUnits: Current model units.
-- CSI.GetSelectedObjects: List current selection.
+- csi.model.get_present_units: Current model units.
+- csi.selection.get_selected_objects: List current selection.
 - csi.refresh_view: Refresh graphics.
 - frames.analyze_selected: COMPLETE workflow for selected frames (sections, geometry, assignments).
-- points.get_all_names, points.get_coordinates, points.get_selected, points.get_count: Point queries.
+- points.get_all_names, points.get_coordinates, csi.points.get_selected, points.get_count: Point queries.
 - points.get_guid, points.get_connectivity, points.get_group_assignments, points.get_spring, points.get_mass, points.get_local_axes, points.get_diaphragm: Point detail queries.
 - frames.get_all_names, frames.get_sections, frames.get_section_detail, frames.get_count: Frame queries.
 - shells.get_all_names, shells.get_selected, shells.get_property, shells.get_count: Shell queries.
-- loads.combinations.get_all, loads.patterns.get_all: Loading queries.
+- csi.loads.combinations.get_all, csi.loads.patterns.get_all: Loading queries.
 - execute_csi_request: Multi-step CSI workflow tool. Use when the user asks for multiple actions in one request.
-- points.add_by_coordinates, frames.add_object, frames.add_objects: Creation tools.
+- csi.points.add_by_coordinates, frames.add_object, frames.add_objects: Creation tools.
 - random.generate_objects: Generate random CSI points, frames, and shell/area objects using safe defaults.
-- truss.generate_howe: Generate a Howe truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
-- truss.generate_pratt: Generate a Pratt truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
+- csi.truss.generate_howe: Generate a Howe truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
+- csi.truss.generate_pratt: Generate a Pratt truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
 
 SAFETY POLICY:
 1. Do not use dryRun unless the user explicitly asks for preview/check only.

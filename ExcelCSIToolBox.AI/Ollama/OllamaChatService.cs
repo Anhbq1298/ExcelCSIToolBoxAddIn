@@ -13,7 +13,7 @@ namespace ExcelCSIToolBox.AI.Ollama
     ///
     /// Configuration:
     ///   Endpoint : http://localhost:11434/api/chat   (change OllamaEndpoint to override)
-    ///   Model    : qwen2.5-coder:3b                  (change DefaultModel to override)
+    ///   Model    : qwen2.5-coder:7b                  (change DefaultModel to override)
     ///   Stream   : false (always — we collect the full response at once)
     /// </summary>
     public class OllamaChatService
@@ -23,8 +23,8 @@ namespace ExcelCSIToolBox.AI.Ollama
         /// <summary>Base URL of the Ollama /api/chat endpoint.</summary>
         public static string OllamaEndpoint = "http://localhost:11434/api/chat";
 
-        /// <summary>Default model pulled from Ollama ("ollama pull qwen2.5-coder:3b").</summary>
-        public static string DefaultModel = "qwen2.5-coder:3b";
+        /// <summary>Default model pulled from Ollama ("ollama pull qwen2.5-coder:7b").</summary>
+        public static string DefaultModel = AiModelDefaults.DefaultOllamaModel;
 
         // ── Private state ─────────────────────────────────────────────────────────
 

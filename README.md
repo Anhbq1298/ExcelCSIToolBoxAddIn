@@ -13,8 +13,8 @@ The current direction is:
 - **Excel VSTO Add-in Shell**: Ribbon, add-in startup, and window launch logic.
 - **WPF Toolbox UI**: ETABS and SAP2000 toolbox windows.
 - **Application Layer**: Use-case orchestration and workflow-level logic.
-- **Core Layer**: Shared abstractions, results, contracts, and domain-neutral logic.
-- **Data Layer**: DTOs, Excel mapping models, table schemas, and mapper-related code.
+- **Core Layer**: Shared result models, domain-neutral contracts, and DTO-free abstractions.
+- **Data Layer**: DTOs, Excel mapping models, table schemas, and data structures.
 - **Infrastructure Layer**: ETABS/SAP2000 API adapters, Excel interop services, COM/API integration, and external system access.
 - **AI Layer**: Future chatbox AI, local LLM, Ollama, or MCP-related integration.
 
@@ -115,6 +115,8 @@ ExcelCSIToolBoxAddIn/
 ```
 
 ## Project reference map
+
+RefBuilder is archived as a one-time utility and is not part of the active solution. The current clean direction is: AddIn references Core/Data/Application/Infrastructure/AI; Core has no project references; Application references Core/Data; Infrastructure references Core/Data/Application; AI references Core/Data/Application and does not reference Infrastructure.
 
 ```text
 ExcelCSIToolBoxAddIn

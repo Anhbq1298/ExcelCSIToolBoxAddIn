@@ -7,7 +7,7 @@ using ExcelCSIToolBox.Data.CSISapModel.Truss;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Truss
 {
-    public sealed class CsiHoweTrussGenerationService
+    public sealed class CsiHoweTrussGenerationService : ICsiTrussGenerationService
     {
         private const int DefaultBayCount = 6;
         private const int MaxBayCount = 100;

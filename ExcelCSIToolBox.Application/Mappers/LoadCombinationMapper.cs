@@ -1,0 +1,3 @@
+namespace ExcelCSIToolBox.Application.Mappers
+{
+}

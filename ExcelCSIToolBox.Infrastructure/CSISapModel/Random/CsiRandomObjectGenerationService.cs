@@ -10,7 +10,7 @@ using ExcelCSIToolBox.Data.Models;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Random
 {
-    public sealed class CsiRandomObjectGenerationService
+    public sealed class CsiRandomObjectGenerationService : ICsiRandomObjectGenerationService
     {
         private const int DefaultPointCount = 5;
         private const int DefaultFrameCount = 3;

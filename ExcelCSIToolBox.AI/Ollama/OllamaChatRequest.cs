@@ -7,7 +7,7 @@ namespace ExcelCSIToolBox.AI.Ollama
     /// </summary>
     public class OllamaChatRequest
     {
-        /// <summary>Model name, e.g. "qwen2.5-coder:3b".</summary>
+        /// <summary>Model name, e.g. "qwen2.5-coder:7b".</summary>
         public string model { get; set; }
 
         /// <summary>List of messages forming the conversation context.</summary>

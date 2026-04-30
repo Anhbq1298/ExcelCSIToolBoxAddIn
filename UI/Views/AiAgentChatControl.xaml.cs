@@ -9,11 +9,11 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
     {
         private readonly AiAgentChatViewModel _viewModel;
 
-        public AiAgentChatControl()
+        public AiAgentChatControl(AiAgentChatViewModel viewModel)
         {
             InitializeComponent();
 
-            _viewModel = new AiAgentChatViewModel();
+            _viewModel = viewModel;
             DataContext = _viewModel;
 
             _viewModel.Messages.CollectionChanged += Messages_CollectionChanged;

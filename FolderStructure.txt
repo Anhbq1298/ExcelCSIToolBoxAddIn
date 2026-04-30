@@ -124,7 +124,7 @@ ExcelCSIToolBoxAddIn/
 |   +---Etabs
 |   +---Excel
 |   \---Sap2000
-+---ExcelCSIToolBox.RefBuilder
++---ExcelCSIToolBox.RefBuilder (archived one-time utility; not in active solution)
 |   +---Chm
 |   +---Generation
 |   +---Indexing
