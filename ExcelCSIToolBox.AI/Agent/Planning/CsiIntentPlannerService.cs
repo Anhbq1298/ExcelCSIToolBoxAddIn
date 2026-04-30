@@ -70,6 +70,12 @@ Rules:
             string userMessage,
             CancellationToken cancellationToken)
         {
+            AiAgentToolDecision trussDecision = TryCreateHoweTrussDecision(userMessage);
+            if (trussDecision != null)
+            {
+                return trussDecision;
+            }
+
             CsiRequestClassificationDto deterministicClassification = TryCreateDeterministicClassification(userMessage);
             AiAgentToolDecision deterministicClassificationDecision = TryCreateDecisionFromClassification(deterministicClassification, userMessage);
             if (deterministicClassificationDecision != null)
@@ -86,12 +92,6 @@ Rules:
             if (randomDecision != null)
             {
                 return randomDecision;
-            }
-
-            AiAgentToolDecision trussDecision = TryCreateHoweTrussDecision(userMessage);
-            if (trussDecision != null)
-            {
-                return trussDecision;
             }
 
             AiAgentToolDecision deterministicDecision = TryCreateDeterministicFrameCoordinateDecision(userMessage);
@@ -785,6 +785,11 @@ Rules:
                 return "AreaObj";
             }
 
+            if (Regex.IsMatch(normalized, @"\b(truss|howe|pratt|warren)\b|mono[\s-]*slope", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Truss";
+            }
+
             if (Regex.IsMatch(normalized, @"\bload\s+pattern\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 return "LoadPattern";
@@ -1225,36 +1230,86 @@ Rules:
         private static AiAgentToolDecision TryCreateHoweTrussDecision(string userMessage)
         {
             if (string.IsNullOrWhiteSpace(userMessage) ||
-                !Regex.IsMatch(userMessage, @"\b(howe|pratt|truss)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                !Regex.IsMatch(userMessage, @"\b(howe|pratt|warren|truss)\b|mono[\s-]*slope", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 return null;
             }
 
             bool isPratt = Regex.IsMatch(userMessage, @"\bpratt\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-            string trussType = isPratt ? "Pratt" : "Howe";
+            bool isWarren = Regex.IsMatch(userMessage, @"\bwarren\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            string trussType = isWarren ? "Warren" : isPratt ? "Pratt" : "Howe";
+
+            int bayCount = ExtractBayCount(userMessage);
+            double span = ExtractDimension(userMessage, @"\b(?:span|length)\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)");
+            double startHeight;
+            double endHeight;
+            bool hasRisingHeights = TryExtractRisingHeights(userMessage, out startHeight, out endHeight);
+            double height = ExtractDimension(userMessage, @"\bheight\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)");
+            if (!hasRisingHeights && height > 0)
+            {
+                startHeight = height;
+                endHeight = height;
+                hasRisingHeights = true;
+            }
+
+            var missingParameters = new List<string>();
+            if (span <= 0)
+            {
+                missingParameters.Add("span");
+            }
+
+            if (!hasRisingHeights)
+            {
+                missingParameters.Add("startHeight");
+                missingParameters.Add("endHeight");
+            }
+
+            if (bayCount <= 0)
+            {
+                missingParameters.Add("numberOfBays");
+            }
+
+            if (missingParameters.Count > 0)
+            {
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = false,
+                    ClarificationRequired = true,
+                    ClarificationMessage = "Please provide truss type, span, start height, end height, and number of bays.",
+                    Reason = "Intent planner route: truss request is missing required parameters."
+                };
+            }
+
+            if (isWarren)
+            {
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = false,
+                    CandidateDomain = "Workflow",
+                    CandidateAction = "Create",
+                    TargetObject = "Truss",
+                    MissingSchemaMessage = "No MCP tool matched. Missing tool schema: Workflow_CreateTruss.",
+                    Reason = "Intent planner route: Warren truss schema exists but no executable MCP wrapper was selected."
+                };
+            }
+
             JObject args = new JObject
             {
                 ["TrussType"] = trussType
             };
-            int bayCount = ExtractBayCount(userMessage);
-            if (bayCount > 0)
-            {
-                args["BayCount"] = bayCount;
-            }
 
-            double span = ExtractDimension(userMessage, @"\b(?:span|length)\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)");
-            if (span > 0)
-            {
-                args["Span"] = span;
-            }
-
-            double height = ExtractDimension(userMessage, @"\bheight\s*(?:=|:|is|of)?\s*(?<value>\d+(?:\.\d+)?)");
-            if (height > 0)
-            {
-                args["Height"] = height;
-            }
+            args["BayCount"] = bayCount;
+            args["Span"] = span;
+            args["Height"] = startHeight;
+            args["StartHeight"] = startHeight;
+            args["EndHeight"] = endHeight;
 
             double slope = ExtractSlope(userMessage);
+            if (slope <= 0 && span > 0 && Math.Abs(endHeight - startHeight) > 0)
+            {
+                slope = Math.Abs(endHeight - startHeight) / span;
+            }
+
             if (slope > 0)
             {
                 args["Slope"] = slope;
@@ -1297,11 +1352,21 @@ Rules:
             double distributedLoad = ExtractDistributedLoadValue(userMessage);
             if (distributedLoad != 0)
             {
+                if (distributedLoad > 0 && !HasExplicitPositiveLoadSign(userMessage))
+                {
+                    distributedLoad = -distributedLoad;
+                }
+
                 args["DistributedLoadPattern"] = ExtractLoadPattern(userMessage) ?? "DEAD";
                 args["DistributedLoadDirection"] = ExtractLoadDirection(userMessage);
                 args["DistributedLoadValue1"] = distributedLoad;
                 args["DistributedLoadValue2"] = distributedLoad;
                 args["DistributedLoadTarget"] = ExtractDistributedLoadTarget(userMessage);
+                string distributedLoadUnit = ExtractLoadUnit(userMessage);
+                if (!string.IsNullOrWhiteSpace(distributedLoadUnit))
+                {
+                    args["DistributedLoadUnit"] = distributedLoadUnit;
+                }
             }
 
             return new AiAgentToolDecision
@@ -1339,6 +1404,29 @@ Rules:
 
             double value;
             return double.TryParse(match.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value) ? value : 0;
+        }
+
+        private static bool TryExtractRisingHeights(string text, out double startHeight, out double endHeight)
+        {
+            startHeight = 0;
+            endHeight = 0;
+            Match match = Regex.Match(
+                text ?? string.Empty,
+                @"\b(?:rising|rise|sloping|slope)\s+from\s+(?<start>\d+(?:\.\d+)?)\s*(?:mm|m|in|ft)?\s+to\s+(?<end>\d+(?:\.\d+)?)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!match.Success)
+            {
+                match = Regex.Match(
+                    text ?? string.Empty,
+                    @"\b(?:start\s+height|startHeight)\s*(?:=|:|is)?\s*(?<start>\d+(?:\.\d+)?).*\b(?:end\s+height|endHeight)\s*(?:=|:|is)?\s*(?<end>\d+(?:\.\d+)?)",
+                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            }
+
+            return match.Success &&
+                   double.TryParse(match.Groups["start"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out startHeight) &&
+                   double.TryParse(match.Groups["end"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out endHeight) &&
+                   startHeight > 0 &&
+                   endHeight > 0;
         }
 
         private static string ExtractName(string text, string pattern)
@@ -1389,6 +1477,20 @@ Rules:
             int start = Math.Max(0, matchIndex - 12);
             string prefix = text.Substring(start, matchIndex - start);
             return Regex.IsMatch(prefix, @"pattern\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        private static bool HasExplicitPositiveLoadSign(string text)
+        {
+            return Regex.IsMatch(text ?? string.Empty, @"\+\s*\d+(?:\.\d+)?\s*(?:kn/m|n/m|kip/ft|plf|k/ft)?\s*(?:udl|distributed\s+load|load)?", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        private static string ExtractLoadUnit(string text)
+        {
+            Match match = Regex.Match(
+                text ?? string.Empty,
+                @"\b-?\d+(?:\.\d+)?\s*(?<unit>kn/m|n/m|kip/ft|plf|k/ft)\b",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            return match.Success ? match.Groups["unit"].Value : null;
         }
 
         private static string ExtractLoadPattern(string text)
@@ -1509,7 +1611,7 @@ Rules:
             string source = text ?? string.Empty;
             if (Regex.IsMatch(
                 source,
-                @"\b(?:mono\s*slope|monoslope|one\s*side|single\s*slope|from\s+(?:one|1)\s+side)\b",
+                @"\b(?:mono[\s-]*slope|monoslope|one\s*side|single\s*slope|from\s+(?:one|1)\s+side)\b",
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
             {
                 return "Mono";
@@ -1563,7 +1665,7 @@ Rules:
 
             return Regex.IsMatch(
                 userMessage,
-                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|shell|area|slab|wall|panel|section|property|load|udl|select|selection|length|random|truss|howe|pratt)\b|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
+                @"\b(csi|etabs|sap2000|model|unit|point|joint|frame|beam|member|column|brace|shell|area|slab|wall|panel|section|property|load|udl|select|selection|length|random|truss|howe|pratt|warren)\b|mono[\s-]*slope|-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?",
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
     }

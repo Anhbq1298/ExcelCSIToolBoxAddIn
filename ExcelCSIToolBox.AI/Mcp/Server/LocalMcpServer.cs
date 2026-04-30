@@ -233,6 +233,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             registry.RegisterAlias("Selection_GetSelectedObjects", "CSI.GetSelectedObjects");
             registry.RegisterAlias("LoadPattern_GetList", "loads.patterns.get_all");
             registry.RegisterAlias("LoadCombination_GetList", "loads.combinations.get_all");
+            registry.RegisterAlias("Workflow_CreateTruss", "truss.generate_howe");
+            registry.RegisterAlias("FrameObject_AssignDistributedLoad", "frames.assign_distributed_load");
         }
 
         private Task<ToolCallResponse> ExecuteToolOnCapturedContextAsync(

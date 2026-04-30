@@ -13,5 +13,7 @@ namespace ExcelCSIToolBox.AI.Agent
         public string Status { get; set; }
         public string ResultMessage { get; set; }
         public bool NeedsClarification { get; set; }
+        public bool ToolWasCalled { get; set; }
+        public string ToolName { get; set; }
     }
 }

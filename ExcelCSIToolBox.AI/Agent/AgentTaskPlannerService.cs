@@ -34,6 +34,12 @@ namespace ExcelCSIToolBox.AI.Agent
                 yield break;
             }
 
+            if (LooksLikeIntegratedTrussWorkflow(text))
+            {
+                yield return text;
+                yield break;
+            }
+
             string marked = Regex.Replace(
                 text,
                 @"\b(?:then|also|after\s+that|next|finally|rồi|roi|sau\s+đó|sau\s+do|thêm\s+nữa|them\s+nua|đồng\s+thời|dong\s+thoi)\b",
@@ -102,7 +108,7 @@ namespace ExcelCSIToolBox.AI.Agent
             if (ContainsAny(normalized, "point", "joint")) return "Point";
             if (ContainsAny(normalized, "frame", "beam", "member", "column", "brace")) return "Frame";
             if (ContainsAny(normalized, "shell", "area", "slab", "wall")) return "Shell";
-            if (ContainsAny(normalized, "truss", "howe", "pratt")) return "Truss";
+            if (ContainsAny(normalized, "truss", "howe", "pratt", "warren", "mono-slope", "monoslope")) return "Truss";
             if (ContainsAny(normalized, "load pattern", "load combination", "load", "udl")) return "Load";
             if (ContainsAny(normalized, "section", "property", "prop")) return "Section";
             if (ContainsAny(normalized, "model", "unit", "units")) return "Model";
@@ -130,6 +136,18 @@ namespace ExcelCSIToolBox.AI.Agent
             }
 
             return false;
+        }
+
+        private static bool LooksLikeIntegratedTrussWorkflow(string text)
+        {
+            string normalized = NormalizeIntent(text);
+            bool hasTruss = ContainsAny(normalized, "truss", "howe", "pratt", "warren", "mono-slope", "monoslope");
+            if (!hasTruss)
+            {
+                return false;
+            }
+
+            return ContainsAny(normalized, "udl", "distributed load", "top chord", "bottom chord", "span", "bays", "rising from");
         }
     }
 }

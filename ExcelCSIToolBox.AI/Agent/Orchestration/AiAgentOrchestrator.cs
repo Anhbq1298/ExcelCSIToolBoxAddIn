@@ -85,8 +85,10 @@ namespace ExcelCSIToolBox.AI.Agent
             "loads.frame.assign_distributed",
             "loads.frame.assign_point_load",
             "random.generate_objects",
+            "Workflow_CreateTruss",
             "truss.generate_howe",
             "truss.generate_pratt",
+            "FrameObject_AssignDistributedLoad",
             "frames.assign_distributed_load",
             "frames.assign_point_load",
             "selection.clear",
@@ -195,12 +197,15 @@ If this is a write preview, ask for explicit confirmation before execution.";
                 AgentTaskExecutionSummary taskSummary = await _taskExecutorService.ExecuteAsync(plannedTasks, cancellationToken);
                 string outcomeText = AgentTaskExecutorService.FormatFinalResponse(taskSummary, false);
                 onAssistantToken?.Invoke(outcomeText);
+                bool anyToolCall = HasAnyToolCall(taskSummary);
 
                 return new AiAgentResponse
                 {
                     AssistantText = detectedText + outcomeText,
-                    ToolWasCalled = HasAnyToolCall(taskSummary),
-                    RoutingReason = "Request decomposition route: multiple tasks detected and executed in order."
+                    ToolWasCalled = anyToolCall,
+                    RoutingReason = anyToolCall
+                        ? "Request decomposition route: multiple tasks detected and executed in order."
+                        : "Request decomposition route: multiple tasks detected; no MCP tool was called."
                 };
             }
 
@@ -243,6 +248,18 @@ If this is a write preview, ask for explicit confirmation before execution.";
 
             if (!decision.ShouldCallTool || string.IsNullOrWhiteSpace(decision.ToolName))
             {
+                string missingToolDiagnostic = TryCreateNoToolMatchedMessage(userMessage, decision);
+                if (!string.IsNullOrWhiteSpace(missingToolDiagnostic))
+                {
+                    onAssistantToken?.Invoke(missingToolDiagnostic);
+                    return new AiAgentResponse
+                    {
+                        AssistantText = missingToolDiagnostic,
+                        ToolWasCalled = false,
+                        RoutingReason = "No MCP tool matched the validated CSI request."
+                    };
+                }
+
                 var fullText = new System.Text.StringBuilder();
                 await _ollamaChatService.ChatStreamAsync(
                     new List<OllamaMessage>
@@ -350,15 +367,45 @@ If this is a write preview, ask for explicit confirmation before execution.";
             for (int i = 0; i < summary.Tasks.Count; i++)
             {
                 AgentTaskItem task = summary.Tasks[i];
-                if (task != null &&
-                    !string.Equals(task.Status, "NeedsClarification", StringComparison.OrdinalIgnoreCase) &&
-                    !string.Equals(task.ResultMessage, "Applied as a response-format instruction.", StringComparison.OrdinalIgnoreCase))
+                if (task != null && task.ToolWasCalled)
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private static string TryCreateNoToolMatchedMessage(string userMessage, AiAgentToolDecision decision)
+        {
+            if (decision != null && !string.IsNullOrWhiteSpace(decision.MissingSchemaMessage))
+            {
+                return decision.MissingSchemaMessage;
+            }
+
+            string expectedTool = TryInferExpectedToolName(userMessage);
+            if (string.IsNullOrWhiteSpace(expectedTool))
+            {
+                return null;
+            }
+
+            return "No MCP tool matched. Missing tool schema: " + expectedTool + ".";
+        }
+
+        private static string TryInferExpectedToolName(string userMessage)
+        {
+            string normalized = Normalize(userMessage);
+            if (ContainsAny(normalized, "truss", "howe", "pratt", "warren", "mono-slope", "monoslope"))
+            {
+                return "Workflow_CreateTruss";
+            }
+
+            if (ContainsAny(normalized, "udl", "distributed load", "uniform load", "top chord"))
+            {
+                return "FrameObject_AssignDistributedLoad";
+            }
+
+            return null;
         }
 
         private async Task<AiAgentResponse> TryHandlePendingConfirmationAsync(

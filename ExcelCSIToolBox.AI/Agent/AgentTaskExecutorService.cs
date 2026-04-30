@@ -62,6 +62,8 @@ namespace ExcelCSIToolBox.AI.Agent
                     task.ResultMessage = response == null || string.IsNullOrWhiteSpace(response.AssistantText)
                         ? "No response was produced."
                         : response.AssistantText.Trim();
+                    task.ToolWasCalled = response != null && response.ToolWasCalled;
+                    task.ToolName = response == null ? null : response.ToolName;
                     task.Status = IsFailureResponse(response) ? "Failed" : "Completed";
                 }
                 catch (Exception ex)
@@ -106,7 +108,7 @@ namespace ExcelCSIToolBox.AI.Agent
                 builder.AppendLine();
             }
 
-            builder.AppendLine("Tasks completed");
+            builder.AppendLine(HasAnyToolCall(tasks) ? "Tasks completed" : "Tasks handled");
             AppendTaskList(builder, tasks, "Completed");
 
             builder.AppendLine();
@@ -161,6 +163,7 @@ namespace ExcelCSIToolBox.AI.Agent
                     AgentTaskItem task = tasks[i];
                     if (task == null ||
                         !string.Equals(task.Status, "Completed", StringComparison.OrdinalIgnoreCase) ||
+                        !task.ToolWasCalled ||
                         !IsModelOrApiChange(task))
                     {
                         continue;
@@ -215,6 +218,7 @@ namespace ExcelCSIToolBox.AI.Agent
             string text = response.AssistantText ?? string.Empty;
             return text.IndexOf("failed", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    text.IndexOf("could not", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                   text.IndexOf("No MCP tool matched", StringComparison.OrdinalIgnoreCase) >= 0 ||
                    text.IndexOf("not approved", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
@@ -224,6 +228,24 @@ namespace ExcelCSIToolBox.AI.Agent
                    task.ActionType == "Assign" ||
                    task.ActionType == "Select" ||
                    task.ActionType == "CodeChange";
+        }
+
+        private static bool HasAnyToolCall(IReadOnlyList<AgentTaskItem> tasks)
+        {
+            if (tasks == null)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                if (tasks[i] != null && tasks[i].ToolWasCalled)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 

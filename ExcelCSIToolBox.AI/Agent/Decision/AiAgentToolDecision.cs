@@ -23,5 +23,17 @@ namespace ExcelCSIToolBox.AI.Agent
 
         /// <summary>User-facing clarification text. When set, no tool should be called.</summary>
         public string ClarificationMessage { get; set; }
+
+        /// <summary>Candidate domain used when no executable MCP tool was selected.</summary>
+        public string CandidateDomain { get; set; }
+
+        /// <summary>Candidate action used when no executable MCP tool was selected.</summary>
+        public string CandidateAction { get; set; }
+
+        /// <summary>Candidate target object used when no executable MCP tool was selected.</summary>
+        public string TargetObject { get; set; }
+
+        /// <summary>User-facing diagnostic for a missing schema or tool route.</summary>
+        public string MissingSchemaMessage { get; set; }
     }
 }
