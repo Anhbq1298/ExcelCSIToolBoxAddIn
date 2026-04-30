@@ -110,7 +110,13 @@ namespace ExcelCSIToolBox.AI.Agent
             "selection.clear",
             "frames.delete",
             "analysis.run",
-            "file.save_model"
+            "file.save_model",
+            "building.generate_options",
+            "building.preview_option",
+            "building.build_option",
+            "building.run_analysis",
+            "building.evaluate_option",
+            "building.rank_options"
         };
 
         private const string ToolDecisionSystemPrompt =
@@ -136,6 +142,8 @@ Available tools:
 - random.generate_objects: Generate random CSI points, frames, and shell/area objects using safe defaults.
 - csi.truss.generate_howe: Generate a Howe truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
 - csi.truss.generate_pratt: Generate a Pratt truss with optional slope, chord/web sections, and distributed load assignment. Continuous chords; released vertical/brace members.
+- building.generate_options, building.preview_option, building.evaluate_option, building.rank_options: Conceptual generative design tools.
+- building.build_option, building.run_analysis: High-level application tools; use dryRun first unless explicitly confirmed.
 
 SAFETY POLICY:
 1. Do not use dryRun unless the user explicitly asks for preview/check only.

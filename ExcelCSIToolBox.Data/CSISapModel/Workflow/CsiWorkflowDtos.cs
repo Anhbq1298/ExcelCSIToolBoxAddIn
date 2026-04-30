@@ -6,6 +6,8 @@ namespace ExcelCSIToolBox.Data.CSISapModel.Workflow
     {
         public string UserInput { get; set; }
         public List<CsiTaskDto> PlannedTasks { get; set; }
+        public bool DryRun { get; set; } = true;
+        public bool Confirmed { get; set; }
     }
 
     public sealed class CsiTaskDto

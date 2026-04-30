@@ -22,6 +22,8 @@ namespace ExcelCSIToolBox.Data.CSISapModel.Random
         public string FramePropName { get; set; }
         public string ShellPropName { get; set; }
         public int? Seed { get; set; }
+        public bool DryRun { get; set; } = true;
+        public bool Confirmed { get; set; }
     }
 
     public sealed class RandomCsiObjectResultDto

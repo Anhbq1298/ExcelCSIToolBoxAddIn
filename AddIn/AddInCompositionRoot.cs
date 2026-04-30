@@ -1,4 +1,5 @@
 using System;
+using ExcelCSIToolBox.Application.GenerativeDesign;
 using ExcelCSIToolBox.AI.Agent;
 using ExcelCSIToolBox.AI.Mcp.Client;
 using ExcelCSIToolBox.AI.Mcp.Server;
@@ -70,7 +71,11 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 operationLogger,
                 new CsiRandomObjectGenerationService(),
                 new CsiHoweTrussGenerationService(),
-                new CsiWorkflowExecutionService());
+                new CsiWorkflowExecutionService(),
+                new BuildingOptionService(),
+                new ConstraintValidationService(),
+                new ResultEvaluationService(),
+                new OptionRankingService());
 
             var mcpServer = new LocalMcpServer(context);
             var mcpClient = new LocalMcpClient(mcpServer);
@@ -81,7 +86,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 orchestrator,
                 _etabsConnectionService,
                 _sap2000ConnectionService,
-                OllamaChatService.DefaultModel);
+                AiModelDefaults.DefaultOllamaModel);
         }
 
         private static void EnsureConfigured()

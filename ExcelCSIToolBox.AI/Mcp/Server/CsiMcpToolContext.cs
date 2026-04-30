@@ -1,4 +1,5 @@
 using System;
+using ExcelCSIToolBox.Application.GenerativeDesign;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 
 namespace ExcelCSIToolBox.AI.Mcp.Server
@@ -16,7 +17,11 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             ICsiOperationLogger operationLogger,
             ICsiRandomObjectGenerationService randomObjectGenerationService,
             ICsiTrussGenerationService trussGenerationService,
-            ICsiWorkflowExecutionService workflowExecutionService)
+            ICsiWorkflowExecutionService workflowExecutionService,
+            BuildingOptionService buildingOptionService,
+            ConstraintValidationService constraintValidationService,
+            ResultEvaluationService resultEvaluationService,
+            OptionRankingService optionRankingService)
         {
             ReadOnlyConnectionService = readOnlyConnectionService ?? throw new ArgumentNullException(nameof(readOnlyConnectionService));
             ReadOnlySelectionService = readOnlySelectionService ?? throw new ArgumentNullException(nameof(readOnlySelectionService));
@@ -29,6 +34,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             RandomObjectGenerationService = randomObjectGenerationService ?? throw new ArgumentNullException(nameof(randomObjectGenerationService));
             TrussGenerationService = trussGenerationService ?? throw new ArgumentNullException(nameof(trussGenerationService));
             WorkflowExecutionService = workflowExecutionService ?? throw new ArgumentNullException(nameof(workflowExecutionService));
+            BuildingOptionService = buildingOptionService ?? throw new ArgumentNullException(nameof(buildingOptionService));
+            ConstraintValidationService = constraintValidationService ?? throw new ArgumentNullException(nameof(constraintValidationService));
+            ResultEvaluationService = resultEvaluationService ?? throw new ArgumentNullException(nameof(resultEvaluationService));
+            OptionRankingService = optionRankingService ?? throw new ArgumentNullException(nameof(optionRankingService));
         }
 
         public ICsiReadOnlyConnectionService ReadOnlyConnectionService { get; }
@@ -42,5 +51,9 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
         public ICsiRandomObjectGenerationService RandomObjectGenerationService { get; }
         public ICsiTrussGenerationService TrussGenerationService { get; }
         public ICsiWorkflowExecutionService WorkflowExecutionService { get; }
+        public BuildingOptionService BuildingOptionService { get; }
+        public ConstraintValidationService ConstraintValidationService { get; }
+        public ResultEvaluationService ResultEvaluationService { get; }
+        public OptionRankingService OptionRankingService { get; }
     }
 }

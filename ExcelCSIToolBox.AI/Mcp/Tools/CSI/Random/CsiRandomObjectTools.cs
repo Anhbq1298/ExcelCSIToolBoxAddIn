@@ -35,8 +35,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Random
         public string Description => "Generates bounded random points, frames, and shell/area objects using safe defaults when count or bounds are omitted.";
         public bool IsReadOnly => false;
         public CsiMethodRiskLevel RiskLevel => CsiMethodRiskLevel.Low;
-        public bool RequiresConfirmation => false;
-        public bool SupportsDryRun => false;
+        public bool RequiresConfirmation => true;
+        public bool SupportsDryRun => true;
 
         public Task<ToolCallResponse> ExecuteAsync(string argumentsJson, CancellationToken cancellationToken)
         {
@@ -50,6 +50,11 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Random
 
                 RandomCsiObjectRequestDto request = JsonConvert.DeserializeObject<RandomCsiObjectRequestDto>(argumentsJson ?? "{}")
                     ?? new RandomCsiObjectRequestDto();
+                if (request.DryRun || !request.Confirmed)
+                {
+                    return Task.FromResult(Preview(request));
+                }
+
                 OperationResult<RandomCsiObjectResultDto> result = _randomService.Generate(serviceResult.Data, request);
                 if (!result.IsSuccess)
                 {
@@ -117,6 +122,39 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Random
                 Message = message,
                 ResultJson = null
             };
+        }
+
+        private ToolCallResponse Preview(RandomCsiObjectRequestDto request)
+        {
+            return new ToolCallResponse
+            {
+                ToolName = Name,
+                Success = true,
+                Message = "Preview: random CSI object generation requires confirmation. Confirm to proceed?",
+                ResultJson = JsonConvert.SerializeObject(new
+                {
+                    OperationName = Name,
+                    Summary = CreatePreviewSummary(request),
+                    RequiresConfirmation = true,
+                    SupportsDryRun = true
+                })
+            };
+        }
+
+        private static string CreatePreviewSummary(RandomCsiObjectRequestDto request)
+        {
+            int pointCount = request.PointCount ?? 5;
+            int frameCount = request.FrameCount ?? 3;
+            int shellCount = request.ShellCount ?? 1;
+            bool anyType = request.AddPoints || request.AddFrames || request.AddShells;
+            bool points = anyType ? request.AddPoints : true;
+            bool frames = request.AddFrames;
+            bool shells = request.AddShells;
+
+            return "Generate random CSI objects: " +
+                   (points ? pointCount + " point(s) " : string.Empty) +
+                   (frames ? frameCount + " frame(s) " : string.Empty) +
+                   (shells ? shellCount + " shell(s)" : string.Empty);
         }
     }
 }

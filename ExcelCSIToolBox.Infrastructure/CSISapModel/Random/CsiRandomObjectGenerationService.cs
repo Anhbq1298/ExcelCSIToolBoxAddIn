@@ -207,7 +207,9 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Random
                 ShellPrefix = string.IsNullOrWhiteSpace(source.ShellPrefix) ? "RS" : source.ShellPrefix.Trim(),
                 FramePropName = string.IsNullOrWhiteSpace(source.FramePropName) ? "Default" : source.FramePropName.Trim(),
                 ShellPropName = string.IsNullOrWhiteSpace(source.ShellPropName) ? "Default" : source.ShellPropName.Trim(),
-                Seed = source.Seed
+                Seed = source.Seed,
+                DryRun = source.DryRun,
+                Confirmed = source.Confirmed
             };
         }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ExcelCSIToolBox.AI.Mcp.Contracts;
+using ExcelCSIToolBox.AI.Mcp.ToolModules;
 using ExcelCSIToolBox.AI.Mcp.Tools;
 using ExcelCSIToolBox.Core.Models.CSI;
 
@@ -18,13 +19,6 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
         private readonly SynchronizationContext _toolSynchronizationContext;
 
         public LocalMcpServer(CsiMcpToolContext context)
-            : this(context, CreateDefaultModules())
-        {
-        }
-
-        public LocalMcpServer(
-            CsiMcpToolContext context,
-            IReadOnlyList<ICsiMcpToolModule> modules)
         {
             if (context == null)
             {
@@ -34,12 +28,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             _toolSynchronizationContext = SynchronizationContext.Current;
             _registry = new McpToolRegistry();
 
-            IReadOnlyList<ICsiMcpToolModule> toolModules = modules ?? CreateDefaultModules();
-            for (int i = 0; i < toolModules.Count; i++)
-            {
-                toolModules[i].Register(_registry, context);
-            }
-
+            RegisterDefaultModules(_registry, new ToolServices(context));
             RegisterBackwardCompatibleToolAliases(_registry);
         }
 
@@ -113,7 +102,9 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
                 return ExecuteToolCoreAsync(tool, request, cancellationToken);
             }
 
-            var completion = new TaskCompletionSource<ToolCallResponse>();
+            var completion = new TaskCompletionSource<ToolCallResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            CancellationTokenRegistration cancellationRegistration = cancellationToken.Register(
+                () => completion.TrySetCanceled());
             _toolSynchronizationContext.Post(async state =>
             {
                 try
@@ -130,6 +121,10 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
                         Message = $"Tool '{request.ToolName}' threw an unexpected exception: {ex.Message}",
                         ResultJson = null
                     });
+                }
+                finally
+                {
+                    cancellationRegistration.Dispose();
                 }
             }, null);
 
@@ -157,19 +152,17 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             }
         }
 
-        private static IReadOnlyList<ICsiMcpToolModule> CreateDefaultModules()
+        private static void RegisterDefaultModules(IMcpToolRegistry registry, ToolServices services)
         {
-            return new ICsiMcpToolModule[]
-            {
-                new CsiModelToolModule(),
-                new PointToolModule(),
-                new FrameToolModule(),
-                new ShellToolModule(),
-                new LoadToolModule(),
-                new TrussToolModule(),
-                new WorkflowToolModule(),
-                new AnalysisToolModule()
-            };
+            ModelToolModule.Register(registry, services);
+            PointToolModule.Register(registry, services);
+            FrameToolModule.Register(registry, services);
+            ShellToolModule.Register(registry, services);
+            LoadToolModule.Register(registry, services);
+            AnalysisToolModule.Register(registry, services);
+            TrussToolModule.Register(registry, services);
+            WorkflowToolModule.Register(registry, services);
+            BuildingToolModule.Register(registry, services);
         }
 
         private static void RegisterBackwardCompatibleToolAliases(IMcpToolRegistry registry)
@@ -197,6 +190,12 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             registry.RegisterAlias("LoadCombination_GetList", "loads.combinations.get_all");
             registry.RegisterAlias("Workflow_CreateTruss", "truss.generate_howe");
             registry.RegisterAlias("FrameObject_AssignDistributedLoad", "frames.assign_distributed_load");
+            registry.RegisterAlias("Building_GenerateOptions", "building.generate_options");
+            registry.RegisterAlias("Building_PreviewOption", "building.preview_option");
+            registry.RegisterAlias("Building_BuildOption", "building.build_option");
+            registry.RegisterAlias("Building_RunAnalysis", "building.run_analysis");
+            registry.RegisterAlias("Building_EvaluateOption", "building.evaluate_option");
+            registry.RegisterAlias("Building_RankOptions", "building.rank_options");
         }
 
         private static void RegisterPreferredAliases(IMcpToolRegistry registry)
@@ -217,6 +216,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             registry.RegisterAlias("csi.loads.combinations.get_all", "loads.combinations.get_all");
             registry.RegisterAlias("csi.truss.generate_howe", "truss.generate_howe");
             registry.RegisterAlias("csi.truss.generate_pratt", "truss.generate_pratt");
+            registry.RegisterAlias("csi.frames.get_selected", "frames.get_selected");
+            registry.RegisterAlias("csi.shells.get_selected", "shells.get_selected");
         }
     }
 }
