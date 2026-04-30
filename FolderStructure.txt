@@ -1,34 +1,116 @@
 ExcelCSIToolBoxAddIn/
-+---Adapters
 +---AddIn
-+---Common
-|   +---Commands
-|   \---Results
-+---Core
-|   +---Application
++---ExcelCSIToolBox.AI
+|   +---Abstractions
+|   +---Agent
+|   +---Chat
+|   +---Mcp
+|   |   +---Client
+|   |   +---Contracts
+|   |   +---Memory
+|   |   +---Prompts
+|   |   +---Safety
+|   |   +---Server
+|   |   +---Tools
+|   |   |   +---CSI
+|   |   |   |   +---Base
+|   |   |   |   +---Frames
+|   |   |   |   +---Loads
+|   |   |   |   |   +---LoadCombinations
+|   |   |   |   |   \---LoadPatterns
+|   |   |   |   +---Model
+|   |   |   |   +---Points
+|   |   |   |   +---Random
+|   |   |   |   +---Shared
+|   |   |   |   +---Shells
+|   |   |   |   +---Truss
+|   |   |   |   \---Workflow
+|   |   |   +---Data
+|   |   |   +---Excel
+|   |   |   \---Project
+|   |   \---Transport
+|   +---Ollama
+|   \---OpenAI
++---ExcelCSIToolBox.Application
+|   \---UseCases
++---ExcelCSIToolBox.Core
+|   +---Abstractions
+|   |   +---Application
+|   |   +---CSI
+|   |   \---Excel
+|   +---Common
+|   |   +---Commands
+|   |   \---Results
 |   +---Geometry
+|   +---Models
+|   |   \---CSI
 |   \---Tabular
-+---Data
++---ExcelCSIToolBox.Data
+|   +---CSISapModel
+|   |   +---FrameObject
+|   |   +---Intent
+|   |   +---PointObject
+|   |   +---Random
+|   |   +---Truss
+|   |   \---Workflow
 |   +---DataFrames
 |   +---DTOs
+|   |   \---CSI
 |   +---Mappers
-|   \---Models
-+---Infrastructure
+|   +---Models
+|   \---Properties
+|       \---PublishProfiles
++---ExcelCSIToolBox.Infrastructure
 |   +---CSISapModel
+|   |   +---Adapters
 |   |   +---ConnectionAdapters
 |   |   +---FrameObjectService
+|   |   +---Intent
 |   |   +---LoadCombinationService
 |   |   +---LoadingService
 |   |   +---LoadPatternService
 |   |   +---PointObjectService
+|   |   +---Random
+|   |   +---ReadOnly
 |   |   +---SectionPropertiesService
-|   |   \---ShellObjectService
+|   |   +---ShellObjectService
+|   |   +---Truss
+|   |   \---Workflow
 |   +---Etabs
 |   +---Excel
 |   \---Sap2000
++---ExcelCSIToolBox.RefBuilder
+|   +---Chm
+|   +---Generation
+|   +---Indexing
+|   \---Parsing
++---icon
 +---Properties
 +---UI
+|   +---Helpers
 |   +---ViewModels
 |   \---Views
 \---_ref
-    \---developing-skill
+    +---developing-skill
+    |   \---CsiExcelAddin
+    |       +---Bootstrap
+    |       +---Commands
+    |       +---CsiAdapters
+    |       |   +---Etabs
+    |       |   +---Safe
+    |       |   \---Sap2000
+    |       +---Helpers
+    |       +---Models
+    |       +---Ribbon
+    |       +---Services
+    |       |   +---Attachment
+    |       |   +---Business
+    |       |   +---Excel
+    |       |   \---Interfaces
+    |       +---TableFormats
+    |       +---ViewModels
+    |       \---Views
+    +---ETABS
+    |   \---index
+    \---SAP2000
+        \---index

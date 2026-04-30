@@ -209,6 +209,20 @@ If this is a write preview, ask for explicit confirmation before execution.";
             CancellationToken cancellationToken)
         {
             AiAgentToolDecision decision = await _intentPlannerService.TryCreateToolDecisionAsync(userMessage, cancellationToken);
+            if (decision != null && decision.ClarificationRequired)
+            {
+                string clarificationText = string.IsNullOrWhiteSpace(decision.ClarificationMessage)
+                    ? "Please provide the missing action, target object, and required parameters."
+                    : decision.ClarificationMessage;
+                onAssistantToken?.Invoke(clarificationText);
+                return new AiAgentResponse
+                {
+                    AssistantText = clarificationText,
+                    ToolWasCalled = false,
+                    RoutingReason = decision.Reason
+                };
+            }
+
             if (decision == null)
             {
                 decision = TryCreateHeuristicToolDecision(userMessage);

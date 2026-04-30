@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ExcelCSIToolBox.AI.Ollama;
 using ExcelCSIToolBox.Data.CSISapModel.Intent;
 using ExcelCSIToolBox.Data.CSISapModel.Workflow;
+using ExcelCSIToolBox.Infrastructure.CSISapModel.Intent;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -49,16 +50,25 @@ Rules:
 - Do not invent missing coordinates or point names.";
 
         private readonly OllamaChatService _ollamaChatService;
+        private readonly ToolSchemaRegistry _toolSchemaRegistry;
 
         public CsiIntentPlannerService(OllamaChatService ollamaChatService)
         {
             _ollamaChatService = ollamaChatService ?? throw new ArgumentNullException(nameof(ollamaChatService));
+            _toolSchemaRegistry = new ToolSchemaRegistry();
         }
 
         public async Task<AiAgentToolDecision> TryCreateToolDecisionAsync(
             string userMessage,
             CancellationToken cancellationToken)
         {
+            CsiRequestClassificationDto deterministicClassification = TryCreateDeterministicClassification(userMessage);
+            AiAgentToolDecision deterministicClassificationDecision = TryCreateDecisionFromClassification(deterministicClassification, userMessage);
+            if (deterministicClassificationDecision != null)
+            {
+                return deterministicClassificationDecision;
+            }
+
             if (!ShouldUsePlanner(userMessage))
             {
                 return null;
@@ -88,6 +98,13 @@ Rules:
                 return null;
             }
 
+            CsiRequestClassificationDto planClassification = ClassifyPlanTasks(userMessage, plan.Tasks);
+            AiAgentToolDecision planClarificationDecision = TryCreateClarificationDecision(planClassification);
+            if (planClarificationDecision != null)
+            {
+                return planClarificationDecision;
+            }
+
             List<CsiTaskDto> tasks = NormalizeTasks(plan.Tasks);
             if (tasks.Count == 0)
             {
@@ -113,6 +130,290 @@ Rules:
                 ArgumentsJson = args.ToString(Formatting.None),
                 Reason = "Intent planner route: canonical CSI workflow."
             };
+        }
+
+        private CsiRequestClassificationDto TryCreateDeterministicClassification(string userMessage)
+        {
+            string normalized = NormalizeText(userMessage);
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                return null;
+            }
+
+            var classification = new CsiRequestClassificationDto
+            {
+                Status = "Unsupported",
+                Tasks = new List<CsiRequestTaskClassificationDto>()
+            };
+
+            foreach (string taskText in SplitTaskTexts(userMessage))
+            {
+                CsiRequestTaskClassificationDto task = ClassifyTaskText(taskText);
+                if (task != null)
+                {
+                    _toolSchemaRegistry.Validate(task);
+                    classification.Tasks.Add(task);
+                }
+            }
+
+            if (classification.Tasks.Count == 0)
+            {
+                return null;
+            }
+
+            classification.Status = ResolveClassificationStatus(classification.Tasks);
+            return classification;
+        }
+
+        private CsiRequestTaskClassificationDto ClassifyTaskText(string taskText)
+        {
+            string normalized = NormalizeText(taskText);
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                return null;
+            }
+
+            if (IsGenericActionOnly(normalized))
+            {
+                return CreateTaskClassification(taskText, DetectAction(normalized), "Unknown", null);
+            }
+
+            string action = DetectAction(normalized);
+            string targetObject = DetectTargetObject(normalized);
+            if (string.Equals(action, "Unknown", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(targetObject, "Unknown", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            if (string.Equals(action, "Add", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(targetObject, "PointObj", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateTaskClassification(taskText, action, targetObject, ExtractPointParameters(taskText));
+            }
+
+            if (string.Equals(action, "Add", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(targetObject, "FrameObj", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateTaskClassification(taskText, action, targetObject, ExtractFrameAddParameters(taskText));
+            }
+
+            if (string.Equals(action, "Assign", StringComparison.OrdinalIgnoreCase) &&
+                ContainsAny(normalized, "section", "property", "prop"))
+            {
+                return CreateTaskClassification(taskText, action, "FrameObj", ExtractAssignSectionParameters(taskText));
+            }
+
+            return CreateTaskClassification(taskText, action, targetObject, null);
+        }
+
+        private CsiRequestClassificationDto ClassifyPlanTasks(string userMessage, IReadOnlyList<CsiIntentTaskDto> intentTasks)
+        {
+            var classification = new CsiRequestClassificationDto
+            {
+                Tasks = new List<CsiRequestTaskClassificationDto>()
+            };
+
+            for (int i = 0; i < intentTasks.Count; i++)
+            {
+                CsiIntentTaskDto intentTask = intentTasks[i];
+                if (intentTask == null)
+                {
+                    continue;
+                }
+
+                var task = new CsiRequestTaskClassificationDto
+                {
+                    RawText = userMessage,
+                    Action = MapOperationToAction(intentTask.Operation),
+                    TargetObject = MapTaskTypeToTargetObject(intentTask.TaskType),
+                    Parameters = MapIntentArguments(intentTask),
+                    MissingParameters = new List<string>()
+                };
+
+                _toolSchemaRegistry.Validate(task);
+                classification.Tasks.Add(task);
+            }
+
+            classification.Status = ResolveClassificationStatus(classification.Tasks);
+            return classification;
+        }
+
+        private static CsiRequestTaskClassificationDto CreateTaskClassification(
+            string rawText,
+            string action,
+            string targetObject,
+            Dictionary<string, string> parameters)
+        {
+            return new CsiRequestTaskClassificationDto
+            {
+                RawText = rawText == null ? string.Empty : rawText.Trim(),
+                Action = action,
+                TargetObject = targetObject,
+                Parameters = parameters ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                MissingParameters = new List<string>()
+            };
+        }
+
+        private static AiAgentToolDecision TryCreateDecisionFromClassification(CsiRequestClassificationDto classification, string userMessage)
+        {
+            AiAgentToolDecision clarificationDecision = TryCreateClarificationDecision(classification);
+            if (clarificationDecision != null)
+            {
+                return clarificationDecision;
+            }
+
+            if (classification == null ||
+                classification.Tasks == null ||
+                classification.Tasks.Count != 1)
+            {
+                return null;
+            }
+
+            CsiRequestTaskClassificationDto task = classification.Tasks[0];
+            if (string.Equals(classification.Status, "Unsupported", StringComparison.OrdinalIgnoreCase) &&
+                IsWriteLikeAction(task.Action) &&
+                !string.Equals(task.TargetObject, "Model", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(task.TargetObject, "Selection", StringComparison.OrdinalIgnoreCase))
+            {
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = false,
+                    ClarificationRequired = true,
+                    ClarificationMessage = "That request is not supported by the current CSI tool registry.",
+                    Reason = "Intent classifier blocked unsupported write-like request before tool dispatch."
+                };
+            }
+
+            if (!string.Equals(classification.Status, "ReadyToDispatch", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            if (string.Equals(task.ToolName, "PointObj_AddCartesian", StringComparison.OrdinalIgnoreCase))
+            {
+                JObject args = new JObject
+                {
+                    ["X"] = GetParameter(task, "x"),
+                    ["Y"] = GetParameter(task, "y"),
+                    ["Z"] = GetParameter(task, "z"),
+                    ["UserName"] = GetParameter(task, "pointName"),
+                    ["dryRun"] = false,
+                    ["confirmed"] = true
+                };
+
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = true,
+                    ToolName = "points.add_by_coordinates",
+                    ArgumentsJson = args.ToString(Formatting.None),
+                    Reason = "Intent classifier route: add point by coordinates."
+                };
+            }
+
+            if (string.Equals(task.ToolName, "FrameObj_AddByPoint", StringComparison.OrdinalIgnoreCase))
+            {
+                JObject args = new JObject();
+                CopyParameter(args, task, "frameName", "UserName");
+                CopyParameter(args, task, "sectionName", "PropName");
+                CopyParameter(args, task, "pointI", "PointIName");
+                CopyParameter(args, task, "pointJ", "PointJName");
+
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = true,
+                    ToolName = "frames.add_object",
+                    ArgumentsJson = args.ToString(Formatting.None),
+                    Reason = "Intent classifier route: add frame by points."
+                };
+            }
+
+            if (string.Equals(task.ToolName, "FrameObj_AddByCoordinate", StringComparison.OrdinalIgnoreCase))
+            {
+                JObject args = new JObject();
+                CopyParameter(args, task, "frameName", "UserName");
+                CopyParameter(args, task, "sectionName", "PropName");
+                CopyParameter(args, task, "xi", "Xi");
+                CopyParameter(args, task, "yi", "Yi");
+                CopyParameter(args, task, "zi", "Zi");
+                CopyParameter(args, task, "xj", "Xj");
+                CopyParameter(args, task, "yj", "Yj");
+                CopyParameter(args, task, "zj", "Zj");
+
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = true,
+                    ToolName = "frames.add_object",
+                    ArgumentsJson = args.ToString(Formatting.None),
+                    Reason = "Intent classifier route: add frame by coordinates."
+                };
+            }
+
+            if (string.Equals(task.ToolName, "FrameObj_SetSection", StringComparison.OrdinalIgnoreCase))
+            {
+                JObject args = new JObject
+                {
+                    ["FrameNames"] = JArray.FromObject(SplitNameList(GetParameter(task, "frameNames"))),
+                    ["SectionName"] = GetParameter(task, "sectionName"),
+                    ["dryRun"] = true,
+                    ["confirmed"] = false
+                };
+
+                return new AiAgentToolDecision
+                {
+                    ShouldCallTool = true,
+                    ToolName = "frames.assign_section",
+                    ArgumentsJson = args.ToString(Formatting.None),
+                    Reason = "Intent classifier route: assign frame section preview."
+                };
+            }
+
+            return null;
+        }
+
+        private static AiAgentToolDecision TryCreateClarificationDecision(CsiRequestClassificationDto classification)
+        {
+            if (classification == null ||
+                classification.Tasks == null ||
+                classification.Tasks.Count == 0 ||
+                !string.Equals(classification.Status, "ClarificationRequired", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            return new AiAgentToolDecision
+            {
+                ShouldCallTool = false,
+                ClarificationRequired = true,
+                ClarificationMessage = FormatClarifications(classification.Tasks),
+                Reason = "Intent classifier required clarification before tool dispatch."
+            };
+        }
+
+        private static string FormatClarifications(IReadOnlyList<CsiRequestTaskClassificationDto> tasks)
+        {
+            var messages = new List<string>();
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                CsiRequestTaskClassificationDto task = tasks[i];
+                if (task == null || string.IsNullOrWhiteSpace(task.ClarificationMessage))
+                {
+                    continue;
+                }
+
+                if (tasks.Count == 1)
+                {
+                    messages.Add(task.ClarificationMessage);
+                }
+                else
+                {
+                    messages.Add((i + 1).ToString(CultureInfo.InvariantCulture) + ". " + task.ClarificationMessage);
+                }
+            }
+
+            return messages.Count == 0
+                ? "Please provide the missing action, target object, and required parameters."
+                : string.Join(Environment.NewLine, messages);
         }
 
         private async Task<CsiIntentPlanDto> TryCreatePlanAsync(
@@ -141,6 +442,423 @@ Rules:
             {
                 return null;
             }
+        }
+
+        private static IEnumerable<string> SplitTaskTexts(string userMessage)
+        {
+            string text = (userMessage ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                yield break;
+            }
+
+            string marked = Regex.Replace(
+                text,
+                @"\b(?:then|also|after\s+that|next|finally)\b",
+                "|",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+            marked = Regex.Replace(
+                marked,
+                @"\s+\b(?:and)\b\s+(?=(?:add|create|draw|assign|apply|set|select|delete|remove|update|modify|run|execute)\b)",
+                "|",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+            string[] pieces = marked.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < pieces.Length; i++)
+            {
+                string piece = pieces[i].Trim(' ', '.', ',', ';');
+                if (!string.IsNullOrWhiteSpace(piece))
+                {
+                    yield return piece;
+                }
+            }
+        }
+
+        private static string ResolveClassificationStatus(IReadOnlyList<CsiRequestTaskClassificationDto> tasks)
+        {
+            bool hasReady = false;
+            bool hasClarification = false;
+            for (int i = 0; i < tasks.Count; i++)
+            {
+                CsiRequestTaskClassificationDto task = tasks[i];
+                if (task == null)
+                {
+                    continue;
+                }
+
+                if (task.MissingParameters != null && task.MissingParameters.Count > 0)
+                {
+                    hasClarification = true;
+                }
+                else if (!string.IsNullOrWhiteSpace(task.ToolName))
+                {
+                    hasReady = true;
+                }
+            }
+
+            if (hasClarification)
+            {
+                return "ClarificationRequired";
+            }
+
+            return hasReady ? "ReadyToDispatch" : "Unsupported";
+        }
+
+        private static Dictionary<string, string> ExtractPointParameters(string text)
+        {
+            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Match coordinateMatch = Regex.Match(
+                text ?? string.Empty,
+                @"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)",
+                RegexOptions.CultureInvariant);
+            if (coordinateMatch.Success)
+            {
+                parameters["x"] = coordinateMatch.Groups[1].Value;
+                parameters["y"] = coordinateMatch.Groups[2].Value;
+                parameters["z"] = coordinateMatch.Groups[3].Value;
+            }
+
+            string name = ExtractName(text, @"\b(?:point|joint)\s+(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)\b");
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                name = ExtractName(text, @"\b(?:named|name\s+it\s+(?:as\s+)?|name\s*[:=]\s*)(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)\b");
+            }
+
+            if (!string.IsNullOrWhiteSpace(name) && !IsActionWord(name))
+            {
+                parameters["pointName"] = name;
+            }
+
+            return parameters;
+        }
+
+        private static Dictionary<string, string> ExtractFrameAddParameters(string text)
+        {
+            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            MatchCollection coordinateMatches = Regex.Matches(
+                text ?? string.Empty,
+                @"(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)",
+                RegexOptions.CultureInvariant);
+            if (coordinateMatches.Count >= 2)
+            {
+                parameters["xi"] = coordinateMatches[0].Groups[1].Value;
+                parameters["yi"] = coordinateMatches[0].Groups[2].Value;
+                parameters["zi"] = coordinateMatches[0].Groups[3].Value;
+                parameters["xj"] = coordinateMatches[1].Groups[1].Value;
+                parameters["yj"] = coordinateMatches[1].Groups[2].Value;
+                parameters["zj"] = coordinateMatches[1].Groups[3].Value;
+            }
+
+            Match pointsMatch = Regex.Match(
+                text ?? string.Empty,
+                @"(?:between|from)\s+(?:point\s+)?(?<i>[A-Za-z_][A-Za-z0-9_\-\.]*)\s+(?:and|to)\s+(?:point\s+)?(?<j>[A-Za-z_][A-Za-z0-9_\-\.]*)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (pointsMatch.Success)
+            {
+                parameters["pointI"] = pointsMatch.Groups["i"].Value;
+                parameters["pointJ"] = pointsMatch.Groups["j"].Value;
+            }
+
+            string frameName = ExtractName(text, @"\b(?:frame|beam|member|column|brace)\s+(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)\b");
+            if (string.IsNullOrWhiteSpace(frameName))
+            {
+                frameName = ExtractName(text, @"\b(?:named|name\s+it\s+(?:as\s+)?|name\s*[:=]\s*)(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)\b");
+            }
+
+            if (!string.IsNullOrWhiteSpace(frameName) && !IsActionWord(frameName) && !IsObjectWord(frameName))
+            {
+                parameters["frameName"] = frameName;
+            }
+
+            string sectionName = ExtractName(text, @"\b(?:section|property|prop)\s*(?:name)?\s*(?:as|=|:)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)\b");
+            if (!string.IsNullOrWhiteSpace(sectionName) && !IsObjectWord(sectionName))
+            {
+                parameters["sectionName"] = sectionName;
+            }
+
+            return parameters;
+        }
+
+        private static Dictionary<string, string> ExtractAssignSectionParameters(string text)
+        {
+            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            string sectionName = ExtractName(text, @"\b(?:section|property|prop)\s*(?:name)?\s*(?:as|=|:)?\s*(?<name>[A-Za-z_][A-Za-z0-9_\-\.]*)\b");
+            if (!string.IsNullOrWhiteSpace(sectionName) && !IsObjectWord(sectionName))
+            {
+                parameters["sectionName"] = sectionName;
+            }
+
+            Match framesMatch = Regex.Match(
+                text ?? string.Empty,
+                @"\b(?:to|for|on)\s+(?:frames?|members?|beams?)\s+(?<names>[A-Za-z_][A-Za-z0-9_\-\.,\s]*)",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (!framesMatch.Success)
+            {
+                framesMatch = Regex.Match(
+                    text ?? string.Empty,
+                    @"\b(?:frames?|members?|beams?)\s+(?<names>[A-Za-z_][A-Za-z0-9_\-\.,\s]*)",
+                    RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            }
+
+            if (framesMatch.Success)
+            {
+                string names = CleanupNameList(framesMatch.Groups["names"].Value);
+                if (!string.IsNullOrWhiteSpace(names))
+                {
+                    parameters["frameNames"] = names;
+                }
+            }
+
+            return parameters;
+        }
+
+        private static Dictionary<string, string> MapIntentArguments(CsiIntentTaskDto intentTask)
+        {
+            var parameters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> args = NormalizeArguments(intentTask.Arguments);
+            foreach (KeyValuePair<string, string> item in args)
+            {
+                parameters[item.Key] = item.Value;
+            }
+
+            CopyMapped(args, parameters, "name", "pointName");
+            CopyMapped(args, parameters, "userName", "frameName");
+            CopyMapped(args, parameters, "pointIName", "pointI");
+            CopyMapped(args, parameters, "pointJName", "pointJ");
+            CopyMapped(args, parameters, "propName", "sectionName");
+
+            return parameters;
+        }
+
+        private static void CopyMapped(Dictionary<string, string> source, Dictionary<string, string> target, string sourceKey, string targetKey)
+        {
+            string value;
+            if (!target.ContainsKey(targetKey) &&
+                source.TryGetValue(sourceKey, out value) &&
+                !string.IsNullOrWhiteSpace(value))
+            {
+                target[targetKey] = value;
+            }
+        }
+
+        private static string MapOperationToAction(string operation)
+        {
+            if (string.IsNullOrWhiteSpace(operation))
+            {
+                return "Unknown";
+            }
+
+            if (Regex.IsMatch(operation, @"^(?:Add|AddCartesian)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Add";
+            }
+
+            if (Regex.IsMatch(operation, @"^(?:AssignSection|AssignDistributed|SetSection)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Assign";
+            }
+
+            if (Regex.IsMatch(operation, @"^(?:Select|SelectFrames)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Select";
+            }
+
+            if (Regex.IsMatch(operation, @"^(?:GetInfo|GetPresentUnits|ExtractFrameLengths)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "GetInfo";
+            }
+
+            return operation;
+        }
+
+        private static string MapTaskTypeToTargetObject(string taskType)
+        {
+            if (string.Equals(taskType, "PointObj", StringComparison.OrdinalIgnoreCase))
+            {
+                return "PointObj";
+            }
+
+            if (string.Equals(taskType, "FrameObj", StringComparison.OrdinalIgnoreCase))
+            {
+                return "FrameObj";
+            }
+
+            if (string.Equals(taskType, "Model", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Model";
+            }
+
+            if (string.Equals(taskType, "Selection", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Selection";
+            }
+
+            return string.IsNullOrWhiteSpace(taskType) ? "Unknown" : taskType;
+        }
+
+        private static string DetectAction(string normalized)
+        {
+            if (Regex.IsMatch(normalized, @"\b(add|create|draw|insert|make)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Add";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(assign|apply|set)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Assign";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(delete|remove)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Delete";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(select)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Select";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(get|list|show|count|info)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "GetInfo";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(export)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Export";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(run|execute|do it)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Unknown";
+            }
+
+            return "Unknown";
+        }
+
+        private static string DetectTargetObject(string normalized)
+        {
+            if (Regex.IsMatch(normalized, @"\b(point|points|joint|joints)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "PointObj";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(frame|frames|beam|beams|member|members|column|columns|brace|braces)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "FrameObj";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(area|areas|shell|shells|slab|slabs|wall|walls)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "AreaObj";
+            }
+
+            if (Regex.IsMatch(normalized, @"\bload\s+pattern\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "LoadPattern";
+            }
+
+            if (Regex.IsMatch(normalized, @"\bload\s+case\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "LoadCase";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(load\s+combination|combo|combination)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "LoadCombination";
+            }
+
+            if (Regex.IsMatch(normalized, @"\b(model|unit|units|file|path)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+            {
+                return "Model";
+            }
+
+            return "Unknown";
+        }
+
+        private static bool IsGenericActionOnly(string normalized)
+        {
+            return Regex.IsMatch(
+                normalized,
+                @"^(?:add|create|draw|set|assign|delete|remove|update|modify|run|do\s+it|execute|make\s+this)$",
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        private static string NormalizeText(string text)
+        {
+            return Regex.Replace((text ?? string.Empty).Trim().ToLowerInvariant(), @"\s+", " ");
+        }
+
+        private static string GetParameter(CsiRequestTaskClassificationDto task, string key)
+        {
+            string value;
+            return task.Parameters != null && task.Parameters.TryGetValue(key, out value) ? value : null;
+        }
+
+        private static void CopyParameter(JObject args, CsiRequestTaskClassificationDto task, string sourceName, string targetName)
+        {
+            string value = GetParameter(task, sourceName);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                args[targetName] = value;
+            }
+        }
+
+        private static string CleanupNameList(string text)
+        {
+            string cleaned = Regex.Replace(text ?? string.Empty, @"\b(?:with|section|property|prop|as|to|for|on)\b.*$", string.Empty, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            cleaned = cleaned.Replace(" and ", ",");
+            return cleaned.Trim(' ', ',', '.');
+        }
+
+        private static List<string> SplitNameList(string text)
+        {
+            var names = new List<string>();
+            string[] pieces = (text ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < pieces.Length; i++)
+            {
+                string name = pieces[i].Trim();
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    names.Add(name);
+                }
+            }
+
+            if (names.Count == 0 && !string.IsNullOrWhiteSpace(text))
+            {
+                names.Add(text.Trim());
+            }
+
+            return names;
+        }
+
+        private static bool IsActionWord(string value)
+        {
+            return Regex.IsMatch(value ?? string.Empty, @"^(?:add|create|draw|assign|set|delete|remove|run|execute)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        private static bool IsObjectWord(string value)
+        {
+            return Regex.IsMatch(value ?? string.Empty, @"^(?:point|joint|frame|beam|member|section|property|prop|area|shell|load|pattern|case|combination)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        }
+
+        private static bool ContainsAny(string text, params string[] values)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                if ((text ?? string.Empty).IndexOf(values[i], StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool IsWriteLikeAction(string action)
+        {
+            return Regex.IsMatch(action ?? string.Empty, @"^(?:Add|Assign|Delete|Update|Modify|Export)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
         }
 
         private static List<CsiTaskDto> NormalizeTasks(IReadOnlyList<CsiIntentTaskDto> intentTasks)

@@ -17,5 +17,11 @@ namespace ExcelCSIToolBox.AI.Agent
 
         /// <summary>LLM's explanation of why this decision was made.</summary>
         public string Reason { get; set; }
+
+        /// <summary>Whether the request was understood as model-related but is missing safe dispatch details.</summary>
+        public bool ClarificationRequired { get; set; }
+
+        /// <summary>User-facing clarification text. When set, no tool should be called.</summary>
+        public string ClarificationMessage { get; set; }
     }
 }
