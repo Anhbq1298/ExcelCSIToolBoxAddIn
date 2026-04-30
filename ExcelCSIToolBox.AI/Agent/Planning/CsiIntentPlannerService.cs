@@ -4,9 +4,9 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using ExcelCSIToolBox.Application.Tooling.Contracts;
-using ExcelCSIToolBox.Application.Tooling.Registry;
-using ExcelCSIToolBox.Application.Tooling.Validation;
+using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
+using ExcelCSIToolBox.Application.ToolCatalog.Registry;
+using ExcelCSIToolBox.Application.ToolCatalog.Validation;
 using ExcelCSIToolBox.AI.Ollama;
 using ExcelCSIToolBox.Data.CSISapModel.Intent;
 using ExcelCSIToolBox.Data.CSISapModel.Workflow;
@@ -387,7 +387,7 @@ Rules:
                 return;
             }
 
-            ExcelCSIToolBox.Application.Tooling.Contracts.ToolValidationResult validationResult = _toolRequestValidator.Validate(new ToolRequest
+            ExcelCSIToolBox.Application.ToolCatalog.Contracts.ToolValidationResult validationResult = _toolRequestValidator.Validate(new ToolRequest
             {
                 RawText = task.RawText,
                 Action = task.Action,

@@ -40,7 +40,7 @@ ExcelCSIToolBoxAddIn/
 |   +---Ollama
 |   \---OpenAI
 +---ExcelCSIToolBox.Application
-|   +---Tooling
+|   +---ToolCatalog
 |   |   +---Contracts
 |   |   +---Registry
 |   |   |   \---Modules

@@ -1,8 +1,0 @@
-namespace ExcelCSIToolBox.Application.Tooling.Registry.Modules.CSI.FrameObject
-{
-    public static class FrameObjectParameterRules
-    {
-        public const string AddClarification = "Please provide the frame definition, either by point names or by start/end coordinates.";
-        public const string AssignSectionClarification = "Please provide the frame name(s) and the section property to assign.";
-    }
-}
