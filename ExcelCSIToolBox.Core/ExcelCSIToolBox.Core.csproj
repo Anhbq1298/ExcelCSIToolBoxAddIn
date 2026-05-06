@@ -5,4 +5,7 @@
     <AssemblyName>ExcelCSIToolBox.Core</AssemblyName>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
+  </ItemGroup>
 </Project>

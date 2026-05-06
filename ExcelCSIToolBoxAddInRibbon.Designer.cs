@@ -36,9 +36,9 @@
         {
             this.tabExcelCSIToolBox = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
-            this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonEtabs = this.Factory.CreateRibbonButton();
             this.buttonSap2000 = this.Factory.CreateRibbonButton();
+            this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonAiAgent = this.Factory.CreateRibbonButton();
             this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
@@ -59,12 +59,6 @@
             this.group1.Label = "CSI Toolbox";
             this.group1.Name = "group1";
             // 
-            // groupAiAssistant
-            // 
-            this.groupAiAssistant.Items.Add(this.buttonAiAgent);
-            this.groupAiAssistant.Label = "AI Assistant";
-            this.groupAiAssistant.Name = "groupAiAssistant";
-            // 
             // buttonEtabs
             // 
             this.buttonEtabs.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
@@ -81,10 +75,15 @@
             this.buttonSap2000.ShowImage = true;
             this.buttonSap2000.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonSap2000_Click);
             // 
+            // groupAiAssistant
+            // 
+            this.groupAiAssistant.Items.Add(this.buttonAiAgent);
+            this.groupAiAssistant.Label = "AI Assistant";
+            this.groupAiAssistant.Name = "groupAiAssistant";
+            // 
             // buttonAiAgent
             // 
             this.buttonAiAgent.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.buttonAiAgent.Enabled = true;
             this.buttonAiAgent.Label = "MHT AI Assistant";
             this.buttonAiAgent.Name = "buttonAiAgent";
             this.buttonAiAgent.OfficeImageId = "HappyFace";

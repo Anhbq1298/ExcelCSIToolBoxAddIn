@@ -23,6 +23,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.Excel
 
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Tabular.ExcelConcreteRectangleSectionRow>> ReadConcreteRectangleSectionRows();
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Tabular.ExcelConcreteCircleSectionRow>> ReadConcreteCircleSectionRows();
+
+        OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto> ReadLoadCombinationMatrixRows();
     }
 }
 

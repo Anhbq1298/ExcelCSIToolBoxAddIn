@@ -34,7 +34,7 @@
     <PublishUrl>publish\ExcelCSIToolbox\</PublishUrl>
     <InstallUrl />
     <TargetCulture>en</TargetCulture>
-    <ApplicationVersion>1.0.0.4</ApplicationVersion>
+    <ApplicationVersion>1.0.0.5</ApplicationVersion>
     <AutoIncrementApplicationRevision>true</AutoIncrementApplicationRevision>
     <UpdateEnabled>true</UpdateEnabled>
     <UpdateInterval>7</UpdateInterval>
@@ -269,11 +269,15 @@
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
+    <Compile Include="UI\ViewModels\LoadCombinationMatrixRowViewModel.cs" />
+    <Compile Include="UI\ViewModels\LoadCombinationMatrixViewModel.cs" />
+    <Compile Include="UI\ViewModels\LoadCombinationTypeOption.cs" />
     <Compile Include="UI\ViewModels\SectionDimensionAnnotation.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
     <Compile Include="UI\ViewModels\AiAgentChatMessageViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentChatViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentToolTraceViewModel.cs" />
+    <Compile Include="UI\Helpers\BlankFactorCellBackgroundConverter.cs" />
     <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
@@ -297,6 +301,10 @@
     </Compile>
     <Compile Include="UI\Views\LoadCombinationDetailsWindow.xaml.cs">
       <DependentUpon>LoadCombinationDetailsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\LoadCombinationMatrixView.xaml.cs">
+      <DependentUpon>LoadCombinationMatrixView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\FrameSectionDetailWindow.xaml.cs">
@@ -330,6 +338,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\LoadCombinationDetailsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\LoadCombinationMatrixView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -1210,6 +1210,105 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return detailsResult;
         }
 
+        public OperationResult<LoadCombinationMatrixDto> GetLoadCombinationMatrix()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.GetLoadCombinationMatrix(
+                sapModelResult.Data,
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.LoadPatterns.GetNameList(ref numberNames, ref names),
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.RespCombo.GetNameList(ref numberNames, ref names),
+                (ETABSv1.cSapModel sapModel, string name) =>
+                {
+                    int type = 0;
+                    sapModel.RespCombo.GetTypeOAPI(name, ref type);
+                    return type;
+                },
+                (ETABSv1.cSapModel sapModel, string name, ref int numberItems, ref string[] caseNames, ref int[] caseTypes, ref double[] scaleFactors) =>
+                {
+                    ETABSv1.eCNameType[] cTypes = null;
+                    int ret = sapModel.RespCombo.GetCaseList(name, ref numberItems, ref cTypes, ref caseNames, ref scaleFactors);
+                    if (cTypes != null)
+                    {
+                        caseTypes = new int[cTypes.Length];
+                        for (int i = 0; i < cTypes.Length; i++)
+                        {
+                            caseTypes[i] = (int)cTypes[i];
+                        }
+                    }
+
+                    return ret;
+                });
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetLoadPatternNames()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.GetLoadPatternNames(
+                sapModelResult.Data,
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.LoadPatterns.GetNameList(ref numberNames, ref names));
+        }
+
+        public OperationResult<LoadCombinationApplyResultDto> ApplyLoadCombinationMatrix(IReadOnlyList<LoadCombinationMatrixRowDto> rows)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<LoadCombinationApplyResultDto>.Failure(sapModelResult.Message);
+            }
+
+            var result = Infrastructure.CSISapModel.LoadCombinationService.CSISapModelLoadCombinationService.ApplyLoadCombinationMatrix(
+                sapModelResult.Data,
+                rows,
+                (ETABSv1.cSapModel sapModel, ref int numberNames, ref string[] names) =>
+                    sapModel.RespCombo.GetNameList(ref numberNames, ref names),
+                (ETABSv1.cSapModel sapModel, string name, int combinationType) =>
+                    sapModel.RespCombo.Add(name, combinationType),
+                (ETABSv1.cSapModel sapModel, string name) =>
+                    sapModel.RespCombo.Delete(name),
+                (ETABSv1.cSapModel sapModel, string name, ref int numberItems, ref string[] caseNames, ref int[] caseTypes, ref double[] scaleFactors) =>
+                {
+                    ETABSv1.eCNameType[] cTypes = null;
+                    int ret = sapModel.RespCombo.GetCaseList(name, ref numberItems, ref cTypes, ref caseNames, ref scaleFactors);
+                    if (cTypes != null)
+                    {
+                        caseTypes = new int[cTypes.Length];
+                        for (int i = 0; i < cTypes.Length; i++)
+                        {
+                            caseTypes[i] = (int)cTypes[i];
+                        }
+                    }
+
+                    return ret;
+                },
+                (ETABSv1.cSapModel sapModel, string comboName, int caseNameType, string caseName) =>
+                    sapModel.RespCombo.DeleteCase(comboName, (ETABSv1.eCNameType)caseNameType, caseName),
+                (ETABSv1.cSapModel sapModel, string comboName, int caseNameType, string caseName, double scaleFactor) =>
+                {
+                    ETABSv1.eCNameType nameType = (ETABSv1.eCNameType)caseNameType;
+                    return sapModel.RespCombo.SetCaseList(comboName, ref nameType, caseName, scaleFactor);
+                });
+
+            if (result.IsSuccess)
+            {
+                RefreshView(sapModelResult.Data);
+            }
+
+            return result;
+        }
+
         public OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames)
         {
             var sapModelResult = EnsureEtabsSapModel();

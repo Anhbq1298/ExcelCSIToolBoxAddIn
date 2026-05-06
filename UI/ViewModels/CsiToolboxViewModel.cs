@@ -43,6 +43,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly GetLoadCombinationsUseCase _getLoadCombinationsUseCase;
         private readonly DeleteLoadCombinationsUseCase _deleteLoadCombinationsUseCase;
         private readonly GetLoadCombinationDetailsUseCase _getLoadCombinationDetailsUseCase;
+        private readonly ICSISapModelConnectionService _csiConnectionService;
+        private readonly IExcelSelectionService _excelSelectionService;
 
         private readonly GetLoadPatternsUseCase _getLoadPatternsUseCase;
         private readonly DeleteLoadPatternsUseCase _deleteLoadPatternsUseCase;
@@ -67,6 +69,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _productName = string.IsNullOrWhiteSpace(csiConnectionService.ProductName)
                 ? "CSI"
                 : csiConnectionService.ProductName;
+            _csiConnectionService = csiConnectionService;
+            _excelSelectionService = excelSelectionService;
 
             _loadCSISapModelConnectionUseCase = new LoadCSISapModelConnectionUseCase(csiConnectionService);
             _closeCurrentInstanceUseCase = new CloseCurrentInstanceUseCase(csiConnectionService);
@@ -143,7 +147,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             DeleteSelectedLoadPatternsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadPatterns, _ => IsConnected);
             
             GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations, () => IsConnected);
-            AddLoadCombinationFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Combination From Excel"), () => IsConnected);
+            ModifyLoadCombinationsInMatrixViewCommand = new RelayCommand(ModifyLoadCombinationsInMatrixView, () => IsConnected);
+            AddLoadCombinationFromExcelCommand = ModifyLoadCombinationsInMatrixViewCommand;
             DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => IsConnected);
             ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
             
@@ -250,6 +255,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand DeleteSelectedLoadPatternsCommand { get; }
         
         public ICommand GetLoadCombinationsCommand { get; }
+        public ICommand ModifyLoadCombinationsInMatrixViewCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
         public ICommand ViewLoadCombinationCommand { get; }
@@ -808,6 +814,32 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 {
                     ShowOperationResult(OperationResult.Failure(result.Message));
                 }
+            }
+        }
+
+        private void ModifyLoadCombinationsInMatrixView()
+        {
+            var matrixResult = _csiConnectionService.GetLoadCombinationMatrix();
+            if (!matrixResult.IsSuccess)
+            {
+                ShowOperationResult(OperationResult.Failure(matrixResult.Message));
+                return;
+            }
+
+            var viewModel = new LoadCombinationMatrixViewModel(matrixResult.Data, ProductTitle);
+            var window = new ExcelCSIToolBoxAddIn.UI.Views.LoadCombinationMatrixView(viewModel);
+            window.ShowDialog();
+
+            if (!viewModel.WasSaved)
+            {
+                return;
+            }
+
+            var saveResult = _csiConnectionService.ApplyLoadCombinationMatrix(viewModel.SavedRows);
+            ShowOperationResult(saveResult);
+            if (saveResult.IsSuccess)
+            {
+                GetLoadCombinations();
             }
         }
 

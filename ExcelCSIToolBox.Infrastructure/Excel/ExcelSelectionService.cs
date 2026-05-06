@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 using Microsoft.Office.Interop.Excel;
 
 namespace ExcelCSIToolBox.Infrastructure.Excel
@@ -317,6 +319,137 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
             return result;
         }
 
+        public OperationResult<LoadCombinationMatrixDto> ReadLoadCombinationMatrixRows()
+        {
+            var selectionResult = GetActiveSelection(
+                "Select a load combination matrix range:\r\nLoadCombinationName | CombinationType | load pattern columns...",
+                "Select Load Combination Matrix");
+            if (!selectionResult.IsSuccess)
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure(selectionResult.Message);
+            }
+
+            var selection = selectionResult.Data;
+            int rowCount = selection.Rows.Count;
+            int columnCount = selection.Columns.Count;
+
+            if (rowCount < 2)
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: select a header row and at least one data row.");
+            }
+
+            if (columnCount < 3)
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: expected at least 3 columns (LoadCombinationName, CombinationType, and one load pattern).");
+            }
+
+            object rawValues = selection.Value2;
+            string firstHeader = ReadCellText(rawValues, selection, 1, 1);
+            string secondHeader = ReadCellText(rawValues, selection, 1, 2);
+
+            if (!string.Equals(firstHeader, "LoadCombinationName", StringComparison.OrdinalIgnoreCase))
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: first header must be LoadCombinationName.");
+            }
+
+            if (!string.Equals(secondHeader, "CombinationType", StringComparison.OrdinalIgnoreCase))
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: second header must be CombinationType.");
+            }
+
+            var matrix = new LoadCombinationMatrixDto();
+            var failures = new List<string>();
+            var seenHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            for (int column = 3; column <= columnCount; column++)
+            {
+                string header = ReadCellText(rawValues, selection, 1, column);
+                if (string.IsNullOrWhiteSpace(header))
+                {
+                    failures.Add($"Column {column}: load pattern header is blank.");
+                    continue;
+                }
+
+                header = header.Trim();
+                if (!seenHeaders.Add(header))
+                {
+                    failures.Add($"Column '{header}': duplicate load pattern header.");
+                    continue;
+                }
+
+                matrix.LoadPatternNames.Add(header);
+            }
+
+            if (matrix.LoadPatternNames.Count == 0)
+            {
+                failures.Add("No load pattern columns were found.");
+            }
+
+            for (int row = 2; row <= rowCount; row++)
+            {
+                if (IsBlankExcelRow(rawValues, selection, row, columnCount))
+                {
+                    continue;
+                }
+
+                var dto = new LoadCombinationMatrixRowDto
+                {
+                    LoadCombinationName = ReadCellText(rawValues, selection, row, 1),
+                    CombinationType = 0
+                };
+
+                string typeText = ReadCellText(rawValues, selection, row, 2);
+                if (!TryParseCombinationType(typeText, out int combinationType))
+                {
+                    failures.Add($"Row {selection.Row + row - 1}, column CombinationType: value '{typeText}' is not a valid combination type.");
+                }
+                else
+                {
+                    dto.CombinationType = combinationType;
+                }
+
+                for (int column = 3; column <= columnCount; column++)
+                {
+                    string patternName = ReadCellText(rawValues, selection, 1, column);
+                    if (string.IsNullOrWhiteSpace(patternName))
+                    {
+                        continue;
+                    }
+
+                    patternName = patternName.Trim();
+                    string factorText = ReadCellText(rawValues, selection, row, column);
+                    if (string.IsNullOrWhiteSpace(factorText))
+                    {
+                        dto.Factors[patternName] = null;
+                        continue;
+                    }
+
+                    if (TryParseDouble(factorText, out double factor))
+                    {
+                        dto.Factors[patternName] = factor;
+                    }
+                    else
+                    {
+                        failures.Add($"Row {selection.Row + row - 1}, column {patternName}: value '{factorText}' is not a valid number.");
+                    }
+                }
+
+                matrix.Rows.Add(dto);
+            }
+
+            if (failures.Count > 0)
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel parsing failed: " + string.Join(" ", failures));
+            }
+
+            if (matrix.Rows.Count == 0)
+            {
+                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel parsing failed: no non-empty load combination rows were found.");
+            }
+
+            return OperationResult<LoadCombinationMatrixDto>.Success(matrix);
+        }
+
         private OperationResult<IReadOnlyList<T>> ReadRows<T>(int expectedColumns, string expectedColumnsDesc, string prompt, string title, System.Func<object, Range, int, T> rowMapper)
         {
             var selectionResult = GetActiveSelection(prompt, title);
@@ -423,6 +556,57 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
             }
 
             return Convert.ToString(value)?.Trim();
+        }
+
+        private static bool IsBlankExcelRow(object rawValues, Range selection, int row, int columnCount)
+        {
+            for (int column = 1; column <= columnCount; column++)
+            {
+                if (!string.IsNullOrWhiteSpace(ReadCellText(rawValues, selection, row, column)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static bool TryParseDouble(string value, out double result)
+        {
+            return double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out result)
+                || double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
+        }
+
+        private static bool TryParseCombinationType(string value, out int result)
+        {
+            result = 0;
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int numeric) && numeric >= 0 && numeric <= 4)
+            {
+                result = numeric;
+                return true;
+            }
+
+            string normalized = (value ?? string.Empty).Trim().Replace(" ", string.Empty).Replace("-", string.Empty).ToLowerInvariant();
+            switch (normalized)
+            {
+                case "linearadditive":
+                    result = (int)LoadCombinationType.LinearAdditive;
+                    return true;
+                case "envelope":
+                    result = (int)LoadCombinationType.Envelope;
+                    return true;
+                case "absoluteadditive":
+                    result = (int)LoadCombinationType.AbsoluteAdditive;
+                    return true;
+                case "srss":
+                    result = (int)LoadCombinationType.SRSS;
+                    return true;
+                case "rangeadditive":
+                    result = (int)LoadCombinationType.RangeAdditive;
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 }

@@ -713,7 +713,7 @@
                                     
                                     <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
                                         <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
-                                        <Button Content="Add From Excel" HorizontalAlignment="Stretch" Command="{Binding AddLoadCombinationFromExcelCommand}" Margin="0,0,0,8"/>
+                                        <Button Content="Modify in Matrix View" HorizontalAlignment="Stretch" Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}" Margin="0,0,0,8"/>
                                     </StackPanel>
                                 </Grid>
                             </GroupBox>
