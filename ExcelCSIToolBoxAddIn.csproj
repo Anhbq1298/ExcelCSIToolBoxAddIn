@@ -225,13 +225,13 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Include="ExcelCSIToolBoxAddInRibbon.resx">
+    <EmbeddedResource Include="AddIn\Ribbon\ExcelCSIToolBoxAddInRibbon.resx">
       <DependentUpon>ExcelCSIToolBoxAddInRibbon.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\Views\AiAgentTaskPaneHost.resx">
       <DependentUpon>AiAgentTaskPaneHost.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="ExcelCSIToolBoxAddIn_TemporaryKey.pfx" />
+    <None Include="Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -240,10 +240,10 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="ExcelCSIToolBoxAddInRibbon.cs">
+    <Compile Include="AddIn\Ribbon\ExcelCSIToolBoxAddInRibbon.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ExcelCSIToolBoxAddInRibbon.Designer.cs">
+    <Compile Include="AddIn\Ribbon\ExcelCSIToolBoxAddInRibbon.Designer.cs">
       <DependentUpon>ExcelCSIToolBoxAddInRibbon.cs</DependentUpon>
     </Compile>
     <Compile Include="ExcelCSIToolBoxAddin.cs">
@@ -371,7 +371,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>DAE9A0AB0DEBBC19F78AB3173B0750B9658AE3C2</ManifestCertificateThumbprint>
