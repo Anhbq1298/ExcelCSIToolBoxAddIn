@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
+using ExcelCSIToolBox.Core.Services;
 using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
 using ExcelCSIToolBox.Data.CSISapModel.PointObject;
 using ExcelCSIToolBox.Data.DTOs.CSI;
@@ -12,8 +13,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 {
     public sealed class CsiModelCommandService : ICsiModelCommandService
     {
-        private readonly ICSISapModelConnectionService _etabsService;
-        private readonly ICSISapModelConnectionService _sap2000Service;
+        private readonly CsiServiceLocator _serviceLocator;
         private readonly IMcpWriteGuard _writeGuard;
         private readonly CsiOperationLogger _logger;
 
@@ -23,8 +23,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             IMcpWriteGuard writeGuard,
             CsiOperationLogger logger)
         {
-            _etabsService = etabsService ?? throw new ArgumentNullException(nameof(etabsService));
-            _sap2000Service = sap2000Service ?? throw new ArgumentNullException(nameof(sap2000Service));
+            _serviceLocator = new CsiServiceLocator(etabsService, sap2000Service);
             _writeGuard = writeGuard ?? throw new ArgumentNullException(nameof(writeGuard));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -205,49 +204,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         {
             return string.IsNullOrWhiteSpace(sectionName) ? "Default" : sectionName.Trim();
         }
-
-        /*
-         * Legacy implementation removed: frame creation now verifies the created frame before reporting success.
-         */
-        /*
-                    }
-                }));
-        }
-
-        public CsiWritePreview PreviewAddFrameByPoints(string point1Name, string point2Name, string sectionName, string userName)
-        {
-            return Preview("frames.add_by_points", CsiMethodRiskLevel.Low, false, true,
-                $"This will add one frame between points '{point1Name}' and '{point2Name}' using section '{sectionName}'.",
-                One(CleanName(userName)));
-        }
-
-        public OperationResult AddFrameByPoints(string point1Name, string point2Name, string sectionName, string userName, bool confirmed)
-        {
-            if (string.IsNullOrWhiteSpace(point1Name) || string.IsNullOrWhiteSpace(point2Name))
-            {
-                return OperationResult.Failure("Point1Name and Point2Name are required.");
-            }
-
-            if (string.IsNullOrWhiteSpace(sectionName))
-            {
-                return OperationResult.Failure("SectionName is required.");
-            }
-
-            return Execute("frames.add_by_points", "Frames", "Creation", CsiMethodRiskLevel.Low, confirmed, One(CleanName(userName)),
-                $"point1={point1Name}, point2={point2Name}, section={sectionName}, userName={CleanName(userName)}",
-                service => service.AddFramesByPoint(new[]
-                {
-                    new CSISapModelFrameByPointInput
-                    {
-                        ExcelRowNumber = 1,
-                        UniqueName = CleanName(userName),
-                        SectionName = sectionName,
-                        Point1Name = point1Name,
-                        Point2Name = point2Name
-                    }
-                }));
-        }
-        */
 
         public CsiWritePreview PreviewAssignFrameSection(IReadOnlyList<string> frameNames, string sectionName)
         {
@@ -438,7 +394,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 return guardResult;
             }
 
-            OperationResult<ICSISapModelConnectionService> serviceResult = GetActiveService();
+            OperationResult<ICSISapModelConnectionService> serviceResult = _serviceLocator.GetActiveService();
             if (!serviceResult.IsSuccess)
             {
                 _logger.Log("None", operationName, category, subCategory, riskLevel, argumentsSummary, affectedObjects, confirmed, false, serviceResult.Message);
@@ -456,35 +412,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 _logger.Log(serviceResult.Data.ProductName, operationName, category, subCategory, riskLevel, argumentsSummary, affectedObjects, confirmed, false, ex.Message);
                 return OperationResult.Failure("CSI write operation failed: " + ex.Message);
             }
-        }
-
-        private OperationResult<ICSISapModelConnectionService> GetActiveService()
-        {
-            OperationResult<CSISapModelConnectionInfoDTO> etabs = _etabsService.GetCurrentConnection();
-            if (etabs.IsSuccess && etabs.Data != null && etabs.Data.IsConnected)
-            {
-                return OperationResult<ICSISapModelConnectionService>.Success(_etabsService);
-            }
-
-            OperationResult<CSISapModelConnectionInfoDTO> sap2000 = _sap2000Service.GetCurrentConnection();
-            if (sap2000.IsSuccess && sap2000.Data != null && sap2000.Data.IsConnected)
-            {
-                return OperationResult<ICSISapModelConnectionService>.Success(_sap2000Service);
-            }
-
-            etabs = _etabsService.TryAttachToRunningInstance();
-            if (etabs.IsSuccess && etabs.Data != null && etabs.Data.IsConnected)
-            {
-                return OperationResult<ICSISapModelConnectionService>.Success(_etabsService);
-            }
-
-            sap2000 = _sap2000Service.TryAttachToRunningInstance();
-            if (sap2000.IsSuccess && sap2000.Data != null && sap2000.Data.IsConnected)
-            {
-                return OperationResult<ICSISapModelConnectionService>.Success(_sap2000Service);
-            }
-
-            return OperationResult<ICSISapModelConnectionService>.Failure("No ETABS or SAP2000 model is attached.");
         }
 
         private static CsiWritePreview Preview(

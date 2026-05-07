@@ -21,40 +21,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     /// </summary>
     public class CsiToolboxViewModel : ViewModelBase
     {
-        private readonly LoadCSISapModelConnectionUseCase _loadCSISapModelConnectionUseCase;
-        private readonly CloseCurrentInstanceUseCase _closeCurrentInstanceUseCase;
-        private readonly GetSelectedCSISapModelPointsUseCase _getSelectedCSISapModelPointsUseCase;
-        private readonly GetSelectedCSISapModelFramesUseCase _getSelectedCSISapModelFramesUseCase;
-        private readonly SelectPointsFromExcelRangeByUniqueNameUseCase _selectPointsFromExcelRangeByUniqueNameUseCase;
-        private readonly SelectFramesFromExcelRangeByUniqueNameUseCase _selectFramesFromExcelRangeByUniqueNameUseCase;
-        private readonly AddPointsFromExcelRangeUseCase _addPointsFromExcelRangeUseCase;
-        private readonly AddFrameByCoordinatesFromExcelRangeUseCase _addFrameByCoordinatesFromExcelRangeUseCase;
-        private readonly AddFramesByPointFromExcelRangeUseCase _addFramesByPointFromExcelRangeUseCase;
-        private readonly CreateShellAreasFromSelectedFramesUseCase _createShellAreasFromSelectedFramesUseCase;
-
-        private readonly CreateSteelISectionsFromExcelRangeUseCase _createSteelISectionsUseCase;
-        private readonly CreateSteelChannelSectionsFromExcelRangeUseCase _createSteelChannelSectionsUseCase;
-        private readonly CreateSteelAngleSectionsFromExcelRangeUseCase _createSteelAngleSectionsUseCase;
-        private readonly CreateSteelPipeSectionsFromExcelRangeUseCase _createSteelPipeSectionsUseCase;
-        private readonly CreateSteelTubeSectionsFromExcelRangeUseCase _createSteelTubeSectionsUseCase;
-
-        private readonly CreateConcreteRectangleSectionsFromExcelRangeUseCase _createConcreteRectangleSectionsUseCase;
-        private readonly CreateConcreteCircleSectionsFromExcelRangeUseCase _createConcreteCircleSectionsUseCase;
-        
-        private readonly GetLoadCombinationsUseCase _getLoadCombinationsUseCase;
-        private readonly DeleteLoadCombinationsUseCase _deleteLoadCombinationsUseCase;
-        private readonly GetLoadCombinationDetailsUseCase _getLoadCombinationDetailsUseCase;
+        private readonly CsiToolboxUseCaseBundle _useCases;
         private readonly ICSISapModelConnectionService _csiConnectionService;
         private readonly IExcelSelectionService _excelSelectionService;
         private readonly IExcelOutputService _excelOutputService;
-
-        private readonly GetLoadPatternsUseCase _getLoadPatternsUseCase;
-        private readonly DeleteLoadPatternsUseCase _deleteLoadPatternsUseCase;
-
-        private readonly GetFrameSectionsUseCase _getFrameSectionsUseCase;
-        private readonly GetFrameSectionDetailUseCase _getFrameSectionDetailUseCase;
-        private readonly UpdateFrameSectionUseCase _updateFrameSectionUseCase;
-        private readonly RenameFrameSectionUseCase _renameFrameSectionUseCase;
 
         private string _modelName;
         private bool _isConnected;
@@ -67,44 +37,29 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ICSISapModelConnectionService csiConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
+            : this(
+                new CsiToolboxUseCaseBundle(csiConnectionService, excelSelectionService, excelOutputService),
+                csiConnectionService,
+                excelSelectionService,
+                excelOutputService)
         {
+        }
+
+        public CsiToolboxViewModel(
+            CsiToolboxUseCaseBundle useCases,
+            ICSISapModelConnectionService csiConnectionService,
+            IExcelSelectionService excelSelectionService,
+            IExcelOutputService excelOutputService)
+        {
+            if (csiConnectionService == null) throw new ArgumentNullException(nameof(csiConnectionService));
+
             _productName = string.IsNullOrWhiteSpace(csiConnectionService.ProductName)
                 ? "CSI"
                 : csiConnectionService.ProductName;
+            _useCases = useCases ?? throw new ArgumentNullException(nameof(useCases));
             _csiConnectionService = csiConnectionService;
-            _excelSelectionService = excelSelectionService;
-            _excelOutputService = excelOutputService;
-
-            _loadCSISapModelConnectionUseCase = new LoadCSISapModelConnectionUseCase(csiConnectionService);
-            _closeCurrentInstanceUseCase = new CloseCurrentInstanceUseCase(csiConnectionService);
-            _getSelectedCSISapModelPointsUseCase = new GetSelectedCSISapModelPointsUseCase(csiConnectionService, excelOutputService);
-            _getSelectedCSISapModelFramesUseCase = new GetSelectedCSISapModelFramesUseCase(csiConnectionService, excelOutputService);
-            _selectPointsFromExcelRangeByUniqueNameUseCase = new SelectPointsFromExcelRangeByUniqueNameUseCase(csiConnectionService, excelSelectionService);
-            _selectFramesFromExcelRangeByUniqueNameUseCase = new SelectFramesFromExcelRangeByUniqueNameUseCase(csiConnectionService, excelSelectionService);
-            _addPointsFromExcelRangeUseCase = new AddPointsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _addFrameByCoordinatesFromExcelRangeUseCase = new AddFrameByCoordinatesFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _addFramesByPointFromExcelRangeUseCase = new AddFramesByPointFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _createShellAreasFromSelectedFramesUseCase = new CreateShellAreasFromSelectedFramesUseCase(csiConnectionService);
-            _createSteelISectionsUseCase = new CreateSteelISectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _createSteelChannelSectionsUseCase = new CreateSteelChannelSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _createSteelAngleSectionsUseCase = new CreateSteelAngleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _createSteelPipeSectionsUseCase = new CreateSteelPipeSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _createSteelTubeSectionsUseCase = new CreateSteelTubeSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-
-            _createConcreteRectangleSectionsUseCase = new CreateConcreteRectangleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-            _createConcreteCircleSectionsUseCase = new CreateConcreteCircleSectionsFromExcelRangeUseCase(csiConnectionService, excelSelectionService);
-
-            _getLoadCombinationsUseCase = new GetLoadCombinationsUseCase(csiConnectionService);
-            _deleteLoadCombinationsUseCase = new DeleteLoadCombinationsUseCase(csiConnectionService);
-            _getLoadCombinationDetailsUseCase = new GetLoadCombinationDetailsUseCase(csiConnectionService);
-
-            _getLoadPatternsUseCase = new GetLoadPatternsUseCase(csiConnectionService);
-            _deleteLoadPatternsUseCase = new DeleteLoadPatternsUseCase(csiConnectionService);
-
-            _getFrameSectionsUseCase = new GetFrameSectionsUseCase(csiConnectionService);
-            _getFrameSectionDetailUseCase = new GetFrameSectionDetailUseCase(csiConnectionService);
-            _updateFrameSectionUseCase = new UpdateFrameSectionUseCase(csiConnectionService);
-            _renameFrameSectionUseCase = new RenameFrameSectionUseCase(csiConnectionService);
+            _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
+            _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
 
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>();
@@ -114,14 +69,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
 
-            CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelISectionsUseCase.Execute()), () => IsConnected);
-            CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelChannelSectionsUseCase.Execute()), () => IsConnected);
-            CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelAngleSectionsUseCase.Execute()), () => IsConnected);
-            CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelTubeSectionsUseCase.Execute()), () => IsConnected);
-            CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_createSteelPipeSectionsUseCase.Execute()), () => IsConnected);
+            CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelISections.Execute()), () => IsConnected);
+            CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelChannelSections.Execute()), () => IsConnected);
+            CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelAngleSections.Execute()), () => IsConnected);
+            CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelTubeSections.Execute()), () => IsConnected);
+            CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelPipeSections.Execute()), () => IsConnected);
 
-            CreateConcreteRectangleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteRectangleSectionsUseCase.Execute()), () => IsConnected);
-            CreateConcreteCircleSectionCommand = new RelayCommand(() => ShowOperationResult(_createConcreteCircleSectionsUseCase.Execute()), () => IsConnected);
+            CreateConcreteRectangleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateConcreteRectangleSections.Execute()), () => IsConnected);
+            CreateConcreteCircleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateConcreteCircleSections.Execute()), () => IsConnected);
 
             SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName, () => IsConnected);
             SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName, () => IsConnected);
@@ -544,18 +499,18 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void LoadSelectedSectionDetail(CSISapModelFrameSectionDTO section)
         {
-            if (section == null || _getFrameSectionDetailUseCase == null)
+            if (section == null || _useCases.GetFrameSectionDetail == null)
             {
                 SelectedFrameSectionDetail = null;
                 return;
             }
-            var result = _getFrameSectionDetailUseCase.Execute(section.Name);
+            var result = _useCases.GetFrameSectionDetail.Execute(section.Name);
             SelectedFrameSectionDetail = result.IsSuccess ? result.Data : null;
         }
 
         private void LoadConnectionState(bool showMessage)
         {
-            var result = _loadCSISapModelConnectionUseCase.Execute();
+            var result = _useCases.LoadConnection.Execute();
 
             if (result.IsSuccess && result.Data != null)
             {
@@ -574,8 +529,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 GetLoadCombinations();
                 GetFrameSections();
                 RefreshCommandStates();
-                new ExcelCSIToolBoxAddIn.AddIn.WpfThreadDispatcher().InvokeOnUiThread(RefreshCommandStates);
-
                 if (showMessage)
                 {
                     ShowOperationResult(OperationResult.Success("Successfully attached to the running application."));
@@ -607,7 +560,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void CloseCurrentInstance()
         {
-            var result = _closeCurrentInstanceUseCase.Execute();
+            var result = _useCases.CloseCurrentInstance.Execute();
 
             if (result.IsSuccess)
             {
@@ -646,37 +599,37 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void SelectPointsByUniqueName()
         {
-            ShowOperationResult(_selectPointsFromExcelRangeByUniqueNameUseCase.Execute());
+            ShowOperationResult(_useCases.SelectPointsByUniqueName.Execute());
         }
 
         private void SelectFramesByUniqueName()
         {
-            ShowOperationResult(_selectFramesFromExcelRangeByUniqueNameUseCase.Execute());
+            ShowOperationResult(_useCases.SelectFramesByUniqueName.Execute());
         }
 
         private void AddPointByCartesian()
         {
-            ShowOperationResult(_addPointsFromExcelRangeUseCase.Execute());
+            ShowOperationResult(_useCases.AddPointsByCartesian.Execute());
         }
 
         private void AddFramesByCoordinates()
         {
-            ShowOperationResult(_addFrameByCoordinatesFromExcelRangeUseCase.Execute());
+            ShowOperationResult(_useCases.AddFramesByCoordinates.Execute());
         }
 
         private void AddFramesByPointNames()
         {
-            ShowOperationResult(_addFramesByPointFromExcelRangeUseCase.Execute());
+            ShowOperationResult(_useCases.AddFramesByPointNames.Execute());
         }
 
         private void GetSelectedPoints()
         {
-            ShowOperationResult(_getSelectedCSISapModelPointsUseCase.Execute());
+            ShowOperationResult(_useCases.GetSelectedPoints.Execute());
         }
 
         private void GetSelectedFrames()
         {
-            ShowOperationResult(_getSelectedCSISapModelFramesUseCase.Execute());
+            ShowOperationResult(_useCases.GetSelectedFrames.Execute());
         }
 
         private void CreateShellAreasFromSelectedFrames()
@@ -687,7 +640,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            ShowOperationResult(_createShellAreasFromSelectedFramesUseCase.Execute(propertyName));
+            ShowOperationResult(_useCases.CreateShellAreasFromSelectedFrames.Execute(propertyName));
         }
 
         private static string PromptForShellPropertyName()
@@ -772,7 +725,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void GetLoadPatterns()
         {
-            var result = _getLoadPatternsUseCase.Execute();
+            var result = _useCases.GetLoadPatterns.Execute();
             if (result.IsSuccess)
             {
                 LoadPatterns.Clear();
@@ -805,7 +758,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             if (list.Count == 0) return;
 
-            var result = _deleteLoadPatternsUseCase.Execute(list);
+            var result = _useCases.DeleteLoadPatterns.Execute(list);
             ShowOperationResult(result);
             if (result.IsSuccess)
             {
@@ -815,7 +768,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void GetLoadCombinations()
         {
-            var result = _getLoadCombinationsUseCase.Execute();
+            var result = _useCases.GetLoadCombinations.Execute();
             if (result.IsSuccess)
             {
                 LoadCombinations.Clear();
@@ -848,7 +801,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             if (list.Count == 0) return;
 
-            var result = _deleteLoadCombinationsUseCase.Execute(list);
+            var result = _useCases.DeleteLoadCombinations.Execute(list);
             ShowOperationResult(result);
             if (result.IsSuccess)
             {
@@ -864,7 +817,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var firstItem = selectedItems[0];
             if (firstItem is ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO dto)
             {
-                var result = _getLoadCombinationDetailsUseCase.Execute(dto.Name);
+                var result = _useCases.GetLoadCombinationDetails.Execute(dto.Name);
                 if (result.IsSuccess)
                 {
                     var window = new ExcelCSIToolBoxAddIn.UI.Views.LoadCombinationDetailsWindow(result.Data);
@@ -944,7 +897,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void GetFrameSections()
         {
-            var result = _getFrameSectionsUseCase.Execute();
+            var result = _useCases.GetFrameSections.Execute();
             if (result.IsSuccess)
             {
                 FrameSections.Clear();
@@ -966,7 +919,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             if (section == null) return;
 
-            var result = _getFrameSectionDetailUseCase.Execute(section.Name);
+            var result = _useCases.GetFrameSectionDetail.Execute(section.Name);
             if (result.IsSuccess)
             {
                 var window = new ExcelCSIToolBoxAddIn.UI.Views.FrameSectionDetailWindow(result.Data);
@@ -993,13 +946,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                     var renameInput = window.ViewModel.ToRenameDto();
                     selectedName = renameInput.SectionName;
-                    saveResult = _renameFrameSectionUseCase.Execute(renameInput);
+                    saveResult = _useCases.RenameFrameSection.Execute(renameInput);
                 }
                 else
                 {
                     var updateInput = window.ViewModel.ToUpdateDto();
                     selectedName = updateInput.SectionName;
-                    saveResult = _updateFrameSectionUseCase.Execute(updateInput);
+                    saveResult = _useCases.UpdateFrameSection.Execute(updateInput);
                 }
 
                 ShowOperationResult(saveResult);

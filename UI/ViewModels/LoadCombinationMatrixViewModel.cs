@@ -260,7 +260,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     }
 
                     dto.LoadCaseFactors[patternName] = factor;
-                    dto.Factors[patternName] = factor;
                     dto.FactorCaseTypes[patternName] = row.GetFactorCaseType(patternName);
                 }
 
@@ -291,7 +290,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     }
 
                     dto.LoadCombinationFactors[comboName] = factor;
-                    dto.Factors[comboName] = factor;
                     dto.FactorCaseTypes[comboName] = 1;
                 }
 

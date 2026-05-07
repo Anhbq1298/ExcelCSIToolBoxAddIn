@@ -144,10 +144,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 {
                     factor = loadCaseFactor;
                 }
-                else if (dto.Factors != null && dto.Factors.TryGetValue(patternName, out double? fallbackFactor))
-                {
-                    factor = fallbackFactor;
-                }
 
                 if (factor.HasValue)
                 {

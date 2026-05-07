@@ -268,7 +268,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                             row.LoadCaseFactors[caseName] = scaleFactors[i];
                         }
 
-                        row.Factors[caseName] = scaleFactors[i];
                         row.FactorCaseTypes[caseName] = caseNameType;
                     }
                 }
@@ -352,14 +351,9 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                 }
 
                 bool failed = false;
-                bool hasSeparatedCombinationFactors = row.LoadCombinationFactors != null && row.LoadCombinationFactors.Count > 0;
-                var loadCaseFactors = row.LoadCaseFactors != null && (row.LoadCaseFactors.Count > 0 || hasSeparatedCombinationFactors)
-                    ? row.LoadCaseFactors
-                    : row.Factors;
-
-                if (loadCaseFactors != null)
+                if (row.LoadCaseFactors != null)
                 {
-                    foreach (var factor in loadCaseFactors)
+                    foreach (var factor in row.LoadCaseFactors)
                     {
                         if (string.IsNullOrWhiteSpace(factor.Key) || !factor.Value.HasValue || factor.Value.Value == 0d)
                         {

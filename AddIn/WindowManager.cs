@@ -70,7 +70,12 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             if (pane == null)
             {
                 UserControl control = createControl();
-                control.DataContext = new CsiToolboxViewModel(connectionService, _excelSelectionService, _excelOutputService);
+                var useCases = new CsiToolboxUseCaseBundle(connectionService, _excelSelectionService, _excelOutputService);
+                control.DataContext = new CsiToolboxViewModel(
+                    useCases,
+                    connectionService,
+                    _excelSelectionService,
+                    _excelOutputService);
 
                 host = new WpfTaskPaneHost(control);
                 pane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(host, title);

@@ -421,14 +421,12 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
                     string factorText = ReadCellText(rawValues, selection, row, column);
                     if (string.IsNullOrWhiteSpace(factorText))
                     {
-                        dto.Factors[patternName] = null;
                         dto.LoadCaseFactors[patternName] = null;
                         continue;
                     }
 
                     if (TryParseDouble(factorText, out double factor))
                     {
-                        dto.Factors[patternName] = factor;
                         dto.FactorCaseTypes[patternName] = 0;
                         dto.LoadCaseFactors[patternName] = factor;
                     }
