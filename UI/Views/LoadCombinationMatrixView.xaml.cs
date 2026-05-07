@@ -28,6 +28,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             {
                 _viewModel.RequestClose -= ViewModel_RequestClose;
                 _viewModel.LoadPatternNames.CollectionChanged -= LoadPatternNames_CollectionChanged;
+                _viewModel.LoadCombinationReferenceNames.CollectionChanged -= LoadPatternNames_CollectionChanged;
             }
 
             _viewModel = viewModel;
@@ -35,6 +36,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             {
                 _viewModel.RequestClose += ViewModel_RequestClose;
                 _viewModel.LoadPatternNames.CollectionChanged += LoadPatternNames_CollectionChanged;
+                _viewModel.LoadCombinationReferenceNames.CollectionChanged += LoadPatternNames_CollectionChanged;
             }
         }
 
@@ -66,6 +68,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 },
                 MinWidth = 180,
                 Width = new DataGridLength(260),
+                HeaderStyle = FindHeaderStyle("NeutralMatrixHeaderStyle"),
                 ElementStyle = CreateTextStyle(TextAlignment.Left),
                 EditingElementStyle = CreateTextBoxStyle(TextAlignment.Left)
             });
@@ -83,13 +86,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 DisplayMemberPath = "DisplayName",
                 MinWidth = 150,
                 Width = new DataGridLength(170),
+                HeaderStyle = FindHeaderStyle("NeutralMatrixHeaderStyle"),
                 ElementStyle = CreateComboBoxStyle(false),
                 EditingElementStyle = CreateComboBoxStyle(true)
             });
 
             foreach (string patternName in _viewModel.LoadPatternNames)
             {
-                var binding = new Binding("[" + patternName + "]")
+                var binding = new Binding("LoadCaseFactors[" + patternName + "]")
                 {
                     Mode = BindingMode.TwoWay,
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
@@ -98,14 +102,43 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
                 MatrixGrid.Columns.Add(new DataGridTextColumn
                 {
-                    Header = patternName,
+                    Header = "LC | " + patternName,
                     Binding = binding,
                     MinWidth = 90,
                     Width = new DataGridLength(1, DataGridLengthUnitType.Auto),
+                    HeaderStyle = FindHeaderStyle("NeutralMatrixHeaderStyle"),
+                    CanUserReorder = false,
                     ElementStyle = CreateTextStyle(TextAlignment.Center),
                     EditingElementStyle = CreateTextBoxStyle(TextAlignment.Center)
                 });
             }
+
+            foreach (string comboName in _viewModel.LoadCombinationReferenceNames)
+            {
+                var binding = new Binding("LoadCombinationFactors[" + comboName + "]")
+                {
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    TargetNullValue = string.Empty
+                };
+
+                MatrixGrid.Columns.Add(new DataGridTextColumn
+                {
+                    Header = "COMBO | " + comboName,
+                    Binding = binding,
+                    MinWidth = 100,
+                    Width = new DataGridLength(1, DataGridLengthUnitType.Auto),
+                    HeaderStyle = FindHeaderStyle("LoadCombinationHeaderStyle"),
+                    CanUserReorder = false,
+                    ElementStyle = CreateTextStyle(TextAlignment.Center),
+                    EditingElementStyle = CreateTextBoxStyle(TextAlignment.Center)
+                });
+            }
+        }
+
+        private Style FindHeaderStyle(string resourceKey)
+        {
+            return MatrixGrid.TryFindResource(resourceKey) as Style;
         }
 
         private static Style CreateTextStyle(TextAlignment alignment)

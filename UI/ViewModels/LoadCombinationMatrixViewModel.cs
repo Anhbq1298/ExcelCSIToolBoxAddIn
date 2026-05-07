@@ -15,7 +15,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class LoadCombinationMatrixViewModel : ViewModelBase
     {
         private readonly string _productTitle;
+        private readonly HashSet<string> _originalLoadCombinationNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private IReadOnlyList<LoadCombinationMatrixRowDto> _savedRows = new List<LoadCombinationMatrixRowDto>();
+        private IReadOnlyList<string> _savedDeletedLoadCombinationNames = new List<string>();
 
         public LoadCombinationMatrixViewModel(
             LoadCombinationMatrixDto initialMatrix,
@@ -25,6 +27,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             Rows = new ObservableCollection<LoadCombinationMatrixRowViewModel>();
             LoadPatternNames = new ObservableCollection<string>();
+            LoadCombinationReferenceNames = new ObservableCollection<string>();
             CombinationTypeOptions = CreateCombinationTypeOptions();
 
             AddRowCommand = new RelayCommand(AddRow);
@@ -37,6 +40,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ObservableCollection<LoadCombinationMatrixRowViewModel> Rows { get; }
         public ObservableCollection<string> LoadPatternNames { get; }
+        public ObservableCollection<string> LoadCombinationReferenceNames { get; }
         public ObservableCollection<LoadCombinationTypeOption> CombinationTypeOptions { get; }
 
         public ICommand AddRowCommand { get; }
@@ -51,11 +55,18 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             get { return _savedRows; }
         }
 
+        public IReadOnlyList<string> SavedDeletedLoadCombinationNames
+        {
+            get { return _savedDeletedLoadCombinationNames; }
+        }
+
         public event EventHandler RequestClose;
 
         private void LoadMatrix(LoadCombinationMatrixDto matrix)
         {
+            _originalLoadCombinationNames.Clear();
             LoadPatternNames.Clear();
+            LoadCombinationReferenceNames.Clear();
             Rows.Clear();
 
             var patternNames = matrix.LoadPatternNames ?? new List<string>();
@@ -69,11 +80,28 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 }
             }
 
+            var referenceNames = matrix.LoadCombinationReferenceNames ?? new List<string>();
+            foreach (string referenceName in referenceNames)
+            {
+                string trimmed = NormalizeName(referenceName);
+                if (!string.IsNullOrWhiteSpace(trimmed) &&
+                    !LoadCombinationReferenceNames.Any(x => string.Equals(x, trimmed, StringComparison.OrdinalIgnoreCase)))
+                {
+                    LoadCombinationReferenceNames.Add(trimmed);
+                }
+            }
+
             if (matrix.Rows != null)
             {
                 foreach (var row in matrix.Rows)
                 {
-                    Rows.Add(LoadCombinationMatrixRowViewModel.FromDto(row, LoadPatternNames));
+                    string originalName = NormalizeName(row.LoadCombinationName);
+                    if (!string.IsNullOrWhiteSpace(originalName))
+                    {
+                        _originalLoadCombinationNames.Add(originalName);
+                    }
+
+                    Rows.Add(LoadCombinationMatrixRowViewModel.FromDto(row, LoadPatternNames, LoadCombinationReferenceNames));
                 }
             }
         }
@@ -90,6 +118,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 row[patternName] = null;
                 row.SetFactorCaseType(patternName, 0);
+            }
+
+            foreach (string comboName in LoadCombinationReferenceNames)
+            {
+                row.SetLoadCombinationFactor(comboName, null);
             }
 
             Rows.Add(row);
@@ -123,6 +156,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             _savedRows = validation.Data;
+            _savedDeletedLoadCombinationNames = CreateDeletedLoadCombinationNames(validation.Data);
             WasSaved = true;
             RequestClose?.Invoke(this, EventArgs.Empty);
         }
@@ -139,15 +173,24 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var dtos = new List<LoadCombinationMatrixRowDto>();
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+            foreach (var row in Rows)
+            {
+                string name = NormalizeName(row.LoadCombinationName);
+                if (!string.IsNullOrWhiteSpace(name))
+                {
+                    names.Add(name);
+                }
+            }
+
             int rowNumber = 1;
             foreach (var row in Rows)
             {
-                string name = string.IsNullOrWhiteSpace(row.LoadCombinationName) ? null : row.LoadCombinationName.Trim();
+                string name = NormalizeName(row.LoadCombinationName);
                 if (string.IsNullOrWhiteSpace(name))
                 {
                     errors.Add($"Row {rowNumber}: LoadCombinationName is required.");
                 }
-                else if (!names.Add(name))
+                else if (Rows.Count(x => string.Equals(NormalizeName(x.LoadCombinationName), name, StringComparison.OrdinalIgnoreCase)) > 1)
                 {
                     errors.Add($"Row {rowNumber}: duplicate LoadCombinationName '{name}'.");
                 }
@@ -165,7 +208,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 foreach (string patternName in LoadPatternNames)
                 {
-                    string factorText = row[patternName];
+                    string factorText = row.GetLoadCaseFactor(patternName);
                     if (string.IsNullOrWhiteSpace(factorText))
                     {
                         continue;
@@ -177,15 +220,47 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         continue;
                     }
 
+                    dto.LoadCaseFactors[patternName] = factor;
                     dto.Factors[patternName] = factor;
                     dto.FactorCaseTypes[patternName] = row.GetFactorCaseType(patternName);
+                }
+
+                foreach (string comboName in LoadCombinationReferenceNames)
+                {
+                    string factorText = row.GetLoadCombinationFactor(comboName);
+                    if (string.IsNullOrWhiteSpace(factorText))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(name, comboName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        errors.Add($"Row {rowNumber}, column COMBO | {comboName}: a load combination cannot reference itself.");
+                        continue;
+                    }
+
+                    if (!names.Contains(comboName))
+                    {
+                        errors.Add($"Row {rowNumber}, column COMBO | {comboName}: referenced load combination does not exist in the matrix.");
+                        continue;
+                    }
+
+                    if (!TryParseDouble(factorText, out double factor))
+                    {
+                        errors.Add($"Row {rowNumber}, column COMBO | {comboName}: value '{factorText}' is not numeric.");
+                        continue;
+                    }
+
+                    dto.LoadCombinationFactors[comboName] = factor;
+                    dto.Factors[comboName] = factor;
+                    dto.FactorCaseTypes[comboName] = 1;
                 }
 
                 dtos.Add(dto);
                 rowNumber++;
             }
 
-            if (dtos.Count == 0)
+            if (dtos.Count == 0 && _originalLoadCombinationNames.Count == 0)
             {
                 errors.Add("No load combination rows are available to save.");
             }
@@ -204,6 +279,38 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 || double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
 
             return parsed && !double.IsNaN(result) && !double.IsInfinity(result);
+        }
+
+        private IReadOnlyList<string> CreateDeletedLoadCombinationNames(IReadOnlyList<LoadCombinationMatrixRowDto> savedRows)
+        {
+            var currentNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (savedRows != null)
+            {
+                foreach (var row in savedRows)
+                {
+                    string name = row == null ? null : NormalizeName(row.LoadCombinationName);
+                    if (!string.IsNullOrWhiteSpace(name))
+                    {
+                        currentNames.Add(name);
+                    }
+                }
+            }
+
+            var deletedNames = new List<string>();
+            foreach (string originalName in _originalLoadCombinationNames)
+            {
+                if (!currentNames.Contains(originalName))
+                {
+                    deletedNames.Add(originalName);
+                }
+            }
+
+            return deletedNames;
+        }
+
+        private static string NormalizeName(string name)
+        {
+            return string.IsNullOrWhiteSpace(name) ? null : name.Trim();
         }
 
         private static ObservableCollection<LoadCombinationTypeOption> CreateCombinationTypeOptions()

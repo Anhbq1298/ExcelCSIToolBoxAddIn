@@ -835,12 +835,51 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            var saveResult = _csiConnectionService.ApplyLoadCombinationMatrix(viewModel.SavedRows);
+            var saveResult = SaveLoadCombinationMatrixChanges(viewModel);
             ShowOperationResult(saveResult);
             if (saveResult.IsSuccess)
             {
                 GetLoadCombinations();
             }
+        }
+
+        private OperationResult SaveLoadCombinationMatrixChanges(LoadCombinationMatrixViewModel viewModel)
+        {
+            OperationResult deleteResult = null;
+            if (viewModel.SavedDeletedLoadCombinationNames != null && viewModel.SavedDeletedLoadCombinationNames.Count > 0)
+            {
+                deleteResult = _csiConnectionService.DeleteLoadCombinations(viewModel.SavedDeletedLoadCombinationNames);
+                if (!deleteResult.IsSuccess)
+                {
+                    return deleteResult;
+                }
+            }
+
+            OperationResult applyResult = null;
+            if (viewModel.SavedRows != null && viewModel.SavedRows.Count > 0)
+            {
+                applyResult = _csiConnectionService.ApplyLoadCombinationMatrix(viewModel.SavedRows);
+            }
+
+            if (deleteResult != null && applyResult != null)
+            {
+                string message = string.Join(" ", new[] { deleteResult.Message, applyResult.Message });
+                return applyResult.IsSuccess
+                    ? OperationResult.Success(message)
+                    : OperationResult.Failure(message);
+            }
+
+            if (applyResult != null)
+            {
+                return applyResult;
+            }
+
+            if (deleteResult != null)
+            {
+                return deleteResult;
+            }
+
+            return OperationResult.Success("No load combination changes were saved.");
         }
 
         private void GetFrameSections()

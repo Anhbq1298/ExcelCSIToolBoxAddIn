@@ -7,7 +7,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     {
         private string _loadCombinationName;
         private int _combinationType;
-        private readonly Dictionary<string, string> _factorTexts = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _loadCaseFactorTexts = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _loadCombinationFactorTexts = new Dictionary<string, string>(System.StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, int> _factorCaseTypes = new Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
 
         public string LoadCombinationName
@@ -30,6 +31,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        public Dictionary<string, string> LoadCaseFactors
+        {
+            get { return _loadCaseFactorTexts; }
+        }
+
+        public Dictionary<string, string> LoadCombinationFactors
+        {
+            get { return _loadCombinationFactorTexts; }
+        }
+
         public string this[string loadPatternName]
         {
             get
@@ -39,18 +50,55 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     return null;
                 }
 
-                return _factorTexts.TryGetValue(loadPatternName, out string value) ? value : null;
+                return GetLoadCaseFactor(loadPatternName);
             }
             set
             {
-                if (loadPatternName == null)
-                {
-                    return;
-                }
-
-                _factorTexts[loadPatternName] = value;
-                OnPropertyChanged("Item[]");
+                SetLoadCaseFactor(loadPatternName, value);
             }
+        }
+
+        public string GetLoadCaseFactor(string loadPatternName)
+        {
+            if (loadPatternName == null)
+            {
+                return null;
+            }
+
+            return _loadCaseFactorTexts.TryGetValue(loadPatternName, out string value) ? value : null;
+        }
+
+        public void SetLoadCaseFactor(string loadPatternName, string value)
+        {
+            if (loadPatternName == null)
+            {
+                return;
+            }
+
+            _loadCaseFactorTexts[loadPatternName] = value;
+            OnPropertyChanged("Item[]");
+            OnPropertyChanged(nameof(LoadCaseFactors));
+        }
+
+        public string GetLoadCombinationFactor(string loadCombinationName)
+        {
+            if (loadCombinationName == null)
+            {
+                return null;
+            }
+
+            return _loadCombinationFactorTexts.TryGetValue(loadCombinationName, out string value) ? value : null;
+        }
+
+        public void SetLoadCombinationFactor(string loadCombinationName, string value)
+        {
+            if (loadCombinationName == null)
+            {
+                return;
+            }
+
+            _loadCombinationFactorTexts[loadCombinationName] = value;
+            OnPropertyChanged(nameof(LoadCombinationFactors));
         }
 
         public int GetFactorCaseType(string loadPatternName)
@@ -73,7 +121,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _factorCaseTypes[loadPatternName] = caseType;
         }
 
-        public static LoadCombinationMatrixRowViewModel FromDto(LoadCombinationMatrixRowDto dto, System.Collections.Generic.IEnumerable<string> loadPatternNames)
+        public static LoadCombinationMatrixRowViewModel FromDto(
+            LoadCombinationMatrixRowDto dto,
+            System.Collections.Generic.IEnumerable<string> loadPatternNames,
+            System.Collections.Generic.IEnumerable<string> loadCombinationReferenceNames)
         {
             var row = new LoadCombinationMatrixRowViewModel
             {
@@ -88,13 +139,37 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     row.SetFactorCaseType(patternName, caseType);
                 }
 
-                if (dto.Factors != null && dto.Factors.TryGetValue(patternName, out double? factor) && factor.HasValue)
+                double? factor = null;
+                if (dto.LoadCaseFactors != null && dto.LoadCaseFactors.TryGetValue(patternName, out double? loadCaseFactor))
                 {
-                    row[patternName] = factor.Value.ToString("G15", System.Globalization.CultureInfo.InvariantCulture);
+                    factor = loadCaseFactor;
+                }
+                else if (dto.Factors != null && dto.Factors.TryGetValue(patternName, out double? fallbackFactor))
+                {
+                    factor = fallbackFactor;
+                }
+
+                if (factor.HasValue)
+                {
+                    row.SetLoadCaseFactor(patternName, factor.Value.ToString("G15", System.Globalization.CultureInfo.InvariantCulture));
                 }
                 else
                 {
-                    row[patternName] = null;
+                    row.SetLoadCaseFactor(patternName, null);
+                }
+            }
+
+            foreach (string comboName in loadCombinationReferenceNames)
+            {
+                if (dto.LoadCombinationFactors != null && dto.LoadCombinationFactors.TryGetValue(comboName, out double? factor) && factor.HasValue)
+                {
+                    row.SetLoadCombinationFactor(
+                        comboName,
+                        factor.Value.ToString("G15", System.Globalization.CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    row.SetLoadCombinationFactor(comboName, null);
                 }
             }
 

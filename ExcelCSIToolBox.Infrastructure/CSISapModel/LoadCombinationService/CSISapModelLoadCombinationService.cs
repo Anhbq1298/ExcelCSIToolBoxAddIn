@@ -49,6 +49,9 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
 
     internal static class CSISapModelLoadCombinationService
     {
+        private const int LoadCaseNameType = 0;
+        private const int LoadCombinationNameType = 1;
+
         internal static OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations<TSapModel>(
             TSapModel sapModel,
             CSISapModelGetCombinationNames<TSapModel> getCombinationNames,
@@ -206,7 +209,16 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                 return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto>.Success(matrix);
             }
 
-            var columnNames = new HashSet<string>(matrix.LoadPatternNames, System.StringComparer.OrdinalIgnoreCase);
+            var loadCaseColumnNames = new HashSet<string>(matrix.LoadPatternNames, System.StringComparer.OrdinalIgnoreCase);
+            var loadCombinationColumnNames = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
+            foreach (string name in names)
+            {
+                if (!string.IsNullOrWhiteSpace(name) && loadCombinationColumnNames.Add(name))
+                {
+                    matrix.LoadCombinationReferenceNames.Add(name);
+                }
+            }
+
             foreach (string name in names)
             {
                 if (string.IsNullOrWhiteSpace(name))
@@ -235,17 +247,29 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                             continue;
                         }
 
-                        if (!columnNames.Contains(caseName))
+                        int caseNameType = caseTypes != null && i < caseTypes.Length ? caseTypes[i] : LoadCaseNameType;
+                        if (caseNameType == LoadCombinationNameType)
                         {
-                            matrix.LoadPatternNames.Add(caseName);
-                            columnNames.Add(caseName);
+                            if (loadCombinationColumnNames.Add(caseName))
+                            {
+                                matrix.LoadCombinationReferenceNames.Add(caseName);
+                            }
+
+                            row.LoadCombinationFactors[caseName] = scaleFactors[i];
+                        }
+                        else
+                        {
+                            if (!loadCaseColumnNames.Contains(caseName))
+                            {
+                                matrix.LoadPatternNames.Add(caseName);
+                                loadCaseColumnNames.Add(caseName);
+                            }
+
+                            row.LoadCaseFactors[caseName] = scaleFactors[i];
                         }
 
                         row.Factors[caseName] = scaleFactors[i];
-                        if (caseTypes != null && i < caseTypes.Length)
-                        {
-                            row.FactorCaseTypes[caseName] = caseTypes[i];
-                        }
+                        row.FactorCaseTypes[caseName] = caseNameType;
                     }
                 }
 
@@ -328,22 +352,40 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                 }
 
                 bool failed = false;
-                if (row.Factors != null)
+                bool hasSeparatedCombinationFactors = row.LoadCombinationFactors != null && row.LoadCombinationFactors.Count > 0;
+                var loadCaseFactors = row.LoadCaseFactors != null && (row.LoadCaseFactors.Count > 0 || hasSeparatedCombinationFactors)
+                    ? row.LoadCaseFactors
+                    : row.Factors;
+
+                if (loadCaseFactors != null)
                 {
-                    foreach (var factor in row.Factors)
+                    foreach (var factor in loadCaseFactors)
                     {
                         if (string.IsNullOrWhiteSpace(factor.Key) || !factor.Value.HasValue || factor.Value.Value == 0d)
                         {
                             continue;
                         }
 
-                        int caseNameType = 0;
-                        if (row.FactorCaseTypes != null && row.FactorCaseTypes.TryGetValue(factor.Key, out int savedCaseNameType))
+                        int setRet = setCombinationCase(sapModel, comboName, LoadCaseNameType, factor.Key.Trim(), factor.Value.Value);
+                        if (setRet != 0)
                         {
-                            caseNameType = savedCaseNameType;
+                            AddFailure(result, comboName, $"Add item '{factor.Key}'", $"return code {setRet}");
+                            failed = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!failed && row.LoadCombinationFactors != null)
+                {
+                    foreach (var factor in row.LoadCombinationFactors)
+                    {
+                        if (string.IsNullOrWhiteSpace(factor.Key) || !factor.Value.HasValue || factor.Value.Value == 0d)
+                        {
+                            continue;
                         }
 
-                        int setRet = setCombinationCase(sapModel, comboName, caseNameType, factor.Key.Trim(), factor.Value.Value);
+                        int setRet = setCombinationCase(sapModel, comboName, LoadCombinationNameType, factor.Key.Trim(), factor.Value.Value);
                         if (setRet != 0)
                         {
                             AddFailure(result, comboName, $"Add item '{factor.Key}'", $"return code {setRet}");

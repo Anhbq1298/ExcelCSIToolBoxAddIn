@@ -421,6 +421,7 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
                     if (string.IsNullOrWhiteSpace(factorText))
                     {
                         dto.Factors[patternName] = null;
+                        dto.LoadCaseFactors[patternName] = null;
                         continue;
                     }
 
@@ -428,6 +429,7 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
                     {
                         dto.Factors[patternName] = factor;
                         dto.FactorCaseTypes[patternName] = 0;
+                        dto.LoadCaseFactors[patternName] = factor;
                     }
                     else
                     {

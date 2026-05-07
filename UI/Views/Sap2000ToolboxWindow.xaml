@@ -674,25 +674,28 @@
                 </TabItem>
 
                 <TabItem Header="LoadCombination">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  CanContentScroll="True">
-                        <StackPanel Margin="12">
-
-                            <GroupBox Header="Load Combination" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <Grid Height="180">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="150"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-                                    
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Combinations in Model" Foreground="Black" Margin="0,0,0,4"/>
-                                    <DataGrid x:Name="LoadCombinationList" Grid.Row="1" Grid.Column="0"
+                    <Grid Margin="12">
+                        <GroupBox Header="Load Combination"
+                                  FontWeight="Bold"
+                                  Margin="0,0,0,10"
+                                  Padding="10"
+                                  VerticalAlignment="Stretch"
+                                  HorizontalAlignment="Stretch">
+                            <Grid MinHeight="320">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="150"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Combinations in Model" Foreground="Black" Margin="0,0,0,4"/>
+                                <DataGrid x:Name="LoadCombinationList" Grid.Row="1" Grid.Column="0"
+                                              VerticalAlignment="Stretch"
+                                              HorizontalAlignment="Stretch"
                                               ItemsSource="{Binding LoadCombinations}"
                                               SelectionMode="Extended"
                                               SelectionUnit="FullRow"
@@ -719,15 +722,14 @@
                                             <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
                                         </DataGrid.Columns>
                                     </DataGrid>
-                                    
-                                    <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
-                                        <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
-                                        <Button Content="Modify in Matrix View" HorizontalAlignment="Stretch" Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}" Margin="0,0,0,8"/>
-                                    </StackPanel>
-                                </Grid>
-                            </GroupBox>
-                        </StackPanel>
-                    </ScrollViewer>
+                                
+                                <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
+                                    <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
+                                    <Button Content="Modify in Matrix View" HorizontalAlignment="Stretch" Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}" Margin="0,0,0,8"/>
+                                </StackPanel>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
                 </TabItem>
 
             </TabControl>
