@@ -242,6 +242,10 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                         }
 
                         row.Factors[caseName] = scaleFactors[i];
+                        if (caseTypes != null && i < caseTypes.Length)
+                        {
+                            row.FactorCaseTypes[caseName] = caseTypes[i];
+                        }
                     }
                 }
 
@@ -333,7 +337,13 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                             continue;
                         }
 
-                        int setRet = setCombinationCase(sapModel, comboName, 0, factor.Key.Trim(), factor.Value.Value);
+                        int caseNameType = 0;
+                        if (row.FactorCaseTypes != null && row.FactorCaseTypes.TryGetValue(factor.Key, out int savedCaseNameType))
+                        {
+                            caseNameType = savedCaseNameType;
+                        }
+
+                        int setRet = setCombinationCase(sapModel, comboName, caseNameType, factor.Key.Trim(), factor.Value.Value);
                         if (setRet != 0)
                         {
                             AddFailure(result, comboName, $"Add item '{factor.Key}'", $"return code {setRet}");

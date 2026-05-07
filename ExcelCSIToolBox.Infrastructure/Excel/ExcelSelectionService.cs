@@ -427,6 +427,7 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
                     if (TryParseDouble(factorText, out double factor))
                     {
                         dto.Factors[patternName] = factor;
+                        dto.FactorCaseTypes[patternName] = 0;
                     }
                     else
                     {

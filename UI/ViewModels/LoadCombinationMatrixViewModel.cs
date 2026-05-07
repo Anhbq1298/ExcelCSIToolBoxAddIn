@@ -25,6 +25,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             Rows = new ObservableCollection<LoadCombinationMatrixRowViewModel>();
             LoadPatternNames = new ObservableCollection<string>();
+            CombinationTypeOptions = CreateCombinationTypeOptions();
 
             AddRowCommand = new RelayCommand(AddRow);
             DeleteSelectedRowsCommand = new RelayCommand<IList>(DeleteSelectedRows);
@@ -36,6 +37,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ObservableCollection<LoadCombinationMatrixRowViewModel> Rows { get; }
         public ObservableCollection<string> LoadPatternNames { get; }
+        public ObservableCollection<LoadCombinationTypeOption> CombinationTypeOptions { get; }
 
         public ICommand AddRowCommand { get; }
         public ICommand DeleteSelectedRowsCommand { get; }
@@ -87,6 +89,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             foreach (string patternName in LoadPatternNames)
             {
                 row[patternName] = null;
+                row.SetFactorCaseType(patternName, 0);
             }
 
             Rows.Add(row);
@@ -149,6 +152,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     errors.Add($"Row {rowNumber}: duplicate LoadCombinationName '{name}'.");
                 }
 
+                if (!IsSupportedCombinationType(row.CombinationType))
+                {
+                    errors.Add($"Row {rowNumber}: Combination Type is not supported.");
+                }
+
                 var dto = new LoadCombinationMatrixRowDto
                 {
                     LoadCombinationName = name,
@@ -170,6 +178,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     }
 
                     dto.Factors[patternName] = factor;
+                    dto.FactorCaseTypes[patternName] = row.GetFactorCaseType(patternName);
                 }
 
                 dtos.Add(dto);
@@ -195,6 +204,27 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 || double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
 
             return parsed && !double.IsNaN(result) && !double.IsInfinity(result);
+        }
+
+        private static ObservableCollection<LoadCombinationTypeOption> CreateCombinationTypeOptions()
+        {
+            return new ObservableCollection<LoadCombinationTypeOption>
+            {
+                new LoadCombinationTypeOption { Value = (int)LoadCombinationType.LinearAdditive, DisplayName = "Linear Additive" },
+                new LoadCombinationTypeOption { Value = (int)LoadCombinationType.Envelope, DisplayName = "Envelope" },
+                new LoadCombinationTypeOption { Value = (int)LoadCombinationType.AbsoluteAdditive, DisplayName = "Absolute Additive" },
+                new LoadCombinationTypeOption { Value = (int)LoadCombinationType.SRSS, DisplayName = "SRSS" },
+                new LoadCombinationTypeOption { Value = (int)LoadCombinationType.RangeAdditive, DisplayName = "Range Additive" }
+            };
+        }
+
+        private static bool IsSupportedCombinationType(int combinationType)
+        {
+            return combinationType == (int)LoadCombinationType.LinearAdditive
+                || combinationType == (int)LoadCombinationType.Envelope
+                || combinationType == (int)LoadCombinationType.AbsoluteAdditive
+                || combinationType == (int)LoadCombinationType.SRSS
+                || combinationType == (int)LoadCombinationType.RangeAdditive;
         }
     }
 }

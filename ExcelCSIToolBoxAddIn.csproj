@@ -277,7 +277,6 @@
     <Compile Include="UI\ViewModels\AiAgentChatMessageViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentChatViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentToolTraceViewModel.cs" />
-    <Compile Include="UI\Helpers\BlankFactorCellBackgroundConverter.cs" />
     <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>

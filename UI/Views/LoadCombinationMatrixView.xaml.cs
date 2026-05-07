@@ -3,15 +3,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
-using ExcelCSIToolBoxAddIn.UI.Helpers;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
 {
     public partial class LoadCombinationMatrixView : Window
     {
+        private static readonly Brush TextBrush = CreateSolidBrush(47, 51, 55);
+        private static readonly Brush WhiteBrush = Brushes.White;
+        private static readonly Brush LightBorderBrush = CreateSolidBrush(218, 221, 226);
         private LoadCombinationMatrixViewModel _viewModel;
-        private readonly BlankFactorCellBackgroundConverter _factorBackgroundConverter = new BlankFactorCellBackgroundConverter();
 
         public LoadCombinationMatrixView(LoadCombinationMatrixViewModel viewModel)
         {
@@ -57,7 +58,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             MatrixGrid.Columns.Clear();
             MatrixGrid.Columns.Add(new DataGridTextColumn
             {
-                Header = "LoadCombinationName",
+                Header = "Load Combination Name",
                 Binding = new Binding("LoadCombinationName")
                 {
                     Mode = BindingMode.TwoWay,
@@ -65,8 +66,25 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 },
                 MinWidth = 180,
                 Width = new DataGridLength(260),
-                ElementStyle = CreateTextStyle(TextAlignment.Left, Brushes.Blue, CreateSolidBrush(248, 226, 211)),
-                EditingElementStyle = CreateTextBoxStyle(TextAlignment.Left, Brushes.Blue, CreateSolidBrush(248, 226, 211))
+                ElementStyle = CreateTextStyle(TextAlignment.Left),
+                EditingElementStyle = CreateTextBoxStyle(TextAlignment.Left)
+            });
+
+            MatrixGrid.Columns.Add(new DataGridComboBoxColumn
+            {
+                Header = "Combination Type",
+                ItemsSource = _viewModel.CombinationTypeOptions,
+                SelectedValueBinding = new Binding("CombinationType")
+                {
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                },
+                SelectedValuePath = "Value",
+                DisplayMemberPath = "DisplayName",
+                MinWidth = 150,
+                Width = new DataGridLength(170),
+                ElementStyle = CreateComboBoxStyle(false),
+                EditingElementStyle = CreateComboBoxStyle(true)
             });
 
             foreach (string patternName in _viewModel.LoadPatternNames)
@@ -84,53 +102,51 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                     Binding = binding,
                     MinWidth = 90,
                     Width = new DataGridLength(1, DataGridLengthUnitType.Auto),
-                    ElementStyle = CreateFactorTextStyle(patternName),
-                    EditingElementStyle = CreateFactorTextBoxStyle(patternName)
+                    ElementStyle = CreateTextStyle(TextAlignment.Center),
+                    EditingElementStyle = CreateTextBoxStyle(TextAlignment.Center)
                 });
             }
         }
 
-        private static Style CreateTextStyle(TextAlignment alignment, Brush foreground, Brush background)
+        private static Style CreateTextStyle(TextAlignment alignment)
         {
             var style = new Style(typeof(TextBlock));
             style.Setters.Add(new Setter(TextBlock.TextAlignmentProperty, alignment));
-            style.Setters.Add(new Setter(TextBlock.ForegroundProperty, foreground));
-            style.Setters.Add(new Setter(TextBlock.BackgroundProperty, background));
-            style.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(4, 1, 4, 1)));
+            style.Setters.Add(new Setter(TextBlock.ForegroundProperty, TextBrush));
+            style.Setters.Add(new Setter(TextBlock.PaddingProperty, new Thickness(6, 2, 6, 2)));
+            style.Setters.Add(new Setter(TextBlock.VerticalAlignmentProperty, VerticalAlignment.Center));
             return style;
         }
 
-        private static Style CreateTextBoxStyle(TextAlignment alignment, Brush foreground, Brush background)
+        private static Style CreateTextBoxStyle(TextAlignment alignment)
         {
             var style = new Style(typeof(TextBox));
             style.Setters.Add(new Setter(TextBox.TextAlignmentProperty, alignment));
-            style.Setters.Add(new Setter(TextBox.ForegroundProperty, foreground));
-            style.Setters.Add(new Setter(TextBox.BackgroundProperty, background));
+            style.Setters.Add(new Setter(TextBox.ForegroundProperty, TextBrush));
+            style.Setters.Add(new Setter(TextBox.BackgroundProperty, WhiteBrush));
             style.Setters.Add(new Setter(TextBox.BorderThicknessProperty, new Thickness(0)));
-            style.Setters.Add(new Setter(TextBox.PaddingProperty, new Thickness(4, 1, 4, 1)));
+            style.Setters.Add(new Setter(TextBox.PaddingProperty, new Thickness(6, 2, 6, 2)));
+            style.Setters.Add(new Setter(TextBox.VerticalContentAlignmentProperty, VerticalAlignment.Center));
             return style;
         }
 
-        private Style CreateFactorTextStyle(string patternName)
+        private static Style CreateComboBoxStyle(bool isEditing)
         {
-            var style = CreateTextStyle(TextAlignment.Center, Brushes.Blue, Brushes.Transparent);
-            style.Setters.Add(new Setter(TextBlock.BackgroundProperty, CreateBackgroundBinding(patternName)));
-            return style;
-        }
-
-        private Style CreateFactorTextBoxStyle(string patternName)
-        {
-            var style = CreateTextBoxStyle(TextAlignment.Center, Brushes.Blue, Brushes.Transparent);
-            style.Setters.Add(new Setter(TextBox.BackgroundProperty, CreateBackgroundBinding(patternName)));
-            return style;
-        }
-
-        private Binding CreateBackgroundBinding(string patternName)
-        {
-            return new Binding("[" + patternName + "]")
+            var style = new Style(typeof(ComboBox));
+            style.Setters.Add(new Setter(Control.ForegroundProperty, TextBrush));
+            style.Setters.Add(new Setter(Control.BackgroundProperty, WhiteBrush));
+            style.Setters.Add(new Setter(Control.BorderBrushProperty, LightBorderBrush));
+            style.Setters.Add(new Setter(Control.BorderThicknessProperty, isEditing ? new Thickness(1) : new Thickness(0)));
+            style.Setters.Add(new Setter(Control.PaddingProperty, new Thickness(4, 1, 4, 1)));
+            style.Setters.Add(new Setter(ComboBox.VerticalContentAlignmentProperty, VerticalAlignment.Center));
+            style.Setters.Add(new Setter(ComboBox.IsSynchronizedWithCurrentItemProperty, false));
+            if (!isEditing)
             {
-                Converter = _factorBackgroundConverter
-            };
+                style.Setters.Add(new Setter(UIElement.IsHitTestVisibleProperty, false));
+                style.Setters.Add(new Setter(Control.FocusableProperty, false));
+            }
+
+            return style;
         }
 
         private static Brush CreateSolidBrush(byte r, byte g, byte b)
