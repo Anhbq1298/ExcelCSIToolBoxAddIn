@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System;
 using System.Collections.Generic;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
@@ -77,7 +78,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             TSapModel sapModel,
             CSISapModelClearSelection<TSapModel> clearSelection,
             CSISapModelSetSelectedByName<TSapModel> setSelected,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             return SelectObjectsByUniqueNames(
                 uniqueNames,
@@ -86,7 +88,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 clearSelection,
                 setSelected,
-                refreshView);
+                refreshView,
+                progressReporter);
         }
 
         internal static OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates<TSapModel>(
@@ -94,7 +97,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             string productName,
             TSapModel sapModel,
             CSISapModelAddFrameByCoord<TSapModel> addFrame,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             return AddFrames(
                 frameInputs,
@@ -111,7 +115,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                     string userName = string.IsNullOrWhiteSpace(frameInput.UniqueName) ? string.Empty : frameInput.UniqueName;
                     return addFrame(model, frameInput, ref createdName, sectionName, userName);
                 },
-                null);
+                null,
+                progressReporter);
         }
 
         internal static OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint<TSapModel>(
@@ -119,7 +124,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             string productName,
             TSapModel sapModel,
             CSISapModelAddFrameByPoint<TSapModel> addFrame,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             return AddFrames(
                 frameInputs,
@@ -141,7 +147,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                         ? new FrameAddResult(result, $"Frame was created, but {productName} assigned UniqueName '{createdName}' instead of requested '{userName}'.")
                         : new FrameAddResult(result, null);
                 },
-                result => result.WarningMessage);
+                result => result.WarningMessage,
+                progressReporter);
         }
 
         internal static OperationResult<FrameAddBatchResultDto> AddFrameObjects<TSapModel>(
@@ -499,7 +506,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             TSapModel sapModel,
             Func<TSapModel, OperationResult> refreshView,
             Func<TSapModel, TFrameInput, TAddResult> addFrame,
-            Func<TAddResult, string> getWarningMessage)
+            Func<TAddResult, string> getWarningMessage,
+            IProgressReporter progressReporter = null)
             where TFrameInput : class
         {
             if (frameInputs == null || frameInputs.Count == 0)
@@ -538,7 +546,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                             failedRowMessages.Add($"Row {excelRowNumber}: {warningMessage}");
                         }
                     }
-                });
+                }, progressReporter);
 
                 if (successCount > 0)
                 {
@@ -572,7 +580,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             TSapModel sapModel,
             CSISapModelClearSelection<TSapModel> clearSelection,
             CSISapModelSetSelectedByName<TSapModel> setSelected,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             if (uniqueNames == null || uniqueNames.Count == 0)
             {
@@ -614,7 +623,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                             ctx.IncrementSkipped();
                         }
                     }
-                });
+                }, progressReporter);
 
                 var message = $"Selected {selectedCount} {objectTypeName}(s) by UniqueName.";
                 if (unresolved.Count > 0)

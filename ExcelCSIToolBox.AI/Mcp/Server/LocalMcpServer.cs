@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ExcelCSIToolBox.AI.Mcp.Contracts;
+using ExcelCSIToolBox.AI.Mcp.Safety;
 using ExcelCSIToolBox.AI.Mcp.ToolModules;
 using ExcelCSIToolBox.AI.Mcp.Tools;
 using ExcelCSIToolBox.Core.Models.CSI;
@@ -17,6 +18,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
     {
         private readonly IMcpToolRegistry _registry;
         private readonly SynchronizationContext _toolSynchronizationContext;
+        private readonly IMutationGuard _mutationGuard;
 
         public LocalMcpServer(CsiMcpToolContext context)
         {
@@ -26,6 +28,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             }
 
             _toolSynchronizationContext = SynchronizationContext.Current;
+            _mutationGuard = context.MutationGuard;
             _registry = new McpToolRegistry();
 
             RegisterDefaultModules(_registry, new ToolServices(context));
@@ -59,6 +62,24 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
                     Message = $"Tool '{request.ToolName}' is not registered.",
                     ResultJson = null
                 };
+            }
+
+            if (RequiresMutationConfirmation(tool))
+            {
+                bool confirmed = await _mutationGuard.ConfirmAsync(
+                    tool.Name,
+                    BuildMutationSummary(tool, request),
+                    cancellationToken);
+                if (!confirmed)
+                {
+                    return new ToolCallResponse
+                    {
+                        ToolName = tool.Name,
+                        Success = false,
+                        Message = "Cancelled: user did not confirm the write operation.",
+                        ResultJson = "{\"status\":\"Cancelled\"}"
+                    };
+                }
             }
 
             return await ExecuteToolOnCapturedContextAsync(tool, request, cancellationToken);
@@ -150,6 +171,25 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
                     ResultJson = null
                 };
             }
+        }
+
+        private static bool RequiresMutationConfirmation(IMcpTool tool)
+        {
+            if (tool == null)
+            {
+                return false;
+            }
+
+            bool markedMutation = tool.GetType().GetCustomAttributes(typeof(MutationToolAttribute), true).Length > 0;
+            return markedMutation || !tool.IsReadOnly;
+        }
+
+        private static string BuildMutationSummary(IMcpTool tool, ToolCallRequest request)
+        {
+            string args = request == null || string.IsNullOrWhiteSpace(request.ArgumentsJson)
+                ? "{}"
+                : request.ArgumentsJson;
+            return $"{tool.Description}\n\nArguments:\n{args}";
         }
 
         private static void RegisterDefaultModules(IMcpToolRegistry registry, ToolServices services)

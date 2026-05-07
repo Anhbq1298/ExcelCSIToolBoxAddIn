@@ -1,5 +1,7 @@
 using System;
 using ExcelCSIToolBox.Application.GenerativeDesign;
+using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
+using ExcelCSIToolBox.AI.Mcp.Safety;
 using ExcelCSIToolBox.AI.Mcp.Server;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 
@@ -25,6 +27,8 @@ namespace ExcelCSIToolBox.AI.Mcp.ToolModules
             RandomObjectGenerationService = context.RandomObjectGenerationService;
             TrussGenerationService = context.TrussGenerationService;
             WorkflowExecutionService = context.WorkflowExecutionService;
+            ToolCatalogService = context.ToolCatalogService;
+            MutationGuard = context.MutationGuard;
             BuildingOptionService = context.BuildingOptionService;
             ConstraintValidationService = context.ConstraintValidationService;
             ResultEvaluationService = context.ResultEvaluationService;
@@ -42,6 +46,8 @@ namespace ExcelCSIToolBox.AI.Mcp.ToolModules
         public ICsiRandomObjectGenerationService RandomObjectGenerationService { get; }
         public ICsiTrussGenerationService TrussGenerationService { get; }
         public ICsiWorkflowExecutionService WorkflowExecutionService { get; }
+        public IToolCatalogService ToolCatalogService { get; }
+        public IMutationGuard MutationGuard { get; }
         public BuildingOptionService BuildingOptionService { get; }
         public ConstraintValidationService ConstraintValidationService { get; }
         public ResultEvaluationService ResultEvaluationService { get; }

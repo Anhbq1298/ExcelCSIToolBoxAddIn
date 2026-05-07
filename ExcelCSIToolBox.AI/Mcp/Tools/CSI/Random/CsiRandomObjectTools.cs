@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Random
 {
+    [MutationTool]
     public sealed class RandomGenerateObjectsTool : IMcpTool, IMcpToolMetadata
     {
         private readonly ICSISapModelConnectionService _etabsService;

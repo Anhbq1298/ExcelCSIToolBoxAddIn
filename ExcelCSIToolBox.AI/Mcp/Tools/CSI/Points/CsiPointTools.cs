@@ -308,6 +308,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
         }
     }
 
+    [MutationTool]
     public sealed class PointsSetSelectedTool : CsiActiveConnectionToolBase
     {
         public PointsSetSelectedTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }

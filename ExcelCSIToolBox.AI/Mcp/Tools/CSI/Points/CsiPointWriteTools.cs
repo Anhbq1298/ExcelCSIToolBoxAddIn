@@ -49,6 +49,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
         }
     }
 
+    [MutationTool]
     public sealed class PointsSetRestraintTool : CsiActiveConnectionToolBase
     {
         private readonly IMcpWriteGuard _writeGuard;
@@ -104,6 +105,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Points
         }
     }
 
+    [MutationTool]
     public sealed class PointsSetLoadForceTool : CsiActiveConnectionToolBase
     {
         private readonly IMcpWriteGuard _writeGuard;

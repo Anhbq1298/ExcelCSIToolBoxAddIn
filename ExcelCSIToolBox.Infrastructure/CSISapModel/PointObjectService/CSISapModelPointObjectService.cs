@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System;
 using System.Collections.Generic;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.CSISapModel.PointObject;
@@ -117,7 +118,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             TSapModel sapModel,
             CSISapModelClearSelection<TSapModel> clearSelection,
             CSISapModelSetSelectedByName<TSapModel> setSelected,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             return SelectObjectsByUniqueNames(
                 uniqueNames,
@@ -126,7 +128,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 clearSelection,
                 setSelected,
-                refreshView);
+                refreshView,
+                progressReporter);
         }
 
         internal static OperationResult<CSISapModelAddPointsResultDTO> AddPointsByCartesian<TSapModel>(
@@ -134,7 +137,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             string productName,
             TSapModel sapModel,
             CSISapModelAddCartesianPoint<TSapModel> addPoint,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             if (pointInputs == null || pointInputs.Count == 0)
             {
@@ -172,7 +176,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                             failedRowMessages.Add($"Row {pointInput.ExcelRowNumber}: Point was created, but {productName} assigned UniqueName '{assignedName}' instead of requested '{requestedUniqueName}'.");
                         }
                     }
-                });
+                }, progressReporter);
 
                 if (successCount > 0)
                 {
@@ -752,7 +756,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             TSapModel sapModel,
             CSISapModelClearSelection<TSapModel> clearSelection,
             CSISapModelSetSelectedByName<TSapModel> setSelected,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             if (uniqueNames == null || uniqueNames.Count == 0)
             {
@@ -794,7 +799,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                             ctx.IncrementSkipped();
                         }
                     }
-                });
+                }, progressReporter);
 
                 var message = $"Selected {selectedCount} {objectTypeName}(s) by UniqueName.";
                 if (unresolved.Count > 0)

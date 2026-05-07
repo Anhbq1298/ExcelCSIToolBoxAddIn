@@ -1,5 +1,7 @@
 using System;
 using ExcelCSIToolBox.Application.GenerativeDesign;
+using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
+using ExcelCSIToolBox.AI.Mcp.Safety;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 
 namespace ExcelCSIToolBox.AI.Mcp.Server
@@ -18,6 +20,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             ICsiRandomObjectGenerationService randomObjectGenerationService,
             ICsiTrussGenerationService trussGenerationService,
             ICsiWorkflowExecutionService workflowExecutionService,
+            IToolCatalogService toolCatalogService,
+            IMutationGuard mutationGuard,
             BuildingOptionService buildingOptionService,
             ConstraintValidationService constraintValidationService,
             ResultEvaluationService resultEvaluationService,
@@ -34,6 +38,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
             RandomObjectGenerationService = randomObjectGenerationService ?? throw new ArgumentNullException(nameof(randomObjectGenerationService));
             TrussGenerationService = trussGenerationService ?? throw new ArgumentNullException(nameof(trussGenerationService));
             WorkflowExecutionService = workflowExecutionService ?? throw new ArgumentNullException(nameof(workflowExecutionService));
+            ToolCatalogService = toolCatalogService ?? throw new ArgumentNullException(nameof(toolCatalogService));
+            MutationGuard = mutationGuard ?? throw new ArgumentNullException(nameof(mutationGuard));
             BuildingOptionService = buildingOptionService ?? throw new ArgumentNullException(nameof(buildingOptionService));
             ConstraintValidationService = constraintValidationService ?? throw new ArgumentNullException(nameof(constraintValidationService));
             ResultEvaluationService = resultEvaluationService ?? throw new ArgumentNullException(nameof(resultEvaluationService));
@@ -51,6 +57,8 @@ namespace ExcelCSIToolBox.AI.Mcp.Server
         public ICsiRandomObjectGenerationService RandomObjectGenerationService { get; }
         public ICsiTrussGenerationService TrussGenerationService { get; }
         public ICsiWorkflowExecutionService WorkflowExecutionService { get; }
+        public IToolCatalogService ToolCatalogService { get; }
+        public IMutationGuard MutationGuard { get; }
         public BuildingOptionService BuildingOptionService { get; }
         public ConstraintValidationService ConstraintValidationService { get; }
         public ResultEvaluationService ResultEvaluationService { get; }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.DTOs.CSI;
@@ -21,7 +22,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
     {
         internal static OperationResult AddSteelISections(
             ETABSv1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelISectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelISectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -30,13 +32,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
-                (model, input) => model.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf));
+                (model, input) => model.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelISections(
             SAP2000v1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelISectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelISectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -45,13 +49,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
-                (model, input) => model.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf, -1, "", ""));
+                (model, input) => model.PropFrame.SetISection(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, input.B, input.Tf, -1, "", ""),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelChannelSections(
             ETABSv1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -60,13 +66,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
-                (model, input) => model.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw));
+                (model, input) => model.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelChannelSections(
             SAP2000v1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelChannelSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -75,13 +83,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
-                (model, input) => model.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
+                (model, input) => model.PropFrame.SetChannel(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelAngleSections(
             ETABSv1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -90,13 +100,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
-                (model, input) => model.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw));
+                (model, input) => model.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelAngleSections(
             SAP2000v1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelAngleSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -105,13 +117,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
-                (model, input) => model.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""));
+                (model, input) => model.PropFrame.SetAngle(input.SectionName, input.MaterialName, input.H, input.B, input.Tf, input.Tw, -1, "", ""),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelPipeSections(
             ETABSv1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -120,13 +134,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
-                (model, input) => model.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness));
+                (model, input) => model.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelPipeSections(
             SAP2000v1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelPipeSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -135,13 +151,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
-                (model, input) => model.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness, -1, "", ""));
+                (model, input) => model.PropFrame.SetPipe(input.SectionName, input.MaterialName, input.OutsideDiameter, input.WallThickness, -1, "", ""),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelTubeSections(
             ETABSv1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -150,13 +168,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
-                (model, input) => model.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", "Default"));
+                (model, input) => model.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", "Default"),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddSteelTubeSections(
             SAP2000v1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs)
+            IReadOnlyList<CSISapModelSteelTubeSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -165,13 +185,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
-                (model, input) => model.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", ""));
+                (model, input) => model.PropFrame.SetTube_1(input.SectionName, input.MaterialName, input.H, input.B, input.T, input.T, 0.000000001, -1, "", ""),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddConcreteRectangleSections(
             ETABSv1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs)
+            IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -180,13 +202,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
-                (model, input) => model.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B));
+                (model, input) => model.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddConcreteRectangleSections(
             SAP2000v1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs)
+            IReadOnlyList<CSISapModelConcreteRectangleSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -195,13 +219,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
-                (model, input) => model.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B, -1, "", ""));
+                (model, input) => model.PropFrame.SetRectangle(input.SectionName, input.MaterialName, input.H, input.B, -1, "", ""),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddConcreteCircleSections(
             ETABSv1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs)
+            IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -210,13 +236,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetEtabsSectionCreationUnits,
                 EtabsFrameSectionExists,
-                (model, input) => model.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D));
+                (model, input) => model.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D),
+                progressReporter);
             return result;
         }
 
         internal static OperationResult AddConcreteCircleSections(
             SAP2000v1.cSapModel sapModel,
-            IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs)
+            IReadOnlyList<CSISapModelConcreteCircleSectionInput> inputs,
+            IProgressReporter progressReporter = null)
         {
             var result = CreateSections(
                 inputs,
@@ -225,7 +253,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                 sapModel,
                 SetSap2000SectionCreationUnits,
                 Sap2000FrameSectionExists,
-                (model, input) => model.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D, -1, "", ""));
+                (model, input) => model.PropFrame.SetCircle(input.SectionName, input.MaterialName, input.D, -1, "", ""),
+                progressReporter);
             return result;
         }
 
@@ -236,7 +265,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             TSapModel sapModel,
             CSISapModelSetSectionCreationUnits<TSapModel> setSectionCreationUnits,
             CSISapModelSectionExists<TSapModel> sectionExists,
-            CSISapModelCreateSection<TSapModel, TInput> createSection)
+            CSISapModelCreateSection<TSapModel, TInput> createSection,
+            IProgressReporter progressReporter = null)
         {
             if (inputs == null || inputs.Count == 0)
             {
@@ -274,7 +304,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                         ctx.IncrementSkipped();
                     }
                 }
-            });
+            }, progressReporter);
 
             string msg = $"Created: {progress.RanCount}, Skipped: {progress.SkippedCount}, Failed: {failCount}";
             if (progress.WasCancelled)

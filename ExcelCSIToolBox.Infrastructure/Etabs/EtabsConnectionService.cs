@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Geometry;
@@ -21,20 +22,24 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
     public class EtabsConnectionService : ICSISapModelConnectionService
     {
         private readonly ICSISapModelConnectionAdapter<ETABSv1.cSapModel> _connectionAdapter;
+        private readonly IProgressReporter _progressReporter;
 
         public EtabsConnectionService()
-            : this(CSISapModelConnectionAdapterFactory.CreateEtabs())
+            : this(CSISapModelConnectionAdapterFactory.CreateEtabs(), null)
         {
         }
 
-        public EtabsConnectionService(ICsiModelAdapter modelAdapter)
-            : this(CSISapModelConnectionAdapterFactory.CreateEtabs(modelAdapter))
+        public EtabsConnectionService(ICsiModelAdapter modelAdapter, IProgressReporter progressReporter = null)
+            : this(CSISapModelConnectionAdapterFactory.CreateEtabs(modelAdapter), progressReporter)
         {
         }
 
-        private EtabsConnectionService(ICSISapModelConnectionAdapter<ETABSv1.cSapModel> connectionAdapter)
+        private EtabsConnectionService(
+            ICSISapModelConnectionAdapter<ETABSv1.cSapModel> connectionAdapter,
+            IProgressReporter progressReporter)
         {
             _connectionAdapter = connectionAdapter ?? throw new ArgumentNullException(nameof(connectionAdapter));
+            _progressReporter = progressReporter;
         }
 
         public string ProductName => "ETABS";
@@ -68,7 +73,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.PointObj.SetSelected(name, true, ETABSv1.eItemType.Objects),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
             return selectResult;
         }
 
@@ -86,7 +92,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, ETABSv1.eItemType.Objects),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
             return selectResult;
         }
 
@@ -239,7 +246,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                         "Global",
                         true,
                         0),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
             return addResult;
         }
 
@@ -267,7 +275,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                         sectionName,
                         userName,
                         "Global"),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
             return addResult;
         }
 
@@ -290,7 +299,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                         ref createdName,
                         sectionName,
                         userName),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
             return addResult;
         }
 
@@ -768,7 +778,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelISections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -784,7 +795,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelChannelSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -800,7 +812,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelAngleSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -816,7 +829,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelPipeSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -832,7 +846,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelTubeSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -848,7 +863,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddConcreteRectangleSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -864,7 +880,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddConcreteCircleSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -893,7 +910,8 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     sapModel.PointObj.GetCoordCartesian(pointName, ref x, ref y, ref z, "Global"),
                 (ETABSv1.cSapModel sapModel, int nodeCount, ref double[] x, ref double[] y, ref double[] z, ref string areaName, string propName) =>
                     sapModel.AreaObj.AddByCoord(nodeCount, ref x, ref y, ref z, ref areaName, propName, string.Empty, "Global"),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
             return shellResult;
         }
 

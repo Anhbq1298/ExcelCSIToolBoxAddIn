@@ -56,7 +56,7 @@ namespace ExcelCSIToolBox.AI.Mcp.ToolModules
     {
         public static void Register(IMcpToolRegistry registry, ToolServices services)
         {
-            registry.Register(new CsiGetSelectedFramesTool(services.ReadOnlySelectionService));
+            registry.Register(new CsiGetSelectedFramesTool(services.ToolCatalogService));
             registry.Register(new CsiGetSelectedFrameSectionsTool(services.ReadOnlyFrameService));
             registry.Register(new FramesGetAllNamesTool(services.EtabsService, services.Sap2000Service));
             registry.Register(new FramesGetCountTool(services.EtabsService, services.Sap2000Service));

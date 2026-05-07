@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
+using ExcelCSIToolBox.Core.Tabular;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using Microsoft.Office.Interop.Excel;
 
@@ -319,14 +320,14 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
             return result;
         }
 
-        public OperationResult<LoadCombinationMatrixDto> ReadLoadCombinationMatrixRows()
+        public OperationResult<ExcelLoadCombinationMatrix> ReadLoadCombinationMatrixRows()
         {
             var selectionResult = GetActiveSelection(
                 "Select a load combination matrix range:\r\nLoadCombinationName | CombinationType | load pattern columns...",
                 "Select Load Combination Matrix");
             if (!selectionResult.IsSuccess)
             {
-                return OperationResult<LoadCombinationMatrixDto>.Failure(selectionResult.Message);
+                return OperationResult<ExcelLoadCombinationMatrix>.Failure(selectionResult.Message);
             }
 
             var selection = selectionResult.Data;
@@ -335,12 +336,12 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
 
             if (rowCount < 2)
             {
-                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: select a header row and at least one data row.");
+                return OperationResult<ExcelLoadCombinationMatrix>.Failure("Excel range validation failed: select a header row and at least one data row.");
             }
 
             if (columnCount < 3)
             {
-                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: expected at least 3 columns (LoadCombinationName, CombinationType, and one load pattern).");
+                return OperationResult<ExcelLoadCombinationMatrix>.Failure("Excel range validation failed: expected at least 3 columns (LoadCombinationName, CombinationType, and one load pattern).");
             }
 
             object rawValues = selection.Value2;
@@ -349,15 +350,15 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
 
             if (!string.Equals(firstHeader, "LoadCombinationName", StringComparison.OrdinalIgnoreCase))
             {
-                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: first header must be LoadCombinationName.");
+                return OperationResult<ExcelLoadCombinationMatrix>.Failure("Excel range validation failed: first header must be LoadCombinationName.");
             }
 
             if (!string.Equals(secondHeader, "CombinationType", StringComparison.OrdinalIgnoreCase))
             {
-                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel range validation failed: second header must be CombinationType.");
+                return OperationResult<ExcelLoadCombinationMatrix>.Failure("Excel range validation failed: second header must be CombinationType.");
             }
 
-            var matrix = new LoadCombinationMatrixDto();
+            var matrix = new ExcelLoadCombinationMatrix();
             var failures = new List<string>();
             var seenHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -392,7 +393,7 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
                     continue;
                 }
 
-                var dto = new LoadCombinationMatrixRowDto
+                var dto = new ExcelLoadCombinationMatrixRow
                 {
                     LoadCombinationName = ReadCellText(rawValues, selection, row, 1),
                     CombinationType = 0
@@ -442,15 +443,15 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
 
             if (failures.Count > 0)
             {
-                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel parsing failed: " + string.Join(" ", failures));
+                return OperationResult<ExcelLoadCombinationMatrix>.Failure("Excel parsing failed: " + string.Join(" ", failures));
             }
 
             if (matrix.Rows.Count == 0)
             {
-                return OperationResult<LoadCombinationMatrixDto>.Failure("Excel parsing failed: no non-empty load combination rows were found.");
+                return OperationResult<ExcelLoadCombinationMatrix>.Failure("Excel parsing failed: no non-empty load combination rows were found.");
             }
 
-            return OperationResult<LoadCombinationMatrixDto>.Success(matrix);
+            return OperationResult<ExcelLoadCombinationMatrix>.Success(matrix);
         }
 
         private OperationResult<IReadOnlyList<T>> ReadRows<T>(int expectedColumns, string expectedColumnsDesc, string prompt, string title, System.Func<object, Range, int, T> rowMapper)

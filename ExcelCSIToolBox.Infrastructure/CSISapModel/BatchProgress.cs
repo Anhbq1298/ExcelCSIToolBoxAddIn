@@ -1,4 +1,5 @@
 using System;
+using ExcelCSIToolBox.Core.Abstractions;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 {
@@ -22,27 +23,28 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
     public static class BatchProgressHost
     {
-        public static Func<int, string, Action<IBatchProgressContext>, BatchProgressSummary> ProgressRunner { get; set; }
+        // Progress reporting migrated to injected IProgressReporter.
+    }
 
-        internal static BatchProgressResult RunWithProgress(int totalItems, string title, Action<BatchProgressContext> workAction)
+    internal static class BatchProgressWindow
+    {
+        public static BatchProgressResult RunWithProgress(
+            int totalItems,
+            string title,
+            Action<BatchProgressContext> workAction,
+            IProgressReporter progressReporter = null)
         {
-            if (ProgressRunner != null)
+            BatchProgressContext context = new BatchProgressContext(totalItems, title, progressReporter);
+            try
             {
-                BatchProgressSummary summary = ProgressRunner(
-                    totalItems,
-                    title,
-                    progressContext => workAction(new BatchProgressContext(totalItems, progressContext)));
-
-                return new BatchProgressResult
-                {
-                    RanCount = summary == null ? 0 : summary.RanCount,
-                    SkippedCount = summary == null ? 0 : summary.SkippedCount,
-                    WasCancelled = summary != null && summary.WasCancelled
-                };
+                workAction(context);
+                progressReporter?.ReportComplete($"{title} completed.");
             }
-
-            BatchProgressContext context = new BatchProgressContext(totalItems);
-            workAction(context);
+            catch (Exception ex)
+            {
+                progressReporter?.ReportError($"{title} failed: {ex.Message}");
+                throw;
+            }
 
             return new BatchProgressResult
             {
@@ -53,17 +55,11 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         }
     }
 
-    internal static class BatchProgressWindow
-    {
-        public static BatchProgressResult RunWithProgress(int totalItems, string title, Action<BatchProgressContext> workAction)
-        {
-            return BatchProgressHost.RunWithProgress(totalItems, title, workAction);
-        }
-    }
-
     internal sealed class BatchProgressContext : IBatchProgressContext
     {
         private readonly IBatchProgressContext _progressContext;
+        private readonly IProgressReporter _progressReporter;
+        private readonly string _title;
         private int _ranCount;
         private int _skippedCount;
         private bool _cancellationRequested;
@@ -71,6 +67,14 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
         public BatchProgressContext(int totalItems)
         {
             TotalItems = totalItems;
+        }
+
+        public BatchProgressContext(int totalItems, string title, IProgressReporter progressReporter)
+        {
+            TotalItems = totalItems;
+            _title = title;
+            _progressReporter = progressReporter;
+            ReportProgress();
         }
 
         internal BatchProgressContext(int totalItems, IBatchProgressContext progressContext)
@@ -105,6 +109,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             _ranCount++;
+            ReportProgress();
         }
 
         public void IncrementSkipped()
@@ -116,6 +121,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             _skippedCount++;
+            ReportProgress();
         }
 
         public void RequestCancellation()
@@ -127,6 +133,18 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             _cancellationRequested = true;
+        }
+
+        private void ReportProgress()
+        {
+            if (_progressReporter == null)
+            {
+                return;
+            }
+
+            int processed = RanCount + SkippedCount;
+            int percent = TotalItems <= 0 ? 0 : (int)Math.Round(100.0 * processed / TotalItems);
+            _progressReporter.Report(percent, $"{_title} ({processed}/{TotalItems})");
         }
     }
 

@@ -26,6 +26,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Loads.LoadPatterns
         }
     }
 
+    [MutationTool]
     public sealed class LoadPatternsDeleteTool : CsiActiveConnectionToolBase
     {
         private readonly IMcpWriteGuard _writeGuard;

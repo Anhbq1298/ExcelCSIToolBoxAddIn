@@ -11,6 +11,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Model
     /// MCP tool to refresh the model view in ETABS or SAP2000.
     /// Supports an optional zoomAll parameter.
     /// </summary>
+    [MutationTool]
     public sealed class CsiRefreshViewTool : CsiActiveConnectionToolBase
     {
         public CsiRefreshViewTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) 

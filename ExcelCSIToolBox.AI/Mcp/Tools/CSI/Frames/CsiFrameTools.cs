@@ -168,6 +168,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
         }
     }
 
+    [MutationTool]
     public sealed class FramesSetSelectedTool : CsiActiveConnectionToolBase
     {
         public FramesSetSelectedTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }

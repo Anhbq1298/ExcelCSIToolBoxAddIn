@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
 using ExcelCSIToolBox.AI.Mcp.Contracts;
 using ExcelCSIToolBox.AI.Mcp.Tools;
-using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using Newtonsoft.Json;
 
@@ -15,12 +15,12 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
     /// </summary>
     public class CsiGetSelectedFramesTool : IMcpTool
     {
-        private readonly ICsiReadOnlySelectionService _selectionService;
+        private readonly IToolCatalogService _toolCatalogService;
 
-        public CsiGetSelectedFramesTool(ICsiReadOnlySelectionService selectionService)
+        public CsiGetSelectedFramesTool(IToolCatalogService toolCatalogService)
         {
-            _selectionService = selectionService
-                ?? throw new ArgumentNullException(nameof(selectionService));
+            _toolCatalogService = toolCatalogService
+                ?? throw new ArgumentNullException(nameof(toolCatalogService));
         }
 
         public string Name        => "CSI.GetSelectedFrames";
@@ -29,7 +29,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
 
         public Task<ToolCallResponse> ExecuteAsync(string argumentsJson, CancellationToken cancellationToken)
         {
-            OperationResult<List<string>> result = _selectionService.GetSelectedFrameNames();
+            OperationResult<IReadOnlyList<string>> result = _toolCatalogService.GetSelectedFrameNames();
 
             if (!result.IsSuccess)
             {

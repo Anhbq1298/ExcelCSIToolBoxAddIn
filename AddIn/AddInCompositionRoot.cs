@@ -1,7 +1,11 @@
 using System;
 using ExcelCSIToolBox.Application.GenerativeDesign;
+using ExcelCSIToolBox.Application.ToolCatalog;
+using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.AI.Agent;
 using ExcelCSIToolBox.AI.Mcp.Client;
+using ExcelCSIToolBox.AI.Mcp.Safety;
 using ExcelCSIToolBox.AI.Mcp.Server;
 using ExcelCSIToolBox.AI.Ollama;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
@@ -23,15 +27,22 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static ICSISapModelConnectionService _sap2000ConnectionService;
         private static IExcelSelectionService _excelSelectionService;
         private static IExcelOutputService _excelOutputService;
+        private static IToolCatalogService _toolCatalogService;
+        private static IProgressReporter _progressReporter;
+        private static IMutationGuard _mutationGuard;
 
         public static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
-            ICSISapModelConnectionService sap2000ConnectionService)
+            ICSISapModelConnectionService sap2000ConnectionService,
+            IProgressReporter progressReporter)
         {
             _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
             _sap2000ConnectionService = sap2000ConnectionService ?? throw new ArgumentNullException(nameof(sap2000ConnectionService));
+            _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+            _mutationGuard = new WpfMutationGuard();
             _excelSelectionService = new ExcelSelectionService();
             _excelOutputService = new ExcelOutputService();
+            _toolCatalogService = new ToolCatalogService(_etabsConnectionService, _sap2000ConnectionService);
 
             WindowManager.Configure(
                 _etabsConnectionService,
@@ -72,6 +83,8 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 new CsiRandomObjectGenerationService(),
                 new CsiHoweTrussGenerationService(),
                 new CsiWorkflowExecutionService(),
+                _toolCatalogService,
+                _mutationGuard,
                 new BuildingOptionService(),
                 new ConstraintValidationService(),
                 new ResultEvaluationService(),

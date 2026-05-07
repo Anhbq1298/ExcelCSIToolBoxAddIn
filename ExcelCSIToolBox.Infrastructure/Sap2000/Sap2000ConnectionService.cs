@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Geometry;
@@ -22,20 +23,24 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
     public class Sap2000ConnectionService : ICSISapModelConnectionService
     {
         private readonly ICSISapModelConnectionAdapter<SAP2000v1.cSapModel> _connectionAdapter;
+        private readonly IProgressReporter _progressReporter;
 
         public Sap2000ConnectionService()
-            : this(CSISapModelConnectionAdapterFactory.CreateSap2000())
+            : this(CSISapModelConnectionAdapterFactory.CreateSap2000(), null)
         {
         }
 
-        public Sap2000ConnectionService(ICsiModelAdapter modelAdapter)
-            : this(CSISapModelConnectionAdapterFactory.CreateSap2000(modelAdapter))
+        public Sap2000ConnectionService(ICsiModelAdapter modelAdapter, IProgressReporter progressReporter = null)
+            : this(CSISapModelConnectionAdapterFactory.CreateSap2000(modelAdapter), progressReporter)
         {
         }
 
-        private Sap2000ConnectionService(ICSISapModelConnectionAdapter<SAP2000v1.cSapModel> connectionAdapter)
+        private Sap2000ConnectionService(
+            ICSISapModelConnectionAdapter<SAP2000v1.cSapModel> connectionAdapter,
+            IProgressReporter progressReporter)
         {
             _connectionAdapter = connectionAdapter ?? throw new ArgumentNullException(nameof(connectionAdapter));
+            _progressReporter = progressReporter;
         }
 
         public string ProductName => "SAP2000";
@@ -69,7 +74,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.PointObj.SetSelected(name, true, SAP2000v1.eItemType.Objects),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
         }
 
         public OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames)
@@ -86,7 +92,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                 sapModelResult.Data,
                 sapModel => sapModel.SelectObj.ClearSelection(),
                 (sapModel, name) => sapModel.FrameObj.SetSelected(name, true, SAP2000v1.eItemType.Objects),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
         }
 
         public OperationResult ClearSelection()
@@ -238,7 +245,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                         "Global",
                         true,
                         0),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
         }
 
         public OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs)
@@ -265,7 +273,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                         sectionName,
                         userName,
                         "Global"),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
         }
 
         public OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs)
@@ -287,7 +296,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                         ref createdName,
                         sectionName,
                         userName),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
         }
 
         public OperationResult<FrameAddBatchResultDto> AddFrameObjects(FrameAddBatchRequestDto request)
@@ -742,7 +752,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelISections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -758,7 +769,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelChannelSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -774,7 +786,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelAngleSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -790,7 +803,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelPipeSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -806,7 +820,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddSteelTubeSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -822,7 +837,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddConcreteRectangleSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -838,7 +854,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModel = sapModelResult.Data;
             var result = CSISapModelSectionPropertiesService.AddConcreteCircleSections(
                 sapModel,
-                inputs);
+                inputs,
+                _progressReporter);
 
             return result;
         }
@@ -867,7 +884,8 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                     sapModel.PointObj.GetCoordCartesian(pointName, ref x, ref y, ref z, "Global"),
                 (SAP2000v1.cSapModel sapModel, int nodeCount, ref double[] x, ref double[] y, ref double[] z, ref string areaName, string propName) =>
                     sapModel.AreaObj.AddByCoord(nodeCount, ref x, ref y, ref z, ref areaName, propName, string.Empty, "Global"),
-                RefreshView);
+                RefreshView,
+                _progressReporter);
             return shellResult;
         }
 

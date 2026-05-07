@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Base
 {
+    [MutationTool]
     public abstract class CsiWriteToolBase<TArgs> : IMcpTool, IMcpToolMetadata
         where TArgs : class, new()
     {

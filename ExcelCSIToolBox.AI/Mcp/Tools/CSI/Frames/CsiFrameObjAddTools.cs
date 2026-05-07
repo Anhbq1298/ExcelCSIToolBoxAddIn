@@ -80,6 +80,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames
         }
     }
 
+    [MutationTool]
     public abstract class FrameObjAddToolBase : IMcpTool, IMcpToolMetadata
     {
         private readonly ICSISapModelConnectionService _etabsService;

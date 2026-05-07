@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Workflow
 {
+    [MutationTool]
     public sealed class ExecuteCsiRequestTool : CsiActiveConnectionToolBase
     {
         private readonly ICsiWorkflowExecutionService _workflowService;

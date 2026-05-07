@@ -246,6 +246,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells
         }
     }
 
+    [MutationTool]
     public sealed class ShellsAddByPointsTool : CsiShellToolBase
     {
         public ShellsAddByPointsTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
@@ -267,6 +268,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells
         }
     }
 
+    [MutationTool]
     public sealed class ShellsAddByCoordinatesTool : CsiShellToolBase
     {
         public ShellsAddByCoordinatesTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
@@ -288,6 +290,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells
         }
     }
 
+    [MutationTool]
     public sealed class ShellsAssignUniformLoadTool : CsiShellToolBase
     {
         public ShellsAssignUniformLoadTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }
@@ -309,6 +312,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Shells
         }
     }
 
+    [MutationTool]
     public sealed class ShellsDeleteTool : CsiShellToolBase
     {
         public ShellsDeleteTool(ICSISapModelConnectionService etabsService, ICSISapModelConnectionService sap2000Service) : base(etabsService, sap2000Service) { }

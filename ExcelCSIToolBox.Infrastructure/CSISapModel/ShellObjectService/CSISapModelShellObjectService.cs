@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
@@ -687,7 +688,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             CSISapModelGetFramePoints<TSapModel> getFramePoints,
             CSISapModelGetPointCoordinates<TSapModel> getPointCoordinates,
             CSISapModelAddAreaByCoordinates<TSapModel> addAreaByCoordinates,
-            Func<TSapModel, OperationResult> refreshView)
+            Func<TSapModel, OperationResult> refreshView,
+            IProgressReporter progressReporter = null)
         {
             tolerances = tolerances ?? new ShellCreationTolerances();
             propertyName = string.IsNullOrWhiteSpace(propertyName) ? "Default" : propertyName.Trim();
@@ -783,7 +785,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                                 ctx.IncrementSkipped();
                             }
                         }
-                    });
+                    },
+                    progressReporter);
 
                 var refreshResult = refreshView(sapModel);
                 if (!refreshResult.IsSuccess)

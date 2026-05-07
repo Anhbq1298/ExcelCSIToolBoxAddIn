@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Truss
 {
+    [MutationTool]
     public sealed class TrussGenerateHoweTool : IMcpTool, IMcpToolMetadata
     {
         private readonly ICSISapModelConnectionService _etabsService;
@@ -120,6 +121,7 @@ namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Truss
         }
     }
 
+    [MutationTool]
     public sealed class TrussGeneratePrattTool : IMcpTool, IMcpToolMetadata
     {
         private readonly ICSISapModelConnectionService _etabsService;

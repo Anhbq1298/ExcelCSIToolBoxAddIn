@@ -6,6 +6,12 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="CSISapModel\**\*.cs" />
+    <Compile Remove="DTOs\CSI\*.cs" />
+    <Compile Remove="Models\*.cs" />
     <Compile Remove="ToolBoxDTO.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj" />
   </ItemGroup>
 </Project>
