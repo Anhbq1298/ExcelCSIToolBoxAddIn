@@ -3,10 +3,15 @@ using System.Windows.Input;
 
 namespace ExcelCSIToolBox.Core.Common.Commands
 {
+    public interface IRelayCommand
+    {
+        void RaiseCanExecuteChanged();
+    }
+
     /// <summary>
     /// Lightweight ICommand implementation for MVVM command binding.
     /// </summary>
-    public class RelayCommand : ICommand
+    public class RelayCommand : ICommand, IRelayCommand
     {
         private readonly Action _execute;
         private readonly Func<bool> _canExecute;

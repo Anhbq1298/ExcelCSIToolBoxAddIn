@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -15,15 +16,18 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class LoadCombinationMatrixViewModel : ViewModelBase
     {
         private readonly string _productTitle;
+        private readonly IExcelOutputService _excelOutputService;
         private readonly HashSet<string> _originalLoadCombinationNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private IReadOnlyList<LoadCombinationMatrixRowDto> _savedRows = new List<LoadCombinationMatrixRowDto>();
         private IReadOnlyList<string> _savedDeletedLoadCombinationNames = new List<string>();
 
         public LoadCombinationMatrixViewModel(
             LoadCombinationMatrixDto initialMatrix,
-            string productTitle)
+            string productTitle,
+            IExcelOutputService excelOutputService = null)
         {
             _productTitle = string.IsNullOrWhiteSpace(productTitle) ? "CSI Toolbox" : productTitle;
+            _excelOutputService = excelOutputService;
 
             Rows = new ObservableCollection<LoadCombinationMatrixRowViewModel>();
             LoadPatternNames = new ObservableCollection<string>();
@@ -32,6 +36,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             AddRowCommand = new RelayCommand(AddRow);
             DeleteSelectedRowsCommand = new RelayCommand<IList>(DeleteSelectedRows);
+            ExportToExcelRangeCommand = new RelayCommand(ExportToExcelRange, () => _excelOutputService != null);
             SaveCommand = new RelayCommand(Save);
             CancelCommand = new RelayCommand(Cancel);
 
@@ -45,6 +50,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ICommand AddRowCommand { get; }
         public ICommand DeleteSelectedRowsCommand { get; }
+        public ICommand ExportToExcelRangeCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
@@ -144,6 +150,26 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 Rows.Remove(row);
             }
+        }
+
+        private void ExportToExcelRange()
+        {
+            var valuesResult = CreateExportValues();
+            if (!valuesResult.IsSuccess)
+            {
+                MessageBox.Show(valuesResult.Message, _productTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var exportResult = _excelOutputService.WriteValuesToActiveCell(
+                valuesResult.Data,
+                $"Successfully exported {Rows.Count} load combination row(s) to Excel.");
+
+            MessageBox.Show(
+                exportResult.Message,
+                _productTitle,
+                MessageBoxButton.OK,
+                exportResult.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
         private void Save()
@@ -273,6 +299,73 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             return OperationResult<IReadOnlyList<LoadCombinationMatrixRowDto>>.Success(dtos);
         }
 
+        private OperationResult<object[,]> CreateExportValues()
+        {
+            int columnCount = 2 + LoadPatternNames.Count + LoadCombinationReferenceNames.Count;
+            var values = new object[Rows.Count + 1, columnCount];
+
+            values[0, 0] = "Load Combination Name";
+            values[0, 1] = "Combination Type";
+
+            int columnIndex = 2;
+            foreach (string patternName in LoadPatternNames)
+            {
+                values[0, columnIndex++] = "LC | " + patternName;
+            }
+
+            foreach (string comboName in LoadCombinationReferenceNames)
+            {
+                values[0, columnIndex++] = "COMBO | " + comboName;
+            }
+
+            for (int rowIndex = 0; rowIndex < Rows.Count; rowIndex++)
+            {
+                var row = Rows[rowIndex];
+                values[rowIndex + 1, 0] = NormalizeName(row.LoadCombinationName) ?? string.Empty;
+                values[rowIndex + 1, 1] = GetCombinationTypeDisplayName(row.CombinationType);
+
+                columnIndex = 2;
+                foreach (string patternName in LoadPatternNames)
+                {
+                    var factorResult = CreateExportFactor(row.GetLoadCaseFactor(patternName), rowIndex + 1, "LC | " + patternName);
+                    if (!factorResult.IsSuccess)
+                    {
+                        return OperationResult<object[,]>.Failure(factorResult.Message);
+                    }
+
+                    values[rowIndex + 1, columnIndex++] = factorResult.Data;
+                }
+
+                foreach (string comboName in LoadCombinationReferenceNames)
+                {
+                    var factorResult = CreateExportFactor(row.GetLoadCombinationFactor(comboName), rowIndex + 1, "COMBO | " + comboName);
+                    if (!factorResult.IsSuccess)
+                    {
+                        return OperationResult<object[,]>.Failure(factorResult.Message);
+                    }
+
+                    values[rowIndex + 1, columnIndex++] = factorResult.Data;
+                }
+            }
+
+            return OperationResult<object[,]>.Success(values);
+        }
+
+        private static OperationResult<object> CreateExportFactor(string factorText, int rowNumber, string columnName)
+        {
+            if (string.IsNullOrWhiteSpace(factorText))
+            {
+                return OperationResult<object>.Success(string.Empty);
+            }
+
+            if (!TryParseDouble(factorText, out double factor))
+            {
+                return OperationResult<object>.Failure($"Row {rowNumber}, column {columnName}: value '{factorText}' is not numeric.");
+            }
+
+            return OperationResult<object>.Success(factor);
+        }
+
         private static bool TryParseDouble(string value, out double result)
         {
             bool parsed = double.TryParse(value, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.CurrentCulture, out result)
@@ -332,6 +425,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 || combinationType == (int)LoadCombinationType.AbsoluteAdditive
                 || combinationType == (int)LoadCombinationType.SRSS
                 || combinationType == (int)LoadCombinationType.RangeAdditive;
+        }
+
+        private string GetCombinationTypeDisplayName(int combinationType)
+        {
+            var option = CombinationTypeOptions.FirstOrDefault(x => x.Value == combinationType);
+            return option == null
+                ? combinationType.ToString(CultureInfo.InvariantCulture)
+                : option.DisplayName;
         }
     }
 }

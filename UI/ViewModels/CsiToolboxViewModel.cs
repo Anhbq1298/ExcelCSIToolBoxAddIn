@@ -1,3 +1,4 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -45,6 +46,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly GetLoadCombinationDetailsUseCase _getLoadCombinationDetailsUseCase;
         private readonly ICSISapModelConnectionService _csiConnectionService;
         private readonly IExcelSelectionService _excelSelectionService;
+        private readonly IExcelOutputService _excelOutputService;
 
         private readonly GetLoadPatternsUseCase _getLoadPatternsUseCase;
         private readonly DeleteLoadPatternsUseCase _deleteLoadPatternsUseCase;
@@ -71,6 +73,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 : csiConnectionService.ProductName;
             _csiConnectionService = csiConnectionService;
             _excelSelectionService = excelSelectionService;
+            _excelOutputService = excelOutputService;
 
             _loadCSISapModelConnectionUseCase = new LoadCSISapModelConnectionUseCase(csiConnectionService);
             _closeCurrentInstanceUseCase = new CloseCurrentInstanceUseCase(csiConnectionService);
@@ -177,7 +180,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _isConnected = value;
                 OnPropertyChanged();
-                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                RefreshCommandStates();
             }
         }
 
@@ -267,6 +270,61 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
         public System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO> FrameSections { get; }
         public System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation> SectionDimensionAnnotations { get; }
+
+        private void RefreshCommandStates()
+        {
+            var commands = new ICommand[]
+            {
+                CloseCurrentInstanceCommand,
+                CreateIshapeSectionCommand,
+                CreateChannelSectionCommand,
+                CreateAngleSectionCommand,
+                CreateTubeSectionCommand,
+                CreatePipeSectionCommand,
+                CreateConcreteRectangleSectionCommand,
+                CreateConcreteCircleSectionCommand,
+                SelectPointsByUniqueNameCommand,
+                SelectFramesByUniqueNameCommand,
+                AddPointByCartesianCommand,
+                SetPointsCommand,
+                RenameSelectedPointsCommand,
+                GetSelectedPointsCommand,
+                AddFramesByCoordinatesCommand,
+                AddFramesByPointNamesCommand,
+                SetFramesCommand,
+                RenameFramesCommand,
+                GetSelectedFramesCommand,
+                GetFrameSectionPropertyCommand,
+                SetFrameSectionPropertyCommand,
+                GetFrameGroupAssignmentCommand,
+                SetFrameGroupAssignmentCommand,
+                GetFrameModifierCommand,
+                SetFrameModifierCommand,
+                CreateShellAreasFromSelectedFramesCommand,
+                GetPointGroupAssignmentCommand,
+                SetPointGroupAssignmentCommand,
+                GetLoadPatternsCommand,
+                AddLoadPatternFromExcelCommand,
+                DeleteSelectedLoadPatternsCommand,
+                GetLoadCombinationsCommand,
+                ModifyLoadCombinationsInMatrixViewCommand,
+                AddLoadCombinationFromExcelCommand,
+                DeleteSelectedLoadCombinationsCommand,
+                ViewLoadCombinationCommand,
+                GetFrameSectionsCommand,
+                EditFrameSectionCommand
+            };
+
+            foreach (ICommand command in commands)
+            {
+                if (command is IRelayCommand relayCommand)
+                {
+                    relayCommand.RaiseCanExecuteChanged();
+                }
+            }
+
+            CommandManager.InvalidateRequerySuggested();
+        }
         
         private CSISapModelFrameSectionDTO _selectedFrameSection;
         public CSISapModelFrameSectionDTO SelectedFrameSection
@@ -515,6 +573,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 GetLoadPatterns();
                 GetLoadCombinations();
                 GetFrameSections();
+                RefreshCommandStates();
+                Application.Current?.Dispatcher.BeginInvoke(new Action(RefreshCommandStates));
 
                 if (showMessage)
                 {
@@ -826,7 +886,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            var viewModel = new LoadCombinationMatrixViewModel(matrixResult.Data, ProductTitle);
+            var viewModel = new LoadCombinationMatrixViewModel(matrixResult.Data, ProductTitle, _excelOutputService);
             var window = new ExcelCSIToolBoxAddIn.UI.Views.LoadCombinationMatrixView(viewModel);
             window.ShowDialog();
 

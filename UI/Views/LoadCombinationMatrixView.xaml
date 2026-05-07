@@ -77,31 +77,43 @@
     </Window.Resources>
 
     <DockPanel Margin="12">
-        <StackPanel DockPanel.Dock="Bottom"
-                    Orientation="Horizontal"
-                    HorizontalAlignment="Right"
-                    Margin="0,12,0,0">
-            <Button Content="Add Row"
-                    Width="90"
-                    Margin="0,0,8,0"
-                    Style="{StaticResource MatrixButtonStyle}"
-                    Command="{Binding AddRowCommand}" />
-            <Button Content="Delete Row"
-                    Width="90"
-                    Margin="0,0,8,0"
-                    Style="{StaticResource MatrixButtonStyle}"
-                    Command="{Binding DeleteSelectedRowsCommand}"
-                    CommandParameter="{Binding SelectedItems, ElementName=MatrixGrid}" />
-            <Button Content="Save"
-                    Width="80"
-                    Margin="0,0,8,0"
-                    Style="{StaticResource SaveButtonStyle}"
-                    Command="{Binding SaveCommand}" />
-            <Button Content="Cancel"
-                    Width="80"
-                    Style="{StaticResource MatrixButtonStyle}"
-                    Command="{Binding CancelCommand}" />
-        </StackPanel>
+        <DockPanel DockPanel.Dock="Bottom"
+                   LastChildFill="False"
+                   Margin="0,12,0,0">
+            <StackPanel DockPanel.Dock="Left"
+                        Orientation="Horizontal">
+                <Button Content="Add Row"
+                        Width="90"
+                        Margin="0,0,8,0"
+                        Style="{StaticResource MatrixButtonStyle}"
+                        Command="{Binding AddRowCommand}" />
+                <Button Content="Delete Row"
+                        Width="90"
+                        Margin="0,0,8,0"
+                        Style="{StaticResource MatrixButtonStyle}"
+                        Command="{Binding DeleteSelectedRowsCommand}"
+                        CommandParameter="{Binding SelectedItems, ElementName=MatrixGrid}" />
+                <Button Content="Export"
+                        Width="66"
+                        Margin="0,0,8,0"
+                        Style="{StaticResource MatrixButtonStyle}"
+                        ToolTip="Export to selected Excel range"
+                        Command="{Binding ExportToExcelRangeCommand}" />
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Right"
+                        Orientation="Horizontal">
+                <Button Content="Save"
+                        Width="80"
+                        Margin="0,0,8,0"
+                        Style="{StaticResource SaveButtonStyle}"
+                        Command="{Binding SaveCommand}" />
+                <Button Content="Cancel"
+                        Width="80"
+                        Style="{StaticResource MatrixButtonStyle}"
+                        Command="{Binding CancelCommand}" />
+            </StackPanel>
+        </DockPanel>
 
         <DataGrid x:Name="MatrixGrid"
                   ItemsSource="{Binding Rows}"

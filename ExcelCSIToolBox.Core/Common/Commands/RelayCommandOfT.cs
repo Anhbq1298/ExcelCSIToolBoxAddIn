@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace ExcelCSIToolBox.Core.Common.Commands
 {
-    public class RelayCommand<T> : ICommand
+    public class RelayCommand<T> : ICommand, IRelayCommand
     {
         private readonly Action<T> _execute;
         private readonly Predicate<T> _canExecute;
