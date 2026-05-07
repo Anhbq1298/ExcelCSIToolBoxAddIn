@@ -1,6 +1,7 @@
 using System.Collections.Specialized;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ExcelCSIToolBoxAddIn.AddIn;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
@@ -21,7 +22,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private void Messages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            Dispatcher.BeginInvoke(new System.Action(ScrollConversationToEnd));
+            new WpfThreadDispatcher().InvokeOnUiThread(ScrollConversationToEnd);
         }
 
         private void InputTextBox_PreviewKeyDown(object sender, KeyEventArgs e)

@@ -368,3 +368,13 @@ CSI_API_ETABS_v1/
 
 # Reference and documentation folder
 _ref/
+
+# Scratch files
+scratch_*.cs
+scratch_*.txt
+
+# Binary outputs. CSI COM API interop assemblies in /lib may be tracked explicitly
+# when no package distribution exists.
+*.dll
+!lib/ETABSv1.dll
+!lib/SAP2000v1.dll

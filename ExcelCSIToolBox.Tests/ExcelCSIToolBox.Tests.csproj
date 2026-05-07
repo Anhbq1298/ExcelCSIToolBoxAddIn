@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>ExcelCSIToolBox.Tests</RootNamespace>
+    <AssemblyName>ExcelCSIToolBox.Tests</AssemblyName>
+    <LangVersion>7.3</LangVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" Version="6.12.2" />
+    <PackageReference Include="NSubstitute" Version="5.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj" />
+    <ProjectReference Include="..\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
+    <ProjectReference Include="..\ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj" />
+  </ItemGroup>
+</Project>

@@ -574,7 +574,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 GetLoadCombinations();
                 GetFrameSections();
                 RefreshCommandStates();
-                Application.Current?.Dispatcher.BeginInvoke(new Action(RefreshCommandStates));
+                new ExcelCSIToolBoxAddIn.AddIn.WpfThreadDispatcher().InvokeOnUiThread(RefreshCommandStates);
 
                 if (showMessage)
                 {

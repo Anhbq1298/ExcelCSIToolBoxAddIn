@@ -251,7 +251,10 @@
     </Compile>
     <Compile Include="AddIn\AddInCompositionRoot.cs" />
     <Compile Include="AddIn\AiChatSessionService.cs" />
+    <Compile Include="AddIn\BatchProgressReporter.cs" />
     <Compile Include="AddIn\IAiChatSessionService.cs" />
+    <Compile Include="AddIn\WpfMutationGuard.cs" />
+    <Compile Include="AddIn\WpfThreadDispatcher.cs" />
     <None Include="ThisAddIn.Designer.xml">
       <DependentUpon>ExcelCSIToolBoxAddin.cs</DependentUpon>
     </None>

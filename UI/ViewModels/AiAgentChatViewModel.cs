@@ -4,8 +4,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Threading;
 using ExcelCSIToolBox.AI.Agent;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBoxAddIn.AddIn;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -13,7 +13,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     public class AiAgentChatViewModel : ViewModelBase
     {
         private readonly IAiChatSessionService _chatSessionService;
-        private readonly Dispatcher _dispatcher;
+        private readonly IThreadDispatcher _dispatcher;
 
         private string _userInput = string.Empty;
         private string _statusText = "Ready";
@@ -23,10 +23,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool _isBusy;
         private AiAgentToolTraceViewModel _lastToolTrace;
 
-        public AiAgentChatViewModel(IAiChatSessionService chatSessionService)
+        public AiAgentChatViewModel(IAiChatSessionService chatSessionService, IThreadDispatcher dispatcher)
         {
             _chatSessionService = chatSessionService ?? throw new ArgumentNullException(nameof(chatSessionService));
-            _dispatcher = Dispatcher.CurrentDispatcher;
+            _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 
             Messages = new ObservableCollection<AiAgentChatMessageViewModel>();
             _lastToolTrace = new AiAgentToolTraceViewModel();
@@ -183,7 +183,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 if (!string.IsNullOrEmpty(chunk))
                 {
-                    thinkingMessage.Content += chunk;
+                    // Each streamed chunk may arrive from an async AI continuation; marshal before updating bound ViewModels.
+                    _dispatcher.InvokeOnUiThread(() => thinkingMessage.Content += chunk);
                 }
             };
 
@@ -216,7 +217,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     {
                         Task.Delay(40).ContinueWith(task =>
                         {
-                            _dispatcher.BeginInvoke(flushBufferedTokens, DispatcherPriority.Background);
+                            _dispatcher.InvokeOnUiThread(flushBufferedTokens);
                         });
                     }
                 },
