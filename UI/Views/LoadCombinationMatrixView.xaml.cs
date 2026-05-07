@@ -13,6 +13,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private static readonly Brush WhiteBrush = Brushes.White;
         private static readonly Brush LightBorderBrush = CreateSolidBrush(218, 221, 226);
         private LoadCombinationMatrixViewModel _viewModel;
+        private bool _isHiddenForExcelSelection;
 
         public LoadCombinationMatrixView(LoadCombinationMatrixViewModel viewModel)
         {
@@ -27,6 +28,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (_viewModel != null)
             {
                 _viewModel.RequestClose -= ViewModel_RequestClose;
+                _viewModel.RequestExcelSelectionStart -= ViewModel_RequestExcelSelectionStart;
+                _viewModel.RequestExcelSelectionEnd -= ViewModel_RequestExcelSelectionEnd;
                 _viewModel.LoadPatternNames.CollectionChanged -= LoadPatternNames_CollectionChanged;
                 _viewModel.LoadCombinationReferenceNames.CollectionChanged -= LoadPatternNames_CollectionChanged;
             }
@@ -35,6 +38,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (_viewModel != null)
             {
                 _viewModel.RequestClose += ViewModel_RequestClose;
+                _viewModel.RequestExcelSelectionStart += ViewModel_RequestExcelSelectionStart;
+                _viewModel.RequestExcelSelectionEnd += ViewModel_RequestExcelSelectionEnd;
                 _viewModel.LoadPatternNames.CollectionChanged += LoadPatternNames_CollectionChanged;
                 _viewModel.LoadCombinationReferenceNames.CollectionChanged += LoadPatternNames_CollectionChanged;
             }
@@ -48,6 +53,24 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private void LoadPatternNames_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             RebuildColumns();
+        }
+
+        private void ViewModel_RequestExcelSelectionStart(object sender, System.EventArgs e)
+        {
+            _isHiddenForExcelSelection = true;
+            Hide();
+        }
+
+        private void ViewModel_RequestExcelSelectionEnd(object sender, System.EventArgs e)
+        {
+            if (!_isHiddenForExcelSelection)
+            {
+                return;
+            }
+
+            _isHiddenForExcelSelection = false;
+            Show();
+            Activate();
         }
 
         private void RebuildColumns()

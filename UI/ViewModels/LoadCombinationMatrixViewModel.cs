@@ -67,6 +67,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         }
 
         public event EventHandler RequestClose;
+        public event EventHandler RequestExcelSelectionStart;
+        public event EventHandler RequestExcelSelectionEnd;
 
         private void LoadMatrix(LoadCombinationMatrixDto matrix)
         {
@@ -161,9 +163,20 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            var exportResult = _excelOutputService.WriteValuesToActiveCell(
-                valuesResult.Data,
-                $"Successfully exported {Rows.Count} load combination row(s) to Excel.");
+            OperationResult exportResult;
+            RequestExcelSelectionStart?.Invoke(this, EventArgs.Empty);
+            try
+            {
+                exportResult = _excelOutputService.WriteValuesToSelectedCell(
+                    valuesResult.Data,
+                    "Select the top-left cell for the load combination matrix export:",
+                    "Export Load Combination Matrix",
+                    $"Successfully exported {Rows.Count} load combination row(s) to Excel.");
+            }
+            finally
+            {
+                RequestExcelSelectionEnd?.Invoke(this, EventArgs.Empty);
+            }
 
             MessageBox.Show(
                 exportResult.Message,

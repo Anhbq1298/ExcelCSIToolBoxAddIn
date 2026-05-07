@@ -8,6 +8,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.Excel
         OperationResult WriteDataFrameToActiveCell(DataFrame dataFrame);
 
         OperationResult WriteValuesToActiveCell(object[,] values, string successMessage = null);
+
+        OperationResult WriteValuesToSelectedCell(object[,] values, string prompt, string title, string successMessage = null);
     }
 }
 

@@ -40,12 +40,36 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
                     return OperationResult.Failure("Please select a target cell in Excel and try again.");
                 }
 
-                int rowCount = values.GetLength(0);
-                int columnCount = values.GetLength(1);
-                Range targetRange = startCell.Resize[rowCount, columnCount];
-                targetRange.Value2 = values;
+                return WriteValuesToRange(values, startCell, successMessage);
+            }
+            catch (Exception)
+            {
+                return OperationResult.Failure("Failed to write table data to Excel.");
+            }
+        }
 
-                return OperationResult.Success(successMessage ?? $"Successfully exported {rowCount - 1} row(s) to Excel.");
+        public OperationResult WriteValuesToSelectedCell(object[,] values, string prompt, string title, string successMessage = null)
+        {
+            if (values == null || values.GetLength(0) == 0 || values.GetLength(1) == 0)
+            {
+                return OperationResult.Failure("There is no tabular data to export.");
+            }
+
+            try
+            {
+                Microsoft.Office.Interop.Excel.Application excelApp = ExcelApplicationProvider.GetApplication();
+                if (excelApp == null)
+                {
+                    return OperationResult.Failure("Excel application is not available.");
+                }
+
+                Range startCell = GetPromptedTopLeftCell(excelApp, prompt, title);
+                if (startCell == null)
+                {
+                    return OperationResult.Failure("Export canceled. No target cell was selected.");
+                }
+
+                return WriteValuesToRange(values, startCell, successMessage);
             }
             catch (Exception)
             {
@@ -91,6 +115,32 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
             }
 
             return excelApp.ActiveCell;
+        }
+
+        private static Range GetPromptedTopLeftCell(Microsoft.Office.Interop.Excel.Application excelApp, string prompt, string title)
+        {
+            object result = excelApp.InputBox(
+                string.IsNullOrWhiteSpace(prompt) ? "Select the top-left target cell for export:" : prompt,
+                string.IsNullOrWhiteSpace(title) ? "Select Export Target" : title,
+                Type: 8);
+
+            if (result is bool b && !b)
+            {
+                return null;
+            }
+
+            var selectedRange = result as Range;
+            return selectedRange == null ? null : selectedRange.Cells[1, 1] as Range;
+        }
+
+        private static OperationResult WriteValuesToRange(object[,] values, Range startCell, string successMessage)
+        {
+            int rowCount = values.GetLength(0);
+            int columnCount = values.GetLength(1);
+            Range targetRange = startCell.Resize[rowCount, columnCount];
+            targetRange.Value2 = values;
+
+            return OperationResult.Success(successMessage ?? $"Successfully exported {rowCount - 1} row(s) to Excel.");
         }
     }
 }

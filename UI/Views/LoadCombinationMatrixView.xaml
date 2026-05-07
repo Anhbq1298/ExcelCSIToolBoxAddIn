@@ -27,6 +27,18 @@
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
 
+        <Style x:Key="MatrixToolButtonStyle"
+               TargetType="{x:Type Button}"
+               BasedOn="{StaticResource MatrixButtonStyle}">
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="MinWidth" Value="34" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
         <Style x:Key="MatrixGridRowStyle" TargetType="{x:Type DataGridRow}">
             <Setter Property="Background" Value="#FFFFFF" />
             <Setter Property="MinHeight" Value="24" />
@@ -77,6 +89,16 @@
     </Window.Resources>
 
     <DockPanel Margin="12">
+        <DockPanel DockPanel.Dock="Top"
+                   LastChildFill="False"
+                   Margin="0,0,0,6">
+            <Button Content="XLS"
+                    DockPanel.Dock="Right"
+                    Style="{StaticResource MatrixToolButtonStyle}"
+                    ToolTip="Export to selected Excel range"
+                    Command="{Binding ExportToExcelRangeCommand}" />
+        </DockPanel>
+
         <DockPanel DockPanel.Dock="Bottom"
                    LastChildFill="False"
                    Margin="0,12,0,0">
@@ -93,12 +115,6 @@
                         Style="{StaticResource MatrixButtonStyle}"
                         Command="{Binding DeleteSelectedRowsCommand}"
                         CommandParameter="{Binding SelectedItems, ElementName=MatrixGrid}" />
-                <Button Content="Export"
-                        Width="66"
-                        Margin="0,0,8,0"
-                        Style="{StaticResource MatrixButtonStyle}"
-                        ToolTip="Export to selected Excel range"
-                        Command="{Binding ExportToExcelRangeCommand}" />
             </StackPanel>
 
             <StackPanel DockPanel.Dock="Right"
