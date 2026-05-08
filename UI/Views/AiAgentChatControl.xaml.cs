@@ -1,7 +1,8 @@
 using System.Collections.Specialized;
 using System.Windows.Controls;
 using System.Windows.Input;
-using ExcelCSIToolBoxAddIn.AddIn;
+using System;
+using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
@@ -9,12 +10,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
     public partial class AiAgentChatControl : UserControl
     {
         private readonly AiAgentChatViewModel _viewModel;
+        private readonly IThreadDispatcher _threadDispatcher;
 
-        public AiAgentChatControl(AiAgentChatViewModel viewModel)
+        public AiAgentChatControl(AiAgentChatViewModel viewModel, IThreadDispatcher threadDispatcher)
         {
             InitializeComponent();
 
-            _viewModel = viewModel;
+            _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
+            _threadDispatcher = threadDispatcher ?? throw new ArgumentNullException(nameof(threadDispatcher));
             DataContext = _viewModel;
 
             _viewModel.Messages.CollectionChanged += Messages_CollectionChanged;
@@ -22,7 +25,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private void Messages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            new WpfThreadDispatcher().InvokeOnUiThread(ScrollConversationToEnd);
+            _threadDispatcher.InvokeOnUiThread(ScrollConversationToEnd);
         }
 
         private void InputTextBox_PreviewKeyDown(object sender, KeyEventArgs e)

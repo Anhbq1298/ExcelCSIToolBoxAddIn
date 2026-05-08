@@ -270,7 +270,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxUseCaseBundle.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationMatrixRowViewModel.cs" />

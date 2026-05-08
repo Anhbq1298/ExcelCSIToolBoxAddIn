@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Controls;
+using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;

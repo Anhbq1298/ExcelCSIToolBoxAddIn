@@ -35,13 +35,14 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         public static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
             ICSISapModelConnectionService sap2000ConnectionService,
-            IProgressReporter progressReporter)
+            IProgressReporter progressReporter,
+            IThreadDispatcher threadDispatcher)
         {
             _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
             _sap2000ConnectionService = sap2000ConnectionService ?? throw new ArgumentNullException(nameof(sap2000ConnectionService));
             _progressReporter = progressReporter ?? throw new ArgumentNullException(nameof(progressReporter));
+            _threadDispatcher = threadDispatcher ?? throw new ArgumentNullException(nameof(threadDispatcher));
             _mutationGuard = new WpfMutationGuard();
-            _threadDispatcher = new WpfThreadDispatcher();
             _excelSelectionService = new ExcelSelectionService();
             _excelOutputService = new ExcelOutputService();
             _toolCatalogService = new ToolCatalogService(_etabsConnectionService, _sap2000ConnectionService);
@@ -58,7 +59,9 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         public static AiAgentChatControl CreateAiAgentChatControl()
         {
             IAiChatSessionService sessionService = CreateAiChatSessionService();
-            return new AiAgentChatControl(new AiAgentChatViewModel(sessionService, _threadDispatcher));
+            return new AiAgentChatControl(
+                new AiAgentChatViewModel(sessionService, _threadDispatcher),
+                _threadDispatcher);
         }
 
         private static IAiChatSessionService CreateAiChatSessionService()

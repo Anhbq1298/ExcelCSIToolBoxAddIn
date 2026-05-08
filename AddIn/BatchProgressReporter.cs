@@ -10,9 +10,15 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     /// </summary>
     internal sealed class BatchProgressReporter : IProgressReporter
     {
+        private readonly IThreadDispatcher _threadDispatcher;
         private Window _window;
         private ProgressBar _progressBar;
         private TextBlock _messageText;
+
+        public BatchProgressReporter(IThreadDispatcher threadDispatcher)
+        {
+            _threadDispatcher = threadDispatcher ?? throw new ArgumentNullException(nameof(threadDispatcher));
+        }
 
         public void Report(int percent, string message)
         {
@@ -95,9 +101,9 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             _window.Show();
         }
 
-        private static void InvokeOnDispatcher(Action action)
+        private void InvokeOnDispatcher(Action action)
         {
-            new WpfThreadDispatcher().InvokeOnUiThread(action);
+            _threadDispatcher.InvokeOnUiThread(action);
         }
     }
 }

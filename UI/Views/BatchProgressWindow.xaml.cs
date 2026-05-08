@@ -1,6 +1,5 @@
 using System;
 using System.Windows;
-using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
@@ -102,7 +101,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
     {
         private readonly int _totalItems;
         private readonly BatchProgressWindow _window;
-        private static readonly IThreadDispatcher ThreadDispatcher = new ExcelCSIToolBoxAddIn.AddIn.WpfThreadDispatcher();
         private int _ranCount;
         private int _skippedCount;
         private volatile bool _cancellationRequested;
@@ -137,7 +135,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private void PumpUI()
         {
-            ThreadDispatcher.InvokeOnUiThread(() => _window.UpdateProgressUI(_ranCount, _skippedCount));
+            Action update = () => _window.UpdateProgressUI(_ranCount, _skippedCount);
+            if (_window.Dispatcher == null || _window.Dispatcher.CheckAccess())
+            {
+                update();
+                return;
+            }
+
+            _window.Dispatcher.Invoke(update);
         }
     }
 

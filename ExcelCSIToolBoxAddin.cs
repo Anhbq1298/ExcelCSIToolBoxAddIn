@@ -10,11 +10,12 @@ namespace ExcelCSIToolBoxAddIn
     {
         private void ExcelCSIToolBoxAddin_Startup(object sender, System.EventArgs e)
         {
-            IProgressReporter progressReporter = new BatchProgressReporter();
+            IThreadDispatcher threadDispatcher = new WpfThreadDispatcher();
+            IProgressReporter progressReporter = new BatchProgressReporter(threadDispatcher);
             var etabsConnectionService = new EtabsConnectionService(new EtabsModelAdapter(), progressReporter);
             var sap2000ConnectionService = new Sap2000ConnectionService(new Sap2000ModelAdapter(), progressReporter);
 
-            AddInCompositionRoot.Configure(etabsConnectionService, sap2000ConnectionService, progressReporter);
+            AddInCompositionRoot.Configure(etabsConnectionService, sap2000ConnectionService, progressReporter, threadDispatcher);
         }
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)

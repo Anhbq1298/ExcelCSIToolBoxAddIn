@@ -1,9 +1,8 @@
 using System;
-using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 
-namespace ExcelCSIToolBoxAddIn.UI.ViewModels
+namespace ExcelCSIToolBox.Application.UseCases
 {
     public sealed class CsiToolboxUseCaseBundle
     {
