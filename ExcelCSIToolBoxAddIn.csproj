@@ -270,8 +270,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
+    <Compile Include="UI\ViewModels\BaseReactionOutputCaseViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
+    <Compile Include="UI\ViewModels\GetBaseReactionsViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationMatrixRowViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationMatrixViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationTypeOption.cs" />
@@ -313,6 +315,10 @@
       <DependentUpon>FrameSectionDetailWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\GetBaseReactionsWindow.xaml.cs">
+      <DependentUpon>GetBaseReactionsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\Views\AiAgentChatControl.xaml.cs">
       <DependentUpon>AiAgentChatControl.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -348,6 +354,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\FrameSectionDetailWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\GetBaseReactionsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

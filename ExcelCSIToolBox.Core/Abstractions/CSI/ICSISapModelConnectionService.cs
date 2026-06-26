@@ -98,6 +98,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);
         OperationResult<LoadCombinationMatrixDto> GetLoadCombinationMatrix();
+        OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetAnalysisOutputCases();
+        OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> GetBaseReactions(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<IReadOnlyList<string>> GetLoadPatternNames();
         OperationResult<LoadCombinationApplyResultDto> ApplyLoadCombinationMatrix(IReadOnlyList<LoadCombinationMatrixRowDto> rows);
         OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);

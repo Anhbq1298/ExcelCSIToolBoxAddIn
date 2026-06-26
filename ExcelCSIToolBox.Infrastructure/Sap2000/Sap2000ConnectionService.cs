@@ -1243,6 +1243,16 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                 });
         }
 
+        public OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetAnalysisOutputCases()
+        {
+            return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure("Get Base Reactions is currently available for ETABS only.");
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> GetBaseReactions(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure("Get Base Reactions is currently available for ETABS only.");
+        }
+
         public OperationResult<IReadOnlyList<string>> GetLoadPatternNames()
         {
             var sapModelResult = EnsureSap2000SapModel();

@@ -38,6 +38,7 @@ namespace ExcelCSIToolBox.Application.UseCases
             GetLoadCombinations = new GetLoadCombinationsUseCase(csiConnectionService);
             DeleteLoadCombinations = new DeleteLoadCombinationsUseCase(csiConnectionService);
             GetLoadCombinationDetails = new GetLoadCombinationDetailsUseCase(csiConnectionService);
+            GetBaseReactions = new GetBaseReactionsUseCase(csiConnectionService);
 
             GetLoadPatterns = new GetLoadPatternsUseCase(csiConnectionService);
             DeleteLoadPatterns = new DeleteLoadPatternsUseCase(csiConnectionService);
@@ -68,6 +69,7 @@ namespace ExcelCSIToolBox.Application.UseCases
         public GetLoadCombinationsUseCase GetLoadCombinations { get; private set; }
         public DeleteLoadCombinationsUseCase DeleteLoadCombinations { get; private set; }
         public GetLoadCombinationDetailsUseCase GetLoadCombinationDetails { get; private set; }
+        public GetBaseReactionsUseCase GetBaseReactions { get; private set; }
         public GetLoadPatternsUseCase GetLoadPatterns { get; private set; }
         public DeleteLoadPatternsUseCase DeleteLoadPatterns { get; private set; }
         public GetFrameSectionsUseCase GetFrameSections { get; private set; }

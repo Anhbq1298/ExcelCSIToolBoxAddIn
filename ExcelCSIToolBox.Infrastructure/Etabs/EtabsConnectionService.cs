@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
@@ -1265,6 +1266,150 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 });
         }
 
+        public OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetAnalysisOutputCases()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure(sapModelResult.Message);
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                var outputCases = new List<CSISapModelOutputCaseDTO>();
+                var seenNames = new HashSet<string>(StringComparer.Ordinal);
+
+                foreach (ETABSv1.eLoadCaseType caseType in Enum.GetValues(typeof(ETABSv1.eLoadCaseType)))
+                {
+                    int numberNames = 0;
+                    string[] names = null;
+                    int ret = sapModel.LoadCases.GetNameList(ref numberNames, ref names, caseType);
+                    if (ret != 0 || names == null)
+                    {
+                        continue;
+                    }
+
+                    for (int i = 0; i < numberNames && i < names.Length; i++)
+                    {
+                        string name = names[i];
+                        if (string.IsNullOrWhiteSpace(name) || !seenNames.Add(name))
+                        {
+                            continue;
+                        }
+
+                        outputCases.Add(new CSISapModelOutputCaseDTO
+                        {
+                            Name = name,
+                            Type = FormatLoadCaseType(caseType),
+                            IsLoadCombination = false
+                        });
+                    }
+                }
+
+                int numberCombos = 0;
+                string[] comboNames = null;
+                int comboRet = sapModel.RespCombo.GetNameList(ref numberCombos, ref comboNames);
+                if (comboRet == 0 && comboNames != null)
+                {
+                    for (int i = 0; i < numberCombos && i < comboNames.Length; i++)
+                    {
+                        string name = comboNames[i];
+                        if (string.IsNullOrWhiteSpace(name))
+                        {
+                            continue;
+                        }
+
+                        int type = 0;
+                        sapModel.RespCombo.GetTypeOAPI(name, ref type);
+                        outputCases.Add(new CSISapModelOutputCaseDTO
+                        {
+                            Name = name,
+                            Type = FormatResponseCombinationType(type),
+                            IsLoadCombination = true
+                        });
+                    }
+                }
+
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Success(outputCases);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure($"Failed to load ETABS cases and combinations: {ex.Message}");
+            }
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> GetBaseReactions(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure(sapModelResult.Message);
+            }
+
+            if (selectedOutputCases == null || selectedOutputCases.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure("Select at least one ETABS load case or load combination.");
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                int deselectRet = sapModel.Results.Setup.DeselectAllCasesAndCombosForOutput();
+                if (deselectRet != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure($"Failed to clear ETABS output case selection (return code {deselectRet}).");
+                }
+
+                foreach (var outputCase in selectedOutputCases)
+                {
+                    if (outputCase == null || string.IsNullOrWhiteSpace(outputCase.Name))
+                    {
+                        continue;
+                    }
+
+                    int selectRet = outputCase.IsLoadCombination
+                        ? sapModel.Results.Setup.SetComboSelectedForOutput(outputCase.Name, true)
+                        : sapModel.Results.Setup.SetCaseSelectedForOutput(outputCase.Name, true);
+
+                    if (selectRet != 0)
+                    {
+                        return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure($"Failed to select '{outputCase.Name}' for output (return code {selectRet}).");
+                    }
+                }
+
+                string[] fieldKeyList = null;
+                int tableVersion = 0;
+                string[] fieldsKeysIncluded = null;
+                int numberRecords = 0;
+                string[] tableData = null;
+
+                int ret = sapModel.DatabaseTables.GetTableForDisplayArray(
+                    "Base Reactions",
+                    ref fieldKeyList,
+                    string.Empty,
+                    ref tableVersion,
+                    ref fieldsKeysIncluded,
+                    ref numberRecords,
+                    ref tableData);
+
+                if (ret != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure($"Failed to read ETABS Base Reactions table (return code {ret}).");
+                }
+
+                string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
+                    ? fieldsKeysIncluded
+                    : fieldKeyList;
+                IReadOnlyList<CSISapModelBaseReactionRowDTO> rows = ParseBaseReactionRows(returnedFields, numberRecords, tableData);
+                return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Success(rows);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure($"Failed to extract ETABS Base Reactions: {ex.Message}");
+            }
+        }
+
         public OperationResult<IReadOnlyList<string>> GetLoadPatternNames()
         {
             var sapModelResult = EnsureEtabsSapModel();
@@ -1762,6 +1907,154 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
 
             return OperationResult.Success();
+        }
+
+        private static IReadOnlyList<CSISapModelBaseReactionRowDTO> ParseBaseReactionRows(string[] fieldsKeysIncluded, int numberRecords, string[] tableData)
+        {
+            var rows = new List<CSISapModelBaseReactionRowDTO>();
+            if (numberRecords <= 0)
+            {
+                return rows;
+            }
+
+            int fieldCount = fieldsKeysIncluded == null ? 0 : fieldsKeysIncluded.Length;
+            if (fieldCount == 0)
+            {
+                return rows;
+            }
+
+            var fieldIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < fieldsKeysIncluded.Length; i++)
+            {
+                string normalized = NormalizeFieldKey(fieldsKeysIncluded[i]);
+                if (!string.IsNullOrWhiteSpace(normalized) && !fieldIndexes.ContainsKey(normalized))
+                {
+                    fieldIndexes.Add(normalized, i);
+                }
+            }
+
+            for (int recordIndex = 0; recordIndex < numberRecords; recordIndex++)
+            {
+                rows.Add(new CSISapModelBaseReactionRowDTO
+                {
+                    OutputCase = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Output Case", "OutputCase", "Load Case", "LoadCase"),
+                    CaseType = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Case Type", "CaseType"),
+                    StepType = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Step Type", "StepType"),
+                    StepNumber = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Step Number", "Step Num", "StepNum", "Step"),
+                    FX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "FX", "F1"),
+                    FY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "FY", "F2"),
+                    FZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "FZ", "F3"),
+                    MX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "MX", "M1"),
+                    MY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "MY", "M2"),
+                    MZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "MZ", "M3"),
+                    X = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "X"),
+                    Y = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Y"),
+                    Z = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Z")
+                });
+            }
+
+            return rows;
+        }
+
+        private static object ReadTableValue(
+            IDictionary<string, int> fieldIndexes,
+            string[] tableData,
+            int fieldCount,
+            int recordIndex,
+            bool numeric,
+            params string[] aliases)
+        {
+            if (fieldIndexes == null || aliases == null || tableData == null)
+            {
+                return string.Empty;
+            }
+
+            foreach (string alias in aliases)
+            {
+                int fieldIndex;
+                if (!fieldIndexes.TryGetValue(NormalizeFieldKey(alias), out fieldIndex))
+                {
+                    continue;
+                }
+
+                int dataIndex = recordIndex * fieldCount + fieldIndex;
+                if (dataIndex < 0 || dataIndex >= tableData.Length)
+                {
+                    return string.Empty;
+                }
+
+                string value = tableData[dataIndex];
+                if (!numeric)
+                {
+                    return value ?? string.Empty;
+                }
+
+                double number;
+                if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out number) ||
+                    double.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out number))
+                {
+                    return number;
+                }
+
+                return value ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+
+        private static string NormalizeFieldKey(string fieldKey)
+        {
+            if (string.IsNullOrWhiteSpace(fieldKey))
+            {
+                return string.Empty;
+            }
+
+            char[] chars = fieldKey.ToCharArray();
+            var normalized = new System.Text.StringBuilder(chars.Length);
+            foreach (char c in chars)
+            {
+                if (char.IsLetterOrDigit(c))
+                {
+                    normalized.Append(char.ToUpperInvariant(c));
+                }
+            }
+
+            return normalized.ToString();
+        }
+
+        private static string FormatResponseCombinationType(int type)
+        {
+            switch (type)
+            {
+                case 0: return "Linear Add";
+                case 1: return "Envelope";
+                case 2: return "Absolute Add";
+                case 3: return "SRSS";
+                case 4: return "Range Add";
+                default: return type.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+
+        private static string FormatLoadCaseType(ETABSv1.eLoadCaseType caseType)
+        {
+            switch (caseType)
+            {
+                case ETABSv1.eLoadCaseType.LinearStatic: return "Linear Static";
+                case ETABSv1.eLoadCaseType.NonlinearStatic: return "Nonlinear Static";
+                case ETABSv1.eLoadCaseType.Modal: return "Modal";
+                case ETABSv1.eLoadCaseType.ResponseSpectrum: return "Response Spectrum";
+                case ETABSv1.eLoadCaseType.LinearHistory: return "Linear History";
+                case ETABSv1.eLoadCaseType.NonlinearHistory: return "Nonlinear History";
+                case ETABSv1.eLoadCaseType.LinearDynamic: return "Linear Dynamic";
+                case ETABSv1.eLoadCaseType.NonlinearDynamic: return "Nonlinear Dynamic";
+                case ETABSv1.eLoadCaseType.MovingLoad: return "Moving Load";
+                case ETABSv1.eLoadCaseType.Buckling: return "Buckling";
+                case ETABSv1.eLoadCaseType.SteadyState: return "Steady State";
+                case ETABSv1.eLoadCaseType.PowerSpectralDensity: return "Power Spectral Density";
+                case ETABSv1.eLoadCaseType.LinearStaticMultiStep: return "Linear Static Multi-Step";
+                case ETABSv1.eLoadCaseType.HyperStatic: return "Hyper Static";
+                default: return caseType.ToString();
+            }
         }
 
         private static bool[] ToReleaseArray(IReadOnlyList<bool> releases)

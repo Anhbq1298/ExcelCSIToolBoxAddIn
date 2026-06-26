@@ -109,6 +109,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             AddLoadCombinationFromExcelCommand = ModifyLoadCombinationsInMatrixViewCommand;
             DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => IsConnected);
             ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
+
+            GetBaseReactionsCommand = new RelayCommand(OpenGetBaseReactionsDialog, () => IsEtabs);
             
             GetFrameSectionsCommand = new RelayCommand(GetFrameSections, () => IsConnected);
             EditFrameSectionCommand = new RelayCommand<CSISapModelFrameSectionDTO>(EditFrameSection, _ => IsConnected);
@@ -174,6 +176,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public string ProductTitle => $"{_productName} Toolbox";
 
+        public bool IsEtabs => string.Equals(_productName, "ETABS", StringComparison.OrdinalIgnoreCase);
+
         public ICommand AttachToRunningCsiCommand { get; }
         public ICommand CloseCurrentInstanceCommand { get; }
 
@@ -217,6 +221,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
         public ICommand ViewLoadCombinationCommand { get; }
+        public ICommand GetBaseReactionsCommand { get; }
         
         public ICommand GetFrameSectionsCommand { get; }
         public ICommand EditFrameSectionCommand { get; }
@@ -266,6 +271,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 AddLoadCombinationFromExcelCommand,
                 DeleteSelectedLoadCombinationsCommand,
                 ViewLoadCombinationCommand,
+                GetBaseReactionsCommand,
                 GetFrameSectionsCommand,
                 EditFrameSectionCommand
             };
@@ -854,6 +860,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 GetLoadCombinations();
             }
+        }
+
+        private void OpenGetBaseReactionsDialog()
+        {
+            var viewModel = new GetBaseReactionsViewModel(_useCases, _csiConnectionService, _excelOutputService);
+            var window = new ExcelCSIToolBoxAddIn.UI.Views.GetBaseReactionsWindow(viewModel);
+            window.ShowDialog();
         }
 
         private OperationResult SaveLoadCombinationMatrixChanges(LoadCombinationMatrixViewModel viewModel)
