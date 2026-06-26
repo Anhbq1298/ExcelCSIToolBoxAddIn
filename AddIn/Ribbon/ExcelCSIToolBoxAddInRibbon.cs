@@ -1,4 +1,5 @@
 ﻿using ExcelCSIToolBoxAddIn.AddIn;
+using ExcelCSIToolBoxAddIn.AddIn.Ribbon;
 using Microsoft.Office.Tools.Ribbon;
 
 namespace ExcelCSIToolBoxAddIn
@@ -29,6 +30,13 @@ namespace ExcelCSIToolBoxAddIn
                         this.buttonSap2000.Image = System.Drawing.Image.FromStream(stream);
                     }
                 }
+
+                buttonGetBaseReactions.Image = PostprocessingRibbonIcons.BaseReactions;
+                buttonModalMassParticipationRatios.Image = PostprocessingRibbonIcons.ModalMassParticipation;
+                buttonStoryForces.Image = PostprocessingRibbonIcons.StoryForces;
+                buttonStoryDrifts.Image = PostprocessingRibbonIcons.StoryDrifts;
+                buttonStoryMaxOverAverageDisplacements.Image = PostprocessingRibbonIcons.StoryMaxOverAverageDisplacements;
+                buttonStoryMaxOverAverageDrifts.Image = PostprocessingRibbonIcons.StoryMaxOverAverageDrifts;
             }
             catch
             {
@@ -44,6 +52,36 @@ namespace ExcelCSIToolBoxAddIn
         private void buttonSap2000_Click(object sender, RibbonControlEventArgs e)
         {
             WindowManager.ShowSap2000Window();
+        }
+
+        private void buttonGetBaseReactions_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowGetBaseReactionsWindow();
+        }
+
+        private void buttonModalMassParticipationRatios_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowModalMassParticipationRatiosWindow();
+        }
+
+        private void buttonStoryForces_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowStoryForcesWindow();
+        }
+
+        private void buttonStoryDrifts_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowStoryDriftsWindow();
+        }
+
+        private void buttonStoryMaxOverAverageDisplacements_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowStoryMaxOverAverageDisplacementsWindow();
+        }
+
+        private void buttonStoryMaxOverAverageDrifts_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowStoryMaxOverAverageDriftsWindow();
         }
 
         private void buttonAiAgent_Click(object sender, RibbonControlEventArgs e)

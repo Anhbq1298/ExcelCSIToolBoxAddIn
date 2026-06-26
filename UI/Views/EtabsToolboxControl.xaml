@@ -717,7 +717,6 @@
                                 <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
                                     <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
                                     <Button Content="Modify in Matrix View" HorizontalAlignment="Stretch" Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}" Margin="0,0,0,8"/>
-                                    <Button Content="Get Base Reactions" HorizontalAlignment="Stretch" Command="{Binding GetBaseReactionsCommand}" Margin="0,0,0,8"/>
                                 </StackPanel>
                             </Grid>
                         </GroupBox>

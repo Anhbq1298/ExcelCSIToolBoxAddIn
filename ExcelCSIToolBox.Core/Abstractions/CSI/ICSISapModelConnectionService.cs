@@ -100,6 +100,12 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<LoadCombinationMatrixDto> GetLoadCombinationMatrix();
         OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetAnalysisOutputCases();
         OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> GetBaseReactions(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
+        OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>> GetModalMassParticipationRatios(IReadOnlyList<CSISapModelOutputCaseDTO> selectedLoadCases);
+        OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>> GetStoryForces(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
+        OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>> GetStoryDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
+        OperationResult<CSISapModelDisplayTableDTO> GetStoryDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
+        OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
+        OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<IReadOnlyList<string>> GetLoadPatternNames();
         OperationResult<LoadCombinationApplyResultDto> ApplyLoadCombinationMatrix(IReadOnlyList<LoadCombinationMatrixRowDto> rows);
         OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);

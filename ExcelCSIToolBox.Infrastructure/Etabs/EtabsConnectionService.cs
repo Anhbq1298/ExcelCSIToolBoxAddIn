@@ -1378,6 +1378,20 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     }
                 }
 
+                string[] selectedCaseNamesForDisplay = CreateSelectedOutputCaseNameArray(selectedOutputCases, false);
+                int caseDisplayRet = sapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(ref selectedCaseNamesForDisplay);
+                if (caseDisplayRet != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure($"Failed to select ETABS database table display load cases (return code {caseDisplayRet}).");
+                }
+
+                string[] selectedCombinationNamesForDisplay = CreateSelectedOutputCaseNameArray(selectedOutputCases, true);
+                int combinationDisplayRet = sapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(ref selectedCombinationNamesForDisplay);
+                if (combinationDisplayRet != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure($"Failed to select ETABS database table display load combinations (return code {combinationDisplayRet}).");
+                }
+
                 string[] fieldKeyList = null;
                 int tableVersion = 0;
                 string[] fieldsKeysIncluded = null;
@@ -1401,12 +1415,276 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
                     ? fieldsKeysIncluded
                     : fieldKeyList;
-                IReadOnlyList<CSISapModelBaseReactionRowDTO> rows = ParseBaseReactionRows(returnedFields, numberRecords, tableData);
+                IReadOnlyList<CSISapModelBaseReactionRowDTO> rows = FilterBaseReactionRows(
+                    ParseBaseReactionRows(returnedFields, numberRecords, tableData),
+                    selectedOutputCases);
                 return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Success(rows);
             }
             catch (Exception ex)
             {
                 return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure($"Failed to extract ETABS Base Reactions: {ex.Message}");
+            }
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>> GetModalMassParticipationRatios(IReadOnlyList<CSISapModelOutputCaseDTO> selectedLoadCases)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure(sapModelResult.Message);
+            }
+
+            if (selectedLoadCases == null || selectedLoadCases.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure("Select at least one ETABS modal load case.");
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                int deselectRet = sapModel.Results.Setup.DeselectAllCasesAndCombosForOutput();
+                if (deselectRet != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure($"Failed to clear ETABS output case selection (return code {deselectRet}).");
+                }
+
+                foreach (var outputCase in selectedLoadCases)
+                {
+                    if (outputCase == null || string.IsNullOrWhiteSpace(outputCase.Name))
+                    {
+                        continue;
+                    }
+
+                    int selectRet = sapModel.Results.Setup.SetCaseSelectedForOutput(outputCase.Name, true);
+                    if (selectRet != 0)
+                    {
+                        return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure($"Failed to select '{outputCase.Name}' for output (return code {selectRet}).");
+                    }
+                }
+
+                string[] selectedCaseNamesForDisplay = CreateSelectedOutputCaseNameArray(selectedLoadCases, false);
+                int caseDisplayRet = sapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(ref selectedCaseNamesForDisplay);
+                if (caseDisplayRet != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure($"Failed to select ETABS database table display load cases (return code {caseDisplayRet}).");
+                }
+
+                string[] selectedCombinationNamesForDisplay = new string[0];
+                sapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(ref selectedCombinationNamesForDisplay);
+
+                string[] fieldKeyList = null;
+                int tableVersion = 0;
+                string[] fieldsKeysIncluded = null;
+                int numberRecords = 0;
+                string[] tableData = null;
+
+                int ret = sapModel.DatabaseTables.GetTableForDisplayArray(
+                    "Modal Participating Mass Ratios",
+                    ref fieldKeyList,
+                    string.Empty,
+                    ref tableVersion,
+                    ref fieldsKeysIncluded,
+                    ref numberRecords,
+                    ref tableData);
+
+                if (ret != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure($"Failed to read ETABS Modal Participating Mass Ratios table (return code {ret}).");
+                }
+
+                string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
+                    ? fieldsKeysIncluded
+                    : fieldKeyList;
+                IReadOnlyList<CSISapModelModalMassParticipationRowDTO> rows = FilterModalMassParticipationRows(
+                    ParseModalMassParticipationRows(returnedFields, numberRecords, tableData),
+                    selectedLoadCases);
+                return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Success(rows);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure($"Failed to extract ETABS Modal Mass Participation Ratios: {ex.Message}");
+            }
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>> GetStoryForces(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>>.Failure(sapModelResult.Message);
+            }
+
+            if (selectedOutputCases == null || selectedOutputCases.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>>.Failure("Select at least one ETABS load case or load combination.");
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                OperationResult selectResult = SelectOutputCasesForTables(sapModel, selectedOutputCases);
+                if (!selectResult.IsSuccess)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>>.Failure(selectResult.Message);
+                }
+
+                string[] fieldKeyList = null;
+                int tableVersion = 0;
+                string[] fieldsKeysIncluded = null;
+                int numberRecords = 0;
+                string[] tableData = null;
+
+                int ret = sapModel.DatabaseTables.GetTableForDisplayArray(
+                    "Story Forces",
+                    ref fieldKeyList,
+                    string.Empty,
+                    ref tableVersion,
+                    ref fieldsKeysIncluded,
+                    ref numberRecords,
+                    ref tableData);
+
+                if (ret != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>>.Failure($"Failed to read ETABS Story Forces table (return code {ret}).");
+                }
+
+                string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
+                    ? fieldsKeysIncluded
+                    : fieldKeyList;
+                IReadOnlyList<CSISapModelStoryForceRowDTO> rows = FilterStoryForceRows(
+                    ParseStoryForceRows(returnedFields, numberRecords, tableData),
+                    selectedOutputCases);
+                return OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>>.Success(rows);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>>.Failure($"Failed to extract ETABS Story Forces: {ex.Message}");
+            }
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>> GetStoryDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>>.Failure(sapModelResult.Message);
+            }
+
+            if (selectedOutputCases == null || selectedOutputCases.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>>.Failure("Select at least one ETABS load case or load combination.");
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                OperationResult selectResult = SelectOutputCasesForTables(sapModel, selectedOutputCases);
+                if (!selectResult.IsSuccess)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>>.Failure(selectResult.Message);
+                }
+
+                string[] fieldKeyList = null;
+                int tableVersion = 0;
+                string[] fieldsKeysIncluded = null;
+                int numberRecords = 0;
+                string[] tableData = null;
+
+                int ret = sapModel.DatabaseTables.GetTableForDisplayArray(
+                    "Story Displacements",
+                    ref fieldKeyList,
+                    string.Empty,
+                    ref tableVersion,
+                    ref fieldsKeysIncluded,
+                    ref numberRecords,
+                    ref tableData);
+
+                if (ret != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>>.Failure($"Failed to read ETABS Story Displacements table (return code {ret}).");
+                }
+
+                string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
+                    ? fieldsKeysIncluded
+                    : fieldKeyList;
+                IReadOnlyList<CSISapModelStoryDisplacementRowDTO> rows = FilterStoryDisplacementRows(
+                    ParseStoryDisplacementRows(returnedFields, numberRecords, tableData),
+                    selectedOutputCases);
+                return OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>>.Success(rows);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>>.Failure($"Failed to extract ETABS Story Displacements: {ex.Message}");
+            }
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetStoryDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return GetStoryDisplayTable("Story Drifts", selectedOutputCases);
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return GetStoryDisplayTable("Story Max Over Avg Displacements", selectedOutputCases);
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return GetStoryDisplayTable("Story Max Over Avg Drifts", selectedOutputCases);
+        }
+
+        private OperationResult<CSISapModelDisplayTableDTO> GetStoryDisplayTable(
+            string tableKey,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(sapModelResult.Message);
+            }
+
+            if (selectedOutputCases == null || selectedOutputCases.Count == 0)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure("Select at least one ETABS load case or load combination.");
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                OperationResult selectResult = SelectOutputCasesForTables(sapModel, selectedOutputCases);
+                if (!selectResult.IsSuccess)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectResult.Message);
+                }
+
+                string[] fieldKeyList = null;
+                int tableVersion = 0;
+                string[] fieldsKeysIncluded = null;
+                int numberRecords = 0;
+                string[] tableData = null;
+                int ret = sapModel.DatabaseTables.GetTableForDisplayArray(
+                    tableKey,
+                    ref fieldKeyList,
+                    string.Empty,
+                    ref tableVersion,
+                    ref fieldsKeysIncluded,
+                    ref numberRecords,
+                    ref tableData);
+
+                if (ret != 0)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to read ETABS {tableKey} table (return code {ret}).");
+                }
+
+                string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
+                    ? fieldsKeysIncluded
+                    : fieldKeyList;
+                return OperationResult<CSISapModelDisplayTableDTO>.Success(
+                    FilterDisplayTableRows(ParseDisplayTable(returnedFields, numberRecords, tableData), selectedOutputCases));
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to extract ETABS {tableKey}: {ex.Message}");
             }
         }
 
@@ -1909,6 +2187,115 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return OperationResult.Success();
         }
 
+        private static OperationResult SelectOutputCasesForTables(
+            ETABSv1.cSapModel sapModel,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            int deselectRet = sapModel.Results.Setup.DeselectAllCasesAndCombosForOutput();
+            if (deselectRet != 0)
+            {
+                return OperationResult.Failure($"Failed to clear ETABS output case selection (return code {deselectRet}).");
+            }
+
+            foreach (var outputCase in selectedOutputCases)
+            {
+                if (outputCase == null || string.IsNullOrWhiteSpace(outputCase.Name))
+                {
+                    continue;
+                }
+
+                int selectRet = outputCase.IsLoadCombination
+                    ? sapModel.Results.Setup.SetComboSelectedForOutput(outputCase.Name, true)
+                    : sapModel.Results.Setup.SetCaseSelectedForOutput(outputCase.Name, true);
+
+                if (selectRet != 0)
+                {
+                    return OperationResult.Failure($"Failed to select '{outputCase.Name}' for output (return code {selectRet}).");
+                }
+            }
+
+            string[] selectedCaseNamesForDisplay = CreateSelectedOutputCaseNameArray(selectedOutputCases, false);
+            int caseDisplayRet = sapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(ref selectedCaseNamesForDisplay);
+            if (caseDisplayRet != 0)
+            {
+                return OperationResult.Failure($"Failed to select ETABS database table display load cases (return code {caseDisplayRet}).");
+            }
+
+            string[] selectedCombinationNamesForDisplay = CreateSelectedOutputCaseNameArray(selectedOutputCases, true);
+            int combinationDisplayRet = sapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(ref selectedCombinationNamesForDisplay);
+            if (combinationDisplayRet != 0)
+            {
+                return OperationResult.Failure($"Failed to select ETABS database table display load combinations (return code {combinationDisplayRet}).");
+            }
+
+            return OperationResult.Success();
+        }
+
+        private static string[] CreateSelectedOutputCaseNameArray(
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases,
+            bool isLoadCombination)
+        {
+            var names = new List<string>();
+            if (selectedOutputCases == null)
+            {
+                return names.ToArray();
+            }
+
+            foreach (var outputCase in selectedOutputCases)
+            {
+                if (outputCase != null &&
+                    outputCase.IsLoadCombination == isLoadCombination &&
+                    !string.IsNullOrWhiteSpace(outputCase.Name))
+                {
+                    names.Add(outputCase.Name);
+                }
+            }
+
+            return names.ToArray();
+        }
+
+        private static IReadOnlyList<CSISapModelBaseReactionRowDTO> FilterBaseReactionRows(
+            IReadOnlyList<CSISapModelBaseReactionRowDTO> rows,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            if (rows == null || rows.Count == 0)
+            {
+                return rows ?? new List<CSISapModelBaseReactionRowDTO>();
+            }
+
+            var selectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var outputCase in selectedOutputCases ?? new CSISapModelOutputCaseDTO[0])
+            {
+                if (outputCase != null && !string.IsNullOrWhiteSpace(outputCase.Name))
+                {
+                    selectedNames.Add(outputCase.Name.Trim());
+                }
+            }
+
+            if (selectedNames.Count == 0)
+            {
+                return rows;
+            }
+
+            var filteredRows = new List<CSISapModelBaseReactionRowDTO>();
+            foreach (var row in rows)
+            {
+                string outputCaseName = Convert.ToString(row.OutputCase, CultureInfo.InvariantCulture);
+                if (string.IsNullOrWhiteSpace(outputCaseName))
+                {
+                    filteredRows.Add(row);
+                    continue;
+                }
+
+                if (selectedNames.Contains(outputCaseName.Trim()))
+                {
+                    filteredRows.Add(row);
+                }
+            }
+
+            return filteredRows;
+        }
+
         private static IReadOnlyList<CSISapModelBaseReactionRowDTO> ParseBaseReactionRows(string[] fieldsKeysIncluded, int numberRecords, string[] tableData)
         {
             var rows = new List<CSISapModelBaseReactionRowDTO>();
@@ -1954,6 +2341,373 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
 
             return rows;
+        }
+
+        private static IReadOnlyList<CSISapModelModalMassParticipationRowDTO> FilterModalMassParticipationRows(
+            IReadOnlyList<CSISapModelModalMassParticipationRowDTO> rows,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            if (rows == null || rows.Count == 0)
+            {
+                return rows ?? new List<CSISapModelModalMassParticipationRowDTO>();
+            }
+
+            var selectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var outputCase in selectedOutputCases ?? new CSISapModelOutputCaseDTO[0])
+            {
+                if (outputCase != null && !string.IsNullOrWhiteSpace(outputCase.Name))
+                {
+                    selectedNames.Add(outputCase.Name.Trim());
+                }
+            }
+
+            if (selectedNames.Count == 0)
+            {
+                return rows;
+            }
+
+            var filteredRows = new List<CSISapModelModalMassParticipationRowDTO>();
+            foreach (var row in rows)
+            {
+                string outputCaseName = Convert.ToString(row.OutputCase, CultureInfo.InvariantCulture);
+                if (string.IsNullOrWhiteSpace(outputCaseName) || selectedNames.Contains(outputCaseName.Trim()))
+                {
+                    filteredRows.Add(row);
+                }
+            }
+
+            return filteredRows;
+        }
+
+        private static IReadOnlyList<CSISapModelModalMassParticipationRowDTO> ParseModalMassParticipationRows(string[] fieldsKeysIncluded, int numberRecords, string[] tableData)
+        {
+            var rows = new List<CSISapModelModalMassParticipationRowDTO>();
+            if (numberRecords <= 0)
+            {
+                return rows;
+            }
+
+            int fieldCount = fieldsKeysIncluded == null ? 0 : fieldsKeysIncluded.Length;
+            if (fieldCount == 0)
+            {
+                return rows;
+            }
+
+            var fieldIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < fieldsKeysIncluded.Length; i++)
+            {
+                string normalized = NormalizeFieldKey(fieldsKeysIncluded[i]);
+                if (!string.IsNullOrWhiteSpace(normalized) && !fieldIndexes.ContainsKey(normalized))
+                {
+                    fieldIndexes.Add(normalized, i);
+                }
+            }
+
+            for (int recordIndex = 0; recordIndex < numberRecords; recordIndex++)
+            {
+                rows.Add(new CSISapModelModalMassParticipationRowDTO
+                {
+                    OutputCase = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Output Case", "OutputCase", "Load Case", "LoadCase", "Case"),
+                    StepType = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Step Type", "StepType"),
+                    StepNumber = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Step Number", "Step Num", "StepNum", "Mode"),
+                    Period = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Period"),
+                    UX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "UX", "U1"),
+                    UY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "UY", "U2"),
+                    UZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "UZ", "U3"),
+                    SumUX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Sum UX", "SumUX", "Sum U1", "SumU1"),
+                    SumUY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Sum UY", "SumUY", "Sum U2", "SumU2"),
+                    SumUZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Sum UZ", "SumUZ", "Sum U3", "SumU3"),
+                    RX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "RX", "R1"),
+                    RY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "RY", "R2"),
+                    RZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "RZ", "R3"),
+                    SumRX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Sum RX", "SumRX", "Sum R1", "SumR1"),
+                    SumRY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Sum RY", "SumRY", "Sum R2", "SumR2"),
+                    SumRZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Sum RZ", "SumRZ", "Sum R3", "SumR3")
+                });
+            }
+
+            return rows;
+        }
+
+        private static IReadOnlyList<CSISapModelStoryForceRowDTO> FilterStoryForceRows(
+            IReadOnlyList<CSISapModelStoryForceRowDTO> rows,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            if (rows == null || rows.Count == 0)
+            {
+                return rows ?? new List<CSISapModelStoryForceRowDTO>();
+            }
+
+            var selectedNames = CreateSelectedOutputCaseSet(selectedOutputCases);
+            if (selectedNames.Count == 0)
+            {
+                return rows;
+            }
+
+            var filteredRows = new List<CSISapModelStoryForceRowDTO>();
+            foreach (var row in rows)
+            {
+                string outputCaseName = Convert.ToString(row.OutputCase, CultureInfo.InvariantCulture);
+                if (string.IsNullOrWhiteSpace(outputCaseName) || selectedNames.Contains(outputCaseName.Trim()))
+                {
+                    filteredRows.Add(row);
+                }
+            }
+
+            return filteredRows;
+        }
+
+        private static IReadOnlyList<CSISapModelStoryDisplacementRowDTO> FilterStoryDisplacementRows(
+            IReadOnlyList<CSISapModelStoryDisplacementRowDTO> rows,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            if (rows == null || rows.Count == 0)
+            {
+                return rows ?? new List<CSISapModelStoryDisplacementRowDTO>();
+            }
+
+            var selectedNames = CreateSelectedOutputCaseSet(selectedOutputCases);
+            if (selectedNames.Count == 0)
+            {
+                return rows;
+            }
+
+            var filteredRows = new List<CSISapModelStoryDisplacementRowDTO>();
+            foreach (var row in rows)
+            {
+                string outputCaseName = Convert.ToString(row.OutputCase, CultureInfo.InvariantCulture);
+                if (string.IsNullOrWhiteSpace(outputCaseName) || selectedNames.Contains(outputCaseName.Trim()))
+                {
+                    filteredRows.Add(row);
+                }
+            }
+
+            return filteredRows;
+        }
+
+        private static HashSet<string> CreateSelectedOutputCaseSet(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            var selectedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var outputCase in selectedOutputCases ?? new CSISapModelOutputCaseDTO[0])
+            {
+                if (outputCase != null && !string.IsNullOrWhiteSpace(outputCase.Name))
+                {
+                    selectedNames.Add(outputCase.Name.Trim());
+                }
+            }
+
+            return selectedNames;
+        }
+
+        private static CSISapModelDisplayTableDTO ParseDisplayTable(string[] fields, int numberRecords, string[] tableData)
+        {
+            var fieldKeys = new List<string>(fields ?? new string[0]);
+            var rows = new List<object[]>();
+            if (fieldKeys.Count == 0 || numberRecords <= 0 || tableData == null)
+            {
+                return new CSISapModelDisplayTableDTO { FieldKeys = fieldKeys, Rows = rows };
+            }
+
+            for (int recordIndex = 0; recordIndex < numberRecords; recordIndex++)
+            {
+                var row = new object[fieldKeys.Count];
+                for (int fieldIndex = 0; fieldIndex < fieldKeys.Count; fieldIndex++)
+                {
+                    int dataIndex = recordIndex * fieldKeys.Count + fieldIndex;
+                    string value = dataIndex >= 0 && dataIndex < tableData.Length ? tableData[dataIndex] : string.Empty;
+                    row[fieldIndex] = ParseDisplayTableValue(fieldKeys[fieldIndex], value);
+                }
+
+                rows.Add(row);
+            }
+
+            return new CSISapModelDisplayTableDTO { FieldKeys = fieldKeys, Rows = rows };
+        }
+
+        private static CSISapModelDisplayTableDTO FilterDisplayTableRows(
+            CSISapModelDisplayTableDTO table,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            if (table == null || table.Rows == null || table.Rows.Count == 0)
+            {
+                return table ?? new CSISapModelDisplayTableDTO
+                {
+                    FieldKeys = new List<string>(),
+                    Rows = new List<object[]>()
+                };
+            }
+
+            int outputCaseIndex = FindFieldIndex(table.FieldKeys, "Output Case", "OutputCase", "Load Case", "LoadCase", "Case");
+            if (outputCaseIndex < 0)
+            {
+                return table;
+            }
+
+            var selectedNames = CreateSelectedOutputCaseSet(selectedOutputCases);
+            if (selectedNames.Count == 0)
+            {
+                return table;
+            }
+
+            var filteredRows = new List<object[]>();
+            foreach (object[] row in table.Rows)
+            {
+                string outputCaseName = row != null && outputCaseIndex < row.Length
+                    ? Convert.ToString(row[outputCaseIndex], CultureInfo.InvariantCulture)
+                    : string.Empty;
+                if (string.IsNullOrWhiteSpace(outputCaseName) || selectedNames.Contains(outputCaseName.Trim()))
+                {
+                    filteredRows.Add(row);
+                }
+            }
+
+            return new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
+        }
+
+        private static int FindFieldIndex(IReadOnlyList<string> fields, params string[] aliases)
+        {
+            if (fields == null || aliases == null)
+            {
+                return -1;
+            }
+
+            for (int fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
+            {
+                foreach (string alias in aliases)
+                {
+                    if (string.Equals(NormalizeFieldKey(fields[fieldIndex]), NormalizeFieldKey(alias), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return fieldIndex;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        private static object ParseDisplayTableValue(string fieldKey, string value)
+        {
+            if (IsDisplayTableTextField(fieldKey))
+            {
+                return value ?? string.Empty;
+            }
+
+            double number;
+            if (double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out number) ||
+                double.TryParse(value, NumberStyles.Float, CultureInfo.CurrentCulture, out number))
+            {
+                return number;
+            }
+
+            return value ?? string.Empty;
+        }
+
+        private static bool IsDisplayTableTextField(string fieldKey)
+        {
+            string normalizedFieldKey = NormalizeFieldKey(fieldKey);
+            return normalizedFieldKey == NormalizeFieldKey("Story") ||
+                   normalizedFieldKey == NormalizeFieldKey("Story Name") ||
+                   normalizedFieldKey == NormalizeFieldKey("Output Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Load Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Case Type") ||
+                   normalizedFieldKey == NormalizeFieldKey("Step Type") ||
+                   normalizedFieldKey == NormalizeFieldKey("Direction") ||
+                   normalizedFieldKey == NormalizeFieldKey("Location") ||
+                   normalizedFieldKey == NormalizeFieldKey("Label");
+        }
+
+        private static IReadOnlyList<CSISapModelStoryForceRowDTO> ParseStoryForceRows(string[] fieldsKeysIncluded, int numberRecords, string[] tableData)
+        {
+            var rows = new List<CSISapModelStoryForceRowDTO>();
+            if (numberRecords <= 0)
+            {
+                return rows;
+            }
+
+            int fieldCount = fieldsKeysIncluded == null ? 0 : fieldsKeysIncluded.Length;
+            if (fieldCount == 0)
+            {
+                return rows;
+            }
+
+            var fieldIndexes = CreateFieldIndexMap(fieldsKeysIncluded);
+            for (int recordIndex = 0; recordIndex < numberRecords; recordIndex++)
+            {
+                rows.Add(new CSISapModelStoryForceRowDTO
+                {
+                    Story = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Story", "Story Name", "StoryName"),
+                    OutputCase = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Output Case", "OutputCase", "Load Case", "LoadCase", "Case"),
+                    CaseType = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Case Type", "CaseType"),
+                    StepType = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Step Type", "StepType"),
+                    StepNumber = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Step Number", "Step Num", "StepNum", "Step"),
+                    Location = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Location"),
+                    P = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "P", "FZ", "Axial"),
+                    VX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "VX", "Vx", "FX", "Shear X", "ShearX"),
+                    VY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "VY", "Vy", "FY", "Shear Y", "ShearY"),
+                    T = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "T", "Torsion", "MZ"),
+                    MX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "MX", "Mx"),
+                    MY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "MY", "My")
+                });
+            }
+
+            return rows;
+        }
+
+        private static IReadOnlyList<CSISapModelStoryDisplacementRowDTO> ParseStoryDisplacementRows(string[] fieldsKeysIncluded, int numberRecords, string[] tableData)
+        {
+            var rows = new List<CSISapModelStoryDisplacementRowDTO>();
+            if (numberRecords <= 0)
+            {
+                return rows;
+            }
+
+            int fieldCount = fieldsKeysIncluded == null ? 0 : fieldsKeysIncluded.Length;
+            if (fieldCount == 0)
+            {
+                return rows;
+            }
+
+            var fieldIndexes = CreateFieldIndexMap(fieldsKeysIncluded);
+            for (int recordIndex = 0; recordIndex < numberRecords; recordIndex++)
+            {
+                rows.Add(new CSISapModelStoryDisplacementRowDTO
+                {
+                    Story = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Story", "Story Name", "StoryName"),
+                    OutputCase = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Output Case", "OutputCase", "Load Case", "LoadCase", "Case"),
+                    CaseType = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Case Type", "CaseType"),
+                    StepType = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, false, "Step Type", "StepType"),
+                    StepNumber = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "Step Number", "Step Num", "StepNum", "Step"),
+                    UX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "UX", "U1", "X"),
+                    UY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "UY", "U2", "Y"),
+                    UZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "UZ", "U3", "Z"),
+                    RX = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "RX", "R1"),
+                    RY = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "RY", "R2"),
+                    RZ = ReadTableValue(fieldIndexes, tableData, fieldCount, recordIndex, true, "RZ", "R3")
+                });
+            }
+
+            return rows;
+        }
+
+        private static Dictionary<string, int> CreateFieldIndexMap(string[] fieldsKeysIncluded)
+        {
+            var fieldIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (fieldsKeysIncluded == null)
+            {
+                return fieldIndexes;
+            }
+
+            for (int i = 0; i < fieldsKeysIncluded.Length; i++)
+            {
+                string normalized = NormalizeFieldKey(fieldsKeysIncluded[i]);
+                if (!string.IsNullOrWhiteSpace(normalized) && !fieldIndexes.ContainsKey(normalized))
+                {
+                    fieldIndexes.Add(normalized, i);
+                }
+            }
+
+            return fieldIndexes;
         }
 
         private static object ReadTableValue(

@@ -1253,6 +1253,36 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure("Get Base Reactions is currently available for ETABS only.");
         }
 
+        public OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>> GetModalMassParticipationRatios(IReadOnlyList<CSISapModelOutputCaseDTO> selectedLoadCases)
+        {
+            return OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>>.Failure("Modal Mass Participation Ratios is currently available for ETABS only.");
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>> GetStoryForces(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>>.Failure("Story Forces is currently available for ETABS only.");
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>> GetStoryDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return OperationResult<IReadOnlyList<CSISapModelStoryDisplacementRowDTO>>.Failure("Story Displacements is currently available for ETABS only.");
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetStoryDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return OperationResult<CSISapModelDisplayTableDTO>.Failure("Story Drifts is currently available for ETABS only.");
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return OperationResult<CSISapModelDisplayTableDTO>.Failure("Story Max Over Avg Displacements is currently available for ETABS only.");
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return OperationResult<CSISapModelDisplayTableDTO>.Failure("Story Max Over Avg Drifts is currently available for ETABS only.");
+        }
+
         public OperationResult<IReadOnlyList<string>> GetLoadPatternNames()
         {
             var sapModelResult = EnsureSap2000SapModel();

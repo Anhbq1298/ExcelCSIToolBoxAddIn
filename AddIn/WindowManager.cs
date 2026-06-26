@@ -20,6 +20,12 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static Microsoft.Office.Tools.CustomTaskPane _sap2000Pane;
         private static WpfTaskPaneHost _etabsHost;
         private static WpfTaskPaneHost _sap2000Host;
+        private static GetBaseReactionsWindow _getBaseReactionsWindow;
+        private static GetModalMassParticipationRatiosWindow _modalMassParticipationRatiosWindow;
+        private static GetStoryResultsWindow _storyForcesWindow;
+        private static GetStoryResultsWindow _storyDriftsWindow;
+        private static GetStoryResultsWindow _storyMaxOverAverageDisplacementsWindow;
+        private static GetStoryResultsWindow _storyMaxOverAverageDriftsWindow;
 
         internal static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
@@ -51,6 +57,120 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 "SAP2000 Toolbox",
                 _sap2000ConnectionService,
                 () => new Sap2000ToolboxControl());
+        }
+
+        internal static void ShowGetBaseReactionsWindow()
+        {
+            EnsureConfigured(_etabsConnectionService);
+
+            if (_getBaseReactionsWindow != null)
+            {
+                _getBaseReactionsWindow.Activate();
+                return;
+            }
+
+            var useCases = new CsiToolboxUseCaseBundle(_etabsConnectionService, _excelSelectionService, _excelOutputService);
+            var viewModel = new GetBaseReactionsViewModel(
+                useCases,
+                _etabsConnectionService,
+                _excelOutputService);
+            var window = new GetBaseReactionsWindow(viewModel);
+            window.Closed += delegate { _getBaseReactionsWindow = null; };
+            _getBaseReactionsWindow = window;
+            window.Show();
+        }
+
+        internal static void ShowModalMassParticipationRatiosWindow()
+        {
+            EnsureConfigured(_etabsConnectionService);
+
+            if (_modalMassParticipationRatiosWindow != null)
+            {
+                _modalMassParticipationRatiosWindow.Activate();
+                return;
+            }
+
+            var useCases = new CsiToolboxUseCaseBundle(_etabsConnectionService, _excelSelectionService, _excelOutputService);
+            var viewModel = new GetModalMassParticipationRatiosViewModel(
+                useCases,
+                _etabsConnectionService,
+                _excelOutputService);
+            var window = new GetModalMassParticipationRatiosWindow(viewModel);
+            window.Closed += delegate { _modalMassParticipationRatiosWindow = null; };
+            _modalMassParticipationRatiosWindow = window;
+            window.Show();
+        }
+
+        internal static void ShowStoryForcesWindow()
+        {
+            ShowStoryResultsWindow(
+                StoryPostprocessingResultKind.StoryForces,
+                ref _storyForcesWindow);
+        }
+
+        internal static void ShowStoryDriftsWindow()
+        {
+            ShowStoryResultsWindow(
+                StoryPostprocessingResultKind.StoryDrifts,
+                ref _storyDriftsWindow);
+        }
+
+        internal static void ShowStoryMaxOverAverageDisplacementsWindow()
+        {
+            ShowStoryResultsWindow(
+                StoryPostprocessingResultKind.StoryMaxOverAverageDisplacements,
+                ref _storyMaxOverAverageDisplacementsWindow);
+        }
+
+        internal static void ShowStoryMaxOverAverageDriftsWindow()
+        {
+            ShowStoryResultsWindow(
+                StoryPostprocessingResultKind.StoryMaxOverAverageDrifts,
+                ref _storyMaxOverAverageDriftsWindow);
+        }
+
+        private static void ShowStoryResultsWindow(
+            StoryPostprocessingResultKind kind,
+            ref GetStoryResultsWindow existingWindow)
+        {
+            EnsureConfigured(_etabsConnectionService);
+
+            if (existingWindow != null)
+            {
+                existingWindow.Activate();
+                return;
+            }
+
+            var useCases = new CsiToolboxUseCaseBundle(_etabsConnectionService, _excelSelectionService, _excelOutputService);
+            var viewModel = new GetStoryResultsViewModel(
+                kind,
+                useCases,
+                _etabsConnectionService,
+                _excelOutputService);
+            var window = new GetStoryResultsWindow(viewModel);
+
+            if (kind == StoryPostprocessingResultKind.StoryForces)
+            {
+                window.Closed += delegate { _storyForcesWindow = null; };
+                _storyForcesWindow = window;
+            }
+            else if (kind == StoryPostprocessingResultKind.StoryDrifts)
+            {
+                window.Closed += delegate { _storyDriftsWindow = null; };
+                _storyDriftsWindow = window;
+            }
+            else if (kind == StoryPostprocessingResultKind.StoryMaxOverAverageDisplacements)
+            {
+                window.Closed += delegate { _storyMaxOverAverageDisplacementsWindow = null; };
+                _storyMaxOverAverageDisplacementsWindow = window;
+            }
+            else
+            {
+                window.Closed += delegate { _storyMaxOverAverageDriftsWindow = null; };
+                _storyMaxOverAverageDriftsWindow = window;
+            }
+
+            window.Show();
         }
 
         internal static void DisposePanes()

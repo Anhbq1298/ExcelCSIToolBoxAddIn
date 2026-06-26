@@ -246,6 +246,7 @@
     <Compile Include="AddIn\Ribbon\ExcelCSIToolBoxAddInRibbon.Designer.cs">
       <DependentUpon>ExcelCSIToolBoxAddInRibbon.cs</DependentUpon>
     </Compile>
+    <Compile Include="AddIn\Ribbon\PostprocessingRibbonIcons.cs" />
     <Compile Include="ExcelCSIToolBoxAddin.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -274,10 +275,13 @@
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
     <Compile Include="UI\ViewModels\GetBaseReactionsViewModel.cs" />
+    <Compile Include="UI\ViewModels\GetModalMassParticipationRatiosViewModel.cs" />
+    <Compile Include="UI\ViewModels\GetStoryResultsViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationMatrixRowViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationMatrixViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationTypeOption.cs" />
     <Compile Include="UI\ViewModels\SectionDimensionAnnotation.cs" />
+    <Compile Include="UI\ViewModels\StoryPostprocessingResultKind.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
     <Compile Include="UI\ViewModels\AiAgentChatMessageViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentChatViewModel.cs" />
@@ -319,6 +323,14 @@
       <DependentUpon>GetBaseReactionsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\GetModalMassParticipationRatiosWindow.xaml.cs">
+      <DependentUpon>GetModalMassParticipationRatiosWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\GetStoryResultsWindow.xaml.cs">
+      <DependentUpon>GetStoryResultsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\Views\AiAgentChatControl.xaml.cs">
       <DependentUpon>AiAgentChatControl.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -358,6 +370,14 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\GetBaseReactionsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\GetModalMassParticipationRatiosWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\GetStoryResultsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

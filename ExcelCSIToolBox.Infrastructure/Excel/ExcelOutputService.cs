@@ -19,7 +19,7 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
             return WriteValuesToActiveCell(values, $"Successfully exported {dataFrame.Rows.Count} row(s) to Excel.");
         }
 
-        public OperationResult WriteValuesToActiveCell(object[,] values, string successMessage = null)
+        public OperationResult WriteValuesToActiveCell(object[,] values, string successMessage = null, bool formatHeaderRow = false)
         {
             if (values == null || values.GetLength(0) == 0 || values.GetLength(1) == 0)
             {
@@ -40,7 +40,7 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
                     return OperationResult.Failure("Please select a target cell in Excel and try again.");
                 }
 
-                return WriteValuesToRange(values, startCell, successMessage);
+                return WriteValuesToRange(values, startCell, successMessage, formatHeaderRow);
             }
             catch (Exception)
             {
@@ -133,14 +133,31 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
             return selectedRange == null ? null : selectedRange.Cells[1, 1] as Range;
         }
 
-        private static OperationResult WriteValuesToRange(object[,] values, Range startCell, string successMessage)
+        private static OperationResult WriteValuesToRange(object[,] values, Range startCell, string successMessage, bool formatHeaderRow = false)
         {
             int rowCount = values.GetLength(0);
             int columnCount = values.GetLength(1);
             Range targetRange = startCell.Resize[rowCount, columnCount];
             targetRange.Value2 = values;
 
+            if (formatHeaderRow)
+            {
+                FormatHeaderRow(startCell, columnCount);
+            }
+
             return OperationResult.Success(successMessage ?? $"Successfully exported {rowCount - 1} row(s) to Excel.");
+        }
+
+        private static void FormatHeaderRow(Range startCell, int columnCount)
+        {
+            Range headerRange = startCell.Resize[1, columnCount];
+            headerRange.WrapText = true;
+            headerRange.Font.Bold = true;
+            headerRange.VerticalAlignment = XlVAlign.xlVAlignCenter;
+
+            Borders borders = headerRange.Borders;
+            borders.LineStyle = XlLineStyle.xlContinuous;
+            borders.Weight = XlBorderWeight.xlThin;
         }
     }
 }

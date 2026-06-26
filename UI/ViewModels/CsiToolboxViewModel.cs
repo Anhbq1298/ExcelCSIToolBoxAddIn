@@ -866,7 +866,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             var viewModel = new GetBaseReactionsViewModel(_useCases, _csiConnectionService, _excelOutputService);
             var window = new ExcelCSIToolBoxAddIn.UI.Views.GetBaseReactionsWindow(viewModel);
-            window.ShowDialog();
+            window.Show();
         }
 
         private OperationResult SaveLoadCombinationMatrixChanges(LoadCombinationMatrixViewModel viewModel)

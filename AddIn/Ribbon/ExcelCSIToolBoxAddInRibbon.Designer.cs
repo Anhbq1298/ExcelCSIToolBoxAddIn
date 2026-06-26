@@ -38,16 +38,25 @@
             this.group1 = this.Factory.CreateRibbonGroup();
             this.buttonEtabs = this.Factory.CreateRibbonButton();
             this.buttonSap2000 = this.Factory.CreateRibbonButton();
+            this.groupEtabsPostprocessing = this.Factory.CreateRibbonGroup();
+            this.buttonGetBaseReactions = this.Factory.CreateRibbonButton();
+            this.buttonModalMassParticipationRatios = this.Factory.CreateRibbonButton();
+            this.buttonStoryForces = this.Factory.CreateRibbonButton();
+            this.buttonStoryDrifts = this.Factory.CreateRibbonButton();
+            this.buttonStoryMaxOverAverageDisplacements = this.Factory.CreateRibbonButton();
+            this.buttonStoryMaxOverAverageDrifts = this.Factory.CreateRibbonButton();
             this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonAiAgent = this.Factory.CreateRibbonButton();
             this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
+            this.groupEtabsPostprocessing.SuspendLayout();
             this.groupAiAssistant.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabExcelCSIToolBox
             // 
             this.tabExcelCSIToolBox.Groups.Add(this.group1);
+            this.tabExcelCSIToolBox.Groups.Add(this.groupEtabsPostprocessing);
             this.tabExcelCSIToolBox.Groups.Add(this.groupAiAssistant);
             this.tabExcelCSIToolBox.Label = "ExcelCSIToolBox";
             this.tabExcelCSIToolBox.Name = "tabExcelCSIToolBox";
@@ -74,6 +83,83 @@
             this.buttonSap2000.Name = "buttonSap2000";
             this.buttonSap2000.ShowImage = true;
             this.buttonSap2000.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonSap2000_Click);
+            // 
+            // groupEtabsPostprocessing
+            // 
+            this.groupEtabsPostprocessing.Items.Add(this.buttonGetBaseReactions);
+            this.groupEtabsPostprocessing.Items.Add(this.buttonModalMassParticipationRatios);
+            this.groupEtabsPostprocessing.Items.Add(this.buttonStoryForces);
+            this.groupEtabsPostprocessing.Items.Add(this.buttonStoryDrifts);
+            this.groupEtabsPostprocessing.Items.Add(this.buttonStoryMaxOverAverageDisplacements);
+            this.groupEtabsPostprocessing.Items.Add(this.buttonStoryMaxOverAverageDrifts);
+            this.groupEtabsPostprocessing.Label = "ETABS postprocessing toolbox";
+            this.groupEtabsPostprocessing.Name = "groupEtabsPostprocessing";
+            // 
+            // buttonGetBaseReactions
+            // 
+            this.buttonGetBaseReactions.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonGetBaseReactions.Label = "Get Base Reactions";
+            this.buttonGetBaseReactions.Name = "buttonGetBaseReactions";
+            this.buttonGetBaseReactions.OfficeImageId = "TableExport";
+            this.buttonGetBaseReactions.ScreenTip = "Get Base Reactions";
+            this.buttonGetBaseReactions.ShowImage = true;
+            this.buttonGetBaseReactions.SuperTip = "Extract ETABS Base Reactions for selected load cases and combinations to Excel.";
+            this.buttonGetBaseReactions.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonGetBaseReactions_Click);
+            // 
+            // buttonModalMassParticipationRatios
+            // 
+            this.buttonModalMassParticipationRatios.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonModalMassParticipationRatios.Label = "Modal Mass Participation Ratios";
+            this.buttonModalMassParticipationRatios.Name = "buttonModalMassParticipationRatios";
+            this.buttonModalMassParticipationRatios.OfficeImageId = "TableOfContentsInsert";
+            this.buttonModalMassParticipationRatios.ScreenTip = "Modal Mass Participation Ratios";
+            this.buttonModalMassParticipationRatios.ShowImage = true;
+            this.buttonModalMassParticipationRatios.SuperTip = "Extract ETABS Modal Mass Participation Ratios for selected modal load cases to Excel.";
+            this.buttonModalMassParticipationRatios.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonModalMassParticipationRatios_Click);
+            // 
+            // buttonStoryForces
+            // 
+            this.buttonStoryForces.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonStoryForces.Label = "Story Forces";
+            this.buttonStoryForces.Name = "buttonStoryForces";
+            this.buttonStoryForces.OfficeImageId = "TableExport";
+            this.buttonStoryForces.ScreenTip = "Story Forces";
+            this.buttonStoryForces.ShowImage = true;
+            this.buttonStoryForces.SuperTip = "Extract ETABS Story Forces for selected load cases and combinations to Excel.";
+            this.buttonStoryForces.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonStoryForces_Click);
+            // 
+            // buttonStoryDrifts
+            // 
+            this.buttonStoryDrifts.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonStoryDrifts.Label = "Story Drifts";
+            this.buttonStoryDrifts.Name = "buttonStoryDrifts";
+            this.buttonStoryDrifts.OfficeImageId = "TableExport";
+            this.buttonStoryDrifts.ScreenTip = "Story Drifts";
+            this.buttonStoryDrifts.ShowImage = true;
+            this.buttonStoryDrifts.SuperTip = "Extract ETABS Story Drifts for selected load cases and combinations to Excel.";
+            this.buttonStoryDrifts.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonStoryDrifts_Click);
+            // 
+            // buttonStoryMaxOverAverageDisplacements
+            // 
+            this.buttonStoryMaxOverAverageDisplacements.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonStoryMaxOverAverageDisplacements.Label = "Story Max/Avg Displacements";
+            this.buttonStoryMaxOverAverageDisplacements.Name = "buttonStoryMaxOverAverageDisplacements";
+            this.buttonStoryMaxOverAverageDisplacements.OfficeImageId = "TableExport";
+            this.buttonStoryMaxOverAverageDisplacements.ScreenTip = "Story Max Over Avg Displacements";
+            this.buttonStoryMaxOverAverageDisplacements.ShowImage = true;
+            this.buttonStoryMaxOverAverageDisplacements.SuperTip = "Extract ETABS Story Max Over Avg Displacements for selected load cases and combinations to Excel.";
+            this.buttonStoryMaxOverAverageDisplacements.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonStoryMaxOverAverageDisplacements_Click);
+            // 
+            // buttonStoryMaxOverAverageDrifts
+            // 
+            this.buttonStoryMaxOverAverageDrifts.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonStoryMaxOverAverageDrifts.Label = "Story Max/Avg Drifts";
+            this.buttonStoryMaxOverAverageDrifts.Name = "buttonStoryMaxOverAverageDrifts";
+            this.buttonStoryMaxOverAverageDrifts.OfficeImageId = "TableExport";
+            this.buttonStoryMaxOverAverageDrifts.ScreenTip = "Story Max Over Avg Drifts";
+            this.buttonStoryMaxOverAverageDrifts.ShowImage = true;
+            this.buttonStoryMaxOverAverageDrifts.SuperTip = "Extract ETABS Story Max Over Avg Drifts for selected load cases and combinations to Excel.";
+            this.buttonStoryMaxOverAverageDrifts.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonStoryMaxOverAverageDrifts_Click);
             // 
             // groupAiAssistant
             // 
@@ -102,6 +188,8 @@
             this.tabExcelCSIToolBox.PerformLayout();
             this.group1.ResumeLayout(false);
             this.group1.PerformLayout();
+            this.groupEtabsPostprocessing.ResumeLayout(false);
+            this.groupEtabsPostprocessing.PerformLayout();
             this.groupAiAssistant.ResumeLayout(false);
             this.groupAiAssistant.PerformLayout();
             this.ResumeLayout(false);
@@ -112,9 +200,16 @@
 
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tabExcelCSIToolBox;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupEtabsPostprocessing;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAiAssistant;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonEtabs;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonSap2000;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonGetBaseReactions;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonModalMassParticipationRatios;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryForces;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryDrifts;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryMaxOverAverageDisplacements;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryMaxOverAverageDrifts;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAiAgent;
     }
 

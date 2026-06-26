@@ -39,6 +39,12 @@ namespace ExcelCSIToolBox.Application.UseCases
             DeleteLoadCombinations = new DeleteLoadCombinationsUseCase(csiConnectionService);
             GetLoadCombinationDetails = new GetLoadCombinationDetailsUseCase(csiConnectionService);
             GetBaseReactions = new GetBaseReactionsUseCase(csiConnectionService);
+            GetModalMassParticipationRatios = new GetModalMassParticipationRatiosUseCase(csiConnectionService);
+            GetStoryForces = new GetStoryForcesUseCase(csiConnectionService);
+            GetStoryDisplacements = new GetStoryDisplacementsUseCase(csiConnectionService);
+            GetStoryDrifts = new GetStoryDriftsUseCase(csiConnectionService);
+            GetStoryMaxOverAverageDisplacements = new GetStoryMaxOverAverageDisplacementsUseCase(csiConnectionService);
+            GetStoryMaxOverAverageDrifts = new GetStoryMaxOverAverageDriftsUseCase(csiConnectionService);
 
             GetLoadPatterns = new GetLoadPatternsUseCase(csiConnectionService);
             DeleteLoadPatterns = new DeleteLoadPatternsUseCase(csiConnectionService);
@@ -70,6 +76,12 @@ namespace ExcelCSIToolBox.Application.UseCases
         public DeleteLoadCombinationsUseCase DeleteLoadCombinations { get; private set; }
         public GetLoadCombinationDetailsUseCase GetLoadCombinationDetails { get; private set; }
         public GetBaseReactionsUseCase GetBaseReactions { get; private set; }
+        public GetModalMassParticipationRatiosUseCase GetModalMassParticipationRatios { get; private set; }
+        public GetStoryForcesUseCase GetStoryForces { get; private set; }
+        public GetStoryDisplacementsUseCase GetStoryDisplacements { get; private set; }
+        public GetStoryDriftsUseCase GetStoryDrifts { get; private set; }
+        public GetStoryMaxOverAverageDisplacementsUseCase GetStoryMaxOverAverageDisplacements { get; private set; }
+        public GetStoryMaxOverAverageDriftsUseCase GetStoryMaxOverAverageDrifts { get; private set; }
         public GetLoadPatternsUseCase GetLoadPatterns { get; private set; }
         public DeleteLoadPatternsUseCase DeleteLoadPatterns { get; private set; }
         public GetFrameSectionsUseCase GetFrameSections { get; private set; }
