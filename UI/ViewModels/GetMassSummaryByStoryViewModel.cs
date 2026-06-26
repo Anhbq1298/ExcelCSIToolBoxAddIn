@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBox.Application.UseCases;
@@ -342,21 +343,29 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 for (int fieldIndex = 0; fieldIndex < fieldCount; fieldIndex++)
                 {
                     object value = row != null && fieldIndex < row.Length ? row[fieldIndex] : string.Empty;
-                    values[rowIndex + headerOffset, fieldIndex] = ScaleMassValue(value, unitOption);
+                    values[rowIndex + headerOffset, fieldIndex] = ScaleMassValue(table.FieldKeys[fieldIndex], value, unitOption);
                 }
             }
 
             return values;
         }
 
-        private static object ScaleMassValue(object value, MassUnitOption unitOption)
+        private static object ScaleMassValue(string fieldKey, object value, MassUnitOption unitOption)
         {
-            if (unitOption == null || !(value is double))
+            if (unitOption == null || IsTextField(fieldKey) || value == null)
             {
                 return value;
             }
 
-            return (double)value * unitOption.ScaleFactor;
+            double number;
+            string sourceValue = Convert.ToString(value, CultureInfo.InvariantCulture);
+            if (double.TryParse(sourceValue, NumberStyles.Float, CultureInfo.InvariantCulture, out number) ||
+                double.TryParse(sourceValue, NumberStyles.Float, CultureInfo.CurrentCulture, out number))
+            {
+                return number * unitOption.ScaleFactor;
+            }
+
+            return value;
         }
 
         private static bool IsTextField(string fieldKey)

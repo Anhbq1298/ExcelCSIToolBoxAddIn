@@ -111,6 +111,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
 
             GetBaseReactionsCommand = new RelayCommand(OpenGetBaseReactionsDialog, () => IsEtabs);
+            GetModalMassParticipationRatiosCommand = new RelayCommand(OpenModalMassParticipationRatiosDialog, () => IsEtabs);
+            GetStoryForcesCommand = new RelayCommand(OpenStoryForcesDialog, () => IsEtabs);
+            GetStoryDriftsCommand = new RelayCommand(OpenStoryDriftsDialog, () => IsEtabs);
+            GetStoryMaxOverAverageDisplacementsCommand = new RelayCommand(OpenStoryMaxOverAverageDisplacementsDialog, () => IsEtabs);
+            GetStoryMaxOverAverageDriftsCommand = new RelayCommand(OpenStoryMaxOverAverageDriftsDialog, () => IsEtabs);
+            GetMassSummaryByStoryCommand = new RelayCommand(OpenMassSummaryByStoryDialog, () => IsEtabs);
             
             GetFrameSectionsCommand = new RelayCommand(GetFrameSections, () => IsConnected);
             EditFrameSectionCommand = new RelayCommand<CSISapModelFrameSectionDTO>(EditFrameSection, _ => IsConnected);
@@ -222,6 +228,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
         public ICommand ViewLoadCombinationCommand { get; }
         public ICommand GetBaseReactionsCommand { get; }
+        public ICommand GetModalMassParticipationRatiosCommand { get; }
+        public ICommand GetStoryForcesCommand { get; }
+        public ICommand GetStoryDriftsCommand { get; }
+        public ICommand GetStoryMaxOverAverageDisplacementsCommand { get; }
+        public ICommand GetStoryMaxOverAverageDriftsCommand { get; }
+        public ICommand GetMassSummaryByStoryCommand { get; }
         
         public ICommand GetFrameSectionsCommand { get; }
         public ICommand EditFrameSectionCommand { get; }
@@ -272,6 +284,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 DeleteSelectedLoadCombinationsCommand,
                 ViewLoadCombinationCommand,
                 GetBaseReactionsCommand,
+                GetModalMassParticipationRatiosCommand,
+                GetStoryForcesCommand,
+                GetStoryDriftsCommand,
+                GetStoryMaxOverAverageDisplacementsCommand,
+                GetStoryMaxOverAverageDriftsCommand,
+                GetMassSummaryByStoryCommand,
                 GetFrameSectionsCommand,
                 EditFrameSectionCommand
             };
@@ -867,6 +885,44 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var viewModel = new GetBaseReactionsViewModel(_useCases, _csiConnectionService, _excelOutputService);
             var window = new ExcelCSIToolBoxAddIn.UI.Views.GetBaseReactionsWindow(viewModel);
             window.Show();
+        }
+
+        private void OpenModalMassParticipationRatiosDialog()
+        {
+            var viewModel = new GetModalMassParticipationRatiosViewModel(_useCases, _csiConnectionService, _excelOutputService);
+            new ExcelCSIToolBoxAddIn.UI.Views.GetModalMassParticipationRatiosWindow(viewModel).Show();
+        }
+
+        private void OpenStoryForcesDialog()
+        {
+            OpenStoryResultsDialog(StoryPostprocessingResultKind.StoryForces);
+        }
+
+        private void OpenStoryDriftsDialog()
+        {
+            OpenStoryResultsDialog(StoryPostprocessingResultKind.StoryDrifts);
+        }
+
+        private void OpenStoryMaxOverAverageDisplacementsDialog()
+        {
+            OpenStoryResultsDialog(StoryPostprocessingResultKind.StoryMaxOverAverageDisplacements);
+        }
+
+        private void OpenStoryMaxOverAverageDriftsDialog()
+        {
+            OpenStoryResultsDialog(StoryPostprocessingResultKind.StoryMaxOverAverageDrifts);
+        }
+
+        private void OpenStoryResultsDialog(StoryPostprocessingResultKind kind)
+        {
+            var viewModel = new GetStoryResultsViewModel(kind, _useCases, _csiConnectionService, _excelOutputService);
+            new ExcelCSIToolBoxAddIn.UI.Views.GetStoryResultsWindow(viewModel).Show();
+        }
+
+        private void OpenMassSummaryByStoryDialog()
+        {
+            var viewModel = new GetMassSummaryByStoryViewModel(_useCases, _csiConnectionService, _excelOutputService);
+            new ExcelCSIToolBoxAddIn.UI.Views.GetMassSummaryByStoryWindow(viewModel).Show();
         }
 
         private OperationResult SaveLoadCombinationMatrixChanges(LoadCombinationMatrixViewModel viewModel)

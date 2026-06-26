@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -47,6 +48,31 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 "About CSI Toolbox",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
+        }
+
+        private void WorkspaceNavigation_Click(object sender, RoutedEventArgs e)
+        {
+            var element = sender as FrameworkElement;
+            NavigateToWorkspace(element == null ? null : element.Tag);
+        }
+
+        private void ProjectManagerTree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            var item = e.NewValue as TreeViewItem;
+            NavigateToWorkspace(item == null ? null : item.Tag);
+        }
+
+        private void NavigateToWorkspace(object tag)
+        {
+            int tabIndex;
+            if (!int.TryParse(Convert.ToString(tag), out tabIndex) ||
+                tabIndex < 0 ||
+                tabIndex >= WorkspaceTabs.Items.Count)
+            {
+                return;
+            }
+
+            WorkspaceTabs.SelectedIndex = tabIndex;
         }
     }
 }

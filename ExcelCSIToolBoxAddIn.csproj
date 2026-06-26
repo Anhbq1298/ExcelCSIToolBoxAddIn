@@ -246,7 +246,6 @@
     <Compile Include="AddIn\Ribbon\ExcelCSIToolBoxAddInRibbon.Designer.cs">
       <DependentUpon>ExcelCSIToolBoxAddInRibbon.cs</DependentUpon>
     </Compile>
-    <Compile Include="AddIn\Ribbon\PostprocessingRibbonIcons.cs" />
     <Compile Include="ExcelCSIToolBoxAddin.cs">
       <SubType>Code</SubType>
     </Compile>
