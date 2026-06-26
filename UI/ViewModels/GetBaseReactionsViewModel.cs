@@ -10,12 +10,14 @@ using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBoxAddIn.UI.Helpers;
 using ExcelRange = Microsoft.Office.Interop.Excel.Range;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
     public class GetBaseReactionsViewModel : ViewModelBase
     {
+        private const string WorkbookStateKey = "BaseReactions";
         private readonly ICSISapModelConnectionService _csiConnectionService;
         private readonly IExcelOutputService _excelOutputService;
         private readonly GetBaseReactionsUseCase _getBaseReactionsUseCase;
@@ -28,6 +30,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private ExcelRange _pickedAnchorCell;
         private int _selectedLoadCaseCount;
         private int _selectedLoadCombinationCount;
+        private IReadOnlyList<string> _selectedLoadCaseNames = new string[0];
+        private IReadOnlyList<string> _selectedLoadCombinationNames = new string[0];
+        private PostprocessingWorkbookState _workbookState;
+        private bool _isWorkbookStateLoaded;
+        private string _etabsModelName = "ETABS Model: Not attached";
 
         public GetBaseReactionsViewModel(
             CsiToolboxUseCaseBundle useCases,
@@ -47,6 +54,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 new BaseReactionUnitOption("lb-in", 1, "lb", "lb-in", "in")
             };
             SelectedUnitOption = UnitOptions[1];
+            _workbookState = PostprocessingWorkbookStateStore.Load(WorkbookStateKey);
+            RestoreWorkbookState();
+            _isWorkbookStateLoaded = true;
             LoadCases = new ObservableCollection<BaseReactionOutputCaseViewModel>();
             LoadCombinations = new ObservableCollection<BaseReactionOutputCaseViewModel>();
             LoadOutputCasesCommand = new RelayCommand(LoadOutputCases, () => !IsBusy);
@@ -55,8 +65,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             RunCommand = new RelayCommand(Run, () => !IsBusy);
             CancelCommand = new RelayCommand(() => RequestClose?.Invoke(this, EventArgs.Empty));
 
-            AddHeaders = false;
-            RefreshActiveCellDisplay();
+            RefreshAnchorDisplay();
             LoadOutputCases();
         }
 
@@ -84,6 +93,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ForceUnitText));
                 OnPropertyChanged(nameof(MomentUnitText));
+                SaveWorkbookState();
             }
         }
 
@@ -95,6 +105,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public string MomentUnitText
         {
             get { return SelectedUnitOption == null ? string.Empty : $"Moment: {SelectedUnitOption.MomentUnit}"; }
+        }
+
+        public string EtabsModelName
+        {
+            get { return _etabsModelName; }
+            private set
+            {
+                _etabsModelName = value;
+                OnPropertyChanged();
+            }
         }
 
         public string AnchorCellAddress
@@ -135,6 +155,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _addHeaders = value;
                 OnPropertyChanged();
+                SaveWorkbookState();
             }
         }
 
@@ -155,6 +176,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 OnPropertyChanged(nameof(IsPickCellMode));
                 OnPropertyChanged(nameof(AnchorModeText));
                 RefreshActiveCellDisplay();
+                SaveWorkbookState();
             }
         }
 
@@ -184,6 +206,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     OnPropertyChanged(nameof(AnchorModeText));
                     RefreshActiveCellDisplay();
                 }
+
+                SaveWorkbookState();
             }
         }
 
@@ -233,6 +257,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             SelectedLoadCaseCount = selectedLoadCaseCount;
             SelectedLoadCombinationCount = selectedLoadCombinationCount;
+        }
+
+        public void UpdateSelectedOutputCases(System.Collections.IList selectedLoadCases, System.Collections.IList selectedLoadCombinations)
+        {
+            _selectedLoadCaseNames = GetSelectedOutputCaseNames(selectedLoadCases);
+            _selectedLoadCombinationNames = GetSelectedOutputCaseNames(selectedLoadCombinations);
+            UpdateSelectionCounts(_selectedLoadCaseNames.Count, _selectedLoadCombinationNames.Count);
+            SaveWorkbookState();
+        }
+
+        public void RestoreSavedSelections(System.Collections.IList selectedLoadCases, System.Collections.IList selectedLoadCombinations)
+        {
+            RestoreSelectedItems(selectedLoadCases, LoadCases, _workbookState.LoadCaseNames);
+            RestoreSelectedItems(selectedLoadCombinations, LoadCombinations, _workbookState.LoadCombinationNames);
+            UpdateSelectedOutputCases(selectedLoadCases, selectedLoadCombinations);
         }
 
         public void RefreshAnchorDisplay()
@@ -353,6 +392,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 startCell.Select();
                 AnchorCellAddress = FormatAddress(startCell);
                 StatusText = $"Anchor cell set to {AnchorCellAddress}.";
+                SaveWorkbookState();
                 return true;
             }
             catch (Exception ex)
@@ -602,12 +642,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var connectionResult = _csiConnectionService.GetCurrentConnection();
             if (connectionResult.IsSuccess)
             {
+                UpdateEtabsModelName(connectionResult.Data);
                 return true;
             }
 
             var attachResult = _csiConnectionService.TryAttachToRunningInstance();
             if (attachResult.IsSuccess)
             {
+                UpdateEtabsModelName(attachResult.Data);
                 return true;
             }
 
@@ -651,6 +693,104 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             string address = cell.Address[RowAbsolute: false, ColumnAbsolute: false];
             string sheetName = cell.Worksheet == null ? string.Empty : cell.Worksheet.Name;
             return string.IsNullOrWhiteSpace(sheetName) ? address : $"{sheetName}!{address}";
+        }
+
+        private void RestoreWorkbookState()
+        {
+            if (_workbookState == null)
+            {
+                return;
+            }
+
+            foreach (BaseReactionUnitOption unitOption in UnitOptions)
+            {
+                if (string.Equals(unitOption.Label, _workbookState.UnitLabel, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedUnitOption = unitOption;
+                    break;
+                }
+            }
+
+            AddHeaders = _workbookState.AddHeaders;
+            if (_workbookState.UsePickedAnchor)
+            {
+                ExcelRange anchorCell = PostprocessingWorkbookStateStore.TryGetAnchorCell(_workbookState.AnchorAddress);
+                if (anchorCell != null)
+                {
+                    _pickedAnchorCell = anchorCell;
+                    _isUseActiveCellMode = false;
+                    _isPickCellMode = true;
+                    AnchorCellAddress = FormatAddress(anchorCell);
+                    OnPropertyChanged(nameof(IsUseActiveCellMode));
+                    OnPropertyChanged(nameof(IsPickCellMode));
+                    OnPropertyChanged(nameof(AnchorModeText));
+                }
+            }
+        }
+
+        private void SaveWorkbookState()
+        {
+            if (!_isWorkbookStateLoaded)
+            {
+                return;
+            }
+
+            PostprocessingWorkbookStateStore.Save(WorkbookStateKey, new PostprocessingWorkbookState
+            {
+                UnitLabel = SelectedUnitOption == null ? string.Empty : SelectedUnitOption.Label,
+                AddHeaders = AddHeaders,
+                UsePickedAnchor = IsPickCellMode,
+                AnchorAddress = IsPickCellMode ? AnchorCellAddress : string.Empty,
+                LoadCaseNames = _selectedLoadCaseNames,
+                LoadCombinationNames = _selectedLoadCombinationNames
+            });
+        }
+
+        private void UpdateEtabsModelName(CSISapModelConnectionInfoDTO connection)
+        {
+            string modelName = connection == null ? string.Empty : connection.ModelFileName;
+            EtabsModelName = string.IsNullOrWhiteSpace(modelName) ? "ETABS Model: Untitled" : $"ETABS Model: {modelName}";
+        }
+
+        private static IReadOnlyList<string> GetSelectedOutputCaseNames(System.Collections.IList selectedItems)
+        {
+            var names = new List<string>();
+            if (selectedItems == null)
+            {
+                return names;
+            }
+
+            foreach (object selectedItem in selectedItems)
+            {
+                var item = selectedItem as BaseReactionOutputCaseViewModel;
+                if (item != null && !string.IsNullOrWhiteSpace(item.Name))
+                {
+                    names.Add(item.Name);
+                }
+            }
+
+            return names;
+        }
+
+        private static void RestoreSelectedItems(
+            System.Collections.IList selectedItems,
+            IEnumerable<BaseReactionOutputCaseViewModel> availableItems,
+            IReadOnlyList<string> selectedNames)
+        {
+            if (selectedItems == null || availableItems == null || selectedNames == null)
+            {
+                return;
+            }
+
+            selectedItems.Clear();
+            var nameSet = new HashSet<string>(selectedNames, StringComparer.OrdinalIgnoreCase);
+            foreach (BaseReactionOutputCaseViewModel item in availableItems)
+            {
+                if (item != null && nameSet.Contains(item.Name))
+                {
+                    selectedItems.Add(item);
+                }
+            }
         }
 
         private void RaiseCommandStates()

@@ -26,6 +26,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static GetStoryResultsWindow _storyDriftsWindow;
         private static GetStoryResultsWindow _storyMaxOverAverageDisplacementsWindow;
         private static GetStoryResultsWindow _storyMaxOverAverageDriftsWindow;
+        private static GetMassSummaryByStoryWindow _massSummaryByStoryWindow;
 
         internal static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
@@ -127,6 +128,23 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             ShowStoryResultsWindow(
                 StoryPostprocessingResultKind.StoryMaxOverAverageDrifts,
                 ref _storyMaxOverAverageDriftsWindow);
+        }
+
+        internal static void ShowMassSummaryByStoryWindow()
+        {
+            EnsureConfigured(_etabsConnectionService);
+            if (_massSummaryByStoryWindow != null)
+            {
+                _massSummaryByStoryWindow.Activate();
+                return;
+            }
+
+            var useCases = new CsiToolboxUseCaseBundle(_etabsConnectionService, _excelSelectionService, _excelOutputService);
+            var viewModel = new GetMassSummaryByStoryViewModel(useCases, _etabsConnectionService, _excelOutputService);
+            var window = new GetMassSummaryByStoryWindow(viewModel);
+            window.Closed += delegate { _massSummaryByStoryWindow = null; };
+            _massSummaryByStoryWindow = window;
+            window.Show();
         }
 
         private static void ShowStoryResultsWindow(

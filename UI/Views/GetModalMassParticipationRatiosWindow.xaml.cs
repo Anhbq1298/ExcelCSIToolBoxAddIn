@@ -6,6 +6,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 {
     public partial class GetModalMassParticipationRatiosWindow : Window
     {
+        private bool _hasRestoredSelections;
+
         public GetModalMassParticipationRatiosWindow(GetModalMassParticipationRatiosViewModel viewModel)
         {
             InitializeComponent();
@@ -44,7 +46,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             var viewModel = DataContext as GetModalMassParticipationRatiosViewModel;
             if (viewModel != null)
             {
-                viewModel.UpdateSelectionCount(ModalLoadCasesGrid.SelectedItems.Count);
+                viewModel.UpdateSelectedOutputCases(ModalLoadCasesGrid.SelectedItems);
             }
         }
 
@@ -54,6 +56,22 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (viewModel != null)
             {
                 viewModel.Run(ModalLoadCasesGrid.SelectedItems);
+            }
+        }
+
+        protected override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
+            if (_hasRestoredSelections)
+            {
+                return;
+            }
+
+            var viewModel = DataContext as GetModalMassParticipationRatiosViewModel;
+            if (viewModel != null)
+            {
+                viewModel.RestoreSavedSelections(ModalLoadCasesGrid.SelectedItems);
+                _hasRestoredSelections = true;
             }
         }
     }

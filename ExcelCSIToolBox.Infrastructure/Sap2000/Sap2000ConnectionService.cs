@@ -1283,6 +1283,11 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return OperationResult<CSISapModelDisplayTableDTO>.Failure("Story Max Over Avg Drifts is currently available for ETABS only.");
         }
 
+        public OperationResult<CSISapModelDisplayTableDTO> GetMassSummaryByStory()
+        {
+            return OperationResult<CSISapModelDisplayTableDTO>.Failure("Mass Summary by Story is currently available for ETABS only.");
+        }
+
         public OperationResult<IReadOnlyList<string>> GetLoadPatternNames()
         {
             var sapModelResult = EnsureSap2000SapModel();

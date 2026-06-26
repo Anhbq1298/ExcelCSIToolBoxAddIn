@@ -1,5 +1,6 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace ExcelCSIToolBoxAddIn.AddIn.Ribbon
 {
@@ -114,15 +115,16 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Ribbon
 
         private static Bitmap CreateIcon(System.Action<Graphics> draw)
         {
-            var bitmap = new Bitmap(64, 64);
-            using (Graphics graphics = Graphics.FromImage(bitmap))
+            using (var source = new Bitmap(64, 64, PixelFormat.Format32bppArgb))
+            using (Graphics graphics = Graphics.FromImage(source))
             {
+                graphics.Clear(Color.Transparent);
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 draw(graphics);
-            }
 
-            return bitmap;
+                return new Bitmap(source);
+            }
         }
 
         private static Pen CreatePen()

@@ -1,0 +1,76 @@
+<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.GetMassSummaryByStoryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mass Summary by Story"
+        Height="340"
+        Width="720"
+        MinHeight="280"
+        MinWidth="620"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI"
+        FontSize="12">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="MinWidth" Value="86"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Extract the ETABS Mass Summary by Story table, then select the Excel anchor cell where output should start."
+                       TextWrapping="Wrap"
+                       FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding EtabsModelName}"
+                       Foreground="#555555"
+                       Margin="0,4,0,0"/>
+            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                <TextBlock Text="Mass unit:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox ItemsSource="{Binding MassUnitOptions}"
+                          SelectedItem="{Binding SelectedMassUnitOption, Mode=TwoWay}"
+                          DisplayMemberPath="Label"
+                          Width="100"
+                          Height="26"
+                          VerticalContentAlignment="Center"/>
+            </StackPanel>
+        </StackPanel>
+
+        <GroupBox Grid.Row="1" Header="Excel Anchor Cell" Padding="8" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <RadioButton Content="Use active cell" IsChecked="{Binding IsUseActiveCellMode, Mode=TwoWay}" Margin="0,0,12,0"/>
+                    <RadioButton Content="Pick cell" IsChecked="{Binding IsPickCellMode, Mode=TwoWay}"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="Anchor:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBox Grid.Column="2" Text="{Binding AnchorCellAddress, Mode=OneWay}" IsReadOnly="True" Height="26" VerticalContentAlignment="Center"/>
+                <TextBlock Grid.Column="3" Text="{Binding AnchorModeText}" VerticalAlignment="Center" Foreground="#666666" FontSize="11" Margin="10,0,0,0"/>
+            </Grid>
+        </GroupBox>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                <CheckBox Content="Add headers" IsChecked="{Binding AddHeaders, Mode=TwoWay}" Margin="0,0,16,0"/>
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Foreground="#555555" TextWrapping="Wrap"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Run" Command="{Binding RunCommand}" IsDefault="True"/>
+                <Button Content="Cancel" Command="{Binding CancelCommand}" IsCancel="True"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

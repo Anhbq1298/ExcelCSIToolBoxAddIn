@@ -270,6 +270,18 @@
     <Content Include="icon\sap2000icon.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="icon\GetBaseReactions.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="icon\ModalMassParticipationRatios.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="icon\StoryForces.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="icon\StoryDisplacements.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
     <Compile Include="UI\ViewModels\BaseReactionOutputCaseViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
@@ -277,6 +289,7 @@
     <Compile Include="UI\ViewModels\GetBaseReactionsViewModel.cs" />
     <Compile Include="UI\ViewModels\GetModalMassParticipationRatiosViewModel.cs" />
     <Compile Include="UI\ViewModels\GetStoryResultsViewModel.cs" />
+    <Compile Include="UI\ViewModels\GetMassSummaryByStoryViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationMatrixRowViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationMatrixViewModel.cs" />
     <Compile Include="UI\ViewModels\LoadCombinationTypeOption.cs" />
@@ -287,6 +300,7 @@
     <Compile Include="UI\ViewModels\AiAgentChatViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentToolTraceViewModel.cs" />
     <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />
+    <Compile Include="UI\Helpers\PostprocessingWorkbookStateStore.cs" />
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -329,6 +343,10 @@
     </Compile>
     <Compile Include="UI\Views\GetStoryResultsWindow.xaml.cs">
       <DependentUpon>GetStoryResultsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\GetMassSummaryByStoryWindow.xaml.cs">
+      <DependentUpon>GetMassSummaryByStoryWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\AiAgentChatControl.xaml.cs">
@@ -378,6 +396,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\GetStoryResultsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\GetMassSummaryByStoryWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

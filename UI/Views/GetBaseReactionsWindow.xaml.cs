@@ -6,6 +6,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 {
     public partial class GetBaseReactionsWindow : Window
     {
+        private bool _hasRestoredSelections;
+
         public GetBaseReactionsWindow(GetBaseReactionsViewModel viewModel)
         {
             InitializeComponent();
@@ -47,9 +49,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 return;
             }
 
-            viewModel.UpdateSelectionCounts(
-                LoadCasesGrid.SelectedItems.Count,
-                LoadCombinationsGrid.SelectedItems.Count);
+            viewModel.UpdateSelectedOutputCases(LoadCasesGrid.SelectedItems, LoadCombinationsGrid.SelectedItems);
         }
 
         protected override void OnActivated(EventArgs e)
@@ -60,6 +60,22 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (viewModel != null)
             {
                 viewModel.RefreshAnchorDisplay();
+            }
+        }
+
+        protected override void OnContentRendered(EventArgs e)
+        {
+            base.OnContentRendered(e);
+            if (_hasRestoredSelections)
+            {
+                return;
+            }
+
+            var viewModel = DataContext as GetBaseReactionsViewModel;
+            if (viewModel != null)
+            {
+                viewModel.RestoreSavedSelections(LoadCasesGrid.SelectedItems, LoadCombinationsGrid.SelectedItems);
+                _hasRestoredSelections = true;
             }
         }
     }

@@ -45,6 +45,7 @@
             this.buttonStoryDrifts = this.Factory.CreateRibbonButton();
             this.buttonStoryMaxOverAverageDisplacements = this.Factory.CreateRibbonButton();
             this.buttonStoryMaxOverAverageDrifts = this.Factory.CreateRibbonButton();
+            this.buttonMassSummaryByStory = this.Factory.CreateRibbonButton();
             this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonAiAgent = this.Factory.CreateRibbonButton();
             this.tabExcelCSIToolBox.SuspendLayout();
@@ -92,6 +93,7 @@
             this.groupEtabsPostprocessing.Items.Add(this.buttonStoryDrifts);
             this.groupEtabsPostprocessing.Items.Add(this.buttonStoryMaxOverAverageDisplacements);
             this.groupEtabsPostprocessing.Items.Add(this.buttonStoryMaxOverAverageDrifts);
+            this.groupEtabsPostprocessing.Items.Add(this.buttonMassSummaryByStory);
             this.groupEtabsPostprocessing.Label = "ETABS postprocessing toolbox";
             this.groupEtabsPostprocessing.Name = "groupEtabsPostprocessing";
             // 
@@ -161,6 +163,17 @@
             this.buttonStoryMaxOverAverageDrifts.SuperTip = "Extract ETABS Story Max Over Avg Drifts for selected load cases and combinations to Excel.";
             this.buttonStoryMaxOverAverageDrifts.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonStoryMaxOverAverageDrifts_Click);
             // 
+            // buttonMassSummaryByStory
+            // 
+            this.buttonMassSummaryByStory.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonMassSummaryByStory.Label = "Mass Summary by Story";
+            this.buttonMassSummaryByStory.Name = "buttonMassSummaryByStory";
+            this.buttonMassSummaryByStory.OfficeImageId = "TableExport";
+            this.buttonMassSummaryByStory.ScreenTip = "Mass Summary by Story";
+            this.buttonMassSummaryByStory.ShowImage = true;
+            this.buttonMassSummaryByStory.SuperTip = "Extract ETABS Mass Summary by Story to Excel.";
+            this.buttonMassSummaryByStory.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonMassSummaryByStory_Click);
+            // 
             // groupAiAssistant
             // 
             this.groupAiAssistant.Items.Add(this.buttonAiAgent);
@@ -210,6 +223,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryDrifts;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryMaxOverAverageDisplacements;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryMaxOverAverageDrifts;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMassSummaryByStory;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAiAgent;
     }
 

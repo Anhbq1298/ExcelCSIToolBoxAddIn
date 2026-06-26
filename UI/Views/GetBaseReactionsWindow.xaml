@@ -27,11 +27,14 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0"
-                   Text="Select ETABS load cases / combinations to extract Base Reactions, then select the Excel anchor cell where output should start."
-                   TextWrapping="Wrap"
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,10"/>
+        <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Select ETABS load cases / combinations to extract Base Reactions, then select the Excel anchor cell where output should start."
+                       TextWrapping="Wrap"
+                       FontWeight="SemiBold"/>
+            <TextBlock Text="{Binding EtabsModelName}"
+                       Foreground="#555555"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
 
         <Grid Grid.Row="1"
               Margin="0,0,0,10">

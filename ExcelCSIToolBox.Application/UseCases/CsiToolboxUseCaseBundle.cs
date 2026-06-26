@@ -45,6 +45,7 @@ namespace ExcelCSIToolBox.Application.UseCases
             GetStoryDrifts = new GetStoryDriftsUseCase(csiConnectionService);
             GetStoryMaxOverAverageDisplacements = new GetStoryMaxOverAverageDisplacementsUseCase(csiConnectionService);
             GetStoryMaxOverAverageDrifts = new GetStoryMaxOverAverageDriftsUseCase(csiConnectionService);
+            GetMassSummaryByStory = new GetMassSummaryByStoryUseCase(csiConnectionService);
 
             GetLoadPatterns = new GetLoadPatternsUseCase(csiConnectionService);
             DeleteLoadPatterns = new DeleteLoadPatternsUseCase(csiConnectionService);
@@ -82,6 +83,7 @@ namespace ExcelCSIToolBox.Application.UseCases
         public GetStoryDriftsUseCase GetStoryDrifts { get; private set; }
         public GetStoryMaxOverAverageDisplacementsUseCase GetStoryMaxOverAverageDisplacements { get; private set; }
         public GetStoryMaxOverAverageDriftsUseCase GetStoryMaxOverAverageDrifts { get; private set; }
+        public GetMassSummaryByStoryUseCase GetMassSummaryByStory { get; private set; }
         public GetLoadPatternsUseCase GetLoadPatterns { get; private set; }
         public DeleteLoadPatternsUseCase DeleteLoadPatterns { get; private set; }
         public GetFrameSectionsUseCase GetFrameSections { get; private set; }

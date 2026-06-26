@@ -1633,6 +1633,46 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return GetStoryDisplayTable("Story Max Over Avg Drifts", selectedOutputCases);
         }
 
+        public OperationResult<CSISapModelDisplayTableDTO> GetMassSummaryByStory()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(sapModelResult.Message);
+            }
+
+            try
+            {
+                string[] fieldKeyList = null;
+                int tableVersion = 0;
+                string[] fieldsKeysIncluded = null;
+                int numberRecords = 0;
+                string[] tableData = null;
+                int ret = sapModelResult.Data.DatabaseTables.GetTableForDisplayArray(
+                    "Mass Summary by Story",
+                    ref fieldKeyList,
+                    string.Empty,
+                    ref tableVersion,
+                    ref fieldsKeysIncluded,
+                    ref numberRecords,
+                    ref tableData);
+
+                if (ret != 0)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to read ETABS Mass Summary by Story table (return code {ret}).");
+                }
+
+                string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
+                    ? fieldsKeysIncluded
+                    : fieldKeyList;
+                return OperationResult<CSISapModelDisplayTableDTO>.Success(ParseDisplayTable(returnedFields, numberRecords, tableData));
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to extract ETABS Mass Summary by Story: {ex.Message}");
+            }
+        }
+
         private OperationResult<CSISapModelDisplayTableDTO> GetStoryDisplayTable(
             string tableKey,
             IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)

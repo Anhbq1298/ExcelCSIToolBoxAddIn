@@ -106,6 +106,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<CSISapModelDisplayTableDTO> GetStoryDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
+        OperationResult<CSISapModelDisplayTableDTO> GetMassSummaryByStory();
         OperationResult<IReadOnlyList<string>> GetLoadPatternNames();
         OperationResult<LoadCombinationApplyResultDto> ApplyLoadCombinationMatrix(IReadOnlyList<LoadCombinationMatrixRowDto> rows);
         OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);
