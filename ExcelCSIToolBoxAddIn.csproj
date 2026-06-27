@@ -281,11 +281,19 @@
     <Content Include="icon\StoryDisplacements.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="UI\Config\OutputTablePopupProfiles.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
     <Compile Include="UI\ViewModels\BaseReactionOutputCaseViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
-    <Compile Include="UI\ViewModels\GetBaseReactionsViewModel.cs" />
+    <Compile Include="UI\ViewModels\OutputCaseSelectionMode.cs" />
+    <Compile Include="UI\ViewModels\OutputTableExportConfig.cs" />
+    <Compile Include="UI\ViewModels\OutputTableExportOptionsViewModel.cs" />
+    <Compile Include="UI\ViewModels\OutputTableExportWorkflow.cs" />
+    <Compile Include="UI\ViewModels\OutputTablePopupProfile.cs" />
+    <Compile Include="UI\ViewModels\OutputTablePopupProfileProvider.cs" />
     <Compile Include="UI\ViewModels\GetModalMassParticipationRatiosViewModel.cs" />
     <Compile Include="UI\ViewModels\GetStoryResultsViewModel.cs" />
     <Compile Include="UI\ViewModels\GetMassSummaryByStoryViewModel.cs" />
@@ -332,8 +340,8 @@
       <DependentUpon>FrameSectionDetailWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\GetBaseReactionsWindow.xaml.cs">
-      <DependentUpon>GetBaseReactionsWindow.xaml</DependentUpon>
+    <Compile Include="UI\Views\OutputTableExportOptionsWindow.xaml.cs">
+      <DependentUpon>OutputTableExportOptionsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\GetModalMassParticipationRatiosWindow.xaml.cs">
@@ -386,7 +394,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\GetBaseReactionsWindow.xaml">
+    <Page Include="UI\Views\OutputTableExportOptionsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -403,6 +411,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\AiAgentChatControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Themes\EtabsToolboxTheme.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

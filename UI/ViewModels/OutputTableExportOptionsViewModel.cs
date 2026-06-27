@@ -15,12 +15,15 @@ using ExcelRange = Microsoft.Office.Interop.Excel.Range;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
-    public class GetBaseReactionsViewModel : ViewModelBase
+    public class OutputTableExportOptionsViewModel : ViewModelBase
     {
-        private const string WorkbookStateKey = "BaseReactions";
         private readonly ICSISapModelConnectionService _csiConnectionService;
         private readonly IExcelOutputService _excelOutputService;
         private readonly GetBaseReactionsUseCase _getBaseReactionsUseCase;
+        private readonly OutputTableExportConfig _config;
+        private readonly OutputTablePopupProfile _profile;
+        private readonly string _displayTableName;
+        private readonly string _workbookStateKey;
         private string _anchorCellAddress;
         private string _statusText;
         private bool _isBusy;
@@ -36,15 +39,51 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool _isWorkbookStateLoaded;
         private string _etabsModelName = "ETABS Model: Not attached";
 
-        public GetBaseReactionsViewModel(
+        public OutputTableExportOptionsViewModel(
             CsiToolboxUseCaseBundle useCases,
             ICSISapModelConnectionService csiConnectionService,
             IExcelOutputService excelOutputService)
+            : this(
+                useCases,
+                csiConnectionService,
+                excelOutputService,
+                new OutputTableExportConfig
+                {
+                    TableDisplayName = "Base Reactions",
+                    Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Base Reactions"
+                })
+        {
+        }
+
+        public OutputTableExportOptionsViewModel(
+            CsiToolboxUseCaseBundle useCases,
+            ICSISapModelConnectionService csiConnectionService,
+            IExcelOutputService excelOutputService,
+            string displayTableName)
+            : this(
+                useCases,
+                csiConnectionService,
+                excelOutputService,
+                OutputTableExportConfig.ForTable(
+                    displayTableName,
+                    "ETABS Toolbox / ANALYSIS RESULTS / " + (string.IsNullOrWhiteSpace(displayTableName) ? "Base Reactions" : displayTableName)))
+        {
+        }
+
+        public OutputTableExportOptionsViewModel(
+            CsiToolboxUseCaseBundle useCases,
+            ICSISapModelConnectionService csiConnectionService,
+            IExcelOutputService excelOutputService,
+            OutputTableExportConfig config)
         {
             if (useCases == null) throw new ArgumentNullException(nameof(useCases));
             _csiConnectionService = csiConnectionService ?? throw new ArgumentNullException(nameof(csiConnectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
             _getBaseReactionsUseCase = useCases.GetBaseReactions ?? throw new ArgumentNullException(nameof(useCases.GetBaseReactions));
+            _config = (config ?? new OutputTableExportConfig()).Normalize();
+            _profile = OutputTablePopupProfileProvider.GetProfile(_config.PopupProfileKey);
+            _displayTableName = _config.TableDisplayName;
+            _workbookStateKey = "OutputTableExport." + CreateStateKey(_profile.WorksheetNamePrefix + "." + _config.TableDisplayName);
 
             UnitOptions = new ObservableCollection<BaseReactionUnitOption>
             {
@@ -54,8 +93,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 new BaseReactionUnitOption("lb-in", 1, "lb", "lb-in", "in")
             };
             SelectedUnitOption = UnitOptions[1];
-            _workbookState = PostprocessingWorkbookStateStore.Load(WorkbookStateKey);
+            _workbookState = PostprocessingWorkbookStateStore.Load(_workbookStateKey);
             RestoreWorkbookState();
+            SelectCurrentEtabsUnitIfRequested();
             _isWorkbookStateLoaded = true;
             LoadCases = new ObservableCollection<BaseReactionOutputCaseViewModel>();
             LoadCombinations = new ObservableCollection<BaseReactionOutputCaseViewModel>();
@@ -66,16 +106,116 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CancelCommand = new RelayCommand(() => RequestClose?.Invoke(this, EventArgs.Empty));
 
             RefreshAnchorDisplay();
-            LoadOutputCases();
+            if (_profile.ShowCaseComboSelector)
+            {
+                LoadOutputCases();
+            }
         }
 
         public event EventHandler RequestClose;
+
+        public string WindowTitle
+        {
+            get { return "Export " + _displayTableName; }
+        }
+
+        public string Breadcrumb
+        {
+            get { return _config.Breadcrumb; }
+        }
+
+        public string Description
+        {
+            get { return _config.Description; }
+        }
+
+        public Visibility DescriptionVisibility
+        {
+            get { return string.IsNullOrWhiteSpace(Description) ? Visibility.Collapsed : Visibility.Visible; }
+        }
+
+        public Visibility CaseComboSelectorVisibility
+        {
+            get { return _profile.ShowCaseComboSelector ? Visibility.Visible : Visibility.Collapsed; }
+        }
+
+        public GridLength CaseComboSelectorRowHeight
+        {
+            get { return _profile.ShowCaseComboSelector ? new GridLength(1, GridUnitType.Star) : GridLength.Auto; }
+        }
+
+        public Visibility UnitSelectorVisibility
+        {
+            get { return _profile.ShowUnitSelector ? Visibility.Visible : Visibility.Collapsed; }
+        }
+
+        public bool AllowMultipleCases
+        {
+            get { return _profile.AllowMultipleCases; }
+        }
+
+        public string CaseSelectorTitle
+        {
+            get { return string.IsNullOrWhiteSpace(_profile.CaseSelectorTitle) ? "Load Case" : _profile.CaseSelectorTitle; }
+        }
+
+        public Visibility LoadCombinationSelectorVisibility
+        {
+            get { return _profile.ShowComboSelector ? Visibility.Visible : Visibility.Collapsed; }
+        }
+
+        public GridLength LoadCombinationColumnWidth
+        {
+            get { return _profile.ShowComboSelector ? new GridLength(1, GridUnitType.Star) : new GridLength(0); }
+        }
+
+        public GridLength LoadCombinationSpacerWidth
+        {
+            get { return _profile.ShowComboSelector ? new GridLength(10) : new GridLength(0); }
+        }
+
+        public string OutputCaseSelectorHelpText
+        {
+            get
+            {
+                if (!_profile.ShowComboSelector)
+                {
+                    return _profile.AllowMultipleCases
+                        ? "Choose one or more " + CaseSelectorTitle.ToLowerInvariant() + " rows."
+                        : "Choose one " + CaseSelectorTitle.ToLowerInvariant() + ".";
+                }
+
+                return _profile.AllowMultipleCases
+                    ? "Choose one or more rows from either list."
+                    : "Choose one " + CaseSelectorTitle.ToLowerInvariant() + ".";
+            }
+        }
+
+        public string InstructionText
+        {
+            get
+            {
+                if (!_profile.ShowCaseComboSelector)
+                {
+                    return "Select the Excel anchor cell where " + _displayTableName + " output should start.";
+                }
+
+                return "Select ETABS " + CaseSelectorTitle.ToLowerInvariant() + " to extract " + _displayTableName + ", then select the Excel anchor cell where output should start.";
+            }
+        }
 
         public ObservableCollection<BaseReactionOutputCaseViewModel> LoadCases { get; private set; }
 
         public ObservableCollection<BaseReactionOutputCaseViewModel> LoadCombinations { get; private set; }
 
         public ObservableCollection<BaseReactionUnitOption> UnitOptions { get; private set; }
+
+        public IReadOnlyList<CSISapModelOutputCaseDTO> SelectedCasesOrCombos { get; private set; }
+
+        public BaseReactionUnitOption SelectedUnit
+        {
+            get { return SelectedUnitOption; }
+        }
 
         public ICommand LoadOutputCasesCommand { get; private set; }
         public ICommand UseActiveCellCommand { get; private set; }
@@ -91,6 +231,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _selectedUnitOption = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedUnit));
                 OnPropertyChanged(nameof(ForceUnitText));
                 OnPropertyChanged(nameof(MomentUnitText));
                 SaveWorkbookState();
@@ -267,11 +408,47 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             SaveWorkbookState();
         }
 
-        public void RestoreSavedSelections(System.Collections.IList selectedLoadCases, System.Collections.IList selectedLoadCombinations)
+        public void RestoreSavedSelections(
+            Action<IEnumerable<BaseReactionOutputCaseViewModel>> selectLoadCases,
+            Action<IEnumerable<BaseReactionOutputCaseViewModel>> selectLoadCombinations)
         {
-            RestoreSelectedItems(selectedLoadCases, LoadCases, _workbookState.LoadCaseNames);
-            RestoreSelectedItems(selectedLoadCombinations, LoadCombinations, _workbookState.LoadCombinationNames);
-            UpdateSelectedOutputCases(selectedLoadCases, selectedLoadCombinations);
+            IReadOnlyList<string> loadCaseNames = _workbookState.LoadCaseNames;
+            IReadOnlyList<string> loadCombinationNames = _workbookState.LoadCombinationNames;
+            if ((loadCaseNames == null || loadCaseNames.Count == 0) &&
+                (loadCombinationNames == null || loadCombinationNames.Count == 0) &&
+                !string.IsNullOrWhiteSpace(_config.DefaultSelectedCaseOrCombo))
+            {
+                loadCaseNames = new[] { _config.DefaultSelectedCaseOrCombo };
+                loadCombinationNames = new[] { _config.DefaultSelectedCaseOrCombo };
+            }
+
+            var casesToSelect = FilterItems(LoadCases, loadCaseNames);
+            var combinationsToSelect = FilterItems(LoadCombinations, loadCombinationNames);
+
+            selectLoadCases(casesToSelect);
+            selectLoadCombinations(combinationsToSelect);
+        }
+
+        private static List<BaseReactionOutputCaseViewModel> FilterItems(
+            IEnumerable<BaseReactionOutputCaseViewModel> availableItems,
+            IReadOnlyList<string> selectedNames)
+        {
+            var result = new List<BaseReactionOutputCaseViewModel>();
+            if (availableItems == null || selectedNames == null)
+            {
+                return result;
+            }
+
+            var nameSet = new HashSet<string>(selectedNames, StringComparer.OrdinalIgnoreCase);
+            foreach (BaseReactionOutputCaseViewModel item in availableItems)
+            {
+                if (item != null && nameSet.Contains(item.Name))
+                {
+                    result.Add(item);
+                }
+            }
+
+            return result;
         }
 
         public void RefreshAnchorDisplay()
@@ -293,7 +470,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 IsBusy = true;
                 StatusText = "Loading ETABS load cases and combinations...";
-                var result = _csiConnectionService.GetAnalysisOutputCases();
+                OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> result = LoadOutputCaseSource();
                 if (!result.IsSuccess)
                 {
                     ShowWarning(result.Message);
@@ -310,11 +487,31 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         var item = new BaseReactionOutputCaseViewModel(outputCase);
                         if (outputCase.IsLoadCombination)
                         {
-                            LoadCombinations.Add(item);
+                            if (_profile.CaseSelectionMode != OutputCaseSelectionMode.CaseOnly &&
+                                _profile.CaseSelectionMode != OutputCaseSelectionMode.ModalCaseOnly &&
+                                _profile.CaseSelectionMode != OutputCaseSelectionMode.SeismicWindOrResponseSpectrumCasesOnly &&
+                                _profile.CaseSelectionMode != OutputCaseSelectionMode.None)
+                            {
+                                LoadCombinations.Add(item);
+                            }
                         }
                         else
                         {
-                            LoadCases.Add(item);
+                            if (_profile.CaseSelectionMode != OutputCaseSelectionMode.ComboOnly &&
+                                _profile.CaseSelectionMode != OutputCaseSelectionMode.None)
+                            {
+                                if (_profile.CaseSelectionMode == OutputCaseSelectionMode.SeismicWindOrResponseSpectrumCasesOnly)
+                                {
+                                    if (outputCase.IsSeismicWindOrResponseSpectrum)
+                                    {
+                                        LoadCases.Add(item);
+                                    }
+                                }
+                                else
+                                {
+                                    LoadCases.Add(item);
+                                }
+                            }
                         }
                     }
                 }
@@ -324,8 +521,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 OnPropertyChanged(nameof(LoadCaseSelectionText));
                 OnPropertyChanged(nameof(LoadCombinationSelectionText));
                 StatusText = totalCount == 0
-                    ? "No ETABS load cases or load combinations were found."
-                    : $"Loaded {LoadCases.Count} load case(s) and {LoadCombinations.Count} load combination(s).";
+                    ? "No ETABS " + CaseSelectorTitle.ToLowerInvariant() + " records were found."
+                    : _profile.ShowComboSelector
+                        ? $"Loaded {LoadCases.Count} load case(s) and {LoadCombinations.Count} load combination(s)."
+                        : $"Loaded {LoadCases.Count} {CaseSelectorTitle.ToLowerInvariant()}(s).";
             }
             catch (Exception ex)
             {
@@ -341,6 +540,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private void UseActiveCell()
         {
             IsUseActiveCellMode = true;
+        }
+
+        private OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> LoadOutputCaseSource()
+        {
+            if (_profile.CaseSelectionMode == OutputCaseSelectionMode.ModalCaseOnly)
+            {
+                return _csiConnectionService.GetModalOutputCases();
+            }
+
+            if (_profile.CaseSelectionMode == OutputCaseSelectionMode.ResponseSpectrumCaseOnly)
+            {
+                return _csiConnectionService.GetResponseSpectrumOutputCases();
+            }
+
+            return _csiConnectionService.GetAnalysisOutputCases();
         }
 
         private void RefreshActiveCellDisplay()
@@ -370,9 +584,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 object result = excelApp.InputBox(
                     AddHeaders
-                        ? "Select the top-left anchor cell where Base Reactions headers should start. Data will start one row below."
-                        : "Select the top-left anchor cell where the first Base Reactions data row should start. Headers are excluded.",
-                    "Get Base Reactions",
+                        ? "Select the top-left anchor cell where " + _displayTableName + " headers should start. Data will start one row below."
+                        : "Select the top-left anchor cell where the first " + _displayTableName + " data row should start. Headers are excluded.",
+                    WindowTitle,
                     Type: 8);
 
                 if (result is bool && (bool)result == false)
@@ -414,63 +628,128 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            var selectedCases = GetSelectedOutputCases(selectedLoadCases, selectedLoadCombinations);
-            if (selectedCases.Count == 0)
+            var selectedCases = _profile.ShowCaseComboSelector
+                ? GetSelectedOutputCases(selectedLoadCases, selectedLoadCombinations)
+                : new List<CSISapModelOutputCaseDTO>();
+            if (_profile.ShowCaseComboSelector && selectedCases.Count == 0)
             {
-                ShowWarning("Select at least one ETABS load case or load combination.");
+                ShowWarning("Select at least one " + CaseSelectorTitle.ToLowerInvariant() + ".");
                 return;
             }
 
-            if (!ApplySelectedUnits())
+            if (_profile.ShowCaseComboSelector && !_profile.AllowMultipleCases && selectedCases.Count > 1)
             {
+                ShowWarning("Select only one " + CaseSelectorTitle.ToLowerInvariant() + ".");
                 return;
+            }
+
+            SelectedCasesOrCombos = selectedCases;
+            OnPropertyChanged(nameof(SelectedCasesOrCombos));
+
+            int originalUnitsCode = 0;
+            bool shouldRestoreUnits = false;
+            if (_profile.ShowUnitSelector)
+            {
+                OperationResult<int> originalUnitsResult = _csiConnectionService.GetPresentUnits();
+                if (originalUnitsResult.IsSuccess)
+                {
+                    originalUnitsCode = originalUnitsResult.Data;
+                    shouldRestoreUnits = true;
+                }
+
+                if (!ApplySelectedUnits())
+                {
+                    return;
+                }
             }
 
             try
             {
                 IsBusy = true;
-                StatusText = "Extracting ETABS Base Reactions...";
-                var result = _getBaseReactionsUseCase.Execute(selectedCases);
-                if (!result.IsSuccess)
+                StatusText = "Extracting ETABS " + _displayTableName + "...";
+                if (IsBaseReactionsTable())
                 {
-                    StatusText = result.Message;
-                    ShowWarning(result.Message);
-                    return;
+                    RunBaseReactionsExport(selectedCases);
                 }
-
-                if (result.Data == null || result.Data.Count == 0)
+                else
                 {
-                    StatusText = "ETABS returned no Base Reactions records.";
-                    MessageBox.Show(
-                        "ETABS returned no Base Reactions records for the selected cases/combinations. Nothing was written to Excel.",
-                        "Get Base Reactions",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    return;
+                    RunDisplayTableExport(selectedCases);
                 }
-
-                object[,] values = CreateOutputValues(result.Data, AddHeaders, SelectedUnitOption);
-                OperationResult writeResult = _excelOutputService.WriteValuesToActiveCell(
-                    values,
-                    $"Successfully wrote {result.Data.Count} Base Reactions record(s) to Excel.",
-                    AddHeaders);
-
-                StatusText = writeResult.Message;
-                MessageBox.Show(
-                    writeResult.Message,
-                    "Get Base Reactions",
-                    MessageBoxButton.OK,
-                    writeResult.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
-                StatusText = "Failed to extract Base Reactions.";
-                ShowError($"Failed to extract Base Reactions: {ex.Message}");
+                StatusText = "Failed to extract " + _displayTableName + ".";
+                ShowError("Failed to extract " + _displayTableName + ": " + ex.Message);
             }
             finally
             {
+                if (shouldRestoreUnits)
+                {
+                    _csiConnectionService.SetPresentUnits(originalUnitsCode);
+                }
+
                 IsBusy = false;
             }
+        }
+
+        private void RunBaseReactionsExport(IReadOnlyList<CSISapModelOutputCaseDTO> selectedCases)
+        {
+            OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> result = _getBaseReactionsUseCase.Execute(selectedCases);
+            if (!result.IsSuccess)
+            {
+                StatusText = result.Message;
+                ShowWarning(result.Message);
+                return;
+            }
+
+            if (result.Data == null || result.Data.Count == 0)
+            {
+                StatusText = "ETABS returned no " + _displayTableName + " records.";
+                MessageBox.Show(
+                    _profile.EmptyDataMessage + " Nothing was written to Excel.",
+                    WindowTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            object[,] values = CreateOutputValues(result.Data, AddHeaders, SelectedUnitOption);
+            OperationResult writeResult = _excelOutputService.WriteValuesToActiveCell(
+                values,
+                "Successfully wrote " + result.Data.Count + " " + _displayTableName + " record(s) to Excel.",
+                AddHeaders);
+
+            StatusText = writeResult.Message;
+            MessageBox.Show(
+                writeResult.Message,
+                WindowTitle,
+                MessageBoxButton.OK,
+                writeResult.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private void RunDisplayTableExport(IReadOnlyList<CSISapModelOutputCaseDTO> selectedCases)
+        {
+            OperationResult<CSISapModelDisplayTableDTO> result = _csiConnectionService.GetDisplayTable(_displayTableName, selectedCases);
+            if (!result.IsSuccess)
+            {
+                StatusText = result.Message;
+                ShowWarning(result.Message);
+                return;
+            }
+
+            object[,] values = CreateDisplayTableOutputValues(result.Data, AddHeaders);
+            int recordCount = result.Data == null || result.Data.Rows == null ? 0 : result.Data.Rows.Count;
+            OperationResult writeResult = _excelOutputService.WriteValuesToActiveCell(
+                values,
+                "Successfully wrote " + recordCount + " " + _displayTableName + " record(s) to Excel.",
+                AddHeaders);
+
+            StatusText = writeResult.Message;
+            MessageBox.Show(
+                writeResult.Message,
+                WindowTitle,
+                MessageBoxButton.OK,
+                writeResult.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
         private bool PrepareAnchorCellForWrite()
@@ -574,11 +853,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             bool addHeaders,
             BaseReactionUnitOption unitOption)
         {
-            int headerOffset = addHeaders ? 1 : 0;
+            int headerOffset = addHeaders ? 2 : 0;
             var values = new object[rows.Count + headerOffset, 13];
 
             if (addHeaders)
             {
+                values[0, 0] = "Base Reactions";
+
                 string forceUnit = unitOption == null ? string.Empty : unitOption.ForceUnit;
                 string momentUnit = unitOption == null ? string.Empty : unitOption.MomentUnit;
                 string[] headers = new[]
@@ -600,7 +881,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 for (int col = 0; col < headers.Length; col++)
                 {
-                    values[0, col] = headers[col];
+                    values[1, col] = headers[col];
                 }
             }
 
@@ -626,16 +907,171 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             return values;
         }
 
+        private object[,] CreateDisplayTableOutputValues(CSISapModelDisplayTableDTO table, bool addHeaders)
+        {
+            IReadOnlyList<string> fields = table == null || table.FieldKeys == null
+                ? new List<string>()
+                : table.FieldKeys;
+            IReadOnlyList<object[]> rows = table == null || table.Rows == null
+                ? new List<object[]>()
+                : table.Rows;
+
+            int columnCount = fields.Count > 0 ? fields.Count : 1;
+            int rowOffset = addHeaders ? 2 : 0;
+            int rowCount = rows.Count > 0 ? rows.Count + rowOffset : rowOffset + 1;
+            object[,] values = new object[rowCount, columnCount];
+
+            if (addHeaders)
+            {
+                values[0, 0] = _displayTableName;
+
+                if (fields.Count > 0)
+                {
+                    for (int columnIndex = 0; columnIndex < fields.Count; columnIndex++)
+                    {
+                        string headerName = fields[columnIndex];
+                        if (SelectedUnitOption != null)
+                        {
+                            headerName = ApplyUnitToHeader(headerName, _displayTableName, SelectedUnitOption);
+                        }
+                        values[1, columnIndex] = headerName;
+                    }
+                }
+            }
+
+            if (rows.Count == 0)
+            {
+                values[rowOffset, 0] = "No records found";
+                return values;
+            }
+
+            for (int rowIndex = 0; rowIndex < rows.Count; rowIndex++)
+            {
+                object[] row = rows[rowIndex];
+                for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+                {
+                    values[rowIndex + rowOffset, columnIndex] = row != null && columnIndex < row.Length
+                        ? row[columnIndex]
+                        : null;
+                }
+            }
+
+            return values;
+        }
+
+        private bool IsBaseReactionsTable()
+        {
+            return string.Equals(_displayTableName, "Base Reactions", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static string FormatUnitHeader(string name, string unit)
         {
             return string.IsNullOrWhiteSpace(unit) ? name : $"{name} ({unit})";
+        }
+
+        private static string ApplyUnitToHeader(string headerName, string displayTableName, BaseReactionUnitOption unitOption)
+        {
+            if (string.IsNullOrWhiteSpace(headerName) || unitOption == null)
+            {
+                return headerName;
+            }
+
+            string clean = headerName.Trim();
+            if (clean.Contains("(") && clean.Contains(")"))
+            {
+                return clean;
+            }
+
+            string upper = clean.ToUpperInvariant();
+
+            // Displacements & Lengths
+            if (upper == "U1" || upper == "U2" || upper == "U3" || 
+                upper == "UX" || upper == "UY" || upper == "UZ" || 
+                upper == "DISPLACEMENT X" || upper == "DISPLACEMENTY" || 
+                upper == "DISPLACEMENTX" || upper == "DISPLACEMENT Y")
+            {
+                if (displayTableName.IndexOf("Velocit", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return FormatUnitHeader(clean, $"{unitOption.LengthUnit}/s");
+                }
+                if (displayTableName.IndexOf("Acceleration", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return FormatUnitHeader(clean, $"{unitOption.LengthUnit}/s²");
+                }
+                return FormatUnitHeader(clean, unitOption.LengthUnit);
+            }
+
+            // Rotations
+            if (upper == "R1" || upper == "R2" || upper == "R3" ||
+                upper == "RX" || upper == "RY" || upper == "RZ")
+            {
+                if (displayTableName.IndexOf("Velocit", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return FormatUnitHeader(clean, "rad/s");
+                }
+                if (displayTableName.IndexOf("Acceleration", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    return FormatUnitHeader(clean, "rad/s²");
+                }
+                return FormatUnitHeader(clean, "rad");
+            }
+
+            // Forces
+            if (upper == "FX" || upper == "FY" || upper == "FZ" || 
+                upper == "F1" || upper == "F2" || upper == "F3" ||
+                upper == "P" || upper == "V2" || upper == "V3" || 
+                upper == "VX" || upper == "VY")
+            {
+                return FormatUnitHeader(clean, unitOption.ForceUnit);
+            }
+
+            // Shell Forces (Force per unit length)
+            if (upper == "F11" || upper == "F22" || upper == "F12" || 
+                upper == "V13" || upper == "V23" || 
+                upper == "FMAX" || upper == "FMIN" || upper == "VMAX")
+            {
+                return FormatUnitHeader(clean, $"{unitOption.ForceUnit}/{unitOption.LengthUnit}");
+            }
+
+            // Moments / Torques
+            if (upper == "MX" || upper == "MY" || upper == "MZ" || 
+                upper == "M1" || upper == "M2" || upper == "M3" ||
+                upper == "T" || upper == "TX" || upper == "TY" || upper == "TZ")
+            {
+                return FormatUnitHeader(clean, unitOption.MomentUnit);
+            }
+
+            // Shell Moments (Moment per unit length)
+            if (upper == "M11" || upper == "M22" || upper == "M12" || 
+                upper == "MMAX" || upper == "MMIN")
+            {
+                return FormatUnitHeader(clean, $"{unitOption.MomentUnit}/{unitOption.LengthUnit}");
+            }
+
+            // Stresses (Force per unit area)
+            if (upper == "S11" || upper == "S22" || upper == "S12" || 
+                upper == "SMAX" || upper == "SMIN" || upper == "SVM" ||
+                upper == "S13" || upper == "S23" ||
+                upper == "SMAXOUTER" || upper == "SMINOUTER" || upper == "SVMOUTER")
+            {
+                return FormatUnitHeader(clean, $"{unitOption.ForceUnit}/{unitOption.LengthUnit}²");
+            }
+
+            // Stiffness
+            if (upper == "STIFFNESS X" || upper == "STIFFNESS Y" || 
+                upper == "STIFFNESSX" || upper == "STIFFNESSY")
+            {
+                return FormatUnitHeader(clean, $"{unitOption.ForceUnit}/{unitOption.LengthUnit}");
+            }
+
+            return clean;
         }
 
         private bool EnsureEtabs()
         {
             if (!string.Equals(_csiConnectionService.ProductName, "ETABS", StringComparison.OrdinalIgnoreCase))
             {
-                ShowWarning("Get Base Reactions is available from the ETABS Toolbox only.");
+                ShowWarning(WindowTitle + " is available from the ETABS Toolbox only.");
                 return false;
             }
 
@@ -728,6 +1164,48 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        private void SelectCurrentEtabsUnitIfRequested()
+        {
+            if (!_profile.DefaultToCurrentEtabsUnit || !_profile.ShowUnitSelector)
+            {
+                return;
+            }
+
+            OperationResult<int> result = _csiConnectionService.GetPresentUnits();
+            if (!result.IsSuccess)
+            {
+                return;
+            }
+
+            foreach (BaseReactionUnitOption unitOption in UnitOptions)
+            {
+                if (unitOption.EtabsUnitsCode == result.Data)
+                {
+                    SelectedUnitOption = unitOption;
+                    return;
+                }
+            }
+        }
+
+        private static string CreateStateKey(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "ETABSTable";
+            }
+
+            var chars = new List<char>();
+            foreach (char ch in value)
+            {
+                if (char.IsLetterOrDigit(ch))
+                {
+                    chars.Add(ch);
+                }
+            }
+
+            return chars.Count == 0 ? "ETABSTable" : new string(chars.ToArray());
+        }
+
         private void SaveWorkbookState()
         {
             if (!_isWorkbookStateLoaded)
@@ -735,7 +1213,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            PostprocessingWorkbookStateStore.Save(WorkbookStateKey, new PostprocessingWorkbookState
+            PostprocessingWorkbookStateStore.Save(_workbookStateKey, new PostprocessingWorkbookState
             {
                 UnitLabel = SelectedUnitOption == null ? string.Empty : SelectedUnitOption.Label,
                 AddHeaders = AddHeaders,
@@ -772,26 +1250,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             return names;
         }
 
-        private static void RestoreSelectedItems(
-            System.Collections.IList selectedItems,
-            IEnumerable<BaseReactionOutputCaseViewModel> availableItems,
-            IReadOnlyList<string> selectedNames)
-        {
-            if (selectedItems == null || availableItems == null || selectedNames == null)
-            {
-                return;
-            }
 
-            selectedItems.Clear();
-            var nameSet = new HashSet<string>(selectedNames, StringComparer.OrdinalIgnoreCase);
-            foreach (BaseReactionOutputCaseViewModel item in availableItems)
-            {
-                if (item != null && nameSet.Contains(item.Name))
-                {
-                    selectedItems.Add(item);
-                }
-            }
-        }
 
         private void RaiseCommandStates()
         {
@@ -810,20 +1269,20 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
-        private static void ShowWarning(string message)
+        private void ShowWarning(string message)
         {
             MessageBox.Show(
                 string.IsNullOrWhiteSpace(message) ? "The operation could not be completed." : message,
-                "Get Base Reactions",
+                WindowTitle,
                 MessageBoxButton.OK,
                 MessageBoxImage.Warning);
         }
 
-        private static void ShowError(string message)
+        private void ShowError(string message)
         {
             MessageBox.Show(
                 string.IsNullOrWhiteSpace(message) ? "An unexpected error occurred." : message,
-                "Get Base Reactions",
+                WindowTitle,
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
         }

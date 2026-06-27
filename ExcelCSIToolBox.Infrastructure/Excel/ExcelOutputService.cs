@@ -142,7 +142,51 @@ namespace ExcelCSIToolBox.Infrastructure.Excel
 
             if (formatHeaderRow)
             {
-                FormatHeaderRow(startCell, columnCount);
+                bool hasTwoRowHeader = false;
+                if (rowCount >= 2 && columnCount > 1)
+                {
+                    bool restOfFirstRowIsEmpty = true;
+                    for (int col = 1; col < columnCount; col++)
+                    {
+                        var cellVal = values[0, col];
+                        if (cellVal != null && !string.IsNullOrWhiteSpace(cellVal.ToString()))
+                        {
+                            restOfFirstRowIsEmpty = false;
+                            break;
+                        }
+                    }
+                    if (restOfFirstRowIsEmpty)
+                    {
+                        hasTwoRowHeader = true;
+                    }
+                }
+
+                if (hasTwoRowHeader)
+                {
+                    // Table Name Row (Row 0): Bold only, no borders, no wrap text
+                    Range titleRange = startCell.Resize[1, columnCount];
+                    titleRange.Font.Bold = true;
+                    titleRange.WrapText = false;
+                    
+                    // Clear default border styling that might have carried over or be applied to the title range
+                    Borders titleBorders = titleRange.Borders;
+                    titleBorders.LineStyle = XlLineStyle.xlLineStyleNone;
+
+                    // Column Headers Row (Row 1): Bold, wrap text, borders
+                    Range colHeaderCell = startCell.Offset[1, 0];
+                    Range colHeaderRange = colHeaderCell.Resize[1, columnCount];
+                    colHeaderRange.WrapText = true;
+                    colHeaderRange.Font.Bold = true;
+                    colHeaderRange.VerticalAlignment = XlVAlign.xlVAlignCenter;
+
+                    Borders borders = colHeaderRange.Borders;
+                    borders.LineStyle = XlLineStyle.xlContinuous;
+                    borders.Weight = XlBorderWeight.xlThin;
+                }
+                else
+                {
+                    FormatHeaderRow(startCell, columnCount);
+                }
             }
 
             return OperationResult.Success(successMessage ?? $"Successfully exported {rowCount - 1} row(s) to Excel.");

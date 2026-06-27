@@ -1248,6 +1248,16 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure("Get Base Reactions is currently available for ETABS only.");
         }
 
+        public OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetModalOutputCases()
+        {
+            return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure("Modal Information export is currently available for ETABS only.");
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetResponseSpectrumOutputCases()
+        {
+            return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure("Response Spectrum Modal Info export is currently available for ETABS only.");
+        }
+
         public OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> GetBaseReactions(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
         {
             return OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>>.Failure("Get Base Reactions is currently available for ETABS only.");
@@ -1286,6 +1296,16 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
         public OperationResult<CSISapModelDisplayTableDTO> GetMassSummaryByStory()
         {
             return OperationResult<CSISapModelDisplayTableDTO>.Failure("Mass Summary by Story is currently available for ETABS only.");
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetDisplayTable(string displayTableName)
+        {
+            return OperationResult<CSISapModelDisplayTableDTO>.Failure("ETABS database table export is currently available for ETABS only.");
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetDisplayTable(string displayTableName, IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return OperationResult<CSISapModelDisplayTableDTO>.Failure("ETABS database table export is currently available for ETABS only.");
         }
 
         public OperationResult<IReadOnlyList<string>> GetLoadPatternNames()
@@ -1773,6 +1793,13 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
             int ret = sapModelResult.Data.SetPresentUnits((SAP2000v1.eUnits)unitsCode);
             return ret == 0 ? OperationResult.Success() : OperationResult.Failure($"Failed to set units (return code {ret}).");
+        }
+
+        public OperationResult<int> GetPresentUnits()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult<int>.Failure(sapModelResult.Message);
+            return OperationResult<int>.Success((int)sapModelResult.Data.GetPresentUnits());
         }
 
         private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel)

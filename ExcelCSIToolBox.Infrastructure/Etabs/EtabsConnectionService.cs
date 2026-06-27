@@ -1298,11 +1298,46 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                             continue;
                         }
 
+                        string typeText = FormatLoadCaseType(caseType);
+                        bool isSeismicWindOrRS = false;
+                        if (caseType == ETABSv1.eLoadCaseType.ResponseSpectrum)
+                        {
+                            isSeismicWindOrRS = true;
+                        }
+                        else
+                        {
+                            var caseTypeVal = caseType;
+                            int subType = 0;
+                            var designType = ETABSv1.eLoadPatternType.Dead;
+                            int designTypeOption = 0;
+                            int auto = 0;
+                            int typeRet = sapModel.LoadCases.GetTypeOAPI_1(
+                                name,
+                                ref caseTypeVal,
+                                ref subType,
+                                ref designType,
+                                ref designTypeOption,
+                                ref auto);
+                            if (typeRet == 0)
+                            {
+                                isSeismicWindOrRS =
+                                    designType == ETABSv1.eLoadPatternType.Quake ||
+                                    designType == ETABSv1.eLoadPatternType.Wind ||
+                                    designType == ETABSv1.eLoadPatternType.QuakeDrift ||
+                                    designType == ETABSv1.eLoadPatternType.QuakeVerticalOnly;
+                                if (isSeismicWindOrRS)
+                                {
+                                    typeText += $" ({designType})";
+                                }
+                            }
+                        }
+
                         outputCases.Add(new CSISapModelOutputCaseDTO
                         {
                             Name = name,
-                            Type = FormatLoadCaseType(caseType),
-                            IsLoadCombination = false
+                            Type = typeText,
+                            IsLoadCombination = false,
+                            IsSeismicWindOrResponseSpectrum = isSeismicWindOrRS
                         });
                     }
                 }
@@ -1336,6 +1371,100 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             catch (Exception ex)
             {
                 return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure($"Failed to load ETABS cases and combinations: {ex.Message}");
+            }
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetModalOutputCases()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure(sapModelResult.Message);
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                var outputCases = new List<CSISapModelOutputCaseDTO>();
+                var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                AddModalCasesFromSpecificApi(
+                    outputCases,
+                    seenNames,
+                    "Modal Eigen",
+                    delegate(ref int numberNames, ref string[] names)
+                    {
+                        dynamic modalEigen = sapModel.LoadCases.ModalEigen;
+                        return modalEigen.GetNameList(ref numberNames, ref names);
+                    });
+
+                AddModalCasesFromSpecificApi(
+                    outputCases,
+                    seenNames,
+                    "Modal Ritz",
+                    delegate(ref int numberNames, ref string[] names)
+                    {
+                        dynamic modalRitz = sapModel.LoadCases.ModalRitz;
+                        return modalRitz.GetNameList(ref numberNames, ref names);
+                    });
+
+                if (outputCases.Count == 0)
+                {
+                    foreach (ETABSv1.eLoadCaseType caseType in Enum.GetValues(typeof(ETABSv1.eLoadCaseType)))
+                    {
+                        string typeText = FormatLoadCaseType(caseType);
+                        if (typeText.IndexOf("Modal", StringComparison.OrdinalIgnoreCase) < 0 &&
+                            typeText.IndexOf("Eigen", StringComparison.OrdinalIgnoreCase) < 0 &&
+                            typeText.IndexOf("Ritz", StringComparison.OrdinalIgnoreCase) < 0)
+                        {
+                            continue;
+                        }
+
+                        int numberNames = 0;
+                        string[] names = null;
+                        int ret = sapModel.LoadCases.GetNameList(ref numberNames, ref names, caseType);
+                        if (ret == 0)
+                        {
+                            AddModalCaseNames(outputCases, seenNames, names, numberNames, typeText);
+                        }
+                    }
+                }
+
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Success(outputCases);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure($"Failed to load ETABS modal cases: {ex.Message}");
+            }
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetResponseSpectrumOutputCases()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure(sapModelResult.Message);
+            }
+
+            try
+            {
+                var sapModel = sapModelResult.Data;
+                var outputCases = new List<CSISapModelOutputCaseDTO>();
+                var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                int numberNames = 0;
+                string[] names = null;
+                int ret = sapModel.LoadCases.GetNameList(ref numberNames, ref names, ETABSv1.eLoadCaseType.ResponseSpectrum);
+                if (ret != 0)
+                {
+                    return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure($"Failed to load ETABS response spectrum cases (return code {ret}).");
+                }
+
+                AddModalCaseNames(outputCases, seenNames, names, numberNames, "Response Spectrum");
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Success(outputCases);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>>.Failure($"Failed to load ETABS response spectrum cases: {ex.Message}");
             }
         }
 
@@ -1671,6 +1800,487 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             {
                 return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to extract ETABS Mass Summary by Story: {ex.Message}");
             }
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetDisplayTable(string displayTableName)
+        {
+            return GetDisplayTable(displayTableName, null);
+        }
+
+        public OperationResult<CSISapModelDisplayTableDTO> GetDisplayTable(string displayTableName, IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            if (string.IsNullOrWhiteSpace(displayTableName))
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure("ETABS database table name is required.");
+            }
+
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(sapModelResult.Message);
+            }
+
+            try
+            {
+                ETABSv1.cSapModel sapModel = sapModelResult.Data;
+                string normalized = NormalizeTableName(displayTableName);
+                if (normalized == NormalizeTableName("Joint Displacements"))
+                {
+                    return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
+                        sapModel.Results.JointDispl, "U1", "U2", "U3", "R1", "R2", "R3");
+                }
+                if (normalized == NormalizeTableName("Joint Displacements - Absolute"))
+                {
+                    return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
+                        sapModel.Results.JointDisplAbs, "U1", "U2", "U3", "R1", "R2", "R3");
+                }
+                if (normalized == NormalizeTableName("Joint Drifts"))
+                {
+                    return GetJointDriftsFromOapi(sapModel, selectedOutputCases);
+                }
+                if (normalized == NormalizeTableName("Joint Reactions"))
+                {
+                    return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
+                        sapModel.Results.JointReact, "FX", "FY", "FZ", "MX", "MY", "MZ");
+                }
+                if (normalized == NormalizeTableName("Joint Velocities - Relative"))
+                {
+                    return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
+                        sapModel.Results.JointVel, "U1", "U2", "U3", "R1", "R2", "R3");
+                }
+                if (normalized == NormalizeTableName("Joint Velocities - Absolute"))
+                {
+                    return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
+                        sapModel.Results.JointVelAbs, "U1", "U2", "U3", "R1", "R2", "R3");
+                }
+                if (normalized == NormalizeTableName("Joint Accelerations - Relative"))
+                {
+                    return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
+                        sapModel.Results.JointAcc, "U1", "U2", "U3", "R1", "R2", "R3");
+                }
+                if (normalized == NormalizeTableName("Joint Accelerations - Absolute"))
+                {
+                    return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
+                        sapModel.Results.JointAccAbs, "U1", "U2", "U3", "R1", "R2", "R3");
+                }
+
+                if (selectedOutputCases != null && selectedOutputCases.Count > 0)
+                {
+                    OperationResult selectResult = IsCaseOnlyDisplayTable(displayTableName)
+                        ? SelectLoadCasesOnlyForTables(sapModel, selectedOutputCases)
+                        : SelectOutputCasesForTables(sapModel, selectedOutputCases);
+                    if (!selectResult.IsSuccess)
+                    {
+                        return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectResult.Message);
+                    }
+                }
+
+                OperationResult<string> tableKeyResult = FindAvailableDisplayTableKey(sapModel, displayTableName);
+                if (!tableKeyResult.IsSuccess)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure(tableKeyResult.Message);
+                }
+
+                string[] fieldKeyList = null;
+                int tableVersion = 0;
+                string[] fieldsKeysIncluded = null;
+                int numberRecords = 0;
+                string[] tableData = null;
+
+                int ret = sapModel.DatabaseTables.GetTableForDisplayArray(
+                    tableKeyResult.Data,
+                    ref fieldKeyList,
+                    string.Empty,
+                    ref tableVersion,
+                    ref fieldsKeysIncluded,
+                    ref numberRecords,
+                    ref tableData);
+
+                if (ret != 0)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to read ETABS {displayTableName} table (return code {ret}).");
+                }
+
+                string[] returnedFields = fieldsKeysIncluded != null && fieldsKeysIncluded.Length > 0
+                    ? fieldsKeysIncluded
+                    : fieldKeyList;
+
+                CSISapModelDisplayTableDTO table = ParseDisplayTable(returnedFields, numberRecords, tableData);
+                if (selectedOutputCases != null && selectedOutputCases.Count > 0)
+                {
+                    table = FilterDisplayTableRows(table, selectedOutputCases, displayTableName);
+                }
+
+                if (IsJointOutputTable(displayTableName))
+                {
+                    var selectedJoints = GetSelectedPointsFromActiveModel();
+                    if (!selectedJoints.IsSuccess)
+                    {
+                        return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectedJoints.Message);
+                    }
+                    if (selectedJoints.Data == null || selectedJoints.Data.Count == 0)
+                    {
+                        return OperationResult<CSISapModelDisplayTableDTO>.Failure("Select one or more joints in the ETABS model before exporting.");
+                    }
+
+                    var selectedJointNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var point in selectedJoints.Data)
+                    {
+                        if (!string.IsNullOrWhiteSpace(point.PointUniqueName))
+                        {
+                            selectedJointNames.Add(point.PointUniqueName.Trim());
+                        }
+                        if (!string.IsNullOrWhiteSpace(point.PointLabel))
+                        {
+                            selectedJointNames.Add(point.PointLabel.Trim());
+                        }
+                    }
+
+                    int jointColIndex = FindFieldIndex(
+                        table.FieldKeys,
+                        "Unique Name",
+                        "UniqueName",
+                        "Joint",
+                        "Joint Name",
+                        "JointName",
+                        "Point",
+                        "Point Name",
+                        "PointName",
+                        "Label",
+                        "Label Name",
+                        "LabelName");
+
+                    if (jointColIndex >= 0)
+                    {
+                        var filteredRows = new List<object[]>();
+                        foreach (object[] row in table.Rows)
+                        {
+                            string jointName = row != null && jointColIndex < row.Length
+                                ? Convert.ToString(row[jointColIndex], CultureInfo.InvariantCulture)
+                                : string.Empty;
+                            if (!string.IsNullOrWhiteSpace(jointName) && selectedJointNames.Contains(jointName.Trim()))
+                            {
+                                filteredRows.Add(row);
+                            }
+                        }
+                        table = new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
+                    }
+                }
+
+                return OperationResult<CSISapModelDisplayTableDTO>.Success(table);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to extract ETABS {displayTableName}: {ex.Message}");
+            }
+        }
+
+        private delegate int JointResultOapiDelegate(
+            string name,
+            ETABSv1.eItemTypeElm itemTypeElm,
+            ref int numberResults,
+            ref string[] obj,
+            ref string[] elm,
+            ref string[] loadCase,
+            ref string[] stepType,
+            ref double[] stepNum,
+            ref double[] out1,
+            ref double[] out2,
+            ref double[] out3,
+            ref double[] out4,
+            ref double[] out5,
+            ref double[] out6);
+
+        private OperationResult<CSISapModelDisplayTableDTO> GetGenericJointResultsFromOapi(
+            ETABSv1.cSapModel sapModel,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases,
+            string displayTableName,
+            JointResultOapiDelegate oapiFunc,
+            string col1, string col2, string col3, string col4, string col5, string col6)
+        {
+            var selectedJoints = GetSelectedPointsFromActiveModel();
+            if (!selectedJoints.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectedJoints.Message);
+            }
+            if (selectedJoints.Data == null || selectedJoints.Data.Count == 0)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure("Select one or more joints in the ETABS model before exporting.");
+            }
+
+            if (selectedOutputCases != null && selectedOutputCases.Count > 0)
+            {
+                OperationResult selectResult = SelectOutputCasesForTables(sapModel, selectedOutputCases);
+                if (!selectResult.IsSuccess)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectResult.Message);
+                }
+            }
+
+            int numberResults = 0;
+            string[] obj = null;
+            string[] elm = null;
+            string[] loadCase = null;
+            string[] stepType = null;
+            double[] stepNum = null;
+            double[] out1 = null;
+            double[] out2 = null;
+            double[] out3 = null;
+            double[] out4 = null;
+            double[] out5 = null;
+            double[] out6 = null;
+
+            int ret = oapiFunc(
+                "",
+                ETABSv1.eItemTypeElm.SelectionElm,
+                ref numberResults,
+                ref obj,
+                ref elm,
+                ref loadCase,
+                ref stepType,
+                ref stepNum,
+                ref out1,
+                ref out2,
+                ref out3,
+                ref out4,
+                ref out5,
+                ref out6);
+
+            if (ret != 0)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to retrieve {displayTableName} from ETABS API (return code {ret}).");
+            }
+
+            var fieldKeys = new List<string>
+            {
+                "Unique Name",
+                "Output Case",
+                "Step Type",
+                "Step Number",
+                col1,
+                col2,
+                col3,
+                col4,
+                col5,
+                col6
+            };
+
+            var rows = new List<object[]>();
+            if (obj != null)
+            {
+                for (int i = 0; i < numberResults; i++)
+                {
+                    var row = new object[10];
+                    row[0] = obj[i];
+                    row[1] = loadCase != null && i < loadCase.Length ? loadCase[i] : "";
+                    row[2] = stepType != null && i < stepType.Length ? stepType[i] : "";
+                    row[3] = stepNum != null && i < stepNum.Length ? stepNum[i] : 0.0;
+                    row[4] = out1 != null && i < out1.Length ? out1[i] : 0.0;
+                    row[5] = out2 != null && i < out2.Length ? out2[i] : 0.0;
+                    row[6] = out3 != null && i < out3.Length ? out3[i] : 0.0;
+                    row[7] = out4 != null && i < out4.Length ? out4[i] : 0.0;
+                    row[8] = out5 != null && i < out5.Length ? out5[i] : 0.0;
+                    row[9] = out6 != null && i < out6.Length ? out6[i] : 0.0;
+                    rows.Add(row);
+                }
+            }
+
+            return OperationResult<CSISapModelDisplayTableDTO>.Success(new CSISapModelDisplayTableDTO
+            {
+                FieldKeys = fieldKeys,
+                Rows = rows
+            });
+        }
+
+        private OperationResult<CSISapModelDisplayTableDTO> GetJointDriftsFromOapi(
+            ETABSv1.cSapModel sapModel,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            var selectedJoints = GetSelectedPointsFromActiveModel();
+            if (!selectedJoints.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectedJoints.Message);
+            }
+            if (selectedJoints.Data == null || selectedJoints.Data.Count == 0)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure("Select one or more joints in the ETABS model before exporting.");
+            }
+
+            if (selectedOutputCases != null && selectedOutputCases.Count > 0)
+            {
+                OperationResult selectResult = SelectOutputCasesForTables(sapModel, selectedOutputCases);
+                if (!selectResult.IsSuccess)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectResult.Message);
+                }
+            }
+
+            var selectedJointNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var point in selectedJoints.Data)
+            {
+                if (!string.IsNullOrWhiteSpace(point.PointUniqueName))
+                {
+                    selectedJointNames.Add(point.PointUniqueName.Trim());
+                }
+                if (!string.IsNullOrWhiteSpace(point.PointLabel))
+                {
+                    selectedJointNames.Add(point.PointLabel.Trim());
+                }
+            }
+
+            int numberResults = 0;
+            string[] story = null;
+            string[] label = null;
+            string[] name = null;
+            string[] loadCase = null;
+            string[] stepType = null;
+            double[] stepNum = null;
+            double[] displacementX = null;
+            double[] displacementY = null;
+            double[] driftX = null;
+            double[] driftY = null;
+
+            int ret = sapModel.Results.JointDrifts(
+                ref numberResults,
+                ref story,
+                ref label,
+                ref name,
+                ref loadCase,
+                ref stepType,
+                ref stepNum,
+                ref displacementX,
+                ref displacementY,
+                ref driftX,
+                ref driftY);
+
+            if (ret != 0)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to retrieve Joint Drifts from ETABS API (return code {ret}).");
+            }
+
+            var fieldKeys = new List<string>
+            {
+                "Story",
+                "Label",
+                "Unique Name",
+                "Output Case",
+                "Step Type",
+                "Step Number",
+                "Displacement X",
+                "Displacement Y",
+                "Drift X",
+                "Drift Y"
+            };
+
+            var rows = new List<object[]>();
+            if (name != null)
+            {
+                for (int i = 0; i < numberResults; i++)
+                {
+                    string jointName = name[i];
+                    string jointLabel = label != null && i < label.Length ? label[i] : "";
+                    
+                    if (selectedJointNames.Contains(jointName.Trim()) || selectedJointNames.Contains(jointLabel.Trim()))
+                    {
+                        var row = new object[10];
+                        row[0] = story != null && i < story.Length ? story[i] : "";
+                        row[1] = jointLabel;
+                        row[2] = jointName;
+                        row[3] = loadCase != null && i < loadCase.Length ? loadCase[i] : "";
+                        row[4] = stepType != null && i < stepType.Length ? stepType[i] : "";
+                        row[5] = stepNum != null && i < stepNum.Length ? stepNum[i] : 0.0;
+                        row[6] = displacementX != null && i < displacementX.Length ? displacementX[i] : 0.0;
+                        row[7] = displacementY != null && i < displacementY.Length ? displacementY[i] : 0.0;
+                        row[8] = driftX != null && i < driftX.Length ? driftX[i] : 0.0;
+                        row[9] = driftY != null && i < driftY.Length ? driftY[i] : 0.0;
+                        rows.Add(row);
+                    }
+                }
+            }
+
+            return OperationResult<CSISapModelDisplayTableDTO>.Success(new CSISapModelDisplayTableDTO
+            {
+                FieldKeys = fieldKeys,
+                Rows = rows
+            });
+        }
+
+        private static bool IsJointOutputTable(string displayTableName)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            return normalized == NormalizeTableName("Joint Displacements") ||
+                   normalized == NormalizeTableName("Joint Displacements - Absolute") ||
+                   normalized == NormalizeTableName("Joint Drifts") ||
+                   normalized == NormalizeTableName("Joint Reactions") ||
+                   normalized == NormalizeTableName("Joint Design Reactions") ||
+                   normalized == NormalizeTableName("Joint Velocities - Relative") ||
+                   normalized == NormalizeTableName("Joint Velocities - Absolute") ||
+                   normalized == NormalizeTableName("Joint Accelerations - Relative") ||
+                   normalized == NormalizeTableName("Joint Accelerations - Absolute");
+        }
+
+        private static OperationResult<string> FindAvailableDisplayTableKey(ETABSv1.cSapModel sapModel, string displayTableName)
+        {
+            int numberTables = 0;
+            string[] tableKeys = null;
+            string[] tableNames = null;
+            int[] importTypes = null;
+
+            int ret = sapModel.DatabaseTables.GetAvailableTables(ref numberTables, ref tableKeys, ref tableNames, ref importTypes);
+            if (ret != 0)
+            {
+                return OperationResult<string>.Failure($"Failed to read ETABS available database tables (return code {ret}).");
+            }
+
+            string requested = NormalizeTableName(displayTableName);
+            for (int index = 0; index < numberTables; index++)
+            {
+                string tableKey = tableKeys != null && index < tableKeys.Length ? tableKeys[index] : string.Empty;
+                string tableName = tableNames != null && index < tableNames.Length ? tableNames[index] : string.Empty;
+
+                if (string.Equals(NormalizeTableName(tableName), requested, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(NormalizeTableName(tableKey), requested, StringComparison.OrdinalIgnoreCase))
+                {
+                    return OperationResult<string>.Success(string.IsNullOrWhiteSpace(tableKey) ? tableName : tableKey);
+                }
+            }
+
+            return OperationResult<string>.Failure("Table not available in this ETABS version or current analysis result.");
+        }
+
+        private static string NormalizeTableName(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            var chars = new List<char>();
+            foreach (char ch in value)
+            {
+                if (char.IsLetterOrDigit(ch))
+                {
+                    chars.Add(char.ToUpperInvariant(ch));
+                }
+            }
+
+            return new string(chars.ToArray());
+        }
+
+        private static bool IsCaseOnlyDisplayTable(string displayTableName)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            return normalized == NormalizeTableName("Modal Periods And Frequencies") ||
+                   normalized == NormalizeTableName("Modal Participating Mass Ratios") ||
+                   normalized == NormalizeTableName("Modal Load Participation Ratios") ||
+                   normalized == NormalizeTableName("Modal Participation Factors") ||
+                   normalized == NormalizeTableName("Modal Direction Factors") ||
+                   normalized == NormalizeTableName("Response Spectrum Modal Info");
+        }
+
+        private static bool IsResponseSpectrumModalInfoTable(string displayTableName)
+        {
+            return NormalizeTableName(displayTableName) == NormalizeTableName("Response Spectrum Modal Info");
         }
 
         private OperationResult<CSISapModelDisplayTableDTO> GetStoryDisplayTable(
@@ -2211,6 +2821,13 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return ret == 0 ? OperationResult.Success() : OperationResult.Failure($"Failed to set units (return code {ret}).");
         }
 
+        public OperationResult<int> GetPresentUnits()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult<int>.Failure(sapModelResult.Message);
+            return OperationResult<int>.Success((int)sapModelResult.Data.GetPresentUnits());
+        }
+
         private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)
         {
             return RefreshView(sapModel, false);
@@ -2269,6 +2886,110 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
 
             return OperationResult.Success();
+        }
+
+        private static OperationResult SelectLoadCasesOnlyForTables(
+            ETABSv1.cSapModel sapModel,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            int deselectRet = sapModel.Results.Setup.DeselectAllCasesAndCombosForOutput();
+            if (deselectRet != 0)
+            {
+                return OperationResult.Failure($"Failed to clear ETABS output case selection (return code {deselectRet}).");
+            }
+
+            foreach (var outputCase in selectedOutputCases)
+            {
+                if (outputCase == null || string.IsNullOrWhiteSpace(outputCase.Name))
+                {
+                    continue;
+                }
+
+                if (outputCase.IsLoadCombination)
+                {
+                    return OperationResult.Failure("Select ETABS load cases only for this table.");
+                }
+
+                int selectRet = sapModel.Results.Setup.SetCaseSelectedForOutput(outputCase.Name, true);
+                if (selectRet != 0)
+                {
+                    return OperationResult.Failure($"Failed to select '{outputCase.Name}' for output (return code {selectRet}).");
+                }
+            }
+
+            string[] selectedCaseNamesForDisplay = CreateSelectedOutputCaseNameArray(selectedOutputCases, false);
+            int caseDisplayRet = sapModel.DatabaseTables.SetLoadCasesSelectedForDisplay(ref selectedCaseNamesForDisplay);
+            if (caseDisplayRet != 0)
+            {
+                return OperationResult.Failure($"Failed to select ETABS database table display load cases (return code {caseDisplayRet}).");
+            }
+
+            string[] selectedCombinationNamesForDisplay = new string[0];
+            int combinationDisplayRet = sapModel.DatabaseTables.SetLoadCombinationsSelectedForDisplay(ref selectedCombinationNamesForDisplay);
+            if (combinationDisplayRet != 0)
+            {
+                return OperationResult.Failure($"Failed to clear ETABS database table display load combinations (return code {combinationDisplayRet}).");
+            }
+
+            return OperationResult.Success();
+        }
+
+        private delegate int GetCaseNameListDelegate(ref int numberNames, ref string[] names);
+
+        private static void AddModalCasesFromSpecificApi(
+            ICollection<CSISapModelOutputCaseDTO> outputCases,
+            ISet<string> seenNames,
+            string caseType,
+            GetCaseNameListDelegate getNameList)
+        {
+            if (getNameList == null)
+            {
+                return;
+            }
+
+            try
+            {
+                int numberNames = 0;
+                string[] names = null;
+                int ret = getNameList(ref numberNames, ref names);
+                if (ret == 0)
+                {
+                    AddModalCaseNames(outputCases, seenNames, names, numberNames, caseType);
+                }
+            }
+            catch
+            {
+                // Older ETABS interop builds may not expose ModalEigen/ModalRitz GetNameList.
+            }
+        }
+
+        private static void AddModalCaseNames(
+            ICollection<CSISapModelOutputCaseDTO> outputCases,
+            ISet<string> seenNames,
+            string[] names,
+            int numberNames,
+            string caseType)
+        {
+            if (outputCases == null || seenNames == null || names == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < numberNames && i < names.Length; i++)
+            {
+                string name = names[i];
+                if (string.IsNullOrWhiteSpace(name) || !seenNames.Add(name))
+                {
+                    continue;
+                }
+
+                outputCases.Add(new CSISapModelOutputCaseDTO
+                {
+                    Name = name,
+                    Type = caseType,
+                    IsLoadCombination = false
+                });
+            }
         }
 
         private static string[] CreateSelectedOutputCaseNameArray(
@@ -2568,6 +3289,14 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             CSISapModelDisplayTableDTO table,
             IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
         {
+            return FilterDisplayTableRows(table, selectedOutputCases, null);
+        }
+
+        private static CSISapModelDisplayTableDTO FilterDisplayTableRows(
+            CSISapModelDisplayTableDTO table,
+            IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases,
+            string displayTableName)
+        {
             if (table == null || table.Rows == null || table.Rows.Count == 0)
             {
                 return table ?? new CSISapModelDisplayTableDTO
@@ -2577,7 +3306,47 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 };
             }
 
-            int outputCaseIndex = FindFieldIndex(table.FieldKeys, "Output Case", "OutputCase", "Load Case", "LoadCase", "Case");
+            int outputCaseIndex = IsResponseSpectrumModalInfoTable(displayTableName)
+                ? FindFieldIndex(
+                    table.FieldKeys,
+                    "Response Spectrum Case",
+                    "ResponseSpectrumCase",
+                    "Spectrum Case",
+                    "SpectrumCase",
+                    "Spectrum Load Case",
+                    "SpectrumLoadCase",
+                    "Response Spectrum Load Case",
+                    "ResponseSpectrumLoadCase",
+                    "Spec Case",
+                    "SpecCase",
+                    "RS Case",
+                    "RSCase",
+                    "Output Case",
+                    "OutputCase",
+                    "Output Case Name",
+                    "OutputCaseName",
+                    "Load Case",
+                    "LoadCase",
+                    "Load Case Name",
+                    "LoadCaseName",
+                    "Case",
+                    "Case Name",
+                    "CaseName")
+                : FindFieldIndex(
+                    table.FieldKeys,
+                    "Output Case",
+                    "OutputCase",
+                    "Output Case Name",
+                    "OutputCaseName",
+                    "Load Case",
+                    "LoadCase",
+                    "Load Case Name",
+                    "LoadCaseName",
+                    "Modal Case",
+                    "ModalCase",
+                    "Case",
+                    "Case Name",
+                    "CaseName");
             if (outputCaseIndex < 0)
             {
                 return table;
@@ -2595,7 +3364,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 string outputCaseName = row != null && outputCaseIndex < row.Length
                     ? Convert.ToString(row[outputCaseIndex], CultureInfo.InvariantCulture)
                     : string.Empty;
-                if (string.IsNullOrWhiteSpace(outputCaseName) || selectedNames.Contains(outputCaseName.Trim()))
+                if (!string.IsNullOrWhiteSpace(outputCaseName) && selectedNames.Contains(outputCaseName.Trim()))
                 {
                     filteredRows.Add(row);
                 }
@@ -2648,8 +3417,18 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return normalizedFieldKey == NormalizeFieldKey("Story") ||
                    normalizedFieldKey == NormalizeFieldKey("Story Name") ||
                    normalizedFieldKey == NormalizeFieldKey("Output Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Output Case Name") ||
                    normalizedFieldKey == NormalizeFieldKey("Load Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Load Case Name") ||
+                   normalizedFieldKey == NormalizeFieldKey("Modal Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Response Spectrum Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Spectrum Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Spectrum Load Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Response Spectrum Load Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Spec Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("RS Case") ||
                    normalizedFieldKey == NormalizeFieldKey("Case") ||
+                   normalizedFieldKey == NormalizeFieldKey("Case Name") ||
                    normalizedFieldKey == NormalizeFieldKey("Case Type") ||
                    normalizedFieldKey == NormalizeFieldKey("Step Type") ||
                    normalizedFieldKey == NormalizeFieldKey("Direction") ||

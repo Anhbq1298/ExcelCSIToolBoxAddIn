@@ -8,6 +8,8 @@ namespace ExcelCSIToolBox.Data.DTOs.CSI
 
         public bool IsLoadCombination { get; set; }
 
+        public bool IsSeismicWindOrResponseSpectrum { get; set; }
+
         public string Kind
         {
             get { return IsLoadCombination ? "Load Combination" : "Load Case"; }

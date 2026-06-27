@@ -20,7 +20,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static Microsoft.Office.Tools.CustomTaskPane _sap2000Pane;
         private static WpfTaskPaneHost _etabsHost;
         private static WpfTaskPaneHost _sap2000Host;
-        private static GetBaseReactionsWindow _getBaseReactionsWindow;
+        private static OutputTableExportOptionsWindow _getBaseReactionsWindow;
         private static GetModalMassParticipationRatiosWindow _modalMassParticipationRatiosWindow;
         private static GetStoryResultsWindow _storyForcesWindow;
         private static GetStoryResultsWindow _storyDriftsWindow;
@@ -71,14 +71,20 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             }
 
             var useCases = new CsiToolboxUseCaseBundle(_etabsConnectionService, _excelSelectionService, _excelOutputService);
-            var viewModel = new GetBaseReactionsViewModel(
+            var config = new OutputTableExportConfig
+            {
+                TableDisplayName = "Base Reactions",
+                Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Base Reactions",
+                Description = "Select output cases to export Base Reactions.",
+                PopupProfileKey = "ForceOutput"
+            };
+            var window = OutputTableExportWorkflow.Run(
+                config,
                 useCases,
                 _etabsConnectionService,
                 _excelOutputService);
-            var window = new GetBaseReactionsWindow(viewModel);
             window.Closed += delegate { _getBaseReactionsWindow = null; };
             _getBaseReactionsWindow = window;
-            window.Show();
         }
 
         internal static void ShowModalMassParticipationRatiosWindow()
@@ -104,9 +110,16 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         internal static void ShowStoryForcesWindow()
         {
-            ShowStoryResultsWindow(
-                StoryPostprocessingResultKind.StoryForces,
-                ref _storyForcesWindow);
+            EnsureConfigured(_etabsConnectionService);
+            var useCases = new CsiToolboxUseCaseBundle(_etabsConnectionService, _excelSelectionService, _excelOutputService);
+            var config = new OutputTableExportConfig
+            {
+                TableDisplayName = "Story Forces",
+                Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / Story Forces",
+                Description = "Select load case or load combination and output unit to export Story Forces.",
+                PopupProfileKey = "StoryForces"
+            };
+            OutputTableExportWorkflow.Run(config, useCases, _etabsConnectionService, _excelOutputService);
         }
 
         internal static void ShowStoryDriftsWindow()

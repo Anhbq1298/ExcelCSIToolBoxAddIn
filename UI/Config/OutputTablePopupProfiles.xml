@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<OutputTablePopupProfiles>
+  <Profile key="ModalInformation">
+    <CaseSelectionMode>ModalCaseOnly</CaseSelectionMode>
+    <CaseSelectorTitle>Modal Case</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No modal result records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Modal</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="ResponseSpectrumModalInfo">
+    <CaseSelectionMode>ResponseSpectrumCaseOnly</CaseSelectionMode>
+    <CaseSelectorTitle>Response Spectrum Case</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No response spectrum modal records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>ResponseSpectrumModal</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="ForceOutput">
+    <CaseSelectionMode>AllCasesAndCombos</CaseSelectionMode>
+    <CaseSelectorTitle>Load Case / Combination</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>true</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Output</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="ProjectInformation">
+    <CaseSelectionMode>None</CaseSelectionMode>
+    <CaseSelectorTitle></CaseSelectorTitle>
+    <AllowMultipleCases>false</AllowMultipleCases>
+    <ShowCaseComboSelector>false</ShowCaseComboSelector>
+    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No project information records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Project Info</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="MaterialList">
+    <CaseSelectionMode>None</CaseSelectionMode>
+    <CaseSelectorTitle></CaseSelectorTitle>
+    <AllowMultipleCases>false</AllowMultipleCases>
+    <ShowCaseComboSelector>false</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No material list records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Material List</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="StoryForces">
+    <CaseSelectionMode>AllCasesAndCombos</CaseSelectionMode>
+    <CaseSelectorTitle>Load Case / Combination</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>true</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No story force records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Story Forces</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="OtherOutputWithUnit">
+    <CaseSelectionMode>None</CaseSelectionMode>
+    <CaseSelectorTitle></CaseSelectorTitle>
+    <AllowMultipleCases>false</AllowMultipleCases>
+    <ShowCaseComboSelector>false</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Other Output</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="OtherOutputRatioOnly">
+    <CaseSelectionMode>None</CaseSelectionMode>
+    <CaseSelectorTitle></CaseSelectorTitle>
+    <AllowMultipleCases>false</AllowMultipleCases>
+    <ShowCaseComboSelector>false</ShowCaseComboSelector>
+    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No ratio records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Ratio</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="DiaphragmForces">
+    <CaseSelectionMode>AllCasesAndCombos</CaseSelectionMode>
+    <CaseSelectorTitle>Load Case / Combination</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>true</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No diaphragm force records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Diaphragm Forces</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="SeismicWindOrRSOnlyWithUnit">
+    <CaseSelectionMode>SeismicWindOrResponseSpectrumCasesOnly</CaseSelectionMode>
+    <CaseSelectorTitle>Load Case</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No story stiffness records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Story Stiffness</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="SeismicWindOrRSOnlyRatio">
+    <CaseSelectionMode>SeismicWindOrResponseSpectrumCasesOnly</CaseSelectionMode>
+    <CaseSelectorTitle>Load Case</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No ratio records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Ratio</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="JointOutput">
+    <CaseSelectionMode>AllCasesAndCombos</CaseSelectionMode>
+    <CaseSelectorTitle>Load Case / Combination</CaseSelectorTitle>
+    <AllowMultipleCases>true</AllowMultipleCases>
+    <ShowCaseComboSelector>true</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>true</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No joint output records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Joint Output</WorksheetNamePrefix>
+  </Profile>
+</OutputTablePopupProfiles>

@@ -99,6 +99,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);
         OperationResult<LoadCombinationMatrixDto> GetLoadCombinationMatrix();
         OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetAnalysisOutputCases();
+        OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetModalOutputCases();
+        OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetResponseSpectrumOutputCases();
         OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> GetBaseReactions(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<IReadOnlyList<CSISapModelModalMassParticipationRowDTO>> GetModalMassParticipationRatios(IReadOnlyList<CSISapModelOutputCaseDTO> selectedLoadCases);
         OperationResult<IReadOnlyList<CSISapModelStoryForceRowDTO>> GetStoryForces(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
@@ -107,6 +109,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDisplacements(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<CSISapModelDisplayTableDTO> GetStoryMaxOverAverageDrifts(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<CSISapModelDisplayTableDTO> GetMassSummaryByStory();
+        OperationResult<CSISapModelDisplayTableDTO> GetDisplayTable(string displayTableName);
+        OperationResult<CSISapModelDisplayTableDTO> GetDisplayTable(string displayTableName, IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases);
         OperationResult<IReadOnlyList<string>> GetLoadPatternNames();
         OperationResult<LoadCombinationApplyResultDto> ApplyLoadCombinationMatrix(IReadOnlyList<LoadCombinationMatrixRowDto> rows);
         OperationResult DeleteLoadCombinations(IReadOnlyList<string> loadCombinationNames);
@@ -115,6 +119,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames);
         OperationResult<CSISapModelStatisticsDTO> GetModelStatistics();
         OperationResult RefreshView(bool zoomAll = false);
+        OperationResult<int> GetPresentUnits();
         OperationResult SetPresentUnits(int unitsCode);
     }
 }

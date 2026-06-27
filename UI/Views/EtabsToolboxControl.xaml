@@ -5,804 +5,611 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:ExcelCSIToolBoxAddIn.UI.Views"
              mc:Ignorable="d"
-             FontFamily="Segoe UI"
-             FontSize="11">
+             FontFamily="{DynamicResource FontFamily.Primary}"
+             FontSize="{DynamicResource FontSize.Body}"
+             Background="{DynamicResource AppBackgroundBrush}">
 
     <UserControl.Resources>
-        <Style TargetType="TabItem">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="MinHeight" Value="36"/>
-        </Style>
-
-        <Style x:Key="RibbonTabStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#374151"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Padding" Value="12,3"/>
-            <Setter Property="Margin" Value="0"/>
-        </Style>
-
-        <Style x:Key="RibbonButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Width" Value="118"/>
-            <Setter Property="Height" Value="54"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Background" Value="#1F6FAE"/>
-        </Style>
-
-        <Style x:Key="RibbonSmallButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Width" Value="84"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Margin" Value="0,0,6,0"/>
-            <Setter Property="FontSize" Value="11"/>
-        </Style>
-
-        <Style x:Key="ProjectManagerTreeStyle" TargetType="TreeViewItem">
-            <Setter Property="Padding" Value="6,5"/>
-            <Setter Property="Margin" Value="0,1"/>
-            <Setter Property="Foreground" Value="#374151"/>
-            <Setter Property="FontSize" Value="12"/>
-        </Style>
-
-        <Style x:Key="StatusBadgeStyle" TargetType="Border">
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="8,3"/>
-            <Setter Property="Background" Value="#FFEDD5"/>
-        </Style>
-
-        <Style x:Key="GroupCardStyle" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#D1D5DB"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="12"/>
-        </Style>
-
-        <Style x:Key="ToolButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Height" Value="38"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="12,5"/>
-        </Style>
-
-        <Style x:Key="MainDocumentTabStyle" TargetType="TabItem">
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="14,7"/>
-            <Setter Property="MinHeight" Value="32"/>
-        </Style>
-
-        <Style TargetType="Button">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#1F6AA5"/>
-            <Setter Property="BorderBrush" Value="#1B5C90"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="12,5"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#2A7BBE"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#236B9F"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#184F7C"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#14456B"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ButtonBorder" Property="Background" Value="#B7C4D0"/>
-                                <Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#A8B5C1"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="DataGridCell">
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#2A7BBE"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="BorderBrush" Value="#2A7BBE"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style TargetType="DataGridRow">
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="#2A7BBE"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Themes/EtabsToolboxTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <views:TableHeaderToolTipConverter x:Key="TableHeaderToolTipConverter"/>
+        </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="10" Background="#9CA3AF">
+    <Grid Margin="{StaticResource Inset.Medium}"
+          Background="{StaticResource AppBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0"
-                Padding="0"
-                Margin="0,0,0,10"
-                BorderBrush="#D1D5DB"
-                BorderThickness="1"
-                CornerRadius="4"
-                Background="#F5F6F8">
+                Style="{StaticResource CardBorderStyle}"
+                Padding="10,8"
+                Margin="{StaticResource Gap.Section}"
+                Background="{StaticResource HeaderBackgroundBrush}"
+                BorderBrush="{StaticResource HeaderBackgroundBrush}">
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="34"/>
-                    <RowDefinition Height="36"/>
-                    <RowDefinition Height="38"/>
-                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="14"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <Grid Grid.Row="0" Background="#1F2937">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding ProductTitle, FallbackValue=ETABS Toolbox}"
-                               Foreground="White"
-                               FontSize="14"
+                <TextBlock Grid.Column="0"
+                           Text="{Binding ProductTitle, FallbackValue=ETABS Toolbox}"
+                           FontSize="{StaticResource FontSize.WindowTitle}"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextBrush.Inverse}"
+                           VerticalAlignment="Center"/>
+
+                <Border Grid.Column="2"
+                        VerticalAlignment="Center">
+                    <Border.Style>
+                        <Style TargetType="Border" BasedOn="{StaticResource StatusBadgeStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource StatusBrush.AttachedBackground}"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource StatusBrush.Attached}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="7" Height="7" VerticalAlignment="Center" Margin="0,0,5,0">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{StaticResource StatusBrush.NotAttached}"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                            <Setter Property="Fill" Value="{StaticResource StatusBrush.Attached}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock>
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource StatusTextStyle}">
+                                    <Setter Property="Text" Value="Not attached"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                            <Setter Property="Text" Value="Attached"/>
+                                            <Setter Property="Foreground" Value="{StaticResource StatusBrush.Attached}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="4" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ModelDisplayText}"
+                               Style="{StaticResource BodyTextStyle}"
                                FontWeight="Bold"
-                               VerticalAlignment="Center"
-                               Margin="12,0"/>
-                    <Button Grid.Column="1"
-                            Width="30"
-                            Height="28"
-                            Padding="0"
-                            Content="?"
-                            Background="Transparent"
-                            BorderBrush="Transparent"
-                            Foreground="White"
-                            Margin="0,3,6,3"
+                               Foreground="{StaticResource TextBrush.Inverse}"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding CurrentModelUnitText}"
+                               Style="{StaticResource MutedTextStyle}"
+                               Foreground="{StaticResource TextBrush.NavyMuted}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="6"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Button Content="Attach"
+                            Style="{StaticResource PillButtonStyle}"
+                            Margin="{StaticResource Gap.Right}"
+                            Command="{Binding AttachToRunningCsiCommand}"/>
+                    <Button Content="Close"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="{StaticResource Gap.Right}"
+                            Command="{Binding CloseCurrentInstanceCommand}"/>
+                    <Button Content="?"
+                            Style="{StaticResource IconButtonStyle}"
+                            ToolTip="Help"
                             Click="HelpButton_Click"/>
-                </Grid>
-
-                <DockPanel Grid.Row="1" Background="#FFFFFF" LastChildFill="False">
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" Margin="6,4,12,4">
-                        <Button Style="{StaticResource RibbonTabStyle}" Content="Home" Tag="0" Click="WorkspaceNavigation_Click"/>
-                        <Button Style="{StaticResource RibbonTabStyle}" Content="Model" Tag="0" Click="WorkspaceNavigation_Click"/>
-                        <Button Style="{StaticResource RibbonTabStyle}" Content="Define" Tag="0" Click="WorkspaceNavigation_Click"/>
-                        <Button Style="{StaticResource RibbonTabStyle}" Content="Assign" Tag="1" Click="WorkspaceNavigation_Click"/>
-                        <Button Style="{StaticResource RibbonTabStyle}" Content="Extract Results" Tag="6" Click="WorkspaceNavigation_Click"/>
-                        <Button Style="{StaticResource RibbonTabStyle}" Content="Utilities" Tag="3" Click="WorkspaceNavigation_Click"/>
-                        <Button Style="{StaticResource RibbonTabStyle}" Content="Help" Click="HelpButton_Click"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" Margin="0,4,8,4">
-                        <Button Style="{StaticResource RibbonSmallButtonStyle}" Content="Attach" Command="{Binding AttachToRunningCsiCommand}"/>
-                        <Button Style="{StaticResource RibbonSmallButtonStyle}" Content="Close" Command="{Binding CloseCurrentInstanceCommand}"/>
-                    </StackPanel>
-                </DockPanel>
-
-                <Grid Grid.Row="2" Margin="10,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Style="{StaticResource StatusBadgeStyle}" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="8" Height="8" VerticalAlignment="Center" Margin="0,0,5,0">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="#F97316"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                                <Setter Property="Fill" Value="#16A34A"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-                            <TextBlock FontWeight="SemiBold">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Text" Value="Not attached"/>
-                                        <Setter Property="Foreground" Value="#9A3412"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                                <Setter Property="Text" Value="Connected"/>
-                                                <Setter Property="Foreground" Value="#166534"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
-                    </Border>
-                    <TextBlock Grid.Column="2" Text="{Binding ModelDisplayText}" Foreground="#111827" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock Grid.Column="4" Text="{Binding CurrentModelUnitText}" Foreground="#6B7280" VerticalAlignment="Center"/>
-                </Grid>
+                </StackPanel>
             </Grid>
         </Border>
 
-        <Border Grid.Row="1"
-                Padding="0"
-                BorderThickness="0"
-                Background="Transparent">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="214"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource GroupCardStyle}" Padding="0">
-                    <DockPanel>
-                        <Border DockPanel.Dock="Top" Background="#E5E7EB" Padding="12,9">
-                            <TextBlock Text="Project Manager" FontSize="13" FontWeight="SemiBold" Foreground="#111827"/>
-                        </Border>
-                        <TreeView x:Name="ProjectManagerTree"
-                                  ItemContainerStyle="{StaticResource ProjectManagerTreeStyle}"
-                                  SelectedItemChanged="ProjectManagerTree_SelectedItemChanged"
-                                  Margin="8">
-                            <TreeViewItem Header="ETABS Toolbox" IsExpanded="True" FontWeight="SemiBold">
-                                <TreeViewItem Header="Model" Tag="0"/>
-                                <TreeViewItem Header="Define" IsExpanded="True">
-                                    <TreeViewItem Header="Section Property" Tag="0"/>
-                                    <TreeViewItem Header="Load Pattern" Tag="4"/>
-                                    <TreeViewItem Header="Load Combination" Tag="5"/>
+            <Border Grid.Column="0"
+                    Style="{StaticResource CardBorderStyle}"
+                    Padding="0">
+                <DockPanel>
+                    <Border DockPanel.Dock="Top"
+                            Background="{StaticResource PanelBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush.Light}"
+                            BorderThickness="0,0,0,1"
+                            Padding="10,8">
+                        <TextBlock Text="Project Manager"
+                                   Style="{StaticResource SectionHeadingTextStyle}"/>
+                    </Border>
+
+                    <TreeView x:Name="ProjectManagerTree"
+                              ItemContainerStyle="{StaticResource ProjectManagerTreeStyle}"
+                              SelectedItemChanged="ProjectManagerTree_SelectedItemChanged"
+                              BorderThickness="0"
+                              Background="{StaticResource CardBackgroundBrush}"
+                              Padding="3,6,2,6">
+                        <TreeViewItem Header="ETABS Toolbox" IsExpanded="True" FontWeight="Bold">
+                            <TreeViewItem Header="Model" IsExpanded="True" FontWeight="Normal">
+                                <TreeViewItem Header="General Information" IsExpanded="True" FontWeight="Normal">
+                                    <TreeViewItem Header="Section Property" Tag="0" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Load Pattern" Tag="4" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Load Combination" Tag="5" FontWeight="Normal"/>
                                 </TreeViewItem>
-                                <TreeViewItem Header="Assign" IsExpanded="True">
-                                    <TreeViewItem Header="Point" Tag="1"/>
-                                    <TreeViewItem Header="Frame" Tag="2"/>
-                                    <TreeViewItem Header="Shell" Tag="3"/>
+                                <TreeViewItem Header="Element Manipulation" IsExpanded="True" FontWeight="Normal">
+                                    <TreeViewItem Header="Point" Tag="1" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Frame" Tag="2" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Shell" Tag="3" FontWeight="Normal"/>
                                 </TreeViewItem>
-                                <TreeViewItem Header="Extract Results" IsExpanded="True" Tag="6">
-                                    <TreeViewItem Header="Base Reactions" Tag="6"/>
-                                    <TreeViewItem Header="Modal Mass" Tag="6"/>
-                                    <TreeViewItem Header="Story Forces" Tag="6"/>
-                                    <TreeViewItem Header="Story Drifts" Tag="6"/>
-                                    <TreeViewItem Header="Story Displacements" Tag="6"/>
-                                    <TreeViewItem Header="Mass Summary" Tag="6"/>
+                                <TreeViewItem Header="ANALYSIS RESULTS" IsExpanded="True" FontWeight="Normal">
+                                     <TreeViewItem Header="Joint Output" Tag="Results:Joint Output" IsExpanded="True" FontWeight="Normal">
+                                         <TreeViewItem Header="Displacements" Tag="Results:Displacements" FontWeight="Normal"/>
+                                         <TreeViewItem Header="Reactions" Tag="Results:Reactions" FontWeight="Normal"/>
+                                         <TreeViewItem Header="Velocity and Acceleration" Tag="Results:Velocity and Acceleration" FontWeight="Normal"/>
+                                         <TreeViewItem Header="Joint Masses" Tag="Results:Assembled Joint Masses" FontWeight="Normal"/>
+                                     </TreeViewItem>
+                                     <TreeViewItem Header="Element Output" IsExpanded="True" FontWeight="Normal">
+                                         <TreeViewItem Header="Frame Output" Tag="Results:Frame Output" FontWeight="Normal"/>
+                                         <TreeViewItem Header="Area Output" Tag="Results:Area Output" FontWeight="Normal"/>
+                                         <TreeViewItem Header="Wall Output" Tag="Results:Wall Output" FontWeight="Normal"/>
+                                         <TreeViewItem Header="Objects and Elements" Tag="Results:Objects and Elements" FontWeight="Normal"/>
+                                     </TreeViewItem>
+                                    <TreeViewItem Header="Structure Output" IsExpanded="True" FontWeight="Normal">
+                                        <TreeViewItem Header="Base Reactions" Tag="Results:Base Reactions" FontWeight="Normal"/>
+                                        <TreeViewItem Header="Modal Information" Tag="Results:Modal Information" FontWeight="Normal"/>
+                                        <TreeViewItem Header="Other Output Items" Tag="Results:Other Output Items" FontWeight="Normal"/>
+                                    </TreeViewItem>
                                 </TreeViewItem>
+                                 <TreeViewItem Header="MISCELLANEOUS DATA" IsExpanded="True" FontWeight="Normal">
+                                     <TreeViewItem Header="Project Information" Tag="Tables:MISCELLANEOUS DATA:Project Information" FontWeight="Normal"/>
+                                     <TreeViewItem Header="Material List" Tag="Tables:MISCELLANEOUS DATA:Material List" FontWeight="Normal"/>
+                                 </TreeViewItem>
                             </TreeViewItem>
-                        </TreeView>
-                    </DockPanel>
+                        </TreeViewItem>
+                    </TreeView>
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Style="{StaticResource CompactCardBorderStyle}"
+                        Padding="10,7">
+                    <StackPanel>
+                        <TextBlock Text="{Binding ActivePageTitle}"
+                                   Style="{StaticResource HeadingTextStyle}"/>
+                        <TextBlock Text="{Binding ActivePageBreadcrumb}"
+                                   Style="{StaticResource BreadcrumbTextStyle}"/>
+                    </StackPanel>
                 </Border>
 
-                <Grid Grid.Column="2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,9">
-                        <DockPanel>
-                            <TextBlock Text="Engineering Workspace" FontSize="16" FontWeight="Bold" Foreground="#111827"/>
-                            <TextBlock DockPanel.Dock="Right" Text="{Binding ProductTitle}" Foreground="#6B7280" VerticalAlignment="Center"/>
-                        </DockPanel>
-                    </Border>
-                    <Border Grid.Row="1" Margin="0,8,0,0" Style="{StaticResource GroupCardStyle}" Padding="8">
-            <TabControl x:Name="WorkspaceTabs" ItemContainerStyle="{StaticResource MainDocumentTabStyle}">
-                <TabItem Header="Section Property">
-                    <Grid Margin="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="0.5*"/>
-                            <ColumnDefinition Width="12"/>
-                            <ColumnDefinition Width="0.5*"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <GroupBox Grid.Column="0" Header="Existing Sections" FontWeight="Bold" Padding="5">
-                            <Grid>
+                <Border Grid.Row="1"
+                        Margin="0,8,0,0"
+                        Style="{StaticResource CardBorderStyle}"
+                        Padding="{StaticResource Inset.Small}">
+                    <TabControl x:Name="WorkspaceTabs"
+                                Style="{StaticResource WorkspaceContentTabControlStyle}"
+                                SelectedIndex="{Binding ActiveWorkspacePage, Mode=TwoWay}">
+                        <TabItem Header="Section Property">
+                            <Grid Margin="{StaticResource Inset.Small}">
                                 <Grid.RowDefinitions>
+                                    <RowDefinition Height="1.35*"/>
+                                    <RowDefinition Height="10"/>
                                     <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                <DataGrid x:Name="FrameSectionList" Grid.Row="0"
-                                          ItemsSource="{Binding FrameSections}"
-                                          SelectedItem="{Binding SelectedFrameSection}"
-                                          AutoGenerateColumns="False"
-                                          CanUserAddRows="False"
-                                          CanUserDeleteRows="False"
-                                          CanUserResizeRows="False"
-                                          IsReadOnly="True"
-                                          HeadersVisibility="Column"
-                                          GridLinesVisibility="Horizontal"
-                                          BorderBrush="#CCCCCC"
-                                          BorderThickness="1"
-                                          FontSize="11"
-                                          FontWeight="Normal"
-                                          Foreground="Black">
-                                    <DataGrid.InputBindings>
-                                        <MouseBinding MouseAction="LeftDoubleClick" Command="{Binding EditFrameSectionCommand}" CommandParameter="{Binding ElementName=FrameSectionList, Path=SelectedItem}" />
-                                    </DataGrid.InputBindings>
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                        <DataGridTextColumn Header="Type" Binding="{Binding ShapeType}" Width="*"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                                <Button Grid.Row="1" Margin="0,8,0,0" Content="Refresh List" Command="{Binding GetFrameSectionsCommand}"/>
-                            </Grid>
-                        </GroupBox>
-                        
-                        <GroupBox Grid.Column="2" Header="Section Preview &amp; Creation" FontWeight="Bold" Padding="10">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                
-                                <Border Grid.Row="0" BorderBrush="#DDDDDD" BorderThickness="1" Background="#F9F9F9" Margin="0,0,0,10" MinHeight="160">
-                                    <Grid Margin="10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Row="0"
+                                        Grid.RowSpan="3"
+                                        Grid.Column="0"
+                                        Style="{StaticResource CompactCardBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="Create From Excel Range"
+                                                   Style="{StaticResource SectionHeadingTextStyle}"
+                                                   Margin="{StaticResource Gap.Card}"/>
+                                        <Button Content="Ishape" Margin="{StaticResource Gap.Card}" Command="{Binding CreateIshapeSectionCommand}"/>
+                                        <Button Content="Channel" Margin="{StaticResource Gap.Card}" Command="{Binding CreateChannelSectionCommand}"/>
+                                        <Button Content="Angle" Margin="{StaticResource Gap.Card}" Command="{Binding CreateAngleSectionCommand}"/>
+                                        <Button Content="Tube" Margin="{StaticResource Gap.Card}" Command="{Binding CreateTubeSectionCommand}"/>
+                                        <Button Content="Pipe" Margin="{StaticResource Gap.Card}" Command="{Binding CreatePipeSectionCommand}"/>
+                                        <Button Content="Rectangle" Margin="{StaticResource Gap.Card}" Command="{Binding CreateConcreteRectangleSectionCommand}"/>
+                                        <Button Content="Circle" Command="{Binding CreateConcreteCircleSectionCommand}"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Row="0"
+                                        Grid.Column="2"
+                                        Style="{StaticResource CompactCardBorderStyle}">
+                                    <Grid>
                                         <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0"
+                                                   Text="Section Preview"
+                                                   Style="{StaticResource SectionHeadingTextStyle}"
+                                                   Margin="{StaticResource Gap.Card}"/>
+
+                                        <Grid Grid.Row="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="0.4*"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="0.6*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Section Information (40% width) -->
+                                            <Border Grid.Column="0"
+                                                    Style="{StaticResource SectionPanelBorderStyle}"
+                                                    VerticalAlignment="Stretch">
+                                                <StackPanel>
+                                                    <TextBlock Text="Section Information"
+                                                               Style="{StaticResource SectionHeadingTextStyle}"
+                                                               Margin="{StaticResource Gap.Row}"/>
+
+                                                    <Grid Margin="{StaticResource Gap.Row}">
+                                                         <Grid.ColumnDefinitions>
+                                                             <ColumnDefinition Width="0.38*"/>
+                                                             <ColumnDefinition Width="0.62*"/>
+                                                         </Grid.ColumnDefinitions>
+                                                         <TextBlock Grid.Column="0"
+                                                                    Text="Section Name"
+                                                                    Style="{StaticResource LabelTextStyle}"
+                                                                    FontWeight="SemiBold"/>
+                                                         <TextBlock Grid.Column="1"
+                                                                    x:Name="EtabsSectionNameLabel"
+                                                                    Text="-"
+                                                                    Style="{StaticResource LabelTextStyle}"
+                                                                    FontWeight="SemiBold"/>
+                                                     </Grid>
+                                                     <Grid Margin="{StaticResource Gap.Row}">
+                                                         <Grid.ColumnDefinitions>
+                                                             <ColumnDefinition Width="0.38*"/>
+                                                             <ColumnDefinition Width="0.62*"/>
+                                                         </Grid.ColumnDefinitions>
+                                                         <TextBlock Grid.Column="0"
+                                                                    Text="Shape Type"
+                                                                    Style="{StaticResource MutedTextStyle}"/>
+                                                         <TextBlock Grid.Column="1"
+                                                                    x:Name="EtabsSectionTypeLabel"
+                                                                    Text=""
+                                                                    Style="{StaticResource MutedTextStyle}"/>
+                                                     </Grid>
+
+                                                     <Border Height="1"
+                                                             Background="{StaticResource BorderBrush.Light}"
+                                                             Margin="0,4,0,8"/>
+
+                                                    <Grid Margin="{StaticResource Gap.Row}">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="0.38*"/>
+                                                            <ColumnDefinition Width="0.62*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0"
+                                                                   Text="Abbreviation"
+                                                                   Style="{StaticResource MutedTextStyle}"/>
+                                                        <TextBlock Grid.Column="1"
+                                                                   Text="Meaning"
+                                                                   Style="{StaticResource MutedTextStyle}"/>
+                                                    </Grid>
+                                                    <ItemsControl ItemsSource="{Binding SectionDimensionAnnotations}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Grid Margin="{StaticResource Gap.Row}">
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="0.38*"/>
+                                                                        <ColumnDefinition Width="0.62*"/>
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <TextBlock Grid.Column="0"
+                                                                               Text="{Binding DisplayText}"
+                                                                               Style="{StaticResource LabelTextStyle}"
+                                                                               TextWrapping="Wrap"/>
+                                                                    <TextBlock Grid.Column="1"
+                                                                               Text="{Binding DescriptionText}"
+                                                                               Style="{StaticResource MutedTextStyle}"
+                                                                               TextWrapping="Wrap"/>
+                                                                </Grid>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Preview Canvas / Grid View (60% width) -->
+                                            <Border Grid.Column="2"
+                                                    Style="{StaticResource PreviewPanelBorderStyle}"
+                                                    VerticalAlignment="Stretch">
+                                                <Viewbox Stretch="Uniform">
+                                                    <Canvas x:Name="EtabsSectionPreviewCanvas"
+                                                            Width="100"
+                                                            Height="100"/>
+                                                </Viewbox>
+                                            </Border>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+
+                                <Border Grid.Row="2"
+                                        Grid.Column="2"
+                                        Style="{StaticResource CompactCardBorderStyle}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="*"/>
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
-                                        <Viewbox Grid.Row="0" Grid.Column="1" Stretch="Uniform">
-                                            <Canvas x:Name="EtabsSectionPreviewCanvas" Width="100" Height="100"/>
-                                        </Viewbox>
-                                        <Border Grid.Row="0"
-                                                Grid.Column="0"
-                                                Margin="0,0,10,0"
-                                                Padding="8"
-                                                BorderBrush="#E1E1E1"
-                                                BorderThickness="1"
-                                                Background="White">
-                                            <StackPanel>
-                                                <TextBlock Text="Dimensions"
-                                                           FontWeight="SemiBold"
-                                                           Foreground="#333333"
-                                                           Margin="0,0,0,6"/>
-                                                <ItemsControl ItemsSource="{Binding SectionDimensionAnnotations}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
-                                                            <StackPanel Margin="0,0,0,6">
-                                                                <TextBlock Text="{Binding DisplayText}"
-                                                                           Foreground="#D02020"
-                                                                           FontSize="10"
-                                                                           FontWeight="SemiBold"/>
-                                                                <TextBlock Text="{Binding DescriptionText}"
-                                                                           Foreground="#777777"
-                                                                           FontSize="9"
-                                                                           FontStyle="Italic"
-                                                                           TextWrapping="Wrap"
-                                                                           Margin="0,1,0,0"/>
-                                                            </StackPanel>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-                                        </Border>
-                                        <StackPanel Grid.Row="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0,6,0,0">
-                                            <TextBlock x:Name="EtabsSectionNameLabel" Text="â€”" HorizontalAlignment="Center" FontWeight="SemiBold" Foreground="#333333" FontSize="11"/>
-                                            <TextBlock x:Name="EtabsSectionTypeLabel" Text="" HorizontalAlignment="Center" Foreground="#888888" FontSize="10"/>
+
+                                        <TextBlock Grid.Row="0"
+                                                   Text="Existing Sections"
+                                                   Style="{StaticResource SectionHeadingTextStyle}"
+                                                   Margin="{StaticResource Gap.Card}"/>
+                                        <DataGrid x:Name="FrameSectionList"
+                                                  Grid.Row="1"
+                                                  ItemsSource="{Binding FrameSections}"
+                                                  SelectedItem="{Binding SelectedFrameSection}"
+                                                  AutoGenerateColumns="False"
+                                                  CanUserAddRows="False"
+                                                  CanUserDeleteRows="False"
+                                                  CanUserResizeRows="False"
+                                                  IsReadOnly="True">
+                                            <DataGrid.InputBindings>
+                                                <MouseBinding MouseAction="LeftDoubleClick"
+                                                              Command="{Binding EditFrameSectionCommand}"
+                                                              CommandParameter="{Binding ElementName=FrameSectionList, Path=SelectedItem}"/>
+                                            </DataGrid.InputBindings>
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1.2*"/>
+                                                <DataGridTextColumn Header="Type" Binding="{Binding ShapeType}" Width="*"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <Button Grid.Row="2"
+                                                Content="Refresh List"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,8,0,0"
+                                                Command="{Binding GetFrameSectionsCommand}"/>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="Point">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          CanContentScroll="True">
+                                <Border Style="{StaticResource CompactCardBorderStyle}"
+                                        Margin="{StaticResource Inset.Small}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="8"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Select Point in Model from Excel Range" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="0" Grid.Column="2" Content="By UniqueName" Command="{Binding SelectPointsByUniqueNameCommand}"/>
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Add Point From Range Excel" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="2" Grid.Column="2" Content="By Cartesian" Command="{Binding AddPointByCartesianCommand}"/>
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Extract Selected Point Information" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="4" Grid.Column="2" Content="Run" Command="{Binding GetSelectedPointsCommand}"/>
+
+                                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Grouping" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="6" Grid.Column="2" Content="Get" Command="{Binding GetPointGroupAssignmentCommand}"/>
+                                        <Button Grid.Row="6" Grid.Column="4" Content="Set" Command="{Binding SetPointGroupAssignmentCommand}"/>
+                                    </Grid>
+                                </Border>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Frame">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          CanContentScroll="True">
+                                <Border Style="{StaticResource CompactCardBorderStyle}"
+                                        Margin="{StaticResource Inset.Small}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2.2*"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="8"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Get Current Selection Frame UniqueNames" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="0" Grid.Column="2" Content="Run" Command="{Binding GetSelectedFramesCommand}"/>
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Select Frame in Model from Excel Range" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="2" Grid.Column="2" Content="By UniqueName" Command="{Binding SelectFramesByUniqueNameCommand}"/>
+
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Add Frame From Range Excel" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="4" Grid.Column="2" Content="By Coor" Command="{Binding AddFramesByCoordinatesCommand}"/>
+                                        <Button Grid.Row="4" Grid.Column="4" Content="By Point" Command="{Binding AddFramesByPointNamesCommand}"/>
+
+                                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Extract Selected Frame Information" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="6" Grid.Column="2" Content="Run" Command="{Binding GetSelectedFramesCommand}"/>
+
+                                        <TextBlock Grid.Row="8" Grid.Column="0" Text="Change Name" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="8" Grid.Column="2" Content="Run" Command="{Binding RenameFramesCommand}"/>
+
+                                        <TextBlock Grid.Row="10" Grid.Column="0" Text="Frame Section Property" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="10" Grid.Column="2" Content="Get" Command="{Binding GetFrameSectionPropertyCommand}"/>
+                                        <Button Grid.Row="10" Grid.Column="4" Content="Set" Command="{Binding SetFrameSectionPropertyCommand}"/>
+
+                                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Frame Group Assignment" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="12" Grid.Column="2" Content="Get" Command="{Binding GetFrameGroupAssignmentCommand}"/>
+                                        <Button Grid.Row="12" Grid.Column="4" Content="Set" Command="{Binding SetFrameGroupAssignmentCommand}"/>
+
+                                        <TextBlock Grid.Row="14" Grid.Column="0" Text="Frame Modifier" Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Row="14" Grid.Column="2" Content="Get" Command="{Binding GetFrameModifierCommand}"/>
+                                        <Button Grid.Row="14" Grid.Column="4" Content="Set" Command="{Binding SetFrameModifierCommand}"/>
+                                    </Grid>
+                                </Border>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Shell">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          CanContentScroll="True">
+                                <Border Style="{StaticResource CompactCardBorderStyle}"
+                                        Margin="{StaticResource Inset.Small}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2.2*"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0"
+                                                   Text="Create Shell Area From Selected Frames"
+                                                   Style="{StaticResource LabelTextStyle}"/>
+                                        <Button Grid.Column="2"
+                                                Content="Create Shell"
+                                                Command="{Binding CreateShellAreasFromSelectedFramesCommand}"/>
+                                    </Grid>
+                                </Border>
+                            </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="LoadPattern">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          CanContentScroll="True">
+                                <Border Style="{StaticResource CompactCardBorderStyle}"
+                                        Margin="{StaticResource Inset.Small}">
+                                    <Grid MinHeight="210">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="10"/>
+                                            <ColumnDefinition Width="150"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0"
+                                                   Grid.Column="0"
+                                                   Text="Existing Patterns in Model"
+                                                   Style="{StaticResource SectionHeadingTextStyle}"
+                                                   Margin="{StaticResource Gap.Card}"/>
+                                        <DataGrid x:Name="LoadPatternList"
+                                                  Grid.Row="1"
+                                                  Grid.Column="0"
+                                                  ItemsSource="{Binding LoadPatterns}"
+                                                  SelectionMode="Extended"
+                                                  SelectionUnit="FullRow"
+                                                  AutoGenerateColumns="False"
+                                                  CanUserAddRows="False"
+                                                  CanUserDeleteRows="False"
+                                                  CanUserResizeRows="False"
+                                                  IsReadOnly="True">
+                                            <DataGrid.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Delete"
+                                                              Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadPatternsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                </ContextMenu>
+                                            </DataGrid.ContextMenu>
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Load Pattern Name" Binding="{Binding Name}" Width="*"/>
+                                                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+
+                                        <StackPanel Grid.Row="1"
+                                                    Grid.Column="2"
+                                                    VerticalAlignment="Top">
+                                            <Button Content="Refresh List"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Margin="{StaticResource Gap.Card}"
+                                                    Command="{Binding GetLoadPatternsCommand}"/>
+                                            <Button Content="Add From Excel"
+                                                    Command="{Binding AddLoadPatternFromExcelCommand}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>
-                                
-                                <StackPanel Grid.Row="1">
-                                    <TextBlock Text="Create New Section From Excel" Margin="0,0,0,8"/>
-                                    <WrapPanel>
-                                        <Button Content="Ishape" Width="70" Margin="0,0,8,8" Command="{Binding CreateIshapeSectionCommand}" />
-                                        <Button Content="Channel" Width="70" Margin="0,0,8,8" Command="{Binding CreateChannelSectionCommand}" />
-                                        <Button Content="Angle" Width="70" Margin="0,0,8,8" Command="{Binding CreateAngleSectionCommand}" />
-                                        <Button Content="Tube" Width="70" Margin="0,0,8,8" Command="{Binding CreateTubeSectionCommand}" />
-                                        <Button Content="Pipe" Width="70" Margin="0,0,8,8" Command="{Binding CreatePipeSectionCommand}" />
-                                        <Button Content="Rectangle" Width="70" Margin="0,0,8,8" Command="{Binding CreateConcreteRectangleSectionCommand}" />
-                                        <Button Content="Circle" Width="70" Margin="0,0,8,8" Command="{Binding CreateConcreteCircleSectionCommand}" />
-                                    </WrapPanel>
-                                </StackPanel>
-                            </Grid>
-                        </GroupBox>
-                    </Grid>
-                </TabItem>
+                            </ScrollViewer>
+                        </TabItem>
 
-                <TabItem Header="Point">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  CanContentScroll="True">
-                        <Grid Margin="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                       Grid.Column="1"
-                                       Text="Select Point in Model from Excel Range"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="0"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="By UniqueName"
-                                    Command="{Binding SelectPointsByUniqueNameCommand}"/>
-
-                            <TextBlock Grid.Row="2"
-                                       Grid.Column="1"
-                                       Text="Add Point From Range Excel"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="2"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="By Cartesian"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{Binding AddPointByCartesianCommand}"/>
-
-                            <TextBlock Grid.Row="4"
-                                       Grid.Column="1"
-                                       Text="Extract Selected Point Information"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="4"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Run"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{Binding GetSelectedPointsCommand}"/>
-
-                            <TextBlock Grid.Row="6"
-                                       Grid.Column="1"
-                                       Text="Grouping"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="6"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Get"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{Binding GetPointGroupAssignmentCommand}"/>
-
-                            <Button Grid.Row="6"
-                                    Grid.Column="4"
-                                    Margin="6,0,6,0"
-                                    Content="Set"
-                                    HorizontalAlignment="Stretch"
-                                    Command="{Binding SetPointGroupAssignmentCommand}"/>
-                        </Grid>
-                    </ScrollViewer>
-                </TabItem>
-
-                <TabItem Header="Frame">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  CanContentScroll="True">
-                        <Grid Margin="12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="20"/>
-                                <ColumnDefinition Width="2.2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="20"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="10"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <TextBlock Grid.Row="0"
-                                       Grid.Column="1"
-                                       Text="Get Current Selection Frame UniqueNames"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="0"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Run"
-                                    Command="{Binding GetSelectedFramesCommand}"/>
-
-                            <TextBlock Grid.Row="2"
-                                       Grid.Column="1"
-                                       Text="Select Frame in Model from Excel Range"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="2"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="By UniqueName"
-                                    Command="{Binding SelectFramesByUniqueNameCommand}"/>
-
-                            <TextBlock Grid.Row="4"
-                                       Grid.Column="1"
-                                       Text="Add Frame From Range Excel"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="4"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="By Coor"
-                                    Command="{Binding AddFramesByCoordinatesCommand}"/>
-
-                            <Button Grid.Row="4"
-                                    Grid.Column="4"
-                                    Margin="6,0,6,0"
-                                    Content="By Point"
-                                    Command="{Binding AddFramesByPointNamesCommand}"/>
-
-                            <TextBlock Grid.Row="6"
-                                       Grid.Column="1"
-                                       Text="Extract Selected Frame Information"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="6"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Run"
-                                    Command="{Binding GetSelectedFramesCommand}"/>
-
-                            <TextBlock Grid.Row="8"
-                                       Grid.Column="1"
-                                       Text="Change Name"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="8"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Run"
-                                    Command="{Binding RenameFramesCommand}"/>
-
-                            <TextBlock Grid.Row="10"
-                                       Grid.Column="1"
-                                       Text="Frame Section Property"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="10"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Get"
-                                    Command="{Binding GetFrameSectionPropertyCommand}"/>
-
-                            <Button Grid.Row="10"
-                                    Grid.Column="4"
-                                    Margin="6,0,6,0"
-                                    Content="Set"
-                                    Command="{Binding SetFrameSectionPropertyCommand}"/>
-
-                            <TextBlock Grid.Row="12"
-                                       Grid.Column="1"
-                                       Text="Frame Group Assignment"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="12"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Get"
-                                    Command="{Binding GetFrameGroupAssignmentCommand}"/>
-
-                            <Button Grid.Row="12"
-                                    Grid.Column="4"
-                                    Margin="6,0,6,0"
-                                    Content="Set"
-                                    Command="{Binding SetFrameGroupAssignmentCommand}"/>
-
-                            <TextBlock Grid.Row="14"
-                                       Grid.Column="1"
-                                       Text="Frame Modifier"
-                                       VerticalAlignment="Center"
-                                       Foreground="Black"
-                                       FontWeight="Bold"
-                                       TextWrapping="Wrap"
-                                       Margin="0,0,8,0"/>
-
-                            <Button Grid.Row="14"
-                                    Grid.Column="2"
-                                    Margin="6,0,6,0"
-                                    Content="Get"
-                                    Command="{Binding GetFrameModifierCommand}"/>
-
-                            <Button Grid.Row="14"
-                                    Grid.Column="4"
-                                    Margin="6,0,6,0"
-                                    Content="Set"
-                                    Command="{Binding SetFrameModifierCommand}"/>
-                        </Grid>
-                    </ScrollViewer>
-                </TabItem>
-
-                <TabItem Header="Shell">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  CanContentScroll="True">
-                        <StackPanel Margin="12">
-                            <GroupBox Header="Shell Area" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="2.2*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBlock Grid.Column="0"
-                                               Text="Create Shell Area From Selected Frames"
-                                               VerticalAlignment="Center"
-                                               Foreground="Black"
-                                               FontWeight="Bold"
-                                               TextWrapping="Wrap"
-                                               Margin="0,0,8,0"/>
-
-                                    <Button Grid.Column="2"
-                                            Content="Create Shell"
-                                            HorizontalAlignment="Stretch"
-                                            Command="{Binding CreateShellAreasFromSelectedFramesCommand}"/>
-                                </Grid>
-                            </GroupBox>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <TabItem Header="LoadPattern">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  CanContentScroll="True">
-                        <StackPanel Margin="12">
-                            <GroupBox Header="Load Patterns" FontWeight="Bold" Margin="0,0,0,10" Padding="10">
-                                <Grid Height="180">
+                        <TabItem Header="LoadCombination">
+                            <Border Style="{StaticResource CompactCardBorderStyle}"
+                                    Margin="{StaticResource Inset.Small}">
+                                <Grid MinHeight="320">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="10"/>
                                         <ColumnDefinition Width="150"/>
                                     </Grid.ColumnDefinitions>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-                                    
-                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Patterns in Model" Foreground="Black" Margin="0,0,0,4"/>
-                                    <DataGrid x:Name="LoadPatternList" Grid.Row="1" Grid.Column="0"
-                                              ItemsSource="{Binding LoadPatterns}"
-                                              SelectionMode="Extended"
-                                              SelectionUnit="FullRow"
-                                              AutoGenerateColumns="False"
-                                              CanUserAddRows="False"
-                                              CanUserDeleteRows="False"
-                                              CanUserResizeRows="False"
-                                              IsReadOnly="True"
-                                              HeadersVisibility="Column"
-                                              GridLinesVisibility="Horizontal"
-                                              BorderBrush="#CCCCCC"
-                                              BorderThickness="1"
-                                              FontSize="11"
-                                              FontWeight="Normal"
-                                              Foreground="Black">
-                                        <DataGrid.ContextMenu>
-                                            <ContextMenu>
-                                                <MenuItem Header="Delete" Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadPatternsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                            </ContextMenu>
-                                        </DataGrid.ContextMenu>
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Load Pattern Name" Binding="{Binding Name}" Width="*"/>
-                                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                    
-                                    <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
-                                        <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadPatternsCommand}" Margin="0,0,0,8"/>
-                                        <Button Content="Add From Excel" HorizontalAlignment="Stretch" Command="{Binding AddLoadPatternFromExcelCommand}" Margin="0,0,0,8"/>
-                                    </StackPanel>
-                                </Grid>
-                            </GroupBox>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
 
-                <TabItem Header="LoadCombination">
-                    <Grid Margin="12">
-                        <GroupBox Header="Load Combination"
-                                  FontWeight="Bold"
-                                  Margin="0,0,0,10"
-                                  Padding="10"
-                                  VerticalAlignment="Stretch"
-                                  HorizontalAlignment="Stretch">
-                            <Grid MinHeight="320">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="150"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Existing Combinations in Model" Foreground="Black" Margin="0,0,0,4"/>
-                                <DataGrid x:Name="LoadCombinationList" Grid.Row="1" Grid.Column="0"
-                                              VerticalAlignment="Stretch"
-                                              HorizontalAlignment="Stretch"
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="Existing Combinations in Model"
+                                               Style="{StaticResource SectionHeadingTextStyle}"
+                                               Margin="{StaticResource Gap.Card}"/>
+                                    <DataGrid x:Name="LoadCombinationList"
+                                              Grid.Row="1"
+                                              Grid.Column="0"
                                               ItemsSource="{Binding LoadCombinations}"
                                               SelectionMode="Extended"
                                               SelectionUnit="FullRow"
@@ -810,18 +617,15 @@
                                               CanUserAddRows="False"
                                               CanUserDeleteRows="False"
                                               CanUserResizeRows="False"
-                                              IsReadOnly="True"
-                                              HeadersVisibility="Column"
-                                              GridLinesVisibility="Horizontal"
-                                              BorderBrush="#CCCCCC"
-                                              BorderThickness="1"
-                                              FontSize="11"
-                                              FontWeight="Normal"
-                                              Foreground="Black">
+                                              IsReadOnly="True">
                                         <DataGrid.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem Header="View" Command="{Binding PlacementTarget.DataContext.ViewLoadCombinationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
-                                                <MenuItem Header="Delete" Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadCombinationsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                <MenuItem Header="View"
+                                                          Command="{Binding PlacementTarget.DataContext.ViewLoadCombinationCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                <MenuItem Header="Delete"
+                                                          Command="{Binding PlacementTarget.DataContext.DeleteSelectedLoadCombinationsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                          CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                             </ContextMenu>
                                         </DataGrid.ContextMenu>
                                         <DataGrid.Columns>
@@ -829,56 +633,54 @@
                                             <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
                                         </DataGrid.Columns>
                                     </DataGrid>
-                                
-                                <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
-                                    <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
-                                    <Button Content="Modify in Matrix View" HorizontalAlignment="Stretch" Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}" Margin="0,0,0,8"/>
-                                </StackPanel>
-                            </Grid>
-                        </GroupBox>
-                    </Grid>
-                </TabItem>
 
-                <TabItem Header="Post Processing">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="12">
-                            <TextBlock Text="Extract Results" FontSize="16" FontWeight="Bold" Foreground="#111827" Margin="0,0,0,12"/>
-                            <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0" Style="{StaticResource GroupCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="GLOBAL RESULTS" FontSize="11" FontWeight="Bold" Foreground="#6B7280" Margin="0,0,0,10"/>
-                                    <Button Style="{StaticResource ToolButtonStyle}" Content="Get Base Reactions" Command="{Binding GetBaseReactionsCommand}" Margin="0,0,0,8"/>
-                                    <Button Style="{StaticResource ToolButtonStyle}" Content="Modal Mass Participation Ratios" Command="{Binding GetModalMassParticipationRatiosCommand}" Margin="0,0,0,8"/>
-                                    <Button Style="{StaticResource ToolButtonStyle}" Content="Mass Summary by Story" Command="{Binding GetMassSummaryByStoryCommand}"/>
-                                </StackPanel>
+                                    <StackPanel Grid.Row="1"
+                                                Grid.Column="2"
+                                                VerticalAlignment="Top">
+                                        <Button Content="Refresh List"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Margin="{StaticResource Gap.Card}"
+                                                Command="{Binding GetLoadCombinationsCommand}"/>
+                                        <Button Content="Modify Matrix"
+                                                Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}"/>
+                                    </StackPanel>
+                                </Grid>
                             </Border>
+                        </TabItem>
 
-                            <Border Grid.Column="2" Style="{StaticResource GroupCardStyle}">
-                                <StackPanel>
-                                    <TextBlock Text="STORY RESULTS" FontSize="11" FontWeight="Bold" Foreground="#6B7280" Margin="0,0,0,10"/>
-                                    <Button Style="{StaticResource ToolButtonStyle}" Content="Story Forces" Command="{Binding GetStoryForcesCommand}" Margin="0,0,0,8"/>
-                                    <Button Style="{StaticResource ToolButtonStyle}" Content="Story Drifts" Command="{Binding GetStoryDriftsCommand}" Margin="0,0,0,8"/>
-                                    <Button Style="{StaticResource ToolButtonStyle}" Content="Story Max/Avg Displacements" Command="{Binding GetStoryMaxOverAverageDisplacementsCommand}" Margin="0,0,0,8"/>
-                                    <Button Style="{StaticResource ToolButtonStyle}" Content="Story Max/Avg Drifts" Command="{Binding GetStoryMaxOverAverageDriftsCommand}"/>
+                        <TabItem Header="Analysis Results">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel Margin="{StaticResource Inset.Small}">
+                                    <TextBlock Text="{Binding ActiveAnalysisResultsGroup}"
+                                               Style="{StaticResource HeadingTextStyle}"
+                                               Margin="{StaticResource Gap.Section}"/>
+                                    <Border Style="{StaticResource CompactCardBorderStyle}">
+                                        <StackPanel>
+                                            <TextBlock Text="ETABS Tables"
+                                                       Style="{StaticResource SectionHeadingTextStyle}"
+                                                       Margin="{StaticResource Gap.Section}"/>
+                                            <ItemsControl ItemsSource="{Binding AnalysisResultTables}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Button Content="{Binding}"
+                                                                Command="{Binding DataContext.ExportAnalysisResultTableCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                CommandParameter="{Binding}"
+                                                                ToolTip="{Binding Converter={StaticResource TableHeaderToolTipConverter}}"
+                                                                HorizontalAlignment="Stretch"
+                                                                HorizontalContentAlignment="Left"
+                                                                Margin="{StaticResource Gap.Card}"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
-                            </Border>
-                        </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-            </TabControl>
-                    </Border>
-                </Grid>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </Border>
             </Grid>
-        </Border>
+        </Grid>
     </Grid>
 </UserControl>
-
-
