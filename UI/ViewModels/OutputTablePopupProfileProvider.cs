@@ -267,6 +267,22 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         EmptyDataMessage = "No joint output records found.",
                         WorksheetNamePrefix = "Joint Output"
                     }
+                },
+                {
+                    "ObjectsAndElements",
+                    new OutputTablePopupProfile
+                    {
+                        Key = "ObjectsAndElements",
+                        CaseSelectionMode = OutputCaseSelectionMode.None,
+                        CaseSelectorTitle = string.Empty,
+                        AllowMultipleCases = false,
+                        ShowCaseComboSelector = false,
+                        ShowUnitSelector = true,
+                        ShowComboSelector = false,
+                        DefaultToCurrentEtabsUnit = true,
+                        EmptyDataMessage = "No objects/elements found.",
+                        WorksheetNamePrefix = "Objects and Elements"
+                    }
                 }
             };
         }

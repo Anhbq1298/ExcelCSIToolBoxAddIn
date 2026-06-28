@@ -1,4 +1,4 @@
-﻿namespace ExcelCSIToolBoxAddIn
+namespace ExcelCSIToolBoxAddIn
 {
     partial class ExcelCSIToolBoxAddInRibbon : Microsoft.Office.Tools.Ribbon.RibbonBase
     {
@@ -37,7 +37,6 @@
             this.tabExcelCSIToolBox = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.buttonEtabs = this.Factory.CreateRibbonButton();
-            this.buttonSap2000 = this.Factory.CreateRibbonButton();
             this.groupEtabsPostprocessing = this.Factory.CreateRibbonGroup();
             this.buttonGetBaseReactions = this.Factory.CreateRibbonButton();
             this.buttonModalMassParticipationRatios = this.Factory.CreateRibbonButton();
@@ -65,7 +64,6 @@
             // group1
             // 
             this.group1.Items.Add(this.buttonEtabs);
-            this.group1.Items.Add(this.buttonSap2000);
             this.group1.Label = "CSI Toolbox";
             this.group1.Name = "group1";
             // 
@@ -76,14 +74,6 @@
             this.buttonEtabs.Name = "buttonEtabs";
             this.buttonEtabs.ShowImage = true;
             this.buttonEtabs.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonEtabs_Click);
-            // 
-            // buttonSap2000
-            // 
-            this.buttonSap2000.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
-            this.buttonSap2000.Label = "SAP2000 Toolbox";
-            this.buttonSap2000.Name = "buttonSap2000";
-            this.buttonSap2000.ShowImage = true;
-            this.buttonSap2000.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonSap2000_Click);
             // 
             // groupEtabsPostprocessing
             // 
@@ -216,7 +206,6 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupEtabsPostprocessing;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAiAssistant;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonEtabs;
-        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonSap2000;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonGetBaseReactions;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonModalMassParticipationRatios;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryForces;

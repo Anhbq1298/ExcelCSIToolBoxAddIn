@@ -12,14 +12,11 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     internal static class WindowManager
     {
         private static ICSISapModelConnectionService _etabsConnectionService;
-        private static ICSISapModelConnectionService _sap2000ConnectionService;
         private static IExcelSelectionService _excelSelectionService;
         private static IExcelOutputService _excelOutputService;
 
         private static Microsoft.Office.Tools.CustomTaskPane _etabsPane;
-        private static Microsoft.Office.Tools.CustomTaskPane _sap2000Pane;
         private static WpfTaskPaneHost _etabsHost;
-        private static WpfTaskPaneHost _sap2000Host;
         private static OutputTableExportOptionsWindow _getBaseReactionsWindow;
         private static GetModalMassParticipationRatiosWindow _modalMassParticipationRatiosWindow;
         private static GetStoryResultsWindow _storyForcesWindow;
@@ -30,12 +27,10 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         internal static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
-            ICSISapModelConnectionService sap2000ConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
             _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
-            _sap2000ConnectionService = sap2000ConnectionService ?? throw new ArgumentNullException(nameof(sap2000ConnectionService));
             _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
         }
@@ -50,15 +45,6 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 () => new EtabsToolboxControl());
         }
 
-        internal static void ShowSap2000Window()
-        {
-            ToggleCsiPane(
-                ref _sap2000Pane,
-                ref _sap2000Host,
-                "SAP2000 Toolbox",
-                _sap2000ConnectionService,
-                () => new Sap2000ToolboxControl());
-        }
 
         internal static void ShowGetBaseReactionsWindow()
         {
@@ -207,7 +193,6 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         internal static void DisposePanes()
         {
             DisposePane(ref _etabsPane, ref _etabsHost);
-            DisposePane(ref _sap2000Pane, ref _sap2000Host);
         }
 
         private static void ToggleCsiPane(

@@ -1911,59 +1911,125 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     table = FilterDisplayTableRows(table, selectedOutputCases, displayTableName);
                 }
 
-                if (IsJointOutputTable(displayTableName))
+                var selectionInfo = GetActiveSelectionInfo(sapModel);
+                if (selectionInfo.HasActiveSelection)
                 {
-                    var selectedJoints = GetSelectedPointsFromActiveModel();
-                    if (!selectedJoints.IsSuccess)
+                    if (IsJointOutputTable(displayTableName))
                     {
-                        return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectedJoints.Message);
-                    }
-                    if (selectedJoints.Data == null || selectedJoints.Data.Count == 0)
-                    {
-                        return OperationResult<CSISapModelDisplayTableDTO>.Failure("Select one or more joints in the ETABS model before exporting.");
-                    }
+                        int jointColIndex = FindFieldIndex(
+                            table.FieldKeys,
+                            "Unique Name",
+                            "UniqueName",
+                            "Joint",
+                            "Joint Name",
+                            "JointName",
+                            "Point",
+                            "Point Name",
+                            "PointName",
+                            "Label",
+                            "Label Name",
+                            "LabelName");
 
-                    var selectedJointNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var point in selectedJoints.Data)
-                    {
-                        if (!string.IsNullOrWhiteSpace(point.PointUniqueName))
+                        if (jointColIndex >= 0)
                         {
-                            selectedJointNames.Add(point.PointUniqueName.Trim());
-                        }
-                        if (!string.IsNullOrWhiteSpace(point.PointLabel))
-                        {
-                            selectedJointNames.Add(point.PointLabel.Trim());
-                        }
-                    }
-
-                    int jointColIndex = FindFieldIndex(
-                        table.FieldKeys,
-                        "Unique Name",
-                        "UniqueName",
-                        "Joint",
-                        "Joint Name",
-                        "JointName",
-                        "Point",
-                        "Point Name",
-                        "PointName",
-                        "Label",
-                        "Label Name",
-                        "LabelName");
-
-                    if (jointColIndex >= 0)
-                    {
-                        var filteredRows = new List<object[]>();
-                        foreach (object[] row in table.Rows)
-                        {
-                            string jointName = row != null && jointColIndex < row.Length
-                                ? Convert.ToString(row[jointColIndex], CultureInfo.InvariantCulture)
-                                : string.Empty;
-                            if (!string.IsNullOrWhiteSpace(jointName) && selectedJointNames.Contains(jointName.Trim()))
+                            var filteredRows = new List<object[]>();
+                            foreach (object[] row in table.Rows)
                             {
-                                filteredRows.Add(row);
+                                string jointName = row != null && jointColIndex < row.Length
+                                    ? Convert.ToString(row[jointColIndex], CultureInfo.InvariantCulture)
+                                    : string.Empty;
+                                if (!string.IsNullOrWhiteSpace(jointName) && selectionInfo.SelectedPoints.Contains(jointName.Trim()))
+                                {
+                                    filteredRows.Add(row);
+                                }
                             }
+                            table = new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
                         }
-                        table = new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
+                    }
+                    else if (IsFrameOutputTable(displayTableName))
+                    {
+                        int frameColIndex = FindFieldIndex(
+                            table.FieldKeys,
+                            "Unique Name",
+                            "UniqueName",
+                            "Frame",
+                            "Frame Name",
+                            "FrameName",
+                            "Element",
+                            "Element Name",
+                            "ElementName",
+                            "Label");
+
+                        if (frameColIndex >= 0)
+                        {
+                            var filteredRows = new List<object[]>();
+                            foreach (object[] row in table.Rows)
+                            {
+                                string frameName = row != null && frameColIndex < row.Length
+                                    ? Convert.ToString(row[frameColIndex], CultureInfo.InvariantCulture)
+                                    : string.Empty;
+                                if (!string.IsNullOrWhiteSpace(frameName) && selectionInfo.SelectedFrames.Contains(frameName.Trim()))
+                                {
+                                    filteredRows.Add(row);
+                                }
+                            }
+                            table = new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
+                        }
+                    }
+                    else if (IsAreaOutputTable(displayTableName))
+                    {
+                        int areaColIndex = FindFieldIndex(
+                            table.FieldKeys,
+                            "Unique Name",
+                            "UniqueName",
+                            "Area",
+                            "Area Name",
+                            "AreaName",
+                            "Element",
+                            "Element Name",
+                            "ElementName",
+                            "Label");
+
+                        if (areaColIndex >= 0)
+                        {
+                            var filteredRows = new List<object[]>();
+                            foreach (object[] row in table.Rows)
+                            {
+                                string areaName = row != null && areaColIndex < row.Length
+                                    ? Convert.ToString(row[areaColIndex], CultureInfo.InvariantCulture)
+                                    : string.Empty;
+                                if (!string.IsNullOrWhiteSpace(areaName) && selectionInfo.SelectedAreas.Contains(areaName.Trim()))
+                                {
+                                    filteredRows.Add(row);
+                                }
+                            }
+                            table = new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
+                        }
+                    }
+                    else if (IsWallOutputTable(displayTableName))
+                    {
+                        int pierColIndex = FindFieldIndex(
+                            table.FieldKeys,
+                            "Pier",
+                            "Pier Name",
+                            "PierName",
+                            "Label");
+
+                        if (pierColIndex >= 0)
+                        {
+                            var filteredRows = new List<object[]>();
+                            foreach (object[] row in table.Rows)
+                            {
+                                string pierName = row != null && pierColIndex < row.Length
+                                    ? Convert.ToString(row[pierColIndex], CultureInfo.InvariantCulture)
+                                    : string.Empty;
+                                if (!string.IsNullOrWhiteSpace(pierName) && selectionInfo.SelectedPiers.Contains(pierName.Trim()))
+                                {
+                                    filteredRows.Add(row);
+                                }
+                            }
+                            table = new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
+                        }
                     }
                 }
 
@@ -1998,15 +2064,10 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             JointResultOapiDelegate oapiFunc,
             string col1, string col2, string col3, string col4, string col5, string col6)
         {
-            var selectedJoints = GetSelectedPointsFromActiveModel();
-            if (!selectedJoints.IsSuccess)
-            {
-                return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectedJoints.Message);
-            }
-            if (selectedJoints.Data == null || selectedJoints.Data.Count == 0)
-            {
-                return OperationResult<CSISapModelDisplayTableDTO>.Failure("Select one or more joints in the ETABS model before exporting.");
-            }
+            var selectionInfo = GetActiveSelectionInfo(sapModel);
+            ETABSv1.eItemTypeElm itemType = selectionInfo.HasActiveSelection
+                ? ETABSv1.eItemTypeElm.SelectionElm
+                : ETABSv1.eItemTypeElm.ObjectElm;
 
             if (selectedOutputCases != null && selectedOutputCases.Count > 0)
             {
@@ -2032,7 +2093,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
 
             int ret = oapiFunc(
                 "",
-                ETABSv1.eItemTypeElm.SelectionElm,
+                itemType,
                 ref numberResults,
                 ref obj,
                 ref elm,
@@ -2096,15 +2157,9 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
         {
-            var selectedJoints = GetSelectedPointsFromActiveModel();
-            if (!selectedJoints.IsSuccess)
-            {
-                return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectedJoints.Message);
-            }
-            if (selectedJoints.Data == null || selectedJoints.Data.Count == 0)
-            {
-                return OperationResult<CSISapModelDisplayTableDTO>.Failure("Select one or more joints in the ETABS model before exporting.");
-            }
+            var selectionInfo = GetActiveSelectionInfo(sapModel);
+            bool hasSelection = selectionInfo.HasActiveSelection;
+            var selectedJointNames = selectionInfo.SelectedPoints;
 
             if (selectedOutputCases != null && selectedOutputCases.Count > 0)
             {
@@ -2112,19 +2167,6 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 if (!selectResult.IsSuccess)
                 {
                     return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectResult.Message);
-                }
-            }
-
-            var selectedJointNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var point in selectedJoints.Data)
-            {
-                if (!string.IsNullOrWhiteSpace(point.PointUniqueName))
-                {
-                    selectedJointNames.Add(point.PointUniqueName.Trim());
-                }
-                if (!string.IsNullOrWhiteSpace(point.PointLabel))
-                {
-                    selectedJointNames.Add(point.PointLabel.Trim());
                 }
             }
 
@@ -2180,7 +2222,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     string jointName = name[i];
                     string jointLabel = label != null && i < label.Length ? label[i] : "";
                     
-                    if (selectedJointNames.Contains(jointName.Trim()) || selectedJointNames.Contains(jointLabel.Trim()))
+                    if (!hasSelection || selectedJointNames.Contains(jointName.Trim()) || selectedJointNames.Contains(jointLabel.Trim()))
                     {
                         var row = new object[10];
                         row[0] = story != null && i < story.Length ? story[i] : "";
@@ -2205,6 +2247,251 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             });
         }
 
+        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsJoints(ETABSv1.cSapModel sapModel)
+        {
+            try
+            {
+                int numberNames = 0;
+                string[] names = null;
+                int ret = sapModel.PointObj.GetNameList(ref numberNames, ref names);
+                if (ret != 0 || names == null)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure("Failed to retrieve joint name list from ETABS.");
+                }
+
+                // Check for selected points
+                var selectionInfo = GetActiveSelectionInfo(sapModel);
+                var selectedNames = selectionInfo.SelectedPoints;
+                bool hasSelection = selectionInfo.HasActiveSelection;
+
+                var fieldKeys = new[] { "Joint", "Label", "Unique Name", "Story", "X-Coord", "Y-Coord", "Z-Coord" };
+                var rows = new List<object[]>();
+
+                foreach (var name in names)
+                {
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    if (hasSelection && !selectedNames.Contains(name.Trim())) continue;
+
+                    string label = string.Empty;
+                    string story = string.Empty;
+                    sapModel.PointObj.GetLabelFromName(name, ref label, ref story);
+
+                    double x = 0, y = 0, z = 0;
+                    sapModel.PointObj.GetCoordCartesian(name, ref x, ref y, ref z, "Global");
+
+                    rows.Add(new object[] { label, label, name, story, x, y, z });
+                }
+
+                return OperationResult<CSISapModelDisplayTableDTO>.Success(new CSISapModelDisplayTableDTO
+                {
+                    FieldKeys = fieldKeys,
+                    Rows = rows
+                });
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to retrieve Objects and Elements - Joints: {ex.Message}");
+            }
+        }
+
+        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsFrames(ETABSv1.cSapModel sapModel)
+        {
+            try
+            {
+                int numberNames = 0;
+                string[] names = null;
+                int ret = sapModel.FrameObj.GetNameList(ref numberNames, ref names);
+                if (ret != 0 || names == null)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure("Failed to retrieve frame name list from ETABS.");
+                }
+
+                // Check for selected frames
+                var selectionInfo = GetActiveSelectionInfo(sapModel);
+                var selectedNames = selectionInfo.SelectedFrames;
+                bool hasSelection = selectionInfo.HasActiveSelection;
+
+                var fieldKeys = new[] { "Frame", "Label", "Unique Name", "Story", "PointI", "PointJ", "Section", "Material" };
+                var rows = new List<object[]>();
+
+                foreach (var name in names)
+                {
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    if (hasSelection && !selectedNames.Contains(name.Trim())) continue;
+
+                    string label = string.Empty;
+                    string story = string.Empty;
+                    sapModel.FrameObj.GetLabelFromName(name, ref label, ref story);
+
+                    string pointI = string.Empty;
+                    string pointJ = string.Empty;
+                    sapModel.FrameObj.GetPoints(name, ref pointI, ref pointJ);
+
+                    string section = string.Empty;
+                    string sAuto = string.Empty;
+                    sapModel.FrameObj.GetSection(name, ref section, ref sAuto);
+
+                    string material = string.Empty;
+                    if (!string.IsNullOrWhiteSpace(section))
+                    {
+                        sapModel.PropFrame.GetMaterial(section, ref material);
+                    }
+
+                    rows.Add(new object[] { label, label, name, story, pointI, pointJ, section, material });
+                }
+
+                return OperationResult<CSISapModelDisplayTableDTO>.Success(new CSISapModelDisplayTableDTO
+                {
+                    FieldKeys = fieldKeys,
+                    Rows = rows
+                });
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to retrieve Objects and Elements - Frames: {ex.Message}");
+            }
+        }
+
+        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsAreas(ETABSv1.cSapModel sapModel)
+        {
+            try
+            {
+                int numberNames = 0;
+                string[] names = null;
+                int ret = sapModel.AreaObj.GetNameList(ref numberNames, ref names);
+                if (ret != 0 || names == null)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure("Failed to retrieve area name list from ETABS.");
+                }
+
+                // Check for selected shells
+                var selectionInfo = GetActiveSelectionInfo(sapModel);
+                var selectedNames = selectionInfo.SelectedAreas;
+                bool hasSelection = selectionInfo.HasActiveSelection;
+
+                var fieldKeys = new[] { "Area", "Label", "Unique Name", "Story", "Section", "Material" };
+                var rows = new List<object[]>();
+
+                foreach (var name in names)
+                {
+                    if (string.IsNullOrWhiteSpace(name)) continue;
+                    if (hasSelection && !selectedNames.Contains(name.Trim())) continue;
+
+                    string label = string.Empty;
+                    string story = string.Empty;
+                    sapModel.AreaObj.GetLabelFromName(name, ref label, ref story);
+
+                    string section = string.Empty;
+                    sapModel.AreaObj.GetProperty(name, ref section);
+
+                    string material = string.Empty;
+                    if (!string.IsNullOrWhiteSpace(section))
+                    {
+                        // Try GetSlab
+                        ETABSv1.eSlabType slabType = ETABSv1.eSlabType.Slab;
+                        ETABSv1.eShellType shellType = ETABSv1.eShellType.ShellThin;
+                        double thickness = 0;
+                        int color = 0;
+                        string notes = string.Empty;
+                        string guid = string.Empty;
+                        int sRet = sapModel.PropArea.GetSlab(section, ref slabType, ref shellType, ref material, ref thickness, ref color, ref notes, ref guid);
+                        if (sRet != 0 || string.IsNullOrWhiteSpace(material))
+                        {
+                            // Try GetWall
+                            ETABSv1.eWallPropType wallType = ETABSv1.eWallPropType.Specified;
+                            int wRet = sapModel.PropArea.GetWall(section, ref wallType, ref shellType, ref material, ref thickness, ref color, ref notes, ref guid);
+                            if (wRet != 0 || string.IsNullOrWhiteSpace(material))
+                            {
+                                // Try GetDeck
+                                ETABSv1.eDeckType deckType = ETABSv1.eDeckType.Filled;
+                                sapModel.PropArea.GetDeck(section, ref deckType, ref shellType, ref material, ref thickness, ref color, ref notes, ref guid);
+                            }
+                        }
+                    }
+
+                    rows.Add(new object[] { label, label, name, story, section, material });
+                }
+
+                return OperationResult<CSISapModelDisplayTableDTO>.Success(new CSISapModelDisplayTableDTO
+                {
+                    FieldKeys = fieldKeys,
+                    Rows = rows
+                });
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to retrieve Objects and Elements - Areas: {ex.Message}");
+            }
+        }
+        private struct ActiveSelectionInfo
+        {
+            public bool HasActiveSelection;
+            public HashSet<string> SelectedPoints;
+            public HashSet<string> SelectedFrames;
+            public HashSet<string> SelectedAreas;
+            public HashSet<string> SelectedPiers;
+        }
+
+        private ActiveSelectionInfo GetActiveSelectionInfo(ETABSv1.cSapModel sapModel)
+        {
+            var info = new ActiveSelectionInfo
+            {
+                HasActiveSelection = false,
+                SelectedPoints = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                SelectedFrames = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                SelectedAreas = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                SelectedPiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            };
+
+            try
+            {
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int ret = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
+                if (ret == 0 && numberItems > 0 && objectTypes != null && objectNames != null)
+                {
+                    info.HasActiveSelection = true;
+                    for (int i = 0; i < numberItems; i++)
+                    {
+                        if (i >= objectTypes.Length || i >= objectNames.Length) continue;
+                        string name = objectNames[i];
+                        if (string.IsNullOrWhiteSpace(name)) continue;
+                        name = name.Trim();
+
+                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Point)
+                        {
+                            info.SelectedPoints.Add(name);
+                        }
+                        else if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Frame)
+                        {
+                            info.SelectedFrames.Add(name);
+                            string pierName = string.Empty;
+                            if (sapModel.FrameObj.GetPier(name, ref pierName) == 0 && !string.IsNullOrWhiteSpace(pierName))
+                            {
+                                info.SelectedPiers.Add(pierName.Trim());
+                            }
+                        }
+                        else if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Shell)
+                        {
+                            info.SelectedAreas.Add(name);
+                            string pierName = string.Empty;
+                            if (sapModel.AreaObj.GetPier(name, ref pierName) == 0 && !string.IsNullOrWhiteSpace(pierName))
+                            {
+                                info.SelectedPiers.Add(pierName.Trim());
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore any error and return empty/no active selection info
+            }
+
+            return info;
+        }
+
         private static bool IsJointOutputTable(string displayTableName)
         {
             string normalized = NormalizeTableName(displayTableName);
@@ -2216,7 +2503,33 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                    normalized == NormalizeTableName("Joint Velocities - Relative") ||
                    normalized == NormalizeTableName("Joint Velocities - Absolute") ||
                    normalized == NormalizeTableName("Joint Accelerations - Relative") ||
-                   normalized == NormalizeTableName("Joint Accelerations - Absolute");
+                   normalized == NormalizeTableName("Joint Accelerations - Absolute") ||
+                   normalized == NormalizeTableName("Assembled Joint Masses") ||
+                   normalized == NormalizeTableName("Objects and Elements - Joints");
+        }
+
+        private static bool IsFrameOutputTable(string displayTableName)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            return normalized == NormalizeTableName("Element Forces - Columns") ||
+                   normalized == NormalizeTableName("Element Forces - Beams") ||
+                   normalized == NormalizeTableName("Element Forces - Braces") ||
+                   normalized == NormalizeTableName("Element Joint Forces - Frame");
+        }
+
+        private static bool IsAreaOutputTable(string displayTableName)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            return normalized == NormalizeTableName("Element Forces - Area Shells") ||
+                   normalized == NormalizeTableName("Element Stresses - Area Shells") ||
+                   normalized == NormalizeTableName("Element Strains - Area Shells") ||
+                   normalized == NormalizeTableName("Element Joint Forces - Shells");
+        }
+
+        private static bool IsWallOutputTable(string displayTableName)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            return normalized == NormalizeTableName("Pier Forces");
         }
 
         private static OperationResult<string> FindAvailableDisplayTableKey(ETABSv1.cSapModel sapModel, string displayTableName)

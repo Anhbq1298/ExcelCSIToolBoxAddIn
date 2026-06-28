@@ -285,6 +285,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Connection.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.PointFrame.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Loadings.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Export.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Sections.cs" />
     <Compile Include="UI\ViewModels\BaseReactionOutputCaseViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
     <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
@@ -314,14 +319,6 @@
     </Compile>
     <Compile Include="UI\Views\EtabsToolboxControl.xaml.cs">
       <DependentUpon>EtabsToolboxControl.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="UI\Views\Sap2000ToolboxWindow.xaml.cs">
-      <DependentUpon>Sap2000ToolboxWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="UI\Views\Sap2000ToolboxControl.xaml.cs">
-      <DependentUpon>Sap2000ToolboxControl.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\BatchProgressWindow.xaml.cs">
@@ -367,14 +364,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\EtabsToolboxControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Views\Sap2000ToolboxWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Views\Sap2000ToolboxControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -143,4 +143,16 @@
     <EmptyDataMessage>No joint output records found.</EmptyDataMessage>
     <WorksheetNamePrefix>Joint Output</WorksheetNamePrefix>
   </Profile>
+
+  <Profile key="ObjectsAndElements">
+    <CaseSelectionMode>None</CaseSelectionMode>
+    <CaseSelectorTitle></CaseSelectorTitle>
+    <AllowMultipleCases>false</AllowMultipleCases>
+    <ShowCaseComboSelector>false</ShowCaseComboSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No objects/elements found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Objects and Elements</WorksheetNamePrefix>
+  </Profile>
 </OutputTablePopupProfiles>
