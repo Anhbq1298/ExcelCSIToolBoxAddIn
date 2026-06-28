@@ -23,6 +23,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public string EmptyDataMessage { get; set; }
 
+        public BaseReactionUnitOption ExportUnitOption { get; set; }
+
         public static OutputTableExportConfig ForTable(string tableDisplayName, string breadcrumb)
         {
             return new OutputTableExportConfig

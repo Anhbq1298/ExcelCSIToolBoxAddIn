@@ -642,6 +642,11 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return framesResult;
         }
 
+        public OperationResult<IReadOnlyList<string>> GetSelectedFramesByOrientation(int targetOrientation)
+        {
+            return OperationResult<IReadOnlyList<string>>.Failure("Frame design orientation is not supported in SAP2000.");
+        }
+
         public OperationResult<IReadOnlyList<string>> GetFrameNames()
         {
             var sapModelResult = EnsureSap2000SapModel();
@@ -1800,6 +1805,106 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess) return OperationResult<int>.Failure(sapModelResult.Message);
             return OperationResult<int>.Success((int)sapModelResult.Data.GetPresentUnits());
+        }
+
+        public OperationResult<CSISapModelPresentUnitSystemDTO> GetPresentUnitSystem()
+        {
+            var unitsResult = GetPresentUnits();
+            if (!unitsResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelPresentUnitSystemDTO>.Failure(unitsResult.Message);
+            }
+
+            return OperationResult<CSISapModelPresentUnitSystemDTO>.Success(MapSap2000UnitsToUnitSystem((SAP2000v1.eUnits)unitsResult.Data));
+        }
+
+        public OperationResult SetPresentUnitSystem(CSISapModelPresentUnitSystemDTO unitSystem)
+        {
+            if (unitSystem == null)
+            {
+                return OperationResult.Failure("Please select a unit system first.");
+            }
+
+            SAP2000v1.eUnits units;
+            if (!TryMapUnitSystemToSap2000Units(unitSystem, out units))
+            {
+                return OperationResult.Failure("Failed to set ETABS unit system.");
+            }
+
+            return SetPresentUnits((int)units);
+        }
+
+        public OperationResult<bool> GetModelIsLocked()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult<bool>.Failure(sapModelResult.Message);
+            return OperationResult<bool>.Success(sapModelResult.Data.GetModelIsLocked());
+        }
+
+        public OperationResult SetModelIsLocked(bool isLocked)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            int ret = sapModelResult.Data.SetModelIsLocked(isLocked);
+            return ret == 0
+                ? OperationResult.Success(isLocked ? "Model locked." : "Model unlocked.")
+                : OperationResult.Failure($"Failed to {(isLocked ? "lock" : "unlock")} SAP2000 model (return code {ret}).");
+        }
+
+        private static CSISapModelPresentUnitSystemDTO MapSap2000UnitsToUnitSystem(SAP2000v1.eUnits units)
+        {
+            switch (units)
+            {
+                case SAP2000v1.eUnits.N_mm_C:
+                    return CreatePresentUnitSystem((int)SAP2000v1.eForce.N, (int)SAP2000v1.eLength.mm, (int)SAP2000v1.eTemperature.C);
+                case SAP2000v1.eUnits.kip_ft_F:
+                    return CreatePresentUnitSystem((int)SAP2000v1.eForce.kip, (int)SAP2000v1.eLength.ft, (int)SAP2000v1.eTemperature.C);
+                case SAP2000v1.eUnits.lb_in_F:
+                    return CreatePresentUnitSystem((int)SAP2000v1.eForce.lb, (int)SAP2000v1.eLength.inch, (int)SAP2000v1.eTemperature.C);
+                case SAP2000v1.eUnits.kN_m_C:
+                default:
+                    return CreatePresentUnitSystem((int)SAP2000v1.eForce.kN, (int)SAP2000v1.eLength.m, (int)SAP2000v1.eTemperature.C);
+            }
+        }
+
+        private static bool TryMapUnitSystemToSap2000Units(CSISapModelPresentUnitSystemDTO unitSystem, out SAP2000v1.eUnits units)
+        {
+            if (unitSystem.ForceUnit == (int)SAP2000v1.eForce.N && unitSystem.LengthUnit == (int)SAP2000v1.eLength.mm)
+            {
+                units = SAP2000v1.eUnits.N_mm_C;
+                return true;
+            }
+
+            if (unitSystem.ForceUnit == (int)SAP2000v1.eForce.kip && unitSystem.LengthUnit == (int)SAP2000v1.eLength.ft)
+            {
+                units = SAP2000v1.eUnits.kip_ft_F;
+                return true;
+            }
+
+            if (unitSystem.ForceUnit == (int)SAP2000v1.eForce.lb && unitSystem.LengthUnit == (int)SAP2000v1.eLength.inch)
+            {
+                units = SAP2000v1.eUnits.lb_in_F;
+                return true;
+            }
+
+            if (unitSystem.ForceUnit == (int)SAP2000v1.eForce.kN && unitSystem.LengthUnit == (int)SAP2000v1.eLength.m)
+            {
+                units = SAP2000v1.eUnits.kN_m_C;
+                return true;
+            }
+
+            units = SAP2000v1.eUnits.kN_m_C;
+            return false;
+        }
+
+        private static CSISapModelPresentUnitSystemDTO CreatePresentUnitSystem(int forceUnit, int lengthUnit, int temperatureUnit)
+        {
+            return new CSISapModelPresentUnitSystemDTO
+            {
+                ForceUnit = forceUnit,
+                LengthUnit = lengthUnit,
+                TemperatureUnit = temperatureUnit
+            };
         }
 
         private static OperationResult RefreshView(SAP2000v1.cSapModel sapModel)

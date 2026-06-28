@@ -664,6 +664,81 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return framesResult;
         }
 
+        public OperationResult<IReadOnlyList<string>> GetSelectedFramesByOrientation(int targetOrientation)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return GetSelectedFramesByOrientation(sapModelResult.Data, targetOrientation);
+        }
+
+        private OperationResult<IReadOnlyList<string>> GetSelectedFramesByOrientation(
+            ETABSv1.cSapModel sapModel,
+            int targetOrientation)
+        {
+            try
+            {
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int ret = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
+                if (ret != 0)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure($"Failed to read selected objects from {ProductName}.");
+                }
+
+                return GetSelectedFramesByOrientation(
+                    sapModel,
+                    targetOrientation,
+                    numberItems,
+                    objectTypes,
+                    objectNames);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure($"Failed to get selected frames by design orientation: {ex.Message}");
+            }
+        }
+
+        private OperationResult<IReadOnlyList<string>> GetSelectedFramesByOrientation(
+            ETABSv1.cSapModel sapModel,
+            int targetOrientation,
+            int numberItems,
+            int[] objectTypes,
+            string[] objectNames)
+        {
+            try
+            {
+                var filteredNames = new List<string>();
+                if (numberItems > 0 && objectTypes != null && objectNames != null)
+                {
+                    for (int i = 0; i < numberItems; i++)
+                    {
+                        if (i >= objectTypes.Length || i >= objectNames.Length) continue;
+                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        {
+                            string uniqueName = objectNames[i].Trim();
+                            ETABSv1.eFrameDesignOrientation designOrientation = 0;
+                            int orientationRet = sapModel.FrameObj.GetDesignOrientation(uniqueName, ref designOrientation);
+                            if (orientationRet == 0 && (int)designOrientation == targetOrientation)
+                            {
+                                filteredNames.Add(uniqueName);
+                            }
+                        }
+                    }
+                }
+
+                return OperationResult<IReadOnlyList<string>>.Success(filteredNames);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure($"Failed to get selected frames by design orientation: {ex.Message}");
+            }
+        }
+
         public OperationResult<IReadOnlyList<string>> GetFrameNames()
         {
             var sapModelResult = EnsureEtabsSapModel();
@@ -1823,6 +1898,19 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             try
             {
                 ETABSv1.cSapModel sapModel = sapModelResult.Data;
+                ActiveSelectionInfo selectionInfo = GetActiveSelectionInfo(sapModel);
+                OperationResult<HashSet<string>> orientationFilterResult = GetSelectedFrameFilterForDisplayTable(
+                    sapModel,
+                    displayTableName,
+                    selectionInfo);
+                if (!orientationFilterResult.IsSuccess)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure(orientationFilterResult.Message);
+                }
+
+                bool hasOrientationFilter = orientationFilterResult.Data != null;
+                HashSet<string> orientationFilterSet = orientationFilterResult.Data ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
                 string normalized = NormalizeTableName(displayTableName);
                 if (normalized == NormalizeTableName("Joint Displacements"))
                 {
@@ -1862,6 +1950,24 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 {
                     return GetGenericJointResultsFromOapi(sapModel, selectedOutputCases, displayTableName,
                         sapModel.Results.JointAccAbs, "U1", "U2", "U3", "R1", "R2", "R3");
+                }
+                if (normalized == NormalizeTableName("Objects and Elements - Joints"))
+                {
+                    return GetObjectsAndElementsJoints(sapModel, selectionInfo);
+                }
+                if (normalized == NormalizeTableName("Objects and Elements - Frames"))
+                {
+                    return GetObjectsAndElementsFrames(sapModel, selectionInfo);
+                }
+                if (normalized == NormalizeTableName("Objects and Elements - Areas"))
+                {
+                    return GetObjectsAndElementsAreas(sapModel, selectionInfo);
+                }
+
+                OperationResult selectionTargetResult = ValidateSelectionForDisplayTable(displayTableName, selectionInfo);
+                if (!selectionTargetResult.IsSuccess)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectionTargetResult.Message);
                 }
 
                 if (selectedOutputCases != null && selectedOutputCases.Count > 0)
@@ -1911,8 +2017,16 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     table = FilterDisplayTableRows(table, selectedOutputCases, displayTableName);
                 }
 
-                var selectionInfo = GetActiveSelectionInfo(sapModel);
-                if (selectionInfo.HasActiveSelection)
+                OperationResult<CSISapModelDisplayTableDTO> objectConnectivityFilterResult =
+                    FilterObjectConnectivityTable(sapModel, displayTableName, table, selectionInfo);
+                if (!objectConnectivityFilterResult.IsSuccess)
+                {
+                    return objectConnectivityFilterResult;
+                }
+
+                table = objectConnectivityFilterResult.Data;
+
+                if (selectionInfo.HasActiveSelection || hasOrientationFilter)
                 {
                     if (IsJointOutputTable(displayTableName))
                     {
@@ -1948,32 +2062,30 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     }
                     else if (IsFrameOutputTable(displayTableName))
                     {
-                        int frameColIndex = FindFieldIndex(
-                            table.FieldKeys,
-                            "Unique Name",
-                            "UniqueName",
-                            "Frame",
-                            "Frame Name",
-                            "FrameName",
-                            "Element",
-                            "Element Name",
-                            "ElementName",
-                            "Label");
+                        int frameColIndex = hasOrientationFilter
+                            ? FindFieldIndex(table.FieldKeys, "Unique Name", "UniqueName")
+                            : FindFrameNameFieldIndex(table.FieldKeys);
 
                         if (frameColIndex >= 0)
                         {
                             var filteredRows = new List<object[]>();
+                            var matchingSet = hasOrientationFilter ? orientationFilterSet : selectionInfo.SelectedFrames;
                             foreach (object[] row in table.Rows)
                             {
                                 string frameName = row != null && frameColIndex < row.Length
                                     ? Convert.ToString(row[frameColIndex], CultureInfo.InvariantCulture)
                                     : string.Empty;
-                                if (!string.IsNullOrWhiteSpace(frameName) && selectionInfo.SelectedFrames.Contains(frameName.Trim()))
+                                if (!string.IsNullOrWhiteSpace(frameName) && matchingSet.Contains(frameName.Trim()))
                                 {
                                     filteredRows.Add(row);
                                 }
                             }
                             table = new CSISapModelDisplayTableDTO { FieldKeys = table.FieldKeys, Rows = filteredRows };
+                        }
+                        else if (hasOrientationFilter)
+                        {
+                            return OperationResult<CSISapModelDisplayTableDTO>.Failure(
+                                "ETABS " + displayTableName + " table did not include a UniqueName field required for selected-object filtering.");
                         }
                     }
                     else if (IsAreaOutputTable(displayTableName))
@@ -1985,6 +2097,9 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                             "Area",
                             "Area Name",
                             "AreaName",
+                            "Shell",
+                            "Shell Name",
+                            "ShellName",
                             "Element",
                             "Element Name",
                             "ElementName",
@@ -2039,6 +2154,366 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             {
                 return OperationResult<CSISapModelDisplayTableDTO>.Failure($"Failed to extract ETABS {displayTableName}: {ex.Message}");
             }
+        }
+
+        private OperationResult<HashSet<string>> GetSelectedFrameFilterForDisplayTable(
+            ETABSv1.cSapModel sapModel,
+            string displayTableName,
+            ActiveSelectionInfo selectionInfo)
+        {
+            int targetOrientation;
+            string objectName;
+            if (!TryGetFrameLabelFilter(displayTableName, out targetOrientation, out objectName))
+            {
+                return OperationResult<HashSet<string>>.Success(null);
+            }
+
+            OperationResult<IReadOnlyList<string>> selectedFramesResult = GetSelectedFramesByOrientation(
+                sapModel,
+                targetOrientation,
+                selectionInfo.NumberItems,
+                selectionInfo.ObjectTypes,
+                selectionInfo.ObjectNames);
+            if (!selectedFramesResult.IsSuccess)
+            {
+                return OperationResult<HashSet<string>>.Failure(selectedFramesResult.Message);
+            }
+
+            if (selectedFramesResult.Data == null || selectedFramesResult.Data.Count == 0)
+            {
+                return OperationResult<HashSet<string>>.Failure(
+                    "No selected " + objectName + " objects found in the current ETABS selection.");
+            }
+
+            return OperationResult<HashSet<string>>.Success(
+                new HashSet<string>(selectedFramesResult.Data, StringComparer.OrdinalIgnoreCase));
+        }
+
+        private OperationResult<CSISapModelDisplayTableDTO> FilterObjectConnectivityTable(
+            ETABSv1.cSapModel sapModel,
+            string displayTableName,
+            CSISapModelDisplayTableDTO table,
+            ActiveSelectionInfo selectionInfo)
+        {
+            if (!IsObjectConnectivityTable(displayTableName))
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Success(table);
+            }
+
+            if (!selectionInfo.HasActiveSelection)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(
+                    "No selected objects found in the current ETABS selection.");
+            }
+
+            string objectName;
+            string[] fieldAliases;
+            OperationResult<HashSet<string>> selectedNamesResult = GetSelectedNamesForObjectConnectivityTable(
+                sapModel,
+                displayTableName,
+                selectionInfo,
+                out objectName,
+                out fieldAliases);
+            if (!selectedNamesResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(selectedNamesResult.Message);
+            }
+
+            HashSet<string> selectedNames = selectedNamesResult.Data ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (selectedNames.Count == 0)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(
+                    "No selected " + objectName + " objects found in the current ETABS selection.");
+            }
+
+            int objectNameFieldIndex = FindPreferredFieldIndex(table == null ? null : table.FieldKeys, fieldAliases);
+            if (objectNameFieldIndex < 0)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(
+                    "ETABS " + displayTableName + " table did not include an object name field required for selected-object filtering.");
+            }
+
+            IReadOnlyList<object[]> rows = table == null || table.Rows == null
+                ? new List<object[]>()
+                : table.Rows;
+            var filteredRows = new List<object[]>();
+            foreach (object[] row in rows)
+            {
+                string rowObjectName = row != null && objectNameFieldIndex < row.Length
+                    ? Convert.ToString(row[objectNameFieldIndex], CultureInfo.InvariantCulture)
+                    : string.Empty;
+                if (!string.IsNullOrWhiteSpace(rowObjectName) && selectedNames.Contains(rowObjectName.Trim()))
+                {
+                    filteredRows.Add(row);
+                }
+            }
+
+            var filteredTable = new CSISapModelDisplayTableDTO
+            {
+                FieldKeys = table == null ? new List<string>() : table.FieldKeys,
+                Rows = filteredRows
+            };
+
+            return OperationResult<CSISapModelDisplayTableDTO>.Success(RemoveGuidColumns(filteredTable));
+        }
+
+        private OperationResult<HashSet<string>> GetSelectedNamesForObjectConnectivityTable(
+            ETABSv1.cSapModel sapModel,
+            string displayTableName,
+            ActiveSelectionInfo selectionInfo,
+            out string objectName,
+            out string[] fieldAliases)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            if (normalized == NormalizeTableName("Point Object Connectivity"))
+            {
+                objectName = "point";
+                fieldAliases = new[]
+                {
+                    "Unique Name",
+                    "UniqueName",
+                    "Point",
+                    "Point Name",
+                    "PointName",
+                    "Joint",
+                    "Joint Name",
+                    "JointName",
+                    "Label"
+                };
+                return OperationResult<HashSet<string>>.Success(selectionInfo.SelectedPoints);
+            }
+
+            if (normalized == NormalizeTableName("Beam Object Connectivity") ||
+                normalized == NormalizeTableName("Column Object Connectivity") ||
+                normalized == NormalizeTableName("Brace Object Connectivity"))
+            {
+                int targetOrientation;
+                if (normalized == NormalizeTableName("Column Object Connectivity"))
+                {
+                    targetOrientation = (int)ETABSv1.eFrameDesignOrientation.Column;
+                    objectName = "column";
+                }
+                else if (normalized == NormalizeTableName("Brace Object Connectivity"))
+                {
+                    targetOrientation = (int)ETABSv1.eFrameDesignOrientation.Brace;
+                    objectName = "brace";
+                }
+                else
+                {
+                    targetOrientation = (int)ETABSv1.eFrameDesignOrientation.Beam;
+                    objectName = "beam";
+                }
+
+                fieldAliases = new[]
+                {
+                    "Unique Name",
+                    "UniqueName",
+                    objectName,
+                    objectName + " Name",
+                    objectName + "Name",
+                    "Frame",
+                    "Frame Name",
+                    "FrameName",
+                    "Object",
+                    "Object Name",
+                    "ObjectName",
+                    "Label"
+                };
+
+                OperationResult<IReadOnlyList<string>> selectedFramesResult = GetSelectedFramesByOrientation(
+                    sapModel,
+                    targetOrientation,
+                    selectionInfo.NumberItems,
+                    selectionInfo.ObjectTypes,
+                    selectionInfo.ObjectNames);
+                if (!selectedFramesResult.IsSuccess)
+                {
+                    return OperationResult<HashSet<string>>.Failure(selectedFramesResult.Message);
+                }
+
+                return OperationResult<HashSet<string>>.Success(
+                    CreateFrameNameMatchSet(sapModel, selectedFramesResult.Data));
+            }
+
+            if (normalized == NormalizeTableName("Floor Object Connectivity") ||
+                normalized == NormalizeTableName("Wall Object Connectivity"))
+            {
+                objectName = normalized == NormalizeTableName("Wall Object Connectivity")
+                    ? "wall"
+                    : "floor";
+                fieldAliases = new[]
+                {
+                    "Unique Name",
+                    "UniqueName",
+                    objectName,
+                    objectName + " Name",
+                    objectName + "Name",
+                    "Area",
+                    "Area Name",
+                    "AreaName",
+                    "Shell",
+                    "Shell Name",
+                    "ShellName",
+                    "Object",
+                    "Object Name",
+                    "ObjectName",
+                    "Label"
+                };
+                return OperationResult<HashSet<string>>.Success(selectionInfo.SelectedAreas);
+            }
+
+            objectName = "object";
+            fieldAliases = new string[0];
+            return OperationResult<HashSet<string>>.Success(new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+        }
+
+        private static HashSet<string> CreateFrameNameMatchSet(
+            ETABSv1.cSapModel sapModel,
+            IReadOnlyList<string> frameNames)
+        {
+            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string frameName in frameNames ?? new string[0])
+            {
+                if (string.IsNullOrWhiteSpace(frameName))
+                {
+                    continue;
+                }
+
+                string uniqueName = frameName.Trim();
+                names.Add(uniqueName);
+
+                string label = string.Empty;
+                string story = string.Empty;
+                if (sapModel.FrameObj.GetLabelFromName(uniqueName, ref label, ref story) == 0 && !string.IsNullOrWhiteSpace(label))
+                {
+                    names.Add(label.Trim());
+                }
+            }
+
+            return names;
+        }
+
+        private static CSISapModelDisplayTableDTO RemoveGuidColumns(CSISapModelDisplayTableDTO table)
+        {
+            if (table == null || table.FieldKeys == null || table.FieldKeys.Count == 0)
+            {
+                return table ?? new CSISapModelDisplayTableDTO
+                {
+                    FieldKeys = new List<string>(),
+                    Rows = new List<object[]>()
+                };
+            }
+
+            var keptFieldIndexes = new List<int>();
+            var keptFields = new List<string>();
+            for (int fieldIndex = 0; fieldIndex < table.FieldKeys.Count; fieldIndex++)
+            {
+                string fieldKey = table.FieldKeys[fieldIndex];
+                if (IsGuidField(fieldKey))
+                {
+                    continue;
+                }
+
+                keptFieldIndexes.Add(fieldIndex);
+                keptFields.Add(fieldKey);
+            }
+
+            if (keptFieldIndexes.Count == table.FieldKeys.Count)
+            {
+                return table;
+            }
+
+            var sourceRows = table.Rows ?? new List<object[]>();
+            var rows = new List<object[]>();
+            foreach (object[] sourceRow in sourceRows)
+            {
+                var row = new object[keptFieldIndexes.Count];
+                for (int targetIndex = 0; targetIndex < keptFieldIndexes.Count; targetIndex++)
+                {
+                    int sourceIndex = keptFieldIndexes[targetIndex];
+                    row[targetIndex] = sourceRow != null && sourceIndex < sourceRow.Length
+                        ? sourceRow[sourceIndex]
+                        : null;
+                }
+
+                rows.Add(row);
+            }
+
+            return new CSISapModelDisplayTableDTO
+            {
+                FieldKeys = keptFields,
+                Rows = rows
+            };
+        }
+
+        private static bool IsGuidField(string fieldKey)
+        {
+            string normalized = NormalizeFieldKey(fieldKey);
+            return normalized == "GUID" ||
+                   normalized == "UNIQUEGUID" ||
+                   normalized == "OBJECTGUID";
+        }
+
+        private static OperationResult ValidateSelectionForDisplayTable(
+            string displayTableName,
+            ActiveSelectionInfo selectionInfo)
+        {
+            if (!selectionInfo.HasActiveSelection)
+            {
+                return OperationResult.Success();
+            }
+
+            int unusedOrientation;
+            string unusedObjectName;
+            bool isFrameRoleTable = TryGetFrameLabelFilter(displayTableName, out unusedOrientation, out unusedObjectName);
+            if (IsFrameOutputTable(displayTableName) && !isFrameRoleTable && selectionInfo.SelectedFrames.Count == 0)
+            {
+                return OperationResult.Failure("No selected frame objects found in the current ETABS selection.");
+            }
+
+            if (IsAreaOutputTable(displayTableName) && selectionInfo.SelectedAreas.Count == 0)
+            {
+                return OperationResult.Failure("No selected area objects found in the current ETABS selection.");
+            }
+
+            if (IsWallOutputTable(displayTableName) && selectionInfo.SelectedPiers.Count == 0)
+            {
+                return OperationResult.Failure("No selected wall or pier objects found in the current ETABS selection.");
+            }
+
+            return OperationResult.Success();
+        }
+
+        private static bool TryGetFrameLabelFilter(
+            string displayTableName,
+            out int targetOrientation,
+            out string objectName)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            if (normalized == NormalizeTableName("Element Forces - Columns"))
+            {
+                targetOrientation = (int)ETABSv1.eFrameDesignOrientation.Column;
+                objectName = "column";
+                return true;
+            }
+
+            if (normalized == NormalizeTableName("Element Forces - Beams"))
+            {
+                targetOrientation = (int)ETABSv1.eFrameDesignOrientation.Beam;
+                objectName = "beam";
+                return true;
+            }
+
+            if (normalized == NormalizeTableName("Element Forces - Braces"))
+            {
+                targetOrientation = (int)ETABSv1.eFrameDesignOrientation.Brace;
+                objectName = "brace";
+                return true;
+            }
+
+            targetOrientation = 0;
+            objectName = string.Empty;
+            return false;
         }
 
         private delegate int JointResultOapiDelegate(
@@ -2247,7 +2722,9 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             });
         }
 
-        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsJoints(ETABSv1.cSapModel sapModel)
+        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsJoints(
+            ETABSv1.cSapModel sapModel,
+            ActiveSelectionInfo selectionInfo)
         {
             try
             {
@@ -2259,10 +2736,12 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     return OperationResult<CSISapModelDisplayTableDTO>.Failure("Failed to retrieve joint name list from ETABS.");
                 }
 
-                // Check for selected points
-                var selectionInfo = GetActiveSelectionInfo(sapModel);
                 var selectedNames = selectionInfo.SelectedPoints;
                 bool hasSelection = selectionInfo.HasActiveSelection;
+                if (hasSelection && selectedNames.Count == 0)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure("No selected joint objects found in the current ETABS selection.");
+                }
 
                 var fieldKeys = new[] { "Joint", "Label", "Unique Name", "Story", "X-Coord", "Y-Coord", "Z-Coord" };
                 var rows = new List<object[]>();
@@ -2294,7 +2773,9 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
         }
 
-        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsFrames(ETABSv1.cSapModel sapModel)
+        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsFrames(
+            ETABSv1.cSapModel sapModel,
+            ActiveSelectionInfo selectionInfo)
         {
             try
             {
@@ -2306,10 +2787,12 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     return OperationResult<CSISapModelDisplayTableDTO>.Failure("Failed to retrieve frame name list from ETABS.");
                 }
 
-                // Check for selected frames
-                var selectionInfo = GetActiveSelectionInfo(sapModel);
                 var selectedNames = selectionInfo.SelectedFrames;
                 bool hasSelection = selectionInfo.HasActiveSelection;
+                if (hasSelection && selectedNames.Count == 0)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure("No selected frame objects found in the current ETABS selection.");
+                }
 
                 var fieldKeys = new[] { "Frame", "Label", "Unique Name", "Story", "PointI", "PointJ", "Section", "Material" };
                 var rows = new List<object[]>();
@@ -2352,7 +2835,9 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
         }
 
-        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsAreas(ETABSv1.cSapModel sapModel)
+        private OperationResult<CSISapModelDisplayTableDTO> GetObjectsAndElementsAreas(
+            ETABSv1.cSapModel sapModel,
+            ActiveSelectionInfo selectionInfo)
         {
             try
             {
@@ -2364,10 +2849,12 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     return OperationResult<CSISapModelDisplayTableDTO>.Failure("Failed to retrieve area name list from ETABS.");
                 }
 
-                // Check for selected shells
-                var selectionInfo = GetActiveSelectionInfo(sapModel);
                 var selectedNames = selectionInfo.SelectedAreas;
                 bool hasSelection = selectionInfo.HasActiveSelection;
+                if (hasSelection && selectedNames.Count == 0)
+                {
+                    return OperationResult<CSISapModelDisplayTableDTO>.Failure("No selected area objects found in the current ETABS selection.");
+                }
 
                 var fieldKeys = new[] { "Area", "Label", "Unique Name", "Story", "Section", "Material" };
                 var rows = new List<object[]>();
@@ -2426,10 +2913,121 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
         private struct ActiveSelectionInfo
         {
             public bool HasActiveSelection;
+            public int NumberItems;
+            public int[] ObjectTypes;
+            public string[] ObjectNames;
             public HashSet<string> SelectedPoints;
             public HashSet<string> SelectedFrames;
             public HashSet<string> SelectedAreas;
             public HashSet<string> SelectedPiers;
+        }
+
+        public HashSet<string> GetActiveFramesSelection(ETABSv1.cSapModel sapModel)
+        {
+            var selectedFrames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int ret = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
+                if (ret == 0 && numberItems > 0 && objectTypes != null && objectNames != null)
+                {
+                    for (int i = 0; i < numberItems; i++)
+                    {
+                        if (i >= objectTypes.Length || i >= objectNames.Length) continue;
+                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        {
+                            string uniqueName = objectNames[i].Trim();
+                            selectedFrames.Add(uniqueName);
+
+                            string label = string.Empty;
+                            string story = string.Empty;
+                            if (sapModel.FrameObj.GetLabelFromName(uniqueName, ref label, ref story) == 0 && !string.IsNullOrWhiteSpace(label))
+                            {
+                                selectedFrames.Add(label.Trim());
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore
+            }
+            return selectedFrames;
+        }
+
+        public HashSet<string> GetActivePointsSelection(ETABSv1.cSapModel sapModel)
+        {
+            var selectedPoints = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int ret = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
+                if (ret == 0 && numberItems > 0 && objectTypes != null && objectNames != null)
+                {
+                    for (int i = 0; i < numberItems; i++)
+                    {
+                        if (i >= objectTypes.Length || i >= objectNames.Length) continue;
+                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Point && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        {
+                            string uniqueName = objectNames[i].Trim();
+                            selectedPoints.Add(uniqueName);
+
+                            string label = string.Empty;
+                            string story = string.Empty;
+                            if (sapModel.PointObj.GetLabelFromName(uniqueName, ref label, ref story) == 0 && !string.IsNullOrWhiteSpace(label))
+                            {
+                                selectedPoints.Add(label.Trim());
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore
+            }
+            return selectedPoints;
+        }
+
+        public HashSet<string> GetActiveAreasSelection(ETABSv1.cSapModel sapModel)
+        {
+            var selectedAreas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int ret = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
+                if (ret == 0 && numberItems > 0 && objectTypes != null && objectNames != null)
+                {
+                    for (int i = 0; i < numberItems; i++)
+                    {
+                        if (i >= objectTypes.Length || i >= objectNames.Length) continue;
+                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Shell && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        {
+                            string uniqueName = objectNames[i].Trim();
+                            selectedAreas.Add(uniqueName);
+
+                            string label = string.Empty;
+                            string story = string.Empty;
+                            if (sapModel.AreaObj.GetLabelFromName(uniqueName, ref label, ref story) == 0 && !string.IsNullOrWhiteSpace(label))
+                            {
+                                selectedAreas.Add(label.Trim());
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore
+            }
+            return selectedAreas;
         }
 
         private ActiveSelectionInfo GetActiveSelectionInfo(ETABSv1.cSapModel sapModel)
@@ -2437,9 +3035,12 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             var info = new ActiveSelectionInfo
             {
                 HasActiveSelection = false,
-                SelectedPoints = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
-                SelectedFrames = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
-                SelectedAreas = new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                NumberItems = 0,
+                ObjectTypes = null,
+                ObjectNames = null,
+                SelectedPoints = GetActivePointsSelection(sapModel),
+                SelectedFrames = GetActiveFramesSelection(sapModel),
+                SelectedAreas = GetActiveAreasSelection(sapModel),
                 SelectedPiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             };
 
@@ -2449,44 +3050,37 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 int[] objectTypes = null;
                 string[] objectNames = null;
                 int ret = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
-                if (ret == 0 && numberItems > 0 && objectTypes != null && objectNames != null)
+                if (ret == 0 && numberItems > 0)
                 {
                     info.HasActiveSelection = true;
-                    for (int i = 0; i < numberItems; i++)
-                    {
-                        if (i >= objectTypes.Length || i >= objectNames.Length) continue;
-                        string name = objectNames[i];
-                        if (string.IsNullOrWhiteSpace(name)) continue;
-                        name = name.Trim();
+                    info.NumberItems = numberItems;
+                    info.ObjectTypes = objectTypes;
+                    info.ObjectNames = objectNames;
 
-                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Point)
+                    // Resolve Piers for selected frames
+                    foreach (var frame in info.SelectedFrames)
+                    {
+                        string pierName = string.Empty;
+                        if (sapModel.FrameObj.GetPier(frame, ref pierName) == 0 && !string.IsNullOrWhiteSpace(pierName))
                         {
-                            info.SelectedPoints.Add(name);
+                            info.SelectedPiers.Add(pierName.Trim());
                         }
-                        else if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Frame)
+                    }
+
+                    // Resolve Piers for selected areas
+                    foreach (var area in info.SelectedAreas)
+                    {
+                        string pierName = string.Empty;
+                        if (sapModel.AreaObj.GetPier(area, ref pierName) == 0 && !string.IsNullOrWhiteSpace(pierName))
                         {
-                            info.SelectedFrames.Add(name);
-                            string pierName = string.Empty;
-                            if (sapModel.FrameObj.GetPier(name, ref pierName) == 0 && !string.IsNullOrWhiteSpace(pierName))
-                            {
-                                info.SelectedPiers.Add(pierName.Trim());
-                            }
-                        }
-                        else if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Shell)
-                        {
-                            info.SelectedAreas.Add(name);
-                            string pierName = string.Empty;
-                            if (sapModel.AreaObj.GetPier(name, ref pierName) == 0 && !string.IsNullOrWhiteSpace(pierName))
-                            {
-                                info.SelectedPiers.Add(pierName.Trim());
-                            }
+                            info.SelectedPiers.Add(pierName.Trim());
                         }
                     }
                 }
             }
             catch
             {
-                // Ignore any error and return empty/no active selection info
+                // Ignore errors
             }
 
             return info;
@@ -2530,6 +3124,17 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
         {
             string normalized = NormalizeTableName(displayTableName);
             return normalized == NormalizeTableName("Pier Forces");
+        }
+
+        private static bool IsObjectConnectivityTable(string displayTableName)
+        {
+            string normalized = NormalizeTableName(displayTableName);
+            return normalized == NormalizeTableName("Point Object Connectivity") ||
+                   normalized == NormalizeTableName("Beam Object Connectivity") ||
+                   normalized == NormalizeTableName("Column Object Connectivity") ||
+                   normalized == NormalizeTableName("Brace Object Connectivity") ||
+                   normalized == NormalizeTableName("Floor Object Connectivity") ||
+                   normalized == NormalizeTableName("Wall Object Connectivity");
         }
 
         private static OperationResult<string> FindAvailableDisplayTableKey(ETABSv1.cSapModel sapModel, string displayTableName)
@@ -3141,6 +3746,62 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return OperationResult<int>.Success((int)sapModelResult.Data.GetPresentUnits());
         }
 
+        public OperationResult<CSISapModelPresentUnitSystemDTO> GetPresentUnitSystem()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult<CSISapModelPresentUnitSystemDTO>.Failure(sapModelResult.Message);
+
+            ETABSv1.eForce forceUnits = ETABSv1.eForce.kN;
+            ETABSv1.eLength lengthUnits = ETABSv1.eLength.m;
+            ETABSv1.eTemperature temperatureUnits = ETABSv1.eTemperature.C;
+            int ret = sapModelResult.Data.GetPresentUnits_2(ref forceUnits, ref lengthUnits, ref temperatureUnits);
+            if (ret != 0)
+            {
+                return OperationResult<CSISapModelPresentUnitSystemDTO>.Failure($"Failed to read ETABS present units (return code {ret}).");
+            }
+
+            return OperationResult<CSISapModelPresentUnitSystemDTO>.Success(new CSISapModelPresentUnitSystemDTO
+            {
+                ForceUnit = (int)forceUnits,
+                LengthUnit = (int)lengthUnits,
+                TemperatureUnit = (int)temperatureUnits
+            });
+        }
+
+        public OperationResult SetPresentUnitSystem(CSISapModelPresentUnitSystemDTO unitSystem)
+        {
+            if (unitSystem == null)
+            {
+                return OperationResult.Failure("Please select a unit system first.");
+            }
+
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+
+            int ret = sapModelResult.Data.SetPresentUnits_2(
+                (ETABSv1.eForce)unitSystem.ForceUnit,
+                (ETABSv1.eLength)unitSystem.LengthUnit,
+                (ETABSv1.eTemperature)unitSystem.TemperatureUnit);
+            return ret == 0 ? OperationResult.Success() : OperationResult.Failure("Failed to set ETABS unit system.");
+        }
+
+        public OperationResult<bool> GetModelIsLocked()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult<bool>.Failure(sapModelResult.Message);
+            return OperationResult<bool>.Success(sapModelResult.Data.GetModelIsLocked());
+        }
+
+        public OperationResult SetModelIsLocked(bool isLocked)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            int ret = sapModelResult.Data.SetModelIsLocked(isLocked);
+            return ret == 0
+                ? OperationResult.Success(isLocked ? "Model locked." : "Model unlocked.")
+                : OperationResult.Failure($"Failed to {(isLocked ? "lock" : "unlock")} ETABS model (return code {ret}).");
+        }
+
         private static OperationResult RefreshView(ETABSv1.cSapModel sapModel)
         {
             return RefreshView(sapModel, false);
@@ -3705,6 +4366,50 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
 
             return -1;
+        }
+
+        private static int FindPreferredFieldIndex(IReadOnlyList<string> fields, params string[] aliases)
+        {
+            if (fields == null || aliases == null)
+            {
+                return -1;
+            }
+
+            foreach (string alias in aliases)
+            {
+                string normalizedAlias = NormalizeFieldKey(alias);
+                for (int fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
+                {
+                    if (string.Equals(NormalizeFieldKey(fields[fieldIndex]), normalizedAlias, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return fieldIndex;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        private static int FindFrameNameFieldIndex(IReadOnlyList<string> fields)
+        {
+            int uniqueNameIndex = FindFieldIndex(fields, "Unique Name", "UniqueName");
+            if (uniqueNameIndex >= 0)
+            {
+                return uniqueNameIndex;
+            }
+
+            return FindFieldIndex(
+                fields,
+                "Frame",
+                "Frame Name",
+                "FrameName",
+                "Column",
+                "Beam",
+                "Brace",
+                "Element",
+                "Element Name",
+                "ElementName",
+                "Label");
         }
 
         private static object ParseDisplayTableValue(string fieldKey, string value)

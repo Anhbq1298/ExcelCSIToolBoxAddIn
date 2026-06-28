@@ -157,6 +157,22 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     }
                 },
                 {
+                    "MassData",
+                    new OutputTablePopupProfile
+                    {
+                        Key = "MassData",
+                        CaseSelectionMode = OutputCaseSelectionMode.None,
+                        CaseSelectorTitle = string.Empty,
+                        AllowMultipleCases = false,
+                        ShowCaseComboSelector = false,
+                        ShowUnitSelector = false,
+                        ShowComboSelector = false,
+                        DefaultToCurrentEtabsUnit = false,
+                        EmptyDataMessage = "No mass data records found.",
+                        WorksheetNamePrefix = "Mass Data"
+                    }
+                },
+                {
                     "StoryForces",
                     new OutputTablePopupProfile
                     {
@@ -282,6 +298,22 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         DefaultToCurrentEtabsUnit = true,
                         EmptyDataMessage = "No objects/elements found.",
                         WorksheetNamePrefix = "Objects and Elements"
+                    }
+                },
+                {
+                    "EtabsObjectConnectivity",
+                    new OutputTablePopupProfile
+                    {
+                        Key = "EtabsObjectConnectivity",
+                        CaseSelectionMode = OutputCaseSelectionMode.None,
+                        CaseSelectorTitle = string.Empty,
+                        AllowMultipleCases = false,
+                        ShowCaseComboSelector = false,
+                        ShowUnitSelector = false,
+                        ShowComboSelector = false,
+                        DefaultToCurrentEtabsUnit = false,
+                        EmptyDataMessage = "No object connectivity records found.",
+                        WorksheetNamePrefix = "Object Connectivity"
                     }
                 }
             };

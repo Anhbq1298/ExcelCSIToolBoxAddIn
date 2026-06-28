@@ -92,10 +92,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 new BaseReactionUnitOption("kip-ft", 4, "kip", "kip-ft", "ft"),
                 new BaseReactionUnitOption("lb-in", 1, "lb", "lb-in", "in")
             };
-            SelectedUnitOption = UnitOptions[1];
+            SelectedUnitOption = _config.ExportUnitOption ?? UnitOptions[1];
             _workbookState = PostprocessingWorkbookStateStore.Load(_workbookStateKey);
             RestoreWorkbookState();
-            SelectCurrentEtabsUnitIfRequested();
             _isWorkbookStateLoaded = true;
             LoadCases = new ObservableCollection<BaseReactionOutputCaseViewModel>();
             LoadCombinations = new ObservableCollection<BaseReactionOutputCaseViewModel>();
@@ -146,7 +145,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public Visibility UnitSelectorVisibility
         {
-            get { return _profile.ShowUnitSelector ? Visibility.Visible : Visibility.Collapsed; }
+            get { return Visibility.Collapsed; }
         }
 
         public bool AllowMultipleCases
@@ -646,23 +645,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             SelectedCasesOrCombos = selectedCases;
             OnPropertyChanged(nameof(SelectedCasesOrCombos));
 
-            int originalUnitsCode = 0;
-            bool shouldRestoreUnits = false;
-            if (_profile.ShowUnitSelector)
-            {
-                OperationResult<int> originalUnitsResult = _csiConnectionService.GetPresentUnits();
-                if (originalUnitsResult.IsSuccess)
-                {
-                    originalUnitsCode = originalUnitsResult.Data;
-                    shouldRestoreUnits = true;
-                }
-
-                if (!ApplySelectedUnits())
-                {
-                    return;
-                }
-            }
-
             try
             {
                 IsBusy = true;
@@ -683,11 +665,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
             finally
             {
-                if (shouldRestoreUnits)
-                {
-                    _csiConnectionService.SetPresentUnits(originalUnitsCode);
-                }
-
                 IsBusy = false;
             }
         }
@@ -984,6 +961,28 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             string upper = clean.ToUpperInvariant();
 
+            if (displayTableName.IndexOf("Mass Summary", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                if (upper.Contains("MASS"))
+                {
+                    return FormatUnitHeader(clean, "kg");
+                }
+
+                if (upper.Contains("WEIGHT"))
+                {
+                    return FormatUnitHeader(clean, unitOption.ForceUnit);
+                }
+
+                if (upper == "X" || upper == "Y" || upper == "Z" ||
+                    upper.Contains("COORD") ||
+                    upper.Contains("CENTER OF MASS") ||
+                    upper.Contains("CENTEROFMASS") ||
+                    upper == "XCM" || upper == "YCM" || upper == "ZCM")
+                {
+                    return FormatUnitHeader(clean, unitOption.LengthUnit);
+                }
+            }
+
             // Displacements & Lengths
             if (upper == "U1" || upper == "U2" || upper == "U3" || 
                 upper == "UX" || upper == "UY" || upper == "UZ" || 
@@ -1136,15 +1135,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (_workbookState == null)
             {
                 return;
-            }
-
-            foreach (BaseReactionUnitOption unitOption in UnitOptions)
-            {
-                if (string.Equals(unitOption.Label, _workbookState.UnitLabel, StringComparison.OrdinalIgnoreCase))
-                {
-                    SelectedUnitOption = unitOption;
-                    break;
-                }
             }
 
             AddHeaders = _workbookState.AddHeaders;

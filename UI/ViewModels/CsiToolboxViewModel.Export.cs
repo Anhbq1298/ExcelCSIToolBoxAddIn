@@ -7,6 +7,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
     {
         private void OpenGetBaseReactionsDialog()
         {
+            if (!PrepareExportWithGlobalUnit())
+            {
+                return;
+            }
+
             OutputTableExportWorkflow.Run(
                 CreateOutputTableExportConfig("Base Reactions"),
                 _useCases,
@@ -54,6 +59,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
+            if (!PrepareExportWithGlobalUnit())
+            {
+                return;
+            }
+
             if (string.Equals(ActiveAnalysisResultsGroup, "Modal Information", StringComparison.OrdinalIgnoreCase))
             {
                 RunModalTableExport(displayTableName);
@@ -66,9 +76,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
+            if (string.Equals(ActiveAnalysisResultsGroup, "Etabs Object Connectivity", StringComparison.OrdinalIgnoreCase))
+            {
+                RunEtabsObjectConnectivityExport(displayTableName);
+                return;
+            }
+
             if (string.Equals(ActiveAnalysisResultsGroup, "Other Output Items", StringComparison.OrdinalIgnoreCase))
             {
                 RunOtherOutputItemsExport(displayTableName);
+                return;
+            }
+
+            if (string.Equals(ActiveAnalysisResultsGroup, "Mass Data", StringComparison.OrdinalIgnoreCase))
+            {
+                RunMassDataExport(displayTableName);
                 return;
             }
 
@@ -90,6 +112,22 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 _excelOutputService);
         }
 
+        private void RunEtabsObjectConnectivityExport(string tableDisplayName)
+        {
+            OutputTableExportWorkflow.Run(
+                new OutputTableExportConfig
+                {
+                    TableDisplayName = tableDisplayName,
+                    Breadcrumb = "ETABS Toolbox / Element Manipulation / Etabs Object Connectivity / " + tableDisplayName,
+                    Description = "Export ETABS " + tableDisplayName + ".",
+                    PopupProfileKey = "EtabsObjectConnectivity",
+                    ExportUnitOption = CreateExportUnitOption()
+                },
+                _useCases,
+                _csiConnectionService,
+                _excelOutputService);
+        }
+
         private void RunModalTableExport(string tableDisplayName)
         {
             bool isResponseSpectrumModalInfo = string.Equals(
@@ -106,7 +144,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         : "Select modal case to export " + tableDisplayName + ".",
                     PopupProfileKey = isResponseSpectrumModalInfo
                         ? "ResponseSpectrumModalInfo"
-                        : "ModalInformation"
+                        : "ModalInformation",
+                    ExportUnitOption = CreateExportUnitOption()
                 },
                 _useCases,
                 _csiConnectionService,
@@ -128,8 +167,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     Breadcrumb = "ETABS Toolbox / MISCELLANEOUS DATA / " + groupName + " / " + tableDisplayName,
                     Description = isProjectInformation
                         ? "Export ETABS project information."
-                        : "Select output unit and export " + tableDisplayName + ".",
-                    PopupProfileKey = isProjectInformation ? "ProjectInformation" : "MaterialList"
+                        : "Export " + tableDisplayName + " using the main window unit system.",
+                    PopupProfileKey = isProjectInformation ? "ProjectInformation" : "MaterialList",
+                    ExportUnitOption = CreateExportUnitOption()
                 },
                 _useCases,
                 _csiConnectionService,
@@ -145,8 +185,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     {
                         TableDisplayName = "Story Forces",
                         Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / Story Forces",
-                        Description = "Select load case or load combination and output unit to export Story Forces.",
-                        PopupProfileKey = "StoryForces"
+                        Description = "Select load case or load combination to export Story Forces.",
+                        PopupProfileKey = "StoryForces",
+                        ExportUnitOption = CreateExportUnitOption()
                     },
                     _useCases,
                     _csiConnectionService,
@@ -159,8 +200,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     {
                         TableDisplayName = "Diaphragm Forces",
                         Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / Diaphragm Forces",
-                        Description = "Select load case or load combination and output unit to export Diaphragm Forces.",
-                        PopupProfileKey = "DiaphragmForces"
+                        Description = "Select load case or load combination to export Diaphragm Forces.",
+                        PopupProfileKey = "DiaphragmForces",
+                        ExportUnitOption = CreateExportUnitOption()
                     },
                     _useCases,
                     _csiConnectionService,
@@ -173,8 +215,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     {
                         TableDisplayName = "Story Stiffness",
                         Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / Story Stiffness",
-                        Description = "Select seismic, response spectrum, or wind load case and output unit to export Story Stiffness.",
-                        PopupProfileKey = "SeismicWindOrRSOnlyWithUnit"
+                        Description = "Select seismic, response spectrum, or wind load case to export Story Stiffness.",
+                        PopupProfileKey = "SeismicWindOrRSOnlyWithUnit",
+                        ExportUnitOption = CreateExportUnitOption()
                     },
                     _useCases,
                     _csiConnectionService,
@@ -189,7 +232,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         TableDisplayName = tableDisplayName,
                         Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / " + tableDisplayName,
                         Description = "Select seismic, response spectrum, or wind load case to export " + tableDisplayName + ".",
-                        PopupProfileKey = "SeismicWindOrRSOnlyRatio"
+                        PopupProfileKey = "SeismicWindOrRSOnlyRatio",
+                        ExportUnitOption = CreateExportUnitOption()
                     },
                     _useCases,
                     _csiConnectionService,
@@ -202,13 +246,30 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     {
                         TableDisplayName = tableDisplayName,
                         Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / " + tableDisplayName,
-                        Description = "Select output unit and export " + tableDisplayName + ".",
-                        PopupProfileKey = "OtherOutputWithUnit"
+                        Description = "Export " + tableDisplayName + " using the main window unit system.",
+                        PopupProfileKey = "OtherOutputWithUnit",
+                        ExportUnitOption = CreateExportUnitOption()
                     },
                     _useCases,
                     _csiConnectionService,
                     _excelOutputService);
             }
+        }
+
+        private void RunMassDataExport(string tableDisplayName)
+        {
+            OutputTableExportWorkflow.Run(
+                new OutputTableExportConfig
+                {
+                    TableDisplayName = tableDisplayName,
+                    Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Structure Output / Mass Data / " + tableDisplayName,
+                    Description = "Export " + tableDisplayName + " using the main window unit system.",
+                    PopupProfileKey = "MassData",
+                    ExportUnitOption = CreateExportUnitOption()
+                },
+                _useCases,
+                _csiConnectionService,
+                _excelOutputService);
         }
 
         private void RunJointOutputExport(string tableDisplayName)
@@ -221,9 +282,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     TableDisplayName = tableDisplayName,
                     Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Joint Output / " + tableDisplayName,
                     Description = isJointMasses 
-                        ? "Select output unit and export Assembled Joint Masses." 
-                        : "Select load cases/combinations and output unit to export " + tableDisplayName + ".",
-                    PopupProfileKey = isJointMasses ? "OtherOutputWithUnit" : "JointOutput"
+                        ? "Export Assembled Joint Masses using the main window unit system." 
+                        : "Select load cases/combinations to export " + tableDisplayName + ".",
+                    PopupProfileKey = isJointMasses ? "OtherOutputWithUnit" : "JointOutput",
+                    ExportUnitOption = CreateExportUnitOption()
                 },
                 _useCases,
                 _csiConnectionService,
@@ -253,8 +315,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 TableDisplayName = tableName,
                 Breadcrumb = breadcrumb,
                 Description = "Select output cases to export " + tableName + ".",
-                PopupProfileKey = popupProfileKey
+                PopupProfileKey = popupProfileKey,
+                ExportUnitOption = CreateExportUnitOption()
             };
+        }
+
+        private BaseReactionUnitOption CreateExportUnitOption()
+        {
+            return SelectedUnitSystem == null ? null : SelectedUnitSystem.ToExportUnitOption();
         }
 
         private void SetTableGroup(string category, string groupName)
@@ -290,6 +358,15 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     AnalysisResultTables.Add("Shear Gravity Ratios");
                     AnalysisResultTables.Add("Stiffness Gravity Ratios");
                     AnalysisResultTables.Add("Tributary Area and LLRF");
+                    break;
+                case "Mass Data":
+                case "Mass Summary by Story":
+                case "Mass Summary by Diaphragm":
+                case "Mass Summary by Group":
+                    ActiveAnalysisResultsGroup = "Mass Data";
+                    AnalysisResultTables.Add("Mass Summary by Story");
+                    AnalysisResultTables.Add("Mass Summary by Diaphragm");
+                    AnalysisResultTables.Add("Mass Summary by Group");
                     break;
                 case "Joint Output":
                 case "Displacements":
@@ -353,6 +430,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     AnalysisResultTables.Add("Objects and Elements - Frames");
                     AnalysisResultTables.Add("Objects and Elements - Areas");
                     break;
+                case "Etabs Object Connectivity":
+                case "Point Object Connectivity":
+                case "Beam Object Connectivity":
+                case "Column Object Connectivity":
+                case "Brace Object Connectivity":
+                case "Floor Object Connectivity":
+                case "Wall Object Connectivity":
+                    ActiveAnalysisResultsGroup = "Etabs Object Connectivity";
+                    AnalysisResultTables.Add("Point Object Connectivity");
+                    AnalysisResultTables.Add("Beam Object Connectivity");
+                    AnalysisResultTables.Add("Column Object Connectivity");
+                    AnalysisResultTables.Add("Brace Object Connectivity");
+                    AnalysisResultTables.Add("Floor Object Connectivity");
+                    AnalysisResultTables.Add("Wall Object Connectivity");
+                    break;
                 case "Assembled Joint Masses":
                     ActiveAnalysisResultsGroup = "Assembled Joint Masses";
                     AnalysisResultTables.Add("Assembled Joint Masses");
@@ -401,6 +493,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void OpenModalMassParticipationRatiosDialog()
         {
+            if (!PrepareExportWithGlobalUnit())
+            {
+                return;
+            }
+
             var viewModel = new GetModalMassParticipationRatiosViewModel(_useCases, _csiConnectionService, _excelOutputService);
             new ExcelCSIToolBoxAddIn.UI.Views.GetModalMassParticipationRatiosWindow(viewModel).Show();
         }
@@ -427,12 +524,22 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void OpenStoryResultsDialog(StoryPostprocessingResultKind kind)
         {
-            var viewModel = new GetStoryResultsViewModel(kind, _useCases, _csiConnectionService, _excelOutputService);
+            if (!PrepareExportWithGlobalUnit())
+            {
+                return;
+            }
+
+            var viewModel = new GetStoryResultsViewModel(kind, _useCases, _csiConnectionService, _excelOutputService, CreateExportUnitOption());
             new ExcelCSIToolBoxAddIn.UI.Views.GetStoryResultsWindow(viewModel).Show();
         }
 
         private void OpenMassSummaryByStoryDialog()
         {
+            if (!PrepareExportWithGlobalUnit())
+            {
+                return;
+            }
+
             var viewModel = new GetMassSummaryByStoryViewModel(_useCases, _csiConnectionService, _excelOutputService);
             new ExcelCSIToolBoxAddIn.UI.Views.GetMassSummaryByStoryWindow(viewModel).Show();
         }

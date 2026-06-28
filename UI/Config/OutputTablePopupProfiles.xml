@@ -60,6 +60,18 @@
     <WorksheetNamePrefix>Material List</WorksheetNamePrefix>
   </Profile>
 
+  <Profile key="MassData">
+    <CaseSelectionMode>None</CaseSelectionMode>
+    <CaseSelectorTitle></CaseSelectorTitle>
+    <AllowMultipleCases>false</AllowMultipleCases>
+    <ShowCaseComboSelector>false</ShowCaseComboSelector>
+    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>false</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No mass data records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Mass Data</WorksheetNamePrefix>
+  </Profile>
+
   <Profile key="StoryForces">
     <CaseSelectionMode>AllCasesAndCombos</CaseSelectionMode>
     <CaseSelectorTitle>Load Case / Combination</CaseSelectorTitle>
@@ -154,5 +166,17 @@
     <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
     <EmptyDataMessage>No objects/elements found.</EmptyDataMessage>
     <WorksheetNamePrefix>Objects and Elements</WorksheetNamePrefix>
+  </Profile>
+
+  <Profile key="EtabsObjectConnectivity">
+    <CaseSelectionMode>None</CaseSelectionMode>
+    <CaseSelectorTitle></CaseSelectorTitle>
+    <AllowMultipleCases>false</AllowMultipleCases>
+    <ShowCaseComboSelector>false</ShowCaseComboSelector>
+    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowComboSelector>false</ShowComboSelector>
+    <DefaultToCurrentEtabsUnit>false</DefaultToCurrentEtabsUnit>
+    <EmptyDataMessage>No object connectivity records found.</EmptyDataMessage>
+    <WorksheetNamePrefix>Object Connectivity</WorksheetNamePrefix>
   </Profile>
 </OutputTablePopupProfiles>

@@ -37,6 +37,7 @@
         </StackPanel>
 
         <Grid Grid.Row="1"
+              Visibility="Collapsed"
               Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>

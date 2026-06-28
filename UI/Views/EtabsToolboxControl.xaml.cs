@@ -126,6 +126,15 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                     return "Format: Frame | Label | Unique Name | Story | PointI | PointJ | Section | Material";
                 case "Objects and Elements - Areas":
                     return "Format: Area | Label | Unique Name | Story | Section | Material";
+                case "Point Object Connectivity":
+                    return "Format: Point | Object Type | Object Name | Point Number";
+                case "Beam Object Connectivity":
+                case "Column Object Connectivity":
+                case "Brace Object Connectivity":
+                    return "Format: Object | Unique Name | PointI | PointJ";
+                case "Floor Object Connectivity":
+                case "Wall Object Connectivity":
+                    return "Format: Object | Unique Name | Point1 | Point2 | Point3 | Point4";
                 case "Tributary Area and LLRF":
                     return "Format: Story | Joint | Area | LLRF";
                 case "Modal Periods And Frequencies":
@@ -148,6 +157,12 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                     return "Format: Material | Section Property | NumPieces | TotalLength | TotalWeight";
                 case "Material List by Story":
                     return "Format: Story | Material | NumPieces | TotalWeight";
+                case "Mass Summary by Story":
+                    return "Format: Story | Mass X | Mass Y | Mass Z | Center of Mass";
+                case "Mass Summary by Diaphragm":
+                    return "Format: Diaphragm | Story | Mass X | Mass Y | Mass Z";
+                case "Mass Summary by Group":
+                    return "Format: Group | Mass X | Mass Y | Mass Z";
                 default:
                     return $"Export format for {tableName}";
             }

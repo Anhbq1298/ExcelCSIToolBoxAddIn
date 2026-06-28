@@ -41,7 +41,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             StoryPostprocessingResultKind kind,
             CsiToolboxUseCaseBundle useCases,
             ICSISapModelConnectionService csiConnectionService,
-            IExcelOutputService excelOutputService)
+            IExcelOutputService excelOutputService,
+            BaseReactionUnitOption exportUnitOption = null)
         {
             _kind = kind;
             _useCases = useCases ?? throw new ArgumentNullException(nameof(useCases));
@@ -55,7 +56,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 new BaseReactionUnitOption("kip-ft", 4, "kip", "kip-ft", "ft"),
                 new BaseReactionUnitOption("lb-in", 1, "lb", "lb-in", "in")
             };
-            SelectedUnitOption = UnitOptions[1];
+            SelectedUnitOption = exportUnitOption ?? UnitOptions[1];
             _workbookState = PostprocessingWorkbookStateStore.Load(GetWorkbookStateKey());
             RestoreWorkbookState();
             _isWorkbookStateLoaded = true;
@@ -362,11 +363,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (selectedCases.Count == 0)
             {
                 ShowWarning("Select at least one ETABS load case or load combination.");
-                return;
-            }
-
-            if (!ApplySelectedUnits())
-            {
                 return;
             }
 
@@ -854,15 +850,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (_workbookState == null)
             {
                 return;
-            }
-
-            foreach (BaseReactionUnitOption unitOption in UnitOptions)
-            {
-                if (string.Equals(unitOption.Label, _workbookState.UnitLabel, StringComparison.OrdinalIgnoreCase))
-                {
-                    SelectedUnitOption = unitOption;
-                    break;
-                }
             }
 
             AddHeaders = _workbookState.AddHeaders;

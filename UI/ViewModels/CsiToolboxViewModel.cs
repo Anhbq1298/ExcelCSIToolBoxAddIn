@@ -37,6 +37,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private string _activeAnalysisResultsGroup;
         private string _selectedAnalysisResultTable;
         private readonly string _productName;
+        private EtabsUnitSystem _selectedUnitSystem;
+        private bool _isInitializingUnitSystems;
+        private bool _isApplyingGlobalUnit;
+        private bool _isModelLocked;
 
         public CsiToolboxViewModel(
             ICSISapModelConnectionService csiConnectionService,
@@ -71,9 +75,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
             SectionDimensionAnnotations = new System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation>();
             AnalysisResultTables = new System.Collections.ObjectModel.ObservableCollection<string>();
+            AvailableUnitSystems = CreateAvailableUnitSystems();
+            _isInitializingUnitSystems = true;
+            SelectedUnitSystem = AvailableUnitSystems[0];
+            _isInitializingUnitSystems = false;
 
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
+            ToggleModelLockCommand = new RelayCommand(ToggleModelLock, () => IsConnected);
             SelectWorkspacePageCommand = new RelayCommand<string>(SelectWorkspacePage);
             ExportAnalysisResultTableCommand = new RelayCommand<string>(ShowOutputSelectionAndExport);
 
@@ -156,6 +165,27 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        public bool IsModelLocked
+        {
+            get { return _isModelLocked; }
+            private set
+            {
+                if (_isModelLocked == value)
+                {
+                    return;
+                }
+
+                _isModelLocked = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ModelLockButtonText));
+            }
+        }
+
+        public string ModelLockButtonText
+        {
+            get { return IsModelLocked ? "Unlock Model" : "Lock Model"; }
+        }
+
         public string StatusText
         {
             get { return _statusText; }
@@ -174,6 +204,32 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 _currentModelUnitText = value;
                 OnPropertyChanged();
                 RefreshSectionDimensionAnnotations();
+            }
+        }
+
+        public System.Collections.ObjectModel.ObservableCollection<EtabsUnitSystem> AvailableUnitSystems { get; private set; }
+
+        public EtabsUnitSystem SelectedUnitSystem
+        {
+            get { return _selectedUnitSystem; }
+            set
+            {
+                if (ReferenceEquals(_selectedUnitSystem, value))
+                {
+                    return;
+                }
+
+                _selectedUnitSystem = value;
+                OnPropertyChanged();
+                if (value != null)
+                {
+                    CurrentModelUnitText = value.PresentUnitsText;
+                }
+
+                if (!_isInitializingUnitSystems && IsConnected)
+                {
+                    ApplySelectedGlobalUnit(showMessages: true);
+                }
             }
         }
 
@@ -303,6 +359,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ICommand AttachToRunningCsiCommand { get; }
         public ICommand CloseCurrentInstanceCommand { get; }
+        public ICommand ToggleModelLockCommand { get; }
         public ICommand SelectWorkspacePageCommand { get; }
         public ICommand ExportAnalysisResultTableCommand { get; }
 

@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Common.Commands;
+using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -13,6 +15,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var commands = new ICommand[]
             {
                 CloseCurrentInstanceCommand,
+                ToggleModelLockCommand,
                 CreateIshapeSectionCommand,
                 CreateChannelSectionCommand,
                 CreateAngleSectionCommand,
@@ -85,6 +88,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 CurrentModelUnitText = string.IsNullOrWhiteSpace(result.Data.ModelCurrentUnit)
                     ? "Units unavailable"
                     : result.Data.ModelCurrentUnit;
+                SyncSelectedUnitSystemFromEtabs();
+                RefreshModelLockState();
                 StatusText = "Attached successfully.";
                 
                 // Automatically refresh lists when connection is established
@@ -101,6 +106,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             IsConnected = false;
+            IsModelLocked = false;
             SetDetachedModelInfo("Not yet attached");
             StatusText = string.IsNullOrWhiteSpace(result.Message)
                 ? $"{_productName} connection unavailable."
@@ -128,6 +134,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess)
             {
                 IsConnected = false;
+                IsModelLocked = false;
                 SetDetachedModelInfo("Not connected");
                 StatusText = result.Message;
 
@@ -157,7 +164,132 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             ModelName = modelNameText;
             ModelPath = string.Empty;
-            CurrentModelUnitText = "Not yet attached";
+            CurrentModelUnitText = SelectedUnitSystem == null ? "Not yet attached" : SelectedUnitSystem.PresentUnitsText;
+        }
+
+        private void RefreshModelLockState()
+        {
+            OperationResult<bool> lockResult = _csiConnectionService.GetModelIsLocked();
+            if (lockResult.IsSuccess)
+            {
+                IsModelLocked = lockResult.Data;
+            }
+        }
+
+        private void ToggleModelLock()
+        {
+            bool nextLockState = !IsModelLocked;
+            OperationResult result = _csiConnectionService.SetModelIsLocked(nextLockState);
+            if (result.IsSuccess)
+            {
+                IsModelLocked = nextLockState;
+                StatusText = result.Message;
+                return;
+            }
+
+            MessageBox.Show(
+                result.Message,
+                ProductTitle,
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            StatusText = result.Message;
+            RefreshModelLockState();
+        }
+
+        private System.Collections.ObjectModel.ObservableCollection<EtabsUnitSystem> CreateAvailableUnitSystems()
+        {
+            return new System.Collections.ObjectModel.ObservableCollection<EtabsUnitSystem>
+            {
+                new EtabsUnitSystem("kN-m", 4, 6, 2, "kN", "kN-m", "m", 6),
+                new EtabsUnitSystem("N-mm", 3, 4, 2, "N", "N-mm", "mm", 9),
+                new EtabsUnitSystem("kip-ft", 2, 2, 2, "kip", "kip-ft", "ft", 4),
+                new EtabsUnitSystem("lb-in", 1, 1, 2, "lb", "lb-in", "in", 1)
+            };
+        }
+
+        private void SyncSelectedUnitSystemFromEtabs()
+        {
+            OperationResult<CSISapModelPresentUnitSystemDTO> result = _csiConnectionService.GetPresentUnitSystem();
+            EtabsUnitSystem matchedUnitSystem = null;
+            if (result.IsSuccess)
+            {
+                foreach (EtabsUnitSystem unitSystem in AvailableUnitSystems)
+                {
+                    if (unitSystem.Matches(result.Data))
+                    {
+                        matchedUnitSystem = unitSystem;
+                        break;
+                    }
+                }
+            }
+
+            if (matchedUnitSystem == null && AvailableUnitSystems.Count > 0)
+            {
+                matchedUnitSystem = AvailableUnitSystems[0];
+            }
+
+            _isInitializingUnitSystems = true;
+            SelectedUnitSystem = matchedUnitSystem;
+            _isInitializingUnitSystems = false;
+            CurrentModelUnitText = matchedUnitSystem == null ? "Units unavailable" : matchedUnitSystem.PresentUnitsText;
+        }
+
+        private bool PrepareExportWithGlobalUnit()
+        {
+            return ApplySelectedGlobalUnit(showMessages: true);
+        }
+
+        private bool ApplySelectedGlobalUnit(bool showMessages)
+        {
+            if (_isApplyingGlobalUnit)
+            {
+                return true;
+            }
+
+            OperationResult<CSISapModelConnectionInfoDTO> connectionResult = _csiConnectionService.GetCurrentConnection();
+            if (!connectionResult.IsSuccess)
+            {
+                if (showMessages)
+                {
+                    MessageBox.Show("Please attach to ETABS first.", ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                return false;
+            }
+
+            if (SelectedUnitSystem == null)
+            {
+                if (showMessages)
+                {
+                    MessageBox.Show("Please select a unit system first.", ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                return false;
+            }
+
+            try
+            {
+                _isApplyingGlobalUnit = true;
+                OperationResult result = _csiConnectionService.SetPresentUnitSystem(SelectedUnitSystem.ToDto());
+                if (!result.IsSuccess)
+                {
+                    if (showMessages)
+                    {
+                        MessageBox.Show("Failed to set ETABS unit system.", ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+
+                    StatusText = "Failed to set ETABS unit system.";
+                    return false;
+                }
+
+                CurrentModelUnitText = SelectedUnitSystem.PresentUnitsText;
+                StatusText = "Unit system set to " + SelectedUnitSystem.DisplayName + ".";
+                return true;
+            }
+            finally
+            {
+                _isApplyingGlobalUnit = false;
+            }
         }
 
         private void ShowOperationResult(OperationResult result)

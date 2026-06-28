@@ -56,6 +56,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult SetPointRestraint(IReadOnlyList<string> pointNames, IReadOnlyList<bool> restraints);
         OperationResult SetPointLoadForce(IReadOnlyList<string> pointNames, string loadPattern, IReadOnlyList<double> forceValues, bool replace, string coordinateSystem);
         OperationResult<IReadOnlyList<string>> GetSelectedFramesFromActiveModel();
+        OperationResult<IReadOnlyList<string>> GetSelectedFramesByOrientation(int targetOrientation);
         OperationResult<IReadOnlyList<string>> GetFrameNames();
         OperationResult<FrameObjectInfo> GetFrameByName(string frameName);
         OperationResult<FrameEndPointInfo> GetFramePoints(string frameName);
@@ -121,6 +122,10 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult RefreshView(bool zoomAll = false);
         OperationResult<int> GetPresentUnits();
         OperationResult SetPresentUnits(int unitsCode);
+        OperationResult<CSISapModelPresentUnitSystemDTO> GetPresentUnitSystem();
+        OperationResult SetPresentUnitSystem(CSISapModelPresentUnitSystemDTO unitSystem);
+        OperationResult<bool> GetModelIsLocked();
+        OperationResult SetModelIsLocked(bool isLocked);
     }
 }
 
