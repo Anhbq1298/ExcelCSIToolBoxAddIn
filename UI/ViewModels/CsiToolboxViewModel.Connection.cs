@@ -72,7 +72,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 GetStoryMaxOverAverageDriftsCommand,
                 GetMassSummaryByStoryCommand,
                 GetFrameSectionsCommand,
-                EditFrameSectionCommand
+                EditFrameSectionCommand,
+                OpenCreateArrayPerpendicularToPathCommand,
+                PickPoint1Command,
+                PickPoint2Command,
+                PickReferenceFrameCommand,
+                CreateFramesCommand,
+                BackToArrayFrameElementCommand,
+                CloseCommand
             };
 
             foreach (ICommand command in commands)

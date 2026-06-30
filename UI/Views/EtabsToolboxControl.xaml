@@ -189,46 +189,48 @@
                               Padding="3,6,2,6">
                         <TreeViewItem Header="ETABS Toolbox" IsExpanded="True" FontWeight="Bold">
                             <TreeViewItem Header="Model" IsExpanded="True" FontWeight="Normal">
-                                <TreeViewItem Header="General Information" IsExpanded="True" FontWeight="Normal">
-                                    <TreeViewItem Header="Section Property" Tag="0" FontWeight="Normal"/>
-                                    <TreeViewItem Header="Section Property - Stiffness Modifier" Tag="7" FontWeight="Normal"/>
-                                    <TreeViewItem Header="Load Pattern" Tag="4" FontWeight="Normal"/>
-                                    <TreeViewItem Header="Load Combination" Tag="5" FontWeight="Normal"/>
-                                </TreeViewItem>
-                                <TreeViewItem Header="Element Manipulation" IsExpanded="True" FontWeight="Normal">
-                                    <TreeViewItem Header="Point" Tag="1" FontWeight="Normal"/>
-                                    <TreeViewItem Header="Frame" Tag="2" FontWeight="Normal"/>
-                                    <TreeViewItem Header="Shell" Tag="3" FontWeight="Normal"/>
-                                    <TreeViewItem Header="Etabs Object Connectivity"
-                                                  Tag="Tables:Element Manipulation:Etabs Object Connectivity"
-                                                  IsExpanded="True"
-                                                  FontWeight="Normal"/>
-                                </TreeViewItem>
-                                <TreeViewItem Header="ANALYSIS RESULTS" IsExpanded="True" FontWeight="Normal">
-                                     <TreeViewItem Header="Joint Output" Tag="Results:Joint Output" IsExpanded="True" FontWeight="Normal">
-                                         <TreeViewItem Header="Displacements" Tag="Results:Displacements" FontWeight="Normal"/>
-                                         <TreeViewItem Header="Reactions" Tag="Results:Reactions" FontWeight="Normal"/>
-                                         <TreeViewItem Header="Velocity and Acceleration" Tag="Results:Velocity and Acceleration" FontWeight="Normal"/>
-                                         <TreeViewItem Header="Joint Masses" Tag="Results:Assembled Joint Masses" FontWeight="Normal"/>
-                                     </TreeViewItem>
-                                     <TreeViewItem Header="Element Output" IsExpanded="True" FontWeight="Normal">
-                                         <TreeViewItem Header="Frame Output" Tag="Results:Frame Output" FontWeight="Normal"/>
-                                         <TreeViewItem Header="Area Output" Tag="Results:Area Output" FontWeight="Normal"/>
-                                         <TreeViewItem Header="Wall Output" Tag="Results:Wall Output" FontWeight="Normal"/>
-                                         <TreeViewItem Header="Objects and Elements" Tag="Results:Objects and Elements" FontWeight="Normal"/>
-                                     </TreeViewItem>
-                                    <TreeViewItem Header="Structure Output" IsExpanded="True" FontWeight="Normal">
-                                        <TreeViewItem Header="Base Reactions" Tag="Results:Base Reactions" FontWeight="Normal"/>
-                                        <TreeViewItem Header="Modal Information" Tag="Results:Modal Information" FontWeight="Normal"/>
-                                        <TreeViewItem Header="Mass Data" Tag="Results:Mass Data" FontWeight="Normal"/>
-                                        <TreeViewItem Header="Other Output Items" Tag="Results:Other Output Items" FontWeight="Normal"/>
-                                    </TreeViewItem>
-                                </TreeViewItem>
-                                 <TreeViewItem Header="MISCELLANEOUS DATA" IsExpanded="True" FontWeight="Normal">
-                                     <TreeViewItem Header="Project Information" Tag="Tables:MISCELLANEOUS DATA:Project Information" FontWeight="Normal"/>
-                                     <TreeViewItem Header="Material List" Tag="Tables:MISCELLANEOUS DATA:Material List" FontWeight="Normal"/>
-                                 </TreeViewItem>
+                                <TreeViewItem Header="General Information" Tag="0" FontWeight="Normal"/>
+                                <TreeViewItem Header="Section Property" Tag="0" FontWeight="Normal"/>
+                                <TreeViewItem Header="Section Property - Stiffness Modifier" Tag="7" FontWeight="Normal"/>
+                                <TreeViewItem Header="Load Pattern" Tag="4" FontWeight="Normal"/>
+                                <TreeViewItem Header="Load Combination" Tag="5" FontWeight="Normal"/>
                             </TreeViewItem>
+                            <TreeViewItem Header="Element Manipulation" IsExpanded="True" FontWeight="Normal">
+                                <TreeViewItem Header="Point" Tag="1" FontWeight="Normal"/>
+                                <TreeViewItem Header="Frame" Tag="2" FontWeight="Normal"/>
+                                <TreeViewItem Header="Shell" Tag="3" FontWeight="Normal"/>
+                                <TreeViewItem Header="Etabs Object Connectivity"
+                                              Tag="Tables:Element Manipulation:Etabs Object Connectivity"
+                                              IsExpanded="True"
+                                              FontWeight="Normal"/>
+                            </TreeViewItem>
+                            <TreeViewItem Header="Modelling Helper" IsExpanded="True" FontWeight="Normal">
+                                <TreeViewItem Header="Array Frame Element" Tag="8" FontWeight="Normal"/>
+                            </TreeViewItem>
+                            <TreeViewItem Header="ANALYSIS RESULTS" IsExpanded="True" FontWeight="Normal">
+                                 <TreeViewItem Header="Joint Output" Tag="Results:Joint Output" IsExpanded="True" FontWeight="Normal">
+                                     <TreeViewItem Header="Displacements" Tag="Results:Displacements" FontWeight="Normal"/>
+                                     <TreeViewItem Header="Reactions" Tag="Results:Reactions" FontWeight="Normal"/>
+                                     <TreeViewItem Header="Velocity and Acceleration" Tag="Results:Velocity and Acceleration" FontWeight="Normal"/>
+                                     <TreeViewItem Header="Joint Masses" Tag="Results:Assembled Joint Masses" FontWeight="Normal"/>
+                                 </TreeViewItem>
+                                 <TreeViewItem Header="Element Output" IsExpanded="True" FontWeight="Normal">
+                                     <TreeViewItem Header="Frame Output" Tag="Results:Frame Output" FontWeight="Normal"/>
+                                     <TreeViewItem Header="Area Output" Tag="Results:Area Output" FontWeight="Normal"/>
+                                     <TreeViewItem Header="Wall Output" Tag="Results:Wall Output" FontWeight="Normal"/>
+                                     <TreeViewItem Header="Objects and Elements" Tag="Results:Objects and Elements" FontWeight="Normal"/>
+                                 </TreeViewItem>
+                                <TreeViewItem Header="Structure Output" IsExpanded="True" FontWeight="Normal">
+                                    <TreeViewItem Header="Base Reactions" Tag="Results:Base Reactions" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Modal Information" Tag="Results:Modal Information" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Mass Data" Tag="Results:Mass Data" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Other Output Items" Tag="Results:Other Output Items" FontWeight="Normal"/>
+                                </TreeViewItem>
+                            </TreeViewItem>
+                             <TreeViewItem Header="MISCELLANEOUS DATA" IsExpanded="True" FontWeight="Normal">
+                                 <TreeViewItem Header="Project Information" Tag="Tables:MISCELLANEOUS DATA:Project Information" FontWeight="Normal"/>
+                                 <TreeViewItem Header="Material List" Tag="Tables:MISCELLANEOUS DATA:Material List" FontWeight="Normal"/>
+                             </TreeViewItem>
                         </TreeViewItem>
                     </TreeView>
                 </DockPanel>
@@ -968,6 +970,171 @@
                                     </Grid>
                                 </TabItem>
                             </TabControl>
+                        </TabItem>
+
+                        <TabItem Header="Array Frame Element">
+                            <Grid Margin="{StaticResource Inset.Small}">
+                                <Border x:Name="ArrayFrameElementView"
+                                        Style="{StaticResource CompactCardBorderStyle}"
+                                        Visibility="{Binding ArrayFrameElementLandingVisibility}">
+                                    <Grid MinHeight="240">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0"
+                                                   Text="Array Frame Element"
+                                                   Style="{StaticResource SectionHeadingTextStyle}"
+                                                   Margin="{StaticResource Gap.Section}"/>
+
+                                        <Button Grid.Row="1"
+                                                Content="Create Array Perpendicular To Path"
+                                                Style="{StaticResource ToolButtonStyle}"
+                                                Width="260"
+                                                Height="44"
+                                                HorizontalAlignment="Left"
+                                                VerticalAlignment="Top"
+                                                Command="{Binding OpenCreateArrayPerpendicularToPathCommand}"/>
+                                    </Grid>
+                                </Border>
+
+                                <Border x:Name="CreateArrayPerpendicularToPathView"
+                                        Style="{StaticResource CompactCardBorderStyle}"
+                                        Visibility="{Binding CreateArrayPerpendicularToPathVisibility}">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <Grid MaxWidth="540"
+                                              HorizontalAlignment="Left">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="10"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="8"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="8"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="12"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="12"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="12"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="18"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="8"/>
+                                                <ColumnDefinition Width="72"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Row="0"
+                                                       Grid.Column="0"
+                                                       Grid.ColumnSpan="4"
+                                                       Text="Create Array Perpendicular To Path"
+                                                       Style="{StaticResource SectionHeadingTextStyle}"
+                                                       Margin="{StaticResource Gap.Card}"/>
+
+                                            <TextBlock Grid.Row="2"
+                                                       Grid.Column="0"
+                                                       Text="Point 1"
+                                                       Style="{StaticResource LabelTextStyle}"/>
+                                            <TextBox Grid.Row="2"
+                                                     Grid.Column="1"
+                                                     Text="{Binding Point1Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <Button Grid.Row="2"
+                                                    Grid.Column="3"
+                                                    Content="Pick"
+                                                    Style="{StaticResource SmallButtonStyle}"
+                                                    Command="{Binding PickPoint1Command}"/>
+
+                                            <TextBlock Grid.Row="4"
+                                                       Grid.Column="0"
+                                                       Text="Point 2"
+                                                       Style="{StaticResource LabelTextStyle}"/>
+                                            <TextBox Grid.Row="4"
+                                                     Grid.Column="1"
+                                                     Text="{Binding Point2Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <Button Grid.Row="4"
+                                                    Grid.Column="3"
+                                                    Content="Pick"
+                                                    Style="{StaticResource SmallButtonStyle}"
+                                                    Command="{Binding PickPoint2Command}"/>
+
+                                            <TextBlock Grid.Row="6"
+                                                       Grid.Column="0"
+                                                       Text="Reference Frame"
+                                                       Style="{StaticResource LabelTextStyle}"/>
+                                            <TextBox Grid.Row="6"
+                                                     Grid.Column="1"
+                                                     Text="{Binding ReferenceFrameName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                            <Button Grid.Row="6"
+                                                    Grid.Column="3"
+                                                    Content="Pick"
+                                                    Style="{StaticResource SmallButtonStyle}"
+                                                    Command="{Binding PickReferenceFrameCommand}"/>
+
+                                            <TextBlock Grid.Row="8"
+                                                       Grid.Column="0"
+                                                       Text="Assign Section"
+                                                       Style="{StaticResource LabelTextStyle}"/>
+                                            <ComboBox Grid.Row="8"
+                                                      Grid.Column="1"
+                                                      Grid.ColumnSpan="3"
+                                                      ItemsSource="{Binding AvailableSections}"
+                                                      SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
+                                                      Height="26"
+                                                      VerticalContentAlignment="Center"/>
+
+                                            <TextBlock Grid.Row="10"
+                                                       Grid.Column="0"
+                                                       Text="End Fixity"
+                                                       Style="{StaticResource LabelTextStyle}"
+                                                       VerticalAlignment="Top"/>
+                                            <StackPanel Grid.Row="10"
+                                                        Grid.Column="1"
+                                                        Grid.ColumnSpan="3">
+                                                <RadioButton Content="Fix-Fix"
+                                                             GroupName="EndFixity"
+                                                             IsChecked="{Binding IsFixFixSelected, Mode=TwoWay}"/>
+                                                <RadioButton Content="Pin-Pin"
+                                                             GroupName="EndFixity"
+                                                             Margin="0,5,0,0"
+                                                             IsChecked="{Binding IsPinPinSelected, Mode=TwoWay}"/>
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Row="12"
+                                                       Grid.Column="0"
+                                                       Text="Number of Spaces"
+                                                       Style="{StaticResource LabelTextStyle}"/>
+                                            <TextBox Grid.Row="12"
+                                                     Grid.Column="1"
+                                                     Text="{Binding NumberOfSpaces, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                     HorizontalContentAlignment="Right"/>
+
+                                            <StackPanel Grid.Row="14"
+                                                        Grid.Column="0"
+                                                        Grid.ColumnSpan="4"
+                                                        Orientation="Horizontal"
+                                                        HorizontalAlignment="Right">
+                                                <Button Content="Back"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Margin="{StaticResource Gap.Right}"
+                                                        Command="{Binding BackToArrayFrameElementCommand}"/>
+                                                <Button Content="Create Frames"
+                                                        Style="{StaticResource PrimaryButtonStyle}"
+                                                        Margin="{StaticResource Gap.Right}"
+                                                        Command="{Binding CreateFramesCommand}"/>
+                                                <Button Content="Close"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Command="{Binding CloseCommand}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
                         </TabItem>
                     </TabControl>
                 </Border>

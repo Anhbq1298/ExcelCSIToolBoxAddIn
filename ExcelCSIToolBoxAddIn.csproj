@@ -291,6 +291,7 @@
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.Export.cs" />
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.Sections.cs" />
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.StiffnessModifiers.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.ModellingHelper.cs" />
     <Compile Include="UI\ViewModels\CsiRunningInstanceViewModel.cs" />
     <Compile Include="UI\ViewModels\EtabsUnitSystem.cs" />
     <Compile Include="UI\ViewModels\BaseReactionOutputCaseViewModel.cs" />

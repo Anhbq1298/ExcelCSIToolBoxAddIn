@@ -80,6 +80,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             AnalysisResultTables = new System.Collections.ObjectModel.ObservableCollection<string>();
             RunningCsiInstances = new ObservableCollection<CsiRunningInstanceViewModel>();
             InitializeStiffnessModifierPage();
+            InitializeModellingHelperPage();
             AvailableUnitSystems = CreateAvailableUnitSystems();
             _isInitializingUnitSystems = true;
             SelectedUnitSystem = AvailableUnitSystems[0];
@@ -318,6 +319,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     case 5: return "Load Combination";
                     case 6: return string.IsNullOrWhiteSpace(ActiveAnalysisResultsGroup) ? "Analysis Results" : ActiveAnalysisResultsGroup;
                     case 7: return "Section Property - Stiffness Modifier";
+                    case 8: return IsCreateArrayPerpendicularToPathOpen ? "Create Array Perpendicular To Path" : "Array Frame Element";
                     default: return "Section Property";
                 }
             }
@@ -330,6 +332,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 if (ActiveWorkspacePage == 7)
                 {
                     return "ETABS Toolbox / General Information / Section Property - Stiffness Modifier";
+                }
+
+                if (ActiveWorkspacePage == 8)
+                {
+                    return IsCreateArrayPerpendicularToPathOpen
+                        ? "ETABS Toolbox / MODELLING HELPER / Array Frame Element / Create Array Perpendicular To Path"
+                        : "ETABS Toolbox / MODELLING HELPER / Array Frame Element";
                 }
 
                 return ActiveWorkspacePage == 6
