@@ -8,15 +8,21 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters
 
         public object SapModel { get; set; }
 
+        public string InstanceId { get; set; }
+
+        public int? ProcessId { get; set; }
+
         public string Message { get; set; }
 
-        public static CsiAttachResult Success(object applicationObject, object sapModel, string message = null)
+        public static CsiAttachResult Success(object applicationObject, object sapModel, string message = null, string instanceId = null, int? processId = null)
         {
             var result = new CsiAttachResult
             {
                 IsSuccess = true,
                 ApplicationObject = applicationObject,
                 SapModel = sapModel,
+                InstanceId = instanceId,
+                ProcessId = processId,
                 Message = message
             };
             return result;

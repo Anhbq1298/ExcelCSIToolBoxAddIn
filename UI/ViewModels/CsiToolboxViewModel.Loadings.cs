@@ -138,6 +138,25 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        private void ExportLoadCombinationMatrixToExcel()
+        {
+            var matrixResult = _csiConnectionService.GetLoadCombinationMatrix();
+            if (!matrixResult.IsSuccess)
+            {
+                ShowOperationResult(OperationResult.Failure(matrixResult.Message));
+                return;
+            }
+
+            var viewModel = new LoadCombinationMatrixViewModel(matrixResult.Data, ProductTitle, _excelOutputService);
+            if (viewModel.ExportToExcelRangeCommand.CanExecute(null))
+            {
+                viewModel.ExportToExcelRangeCommand.Execute(null);
+                return;
+            }
+
+            ShowOperationResult(OperationResult.Failure("Excel export service is not available."));
+        }
+
         private OperationResult SaveLoadCombinationMatrixChanges(LoadCombinationMatrixViewModel viewModel)
         {
             OperationResult deleteResult = null;

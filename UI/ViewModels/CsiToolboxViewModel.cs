@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Globalization;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Application.UseCases;
@@ -38,9 +39,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private string _selectedAnalysisResultTable;
         private readonly string _productName;
         private EtabsUnitSystem _selectedUnitSystem;
+        private CsiRunningInstanceViewModel _selectedRunningCsiInstance;
         private bool _isInitializingUnitSystems;
         private bool _isApplyingGlobalUnit;
         private bool _isModelLocked;
+        private bool _isRefreshingRunningCsiInstances;
 
         public CsiToolboxViewModel(
             ICSISapModelConnectionService csiConnectionService,
@@ -75,16 +78,29 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
             SectionDimensionAnnotations = new System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation>();
             AnalysisResultTables = new System.Collections.ObjectModel.ObservableCollection<string>();
+            RunningCsiInstances = new ObservableCollection<CsiRunningInstanceViewModel>();
+            InitializeStiffnessModifierPage();
             AvailableUnitSystems = CreateAvailableUnitSystems();
             _isInitializingUnitSystems = true;
             SelectedUnitSystem = AvailableUnitSystems[0];
             _isInitializingUnitSystems = false;
 
+            RefreshRunningCsiInstancesCommand = new RelayCommand(RefreshRunningCsiInstancesFromUi);
             AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
             ToggleModelLockCommand = new RelayCommand(ToggleModelLock, () => IsConnected);
             SelectWorkspacePageCommand = new RelayCommand<string>(SelectWorkspacePage);
             ExportAnalysisResultTableCommand = new RelayCommand<string>(ShowOutputSelectionAndExport);
+            RefreshFrameStiffnessSectionsCommand = new RelayCommand(RefreshFrameStiffnessSections, () => IsConnected);
+            RefreshAreaStiffnessSectionsCommand = new RelayCommand(RefreshAreaStiffnessSections, () => IsConnected);
+            SelectVisibleFrameStiffnessSectionsCommand = new RelayCommand(SelectVisibleFrameStiffnessSections, () => IsConnected);
+            ClearFrameStiffnessSectionSelectionCommand = new RelayCommand(ClearFrameStiffnessSectionSelection, () => IsConnected);
+            SelectVisibleAreaStiffnessSectionsCommand = new RelayCommand(SelectVisibleAreaStiffnessSections, () => IsConnected);
+            ClearAreaStiffnessSectionSelectionCommand = new RelayCommand(ClearAreaStiffnessSectionSelection, () => IsConnected);
+            ApplyFrameStiffnessModifiersCommand = new RelayCommand(ApplyFrameStiffnessModifiers, () => IsConnected);
+            ApplyAreaStiffnessModifiersCommand = new RelayCommand(ApplyAreaStiffnessModifiers, () => IsConnected);
+            ResetFrameStiffnessModifiersCommand = new RelayCommand(ResetFrameModifierFields);
+            ResetAreaStiffnessModifiersCommand = new RelayCommand(ResetAreaModifierFields);
 
             CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelISections.Execute()), () => IsConnected);
             CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelChannelSections.Execute()), () => IsConnected);
@@ -123,6 +139,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             
             GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations, () => IsConnected);
             ModifyLoadCombinationsInMatrixViewCommand = new RelayCommand(ModifyLoadCombinationsInMatrixView, () => IsConnected);
+            ExportLoadCombinationMatrixToExcelCommand = new RelayCommand(ExportLoadCombinationMatrixToExcel, () => IsConnected);
             AddLoadCombinationFromExcelCommand = ModifyLoadCombinationsInMatrixViewCommand;
             DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => IsConnected);
             ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
@@ -249,6 +266,28 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public bool IsEtabs => string.Equals(_productName, "ETABS", StringComparison.OrdinalIgnoreCase);
 
+        public ObservableCollection<CsiRunningInstanceViewModel> RunningCsiInstances { get; private set; }
+
+        public CsiRunningInstanceViewModel SelectedRunningCsiInstance
+        {
+            get { return _selectedRunningCsiInstance; }
+            set
+            {
+                if (ReferenceEquals(_selectedRunningCsiInstance, value))
+                {
+                    return;
+                }
+
+                _selectedRunningCsiInstance = value;
+                OnPropertyChanged();
+
+                if (!_isRefreshingRunningCsiInstances && value != null)
+                {
+                    AttachToSelectedRunningInstance(value, true);
+                }
+            }
+        }
+
         public int ActiveWorkspacePage
         {
             get { return _activeWorkspacePage; }
@@ -278,6 +317,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     case 4: return "Load Pattern";
                     case 5: return "Load Combination";
                     case 6: return string.IsNullOrWhiteSpace(ActiveAnalysisResultsGroup) ? "Analysis Results" : ActiveAnalysisResultsGroup;
+                    case 7: return "Section Property - Stiffness Modifier";
                     default: return "Section Property";
                 }
             }
@@ -287,6 +327,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             get
             {
+                if (ActiveWorkspacePage == 7)
+                {
+                    return "ETABS Toolbox / General Information / Section Property - Stiffness Modifier";
+                }
+
                 return ActiveWorkspacePage == 6
                     ? $"ETABS Toolbox / {ActiveTableCategory} / {ActivePageTitle}"
                     : $"ETABS Toolbox / {ActivePageTitle}";
@@ -358,10 +403,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         }
 
         public ICommand AttachToRunningCsiCommand { get; }
+        public ICommand RefreshRunningCsiInstancesCommand { get; }
         public ICommand CloseCurrentInstanceCommand { get; }
         public ICommand ToggleModelLockCommand { get; }
         public ICommand SelectWorkspacePageCommand { get; }
         public ICommand ExportAnalysisResultTableCommand { get; }
+        public ICommand RefreshFrameStiffnessSectionsCommand { get; }
+        public ICommand RefreshAreaStiffnessSectionsCommand { get; }
+        public ICommand SelectVisibleFrameStiffnessSectionsCommand { get; }
+        public ICommand ClearFrameStiffnessSectionSelectionCommand { get; }
+        public ICommand SelectVisibleAreaStiffnessSectionsCommand { get; }
+        public ICommand ClearAreaStiffnessSectionSelectionCommand { get; }
+        public ICommand ApplyFrameStiffnessModifiersCommand { get; }
+        public ICommand ApplyAreaStiffnessModifiersCommand { get; }
+        public ICommand ResetFrameStiffnessModifiersCommand { get; }
+        public ICommand ResetAreaStiffnessModifiersCommand { get; }
 
         public ICommand CreateIshapeSectionCommand { get; }
         public ICommand CreateChannelSectionCommand { get; }
@@ -400,6 +456,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         
         public ICommand GetLoadCombinationsCommand { get; }
         public ICommand ModifyLoadCombinationsInMatrixViewCommand { get; }
+        public ICommand ExportLoadCombinationMatrixToExcelCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
         public ICommand ViewLoadCombinationCommand { get; }

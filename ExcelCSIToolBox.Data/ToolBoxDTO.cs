@@ -27,6 +27,7 @@ namespace ExcelCSIToolBox.Data
         public string ModelPath { get; set; }
         public string ModelFileName { get; set; }
         public string ModelCurrentUnit { get; set; }
+        public int? ProcessId { get; set; }
         /// <summary>
         /// Optional COM object references for future CSI operations.
         /// </summary>

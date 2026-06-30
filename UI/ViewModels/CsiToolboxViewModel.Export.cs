@@ -46,9 +46,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             int index;
-            if (int.TryParse(pageIndex, out index) && index >= 0 && index <= 6)
+            if (int.TryParse(pageIndex, out index) && index >= 0 && index <= 7)
             {
                 ActiveWorkspacePage = index;
+                if (index == 7 && IsConnected)
+                {
+                    if (FrameStiffnessSections.Count == 0)
+                    {
+                        RefreshFrameStiffnessSections();
+                    }
+
+                    if (AreaStiffnessSections.Count == 0)
+                    {
+                        RefreshAreaStiffnessSections();
+                    }
+                }
             }
         }
 

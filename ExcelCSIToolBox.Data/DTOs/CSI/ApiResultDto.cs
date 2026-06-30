@@ -21,6 +21,7 @@ namespace ExcelCSIToolBox.Data.DTOs.CSI
         public string ModelPath { get; set; }
         public string ModelFileName { get; set; }
         public string ModelCurrentUnit { get; set; }
+        public int? ProcessId { get; set; }
         public object CsiObject { get; set; }
         public object SapModel { get; set; }
     }

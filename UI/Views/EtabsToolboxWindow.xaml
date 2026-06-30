@@ -142,15 +142,30 @@
                                Foreground="Black"
                                Margin="0,0,8,0"/>
 
-                    <TextBox Grid.Row="0"
-                             Grid.Column="1"
-                             Text="{Binding ModelDisplayText, Mode=OneWay}"
-                             IsReadOnly="True"
-                             BorderThickness="1"
-                             Background="White"
-                             VerticalContentAlignment="Center"
-                             FontWeight="Bold"
-                             Height="26"/>
+                    <DockPanel Grid.Row="0"
+                               Grid.Column="1"
+                               LastChildFill="True">
+                        <Button DockPanel.Dock="Right"
+                                Width="32"
+                                Height="26"
+                                Padding="0"
+                                Margin="6,0,0,0"
+                                ToolTip="Refresh running instances"
+                                Command="{Binding RefreshRunningCsiInstancesCommand}">
+                            <TextBlock Text="&#xE72C;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Button>
+                        <ComboBox ItemsSource="{Binding RunningCsiInstances}"
+                                  SelectedItem="{Binding SelectedRunningCsiInstance, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  ToolTip="{Binding SelectedRunningCsiInstance.ToolTipText}"
+                                  VerticalContentAlignment="Center"
+                                  FontWeight="Bold"
+                                  Height="26"/>
+                    </DockPanel>
 
                     <TextBlock Grid.Row="2"
                                Grid.Column="0"
@@ -726,6 +741,7 @@
                                 <StackPanel Grid.Row="1" Grid.Column="2" VerticalAlignment="Top">
                                     <Button Content="Refresh List" HorizontalAlignment="Stretch" Command="{Binding GetLoadCombinationsCommand}" Margin="0,0,0,8"/>
                                     <Button Content="Modify in Matrix View" HorizontalAlignment="Stretch" Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}" Margin="0,0,0,8"/>
+                                    <Button Content="Export Matrix to Excel" HorizontalAlignment="Stretch" Command="{Binding ExportLoadCombinationMatrixToExcelCommand}" Margin="0,0,0,8"/>
                                 </StackPanel>
                             </Grid>
                         </GroupBox>

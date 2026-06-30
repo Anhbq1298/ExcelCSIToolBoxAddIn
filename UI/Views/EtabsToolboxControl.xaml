@@ -97,11 +97,27 @@
                 <StackPanel Grid.Column="4"
                             Grid.Row="0"
                             VerticalAlignment="Center">
-                    <TextBlock Text="{Binding ModelDisplayText}"
-                               Style="{StaticResource BodyTextStyle}"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource TextBrush.Inverse}"
-                               TextTrimming="CharacterEllipsis"/>
+                    <DockPanel LastChildFill="True">
+                        <Button DockPanel.Dock="Right"
+                                Style="{StaticResource IconButtonStyle}"
+                                ToolTip="Refresh running instances"
+                                Margin="6,0,0,0"
+                                Command="{Binding RefreshRunningCsiInstancesCommand}">
+                            <TextBlock Text="&#xE72C;"
+                                       FontFamily="Segoe MDL2 Assets"
+                                       FontSize="12"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Button>
+                        <ComboBox ItemsSource="{Binding RunningCsiInstances}"
+                                  SelectedItem="{Binding SelectedRunningCsiInstance, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  ToolTip="{Binding SelectedRunningCsiInstance.ToolTipText}"
+                                  MinWidth="220"
+                                  MaxWidth="360"
+                                  Height="26"
+                                  VerticalContentAlignment="Center"/>
+                    </DockPanel>
                     <TextBlock Text="{Binding CurrentModelUnitText}"
                                Style="{StaticResource MutedTextStyle}"
                                Foreground="{StaticResource TextBrush.NavyMuted}"/>
@@ -175,6 +191,7 @@
                             <TreeViewItem Header="Model" IsExpanded="True" FontWeight="Normal">
                                 <TreeViewItem Header="General Information" IsExpanded="True" FontWeight="Normal">
                                     <TreeViewItem Header="Section Property" Tag="0" FontWeight="Normal"/>
+                                    <TreeViewItem Header="Section Property - Stiffness Modifier" Tag="7" FontWeight="Normal"/>
                                     <TreeViewItem Header="Load Pattern" Tag="4" FontWeight="Normal"/>
                                     <TreeViewItem Header="Load Combination" Tag="5" FontWeight="Normal"/>
                                 </TreeViewItem>
@@ -672,7 +689,11 @@
                                                 Margin="{StaticResource Gap.Card}"
                                                 Command="{Binding GetLoadCombinationsCommand}"/>
                                         <Button Content="Modify Matrix"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Margin="{StaticResource Gap.Card}"
                                                 Command="{Binding ModifyLoadCombinationsInMatrixViewCommand}"/>
+                                        <Button Content="Export Matrix to Excel"
+                                                Command="{Binding ExportLoadCombinationMatrixToExcelCommand}"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -707,6 +728,246 @@
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
+                        </TabItem>
+
+                        <TabItem Header="Section Property - Stiffness Modifier">
+                            <TabControl Margin="{StaticResource Inset.Small}">
+                                <TabItem Header="Frame Object">
+                                    <Grid Margin="{StaticResource Inset.Small}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="260"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0"
+                                                Style="{StaticResource CompactCardBorderStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0"
+                                                           Text="Frame Sections"
+                                                           Style="{StaticResource SectionHeadingTextStyle}"
+                                                           Margin="{StaticResource Gap.Card}"/>
+                                                <TextBox Grid.Row="1"
+                                                         Text="{Binding FrameSectionSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                                         Height="28"
+                                                         Margin="{StaticResource Gap.Card}"/>
+                                                <StackPanel Grid.Row="2"
+                                                            Orientation="Horizontal"
+                                                            Margin="{StaticResource Gap.Card}">
+                                                    <Button Content="Select Visible"
+                                                            Style="{StaticResource SmallButtonStyle}"
+                                                            Margin="{StaticResource Gap.Right}"
+                                                            Command="{Binding SelectVisibleFrameStiffnessSectionsCommand}"/>
+                                                    <Button Content="Clear"
+                                                            Style="{StaticResource SmallButtonStyle}"
+                                                            Command="{Binding ClearFrameStiffnessSectionSelectionCommand}"/>
+                                                </StackPanel>
+                                                <ListBox Grid.Row="3"
+                                                         ItemsSource="{Binding FrameStiffnessSectionView}"
+                                                         BorderBrush="{StaticResource BorderBrush.Light}"
+                                                         BorderThickness="1"
+                                                         SelectionMode="Multiple">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Content="{Binding Name}"
+                                                                      Margin="4,2"/>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                                <Button Grid.Row="4"
+                                                        Content="Refresh Sections"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        HorizontalAlignment="Left"
+                                                        Margin="0,8,0,0"
+                                                        Command="{Binding RefreshFrameStiffnessSectionsCommand}"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Grid.Column="2"
+                                                Style="{StaticResource CompactCardBorderStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0"
+                                                           Text="Frame Modifiers"
+                                                           Style="{StaticResource SectionHeadingTextStyle}"
+                                                           Margin="{StaticResource Gap.Card}"/>
+                                                <ItemsControl Grid.Row="1"
+                                                              ItemsSource="{Binding FrameModifierFields}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="{StaticResource Gap.Row}">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="82"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0"
+                                                                           Text="{Binding Label}"
+                                                                           Style="{StaticResource LabelTextStyle}"/>
+                                                                <TextBox Grid.Column="1"
+                                                                         Text="{Binding ValueText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                         HorizontalContentAlignment="Right"
+                                                                         Margin="6,0,0,0"
+                                                                         Height="26"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock Grid.Row="2"
+                                                           Text="{Binding FrameModifierWarningText}"
+                                                           Visibility="{Binding FrameModifierWarningVisibility}"
+                                                           Foreground="{StaticResource AccentBrush.Warning}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="{StaticResource Gap.Card}"/>
+                                                <StackPanel Grid.Row="3"
+                                                            Orientation="Horizontal"
+                                                            HorizontalAlignment="Left"
+                                                            Margin="0,8,0,0">
+                                                    <Button Content="Apply"
+                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Margin="{StaticResource Gap.Right}"
+                                                            Command="{Binding ApplyFrameStiffnessModifiersCommand}"/>
+                                                    <Button Content="Reset to Default"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Command="{Binding ResetFrameStiffnessModifiersCommand}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+
+                                <TabItem Header="Area Object">
+                                    <Grid Margin="{StaticResource Inset.Small}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="260"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0"
+                                                Style="{StaticResource CompactCardBorderStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0"
+                                                           Text="Area Sections"
+                                                           Style="{StaticResource SectionHeadingTextStyle}"
+                                                           Margin="{StaticResource Gap.Card}"/>
+                                                <TextBox Grid.Row="1"
+                                                         Text="{Binding AreaSectionSearchText, UpdateSourceTrigger=PropertyChanged}"
+                                                         Height="28"
+                                                         Margin="{StaticResource Gap.Card}"/>
+                                                <StackPanel Grid.Row="2"
+                                                            Orientation="Horizontal"
+                                                            Margin="{StaticResource Gap.Card}">
+                                                    <Button Content="Select Visible"
+                                                            Style="{StaticResource SmallButtonStyle}"
+                                                            Margin="{StaticResource Gap.Right}"
+                                                            Command="{Binding SelectVisibleAreaStiffnessSectionsCommand}"/>
+                                                    <Button Content="Clear"
+                                                            Style="{StaticResource SmallButtonStyle}"
+                                                            Command="{Binding ClearAreaStiffnessSectionSelectionCommand}"/>
+                                                </StackPanel>
+                                                <ListBox Grid.Row="3"
+                                                         ItemsSource="{Binding AreaStiffnessSectionView}"
+                                                         BorderBrush="{StaticResource BorderBrush.Light}"
+                                                         BorderThickness="1"
+                                                         SelectionMode="Multiple">
+                                                    <ListBox.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                      Content="{Binding Name}"
+                                                                      Margin="4,2"/>
+                                                        </DataTemplate>
+                                                    </ListBox.ItemTemplate>
+                                                </ListBox>
+                                                <Button Grid.Row="4"
+                                                        Content="Refresh Sections"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        HorizontalAlignment="Left"
+                                                        Margin="0,8,0,0"
+                                                        Command="{Binding RefreshAreaStiffnessSectionsCommand}"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <Border Grid.Column="2"
+                                                Style="{StaticResource CompactCardBorderStyle}">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+
+                                                <TextBlock Grid.Row="0"
+                                                           Text="Area Modifiers"
+                                                           Style="{StaticResource SectionHeadingTextStyle}"
+                                                           Margin="{StaticResource Gap.Card}"/>
+                                                <ItemsControl Grid.Row="1"
+                                                              ItemsSource="{Binding AreaModifierFields}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="{StaticResource Gap.Row}">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="82"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0"
+                                                                           Text="{Binding Label}"
+                                                                           Style="{StaticResource LabelTextStyle}"/>
+                                                                <TextBox Grid.Column="1"
+                                                                         Text="{Binding ValueText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                         HorizontalContentAlignment="Right"
+                                                                         Margin="6,0,0,0"
+                                                                         Height="26"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock Grid.Row="2"
+                                                           Text="{Binding AreaModifierWarningText}"
+                                                           Visibility="{Binding AreaModifierWarningVisibility}"
+                                                           Foreground="{StaticResource AccentBrush.Warning}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="{StaticResource Gap.Card}"/>
+                                                <StackPanel Grid.Row="3"
+                                                            Orientation="Horizontal"
+                                                            HorizontalAlignment="Left"
+                                                            Margin="0,8,0,0">
+                                                    <Button Content="Apply"
+                                                            Style="{StaticResource PrimaryButtonStyle}"
+                                                            Margin="{StaticResource Gap.Right}"
+                                                            Command="{Binding ApplyAreaStiffnessModifiersCommand}"/>
+                                                    <Button Content="Reset to Default"
+                                                            Style="{StaticResource SecondaryButtonStyle}"
+                                                            Command="{Binding ResetAreaStiffnessModifiersCommand}"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </Grid>
+                                </TabItem>
+                            </TabControl>
                         </TabItem>
                     </TabControl>
                 </Border>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBox.Core.Common.Results;
@@ -16,6 +17,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 CloseCurrentInstanceCommand,
                 ToggleModelLockCommand,
+                RefreshFrameStiffnessSectionsCommand,
+                RefreshAreaStiffnessSectionsCommand,
+                SelectVisibleFrameStiffnessSectionsCommand,
+                ClearFrameStiffnessSectionSelectionCommand,
+                SelectVisibleAreaStiffnessSectionsCommand,
+                ClearAreaStiffnessSectionSelectionCommand,
+                ApplyFrameStiffnessModifiersCommand,
+                ApplyAreaStiffnessModifiersCommand,
+                ResetFrameStiffnessModifiersCommand,
+                ResetAreaStiffnessModifiersCommand,
                 CreateIshapeSectionCommand,
                 CreateChannelSectionCommand,
                 CreateAngleSectionCommand,
@@ -48,6 +59,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 DeleteSelectedLoadPatternsCommand,
                 GetLoadCombinationsCommand,
                 ModifyLoadCombinationsInMatrixViewCommand,
+                ExportLoadCombinationMatrixToExcelCommand,
                 AddLoadCombinationFromExcelCommand,
                 DeleteSelectedLoadCombinationsCommand,
                 ViewLoadCombinationCommand,
@@ -76,8 +88,36 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void LoadConnectionState(bool showMessage)
         {
-            var result = _useCases.LoadConnection.Execute();
+            RefreshRunningCsiInstances();
 
+            OperationResult<CSISapModelConnectionInfoDTO> result = SelectedRunningCsiInstance == null
+                ? _useCases.LoadConnection.Execute()
+                : _csiConnectionService.AttachToRunningInstance(SelectedRunningCsiInstance.InstanceId);
+
+            ApplyConnectionResult(result, showMessage);
+        }
+
+        private void RefreshRunningCsiInstancesFromUi()
+        {
+            RefreshRunningCsiInstances();
+            StatusText = RunningCsiInstances.Count == 0
+                ? $"No running {_productName} instance found."
+                : $"Found {RunningCsiInstances.Count} running {_productName} instance(s).";
+        }
+
+        private void AttachToSelectedRunningInstance(CsiRunningInstanceViewModel instance, bool showMessage)
+        {
+            if (instance == null)
+            {
+                return;
+            }
+
+            OperationResult<CSISapModelConnectionInfoDTO> result = _csiConnectionService.AttachToRunningInstance(instance.InstanceId);
+            ApplyConnectionResult(result, showMessage);
+        }
+
+        private void ApplyConnectionResult(OperationResult<CSISapModelConnectionInfoDTO> result, bool showMessage)
+        {
             if (result.IsSuccess && result.Data != null)
             {
                 IsConnected = true;
@@ -91,6 +131,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 SyncSelectedUnitSystemFromEtabs();
                 RefreshModelLockState();
                 StatusText = "Attached successfully.";
+                SelectRunningInstanceFromConnection(result.Data);
                 
                 // Automatically refresh lists when connection is established
                 GetLoadPatterns();
@@ -115,6 +156,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             LoadPatterns.Clear();
             LoadCombinations.Clear();
             FrameSections.Clear();
+            FrameStiffnessSections.Clear();
+            AreaStiffnessSections.Clear();
             SelectedFrameSection = null;
 
             if (showMessage)
@@ -125,6 +168,118 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
+        }
+
+        private void RefreshRunningCsiInstances()
+        {
+            string selectedInstanceId = SelectedRunningCsiInstance == null ? null : SelectedRunningCsiInstance.InstanceId;
+            OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>> result = _csiConnectionService.GetRunningInstances();
+            if (!result.IsSuccess)
+            {
+                return;
+            }
+
+            try
+            {
+                _isRefreshingRunningCsiInstances = true;
+                RunningCsiInstances.Clear();
+                if (result.Data != null)
+                {
+                    foreach (CSISapModelRunningInstanceDTO instance in result.Data)
+                    {
+                        RunningCsiInstances.Add(new CsiRunningInstanceViewModel
+                        {
+                            InstanceId = instance.InstanceId,
+                            ProcessId = instance.ProcessId,
+                            DisplayName = string.IsNullOrWhiteSpace(instance.DisplayName)
+                                ? instance.ModelFileName
+                                : instance.DisplayName,
+                            ModelPath = instance.ModelPath,
+                            ModelFileName = instance.ModelFileName,
+                            ModelCurrentUnit = instance.ModelCurrentUnit
+                        });
+                    }
+                }
+
+                SelectedRunningCsiInstance = FindRunningInstanceById(selectedInstanceId)
+                    ?? (RunningCsiInstances.Count == 1 ? RunningCsiInstances[0] : null);
+            }
+            finally
+            {
+                _isRefreshingRunningCsiInstances = false;
+            }
+        }
+
+        private void SelectRunningInstanceFromConnection(CSISapModelConnectionInfoDTO connectionInfo)
+        {
+            if (connectionInfo == null)
+            {
+                return;
+            }
+
+            CsiRunningInstanceViewModel matchingInstance = null;
+            if (connectionInfo.ProcessId.HasValue)
+            {
+                foreach (CsiRunningInstanceViewModel instance in RunningCsiInstances)
+                {
+                    if (instance.ProcessId == connectionInfo.ProcessId)
+                    {
+                        matchingInstance = instance;
+                        break;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(connectionInfo.ModelPath))
+            {
+                foreach (CsiRunningInstanceViewModel instance in RunningCsiInstances)
+                {
+                    if (matchingInstance == null &&
+                        string.Equals(instance.ModelPath, connectionInfo.ModelPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        matchingInstance = instance;
+                        break;
+                    }
+                }
+            }
+
+            if (matchingInstance == null && RunningCsiInstances.Count == 1)
+            {
+                matchingInstance = RunningCsiInstances[0];
+            }
+
+            if (matchingInstance == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _isRefreshingRunningCsiInstances = true;
+                SelectedRunningCsiInstance = matchingInstance;
+            }
+            finally
+            {
+                _isRefreshingRunningCsiInstances = false;
+            }
+        }
+
+        private CsiRunningInstanceViewModel FindRunningInstanceById(string instanceId)
+        {
+            if (string.IsNullOrWhiteSpace(instanceId))
+            {
+                return null;
+            }
+
+            foreach (CsiRunningInstanceViewModel instance in RunningCsiInstances)
+            {
+                if (string.Equals(instance.InstanceId, instanceId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return instance;
+                }
+            }
+
+            return null;
         }
 
         private void CloseCurrentInstance()
@@ -141,6 +296,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 LoadPatterns.Clear();
                 LoadCombinations.Clear();
                 FrameSections.Clear();
+                FrameStiffnessSections.Clear();
+                AreaStiffnessSections.Clear();
                 SelectedFrameSection = null;
 
                 MessageBox.Show(

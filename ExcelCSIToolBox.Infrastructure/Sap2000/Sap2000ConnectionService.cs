@@ -45,9 +45,19 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
 
         public string ProductName => "SAP2000";
 
+        public OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>> GetRunningInstances()
+        {
+            return _connectionAdapter.GetRunningInstances();
+        }
+
         public OperationResult<CSISapModelConnectionInfoDTO> TryAttachToRunningInstance()
         {
             return _connectionAdapter.TryAttachToRunningInstance();
+        }
+
+        public OperationResult<CSISapModelConnectionInfoDTO> AttachToRunningInstance(string instanceId)
+        {
+            return _connectionAdapter.AttachToRunningInstance(instanceId);
         }
 
         public OperationResult<CSISapModelConnectionInfoDTO> GetCurrentConnection()
@@ -1675,6 +1685,126 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return OperationResult.Success($"Renamed section and reassigned {reassigned} frame(s).");
         }
 
+        public OperationResult<IReadOnlyList<string>> GetFrameSectionNames()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            int numberNames = 0;
+            string[] names = null;
+            int ret = sapModelResult.Data.PropFrame.GetNameList(ref numberNames, ref names);
+            if (ret != 0 || names == null)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure("Failed to get frame section names from SAP2000.");
+            }
+
+            return OperationResult<IReadOnlyList<string>>.Success(new List<string>(names));
+        }
+
+        public OperationResult<double[]> GetFrameSectionModifiers(string sectionName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<double[]>.Failure(sapModelResult.Message);
+            }
+
+            double[] modifiers = CreateDefaultModifiers(8);
+            int ret = sapModelResult.Data.PropFrame.GetModifiers(sectionName, ref modifiers);
+            if (ret != 0)
+            {
+                return OperationResult<double[]>.Failure($"Failed to get frame stiffness modifiers for '{sectionName}'.");
+            }
+
+            return OperationResult<double[]>.Success(modifiers);
+        }
+
+        public OperationResult SetFrameSectionModifiers(string sectionName, double[] modifiers)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            if (modifiers == null || modifiers.Length != 8)
+            {
+                return OperationResult.Failure("Frame stiffness modifiers must contain 8 values.");
+            }
+
+            int ret = sapModelResult.Data.PropFrame.SetModifiers(sectionName, ref modifiers);
+            if (ret != 0)
+            {
+                return OperationResult.Failure($"Failed to set frame stiffness modifiers for '{sectionName}'.");
+            }
+
+            RefreshView(sapModelResult.Data);
+            return OperationResult.Success();
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetAreaSectionNames()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            int numberNames = 0;
+            string[] names = null;
+            int ret = sapModelResult.Data.PropArea.GetNameList(ref numberNames, ref names);
+            if (ret != 0 || names == null)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure("Failed to get area section names from SAP2000.");
+            }
+
+            return OperationResult<IReadOnlyList<string>>.Success(new List<string>(names));
+        }
+
+        public OperationResult<double[]> GetAreaSectionModifiers(string sectionName)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<double[]>.Failure(sapModelResult.Message);
+            }
+
+            double[] modifiers = CreateDefaultModifiers(10);
+            int ret = sapModelResult.Data.PropArea.GetModifiers(sectionName, ref modifiers);
+            if (ret != 0)
+            {
+                return OperationResult<double[]>.Failure($"Failed to get area stiffness modifiers for '{sectionName}'.");
+            }
+
+            return OperationResult<double[]>.Success(modifiers);
+        }
+
+        public OperationResult SetAreaSectionModifiers(string sectionName, double[] modifiers)
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult.Failure(sapModelResult.Message);
+            }
+
+            if (modifiers == null || modifiers.Length != 10)
+            {
+                return OperationResult.Failure("Area stiffness modifiers must contain 10 values.");
+            }
+
+            int ret = sapModelResult.Data.PropArea.SetModifiers(sectionName, ref modifiers);
+            if (ret != 0)
+            {
+                return OperationResult.Failure($"Failed to set area stiffness modifiers for '{sectionName}'.");
+            }
+
+            RefreshView(sapModelResult.Data);
+            return OperationResult.Success();
+        }
+
         private static OperationResult SetFrameSectionProperty(SAP2000v1.cSapModel sapModel, string sectionName, CSISapModelFrameSectionUpdateDTO input)
         {
             if (string.IsNullOrWhiteSpace(sectionName)) return OperationResult.Failure("Section name is required.");
@@ -1736,6 +1866,17 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
                 if (input.Dimensions.TryGetValue(key, out double value)) return value;
             }
             return 0;
+        }
+
+        private static double[] CreateDefaultModifiers(int count)
+        {
+            double[] modifiers = new double[count];
+            for (int i = 0; i < modifiers.Length; i++)
+            {
+                modifiers[i] = 1;
+            }
+
+            return modifiers;
         }
 
         public OperationResult<CSISapModelStatisticsDTO> GetModelStatistics()

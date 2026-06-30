@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data;
@@ -37,9 +40,56 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
         public string ProductName { get; }
 
+        public OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>> GetRunningInstances()
+        {
+            try
+            {
+                IReadOnlyList<CsiAttachResult> attachResults = _modelAdapter.GetRunningInstances();
+                var instances = new List<CSISapModelRunningInstanceDTO>();
+                foreach (CsiAttachResult attachResult in attachResults)
+                {
+                    var sapModel = attachResult.SapModel as TSapModel;
+                    if (!attachResult.IsSuccess || sapModel == null)
+                    {
+                        continue;
+                    }
+
+                    string modelPath = _getModelPath(sapModel);
+                    string modelFileName = string.IsNullOrWhiteSpace(modelPath) ? "Unsaved Model" : Path.GetFileName(modelPath);
+                    int? processId = ResolveProcessId(attachResult, modelPath, modelFileName);
+                    instances.Add(new CSISapModelRunningInstanceDTO
+                    {
+                        InstanceId = attachResult.InstanceId,
+                        ProcessId = processId,
+                        ModelPath = modelPath,
+                        ModelFileName = modelFileName,
+                        ModelCurrentUnit = _getModelCurrentUnit(sapModel),
+                        DisplayName = FormatInstanceDisplayName(modelFileName, processId)
+                    });
+                }
+
+                return OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>>.Success(instances);
+            }
+            catch
+            {
+                return OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>>.Failure($"Failed to list running {ProductName} instances.");
+            }
+        }
+
         public OperationResult<CSISapModelConnectionInfoDTO> TryAttachToRunningInstance()
         {
             var attachResult = _modelAdapter.AttachToRunningInstance();
+            return AttachToResult(attachResult);
+        }
+
+        public OperationResult<CSISapModelConnectionInfoDTO> AttachToRunningInstance(string instanceId)
+        {
+            var attachResult = _modelAdapter.AttachToRunningInstance(instanceId);
+            return AttachToResult(attachResult);
+        }
+
+        private OperationResult<CSISapModelConnectionInfoDTO> AttachToResult(CsiAttachResult attachResult)
+        {
             if (!attachResult.IsSuccess)
             {
                 _currentConnection = null;
@@ -56,13 +106,23 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 
             try
             {
+                bool isSameConnection = ReferenceEquals(_currentConnection?.CsiObject, csiObject)
+                    && ReferenceEquals(_currentConnection?.SapModel, sapModel);
+                if (!isSameConnection)
+                {
+                    ResetCurrentConnection();
+                }
+
                 var modelPath = _getModelPath(sapModel);
+                string modelFileName = string.IsNullOrWhiteSpace(modelPath) ? "Unsaved Model" : Path.GetFileName(modelPath);
+                int? processId = ResolveProcessId(attachResult, modelPath, modelFileName);
                 _currentConnection = new CSISapModelConnectionInfoDTO
                 {
                     IsConnected = true,
                     ModelPath = modelPath,
-                    ModelFileName = string.IsNullOrWhiteSpace(modelPath) ? "Unsaved Model" : Path.GetFileName(modelPath),
+                    ModelFileName = modelFileName,
                     ModelCurrentUnit = _getModelCurrentUnit(sapModel),
+                    ProcessId = processId,
                     CsiObject = csiObject,
                     SapModel = sapModel
                 };
@@ -84,6 +144,140 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
             }
 
             return OperationResult<CSISapModelConnectionInfoDTO>.Success(_currentConnection);
+        }
+
+        private int? ResolveProcessId(CsiAttachResult attachResult, string modelPath, string modelFileName)
+        {
+            if (attachResult == null)
+            {
+                return null;
+            }
+
+            return attachResult.ProcessId
+                ?? ExtractProcessId(attachResult.InstanceId)
+                ?? TryFindProcessIdFromModel(modelPath, modelFileName);
+        }
+
+        private string FormatInstanceDisplayName(string modelFileName, int? processId)
+        {
+            string fileName = string.IsNullOrWhiteSpace(modelFileName) ? "Unsaved Model" : modelFileName;
+            string processText = processId.HasValue
+                ? $"PID {processId.Value}"
+                : "PID unknown";
+
+            return $"{ProductName} ({processText}) - {fileName}";
+        }
+
+        private static int? ExtractProcessId(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            Match match = Regex.Match(value, @"(?:pid|process\s*id|processid)\D*(\d+)", RegexOptions.IgnoreCase);
+            if (!match.Success)
+            {
+                match = Regex.Match(value, @"\b(\d{3,})\b");
+            }
+
+            int processId;
+            return match.Success && int.TryParse(match.Groups[1].Value, out processId)
+                ? (int?)processId
+                : null;
+        }
+
+        private int? TryFindProcessIdFromModel(string modelPath, string modelFileName)
+        {
+            try
+            {
+                Process[] processes = Process.GetProcesses();
+                var productProcesses = new List<Process>();
+                foreach (Process process in processes)
+                {
+                    if (ProcessLooksLikeProduct(process))
+                    {
+                        productProcesses.Add(process);
+                    }
+                }
+
+                string fileName = string.IsNullOrWhiteSpace(modelFileName) ? null : modelFileName;
+                string fileNameWithoutExtension = string.IsNullOrWhiteSpace(fileName)
+                    ? null
+                    : Path.GetFileNameWithoutExtension(fileName);
+
+                Process matchedProcess = null;
+                foreach (Process process in productProcesses)
+                {
+                    string title = GetMainWindowTitle(process);
+                    if (TitleMatchesModel(title, modelPath, fileName, fileNameWithoutExtension))
+                    {
+                        if (matchedProcess != null)
+                        {
+                            return null;
+                        }
+
+                        matchedProcess = process;
+                    }
+                }
+
+                if (matchedProcess != null)
+                {
+                    return matchedProcess.Id;
+                }
+
+                return productProcesses.Count == 1 ? (int?)productProcesses[0].Id : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private bool ProcessLooksLikeProduct(Process process)
+        {
+            try
+            {
+                string processName = process.ProcessName ?? string.Empty;
+                string normalizedProcessName = NormalizeProductText(processName);
+                string normalizedProductName = NormalizeProductText(ProductName);
+                return normalizedProcessName.IndexOf(normalizedProductName, StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TitleMatchesModel(string title, string modelPath, string fileName, string fileNameWithoutExtension)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                return false;
+            }
+
+            return (!string.IsNullOrWhiteSpace(modelPath) && title.IndexOf(modelPath, StringComparison.OrdinalIgnoreCase) >= 0)
+                || (!string.IsNullOrWhiteSpace(fileName) && title.IndexOf(fileName, StringComparison.OrdinalIgnoreCase) >= 0)
+                || (!string.IsNullOrWhiteSpace(fileNameWithoutExtension) && title.IndexOf(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private static string GetMainWindowTitle(Process process)
+        {
+            try
+            {
+                return process.MainWindowTitle ?? string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        private static string NormalizeProductText(string value)
+        {
+            return string.IsNullOrWhiteSpace(value)
+                ? string.Empty
+                : value.Replace(" ", string.Empty).Replace("_", string.Empty).Replace("-", string.Empty);
         }
 
         public OperationResult<TSapModel> EnsureSapModel()

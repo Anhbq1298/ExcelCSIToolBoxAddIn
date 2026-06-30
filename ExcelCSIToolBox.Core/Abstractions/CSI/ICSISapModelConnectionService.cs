@@ -15,7 +15,11 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
     {
         string ProductName { get; }
 
+        OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>> GetRunningInstances();
+
         OperationResult<CSISapModelConnectionInfoDTO> TryAttachToRunningInstance();
+
+        OperationResult<CSISapModelConnectionInfoDTO> AttachToRunningInstance(string instanceId);
 
         OperationResult<CSISapModelConnectionInfoDTO> GetCurrentConnection();
 
@@ -95,6 +99,12 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<CSISapModelFrameSectionDetailDTO> GetFrameSectionDetail(string sectionName);
         OperationResult UpdateFrameSection(CSISapModelFrameSectionUpdateDTO input);
         OperationResult RenameFrameSection(CSISapModelFrameSectionRenameDTO input);
+        OperationResult<IReadOnlyList<string>> GetFrameSectionNames();
+        OperationResult<double[]> GetFrameSectionModifiers(string sectionName);
+        OperationResult SetFrameSectionModifiers(string sectionName, double[] modifiers);
+        OperationResult<IReadOnlyList<string>> GetAreaSectionNames();
+        OperationResult<double[]> GetAreaSectionModifiers(string sectionName);
+        OperationResult SetAreaSectionModifiers(string sectionName, double[] modifiers);
 
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);
