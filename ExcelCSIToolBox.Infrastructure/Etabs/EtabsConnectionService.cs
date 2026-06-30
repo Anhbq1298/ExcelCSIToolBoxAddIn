@@ -117,6 +117,53 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return ret == 0 ? OperationResult.Success("Selection cleared.") : OperationResult.Failure($"Failed to clear selection (return code {ret}).");
         }
 
+        public OperationResult<IReadOnlyList<CsiSelectedObjectDto>> GetSelectedObjectsFromActiveModel()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<CsiSelectedObjectDto>>.Failure(sapModelResult.Message);
+            }
+
+            try
+            {
+                int numberItems = 0;
+                int[] objectTypes = null;
+                string[] objectNames = null;
+                int ret = sapModelResult.Data.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
+                if (ret != 0)
+                {
+                    return OperationResult<IReadOnlyList<CsiSelectedObjectDto>>.Failure("Failed to read selected objects from ETABS.");
+                }
+
+                var selectedObjects = new List<CsiSelectedObjectDto>();
+                for (int i = 0; i < numberItems; i++)
+                {
+                    if (objectTypes == null || objectNames == null || i >= objectTypes.Length || i >= objectNames.Length)
+                    {
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(objectNames[i]))
+                    {
+                        continue;
+                    }
+
+                    selectedObjects.Add(new CsiSelectedObjectDto
+                    {
+                        ObjectType = ObjectTypeIdToName(objectTypes[i]),
+                        UniqueName = objectNames[i]
+                    });
+                }
+
+                return OperationResult<IReadOnlyList<CsiSelectedObjectDto>>.Success(selectedObjects);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<CsiSelectedObjectDto>>.Failure("Failed to read selected objects from ETABS: " + ex.Message);
+            }
+        }
+
         public OperationResult AssignFrameSection(IReadOnlyList<string> frameNames, string sectionName)
         {
             var sapModelResult = EnsureEtabsSapModel();
@@ -349,7 +396,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 RefreshView);
         }
 
-        public OperationResult SetFrameReleases(IReadOnlyList<string> frameNames, IReadOnlyList<bool> startReleases, IReadOnlyList<bool> endReleases)
+        public OperationResult SetFrameReleases(IReadOnlyList<string> frameNames, IReadOnlyList<bool> startReleases, IReadOnlyList<bool> endReleases, bool suppressViewRefresh = false)
         {
             var sapModelResult = EnsureEtabsSapModel();
             if (!sapModelResult.IsSuccess)
@@ -392,7 +439,11 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 return OperationResult.Failure($"Set releases for {success} frame(s), failed {failures.Count}: {string.Join("; ", failures)}");
             }
 
-            RefreshView(sapModelResult.Data);
+            if (!suppressViewRefresh)
+            {
+                RefreshView(sapModelResult.Data);
+            }
+
             return OperationResult.Success($"Set releases for {success} frame(s).");
         }
 
@@ -4803,6 +4854,17 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
 
             return values;
+        }
+
+        private static string ObjectTypeIdToName(int typeId)
+        {
+            switch (typeId)
+            {
+                case CSISapModelObjectTypeIds.Point: return "Point";
+                case CSISapModelObjectTypeIds.Frame: return "Frame";
+                case CSISapModelObjectTypeIds.Shell: return "Shell";
+                default: return "Object(" + typeId.ToString(CultureInfo.InvariantCulture) + ")";
+            }
         }
 
     }

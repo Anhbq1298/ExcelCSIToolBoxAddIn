@@ -73,13 +73,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 GetMassSummaryByStoryCommand,
                 GetFrameSectionsCommand,
                 EditFrameSectionCommand,
-                OpenCreateArrayPerpendicularToPathCommand,
+                OpenCreateArrayPerpendicularToPathWindowCommand,
                 PickPoint1Command,
                 PickPoint2Command,
                 PickReferenceFrameCommand,
                 CreateFramesCommand,
-                BackToArrayFrameElementCommand,
-                CloseCommand
+                CloseWindowCommand
             };
 
             foreach (ICommand command in commands)

@@ -47,6 +47,7 @@ namespace ExcelCSIToolBoxAddIn
             this.buttonMassSummaryByStory = this.Factory.CreateRibbonButton();
             this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonAiAgent = this.Factory.CreateRibbonButton();
+            this.buttonRefreshPlugin = this.Factory.CreateRibbonButton();
             this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
             this.groupEtabsPostprocessing.SuspendLayout();
@@ -167,6 +168,7 @@ namespace ExcelCSIToolBoxAddIn
             // groupAiAssistant
             // 
             this.groupAiAssistant.Items.Add(this.buttonAiAgent);
+            this.groupAiAssistant.Items.Add(this.buttonRefreshPlugin);
             this.groupAiAssistant.Label = "AI Assistant";
             this.groupAiAssistant.Name = "groupAiAssistant";
             // 
@@ -180,6 +182,17 @@ namespace ExcelCSIToolBoxAddIn
             this.buttonAiAgent.ShowImage = true;
             this.buttonAiAgent.SuperTip = "Open the local Ollama-powered AI assistant in an Excel custom task pane.";
             this.buttonAiAgent.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonAiAgent_Click);
+            // 
+            // buttonRefreshPlugin
+            // 
+            this.buttonRefreshPlugin.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonRefreshPlugin.Label = "Refresh Plugin";
+            this.buttonRefreshPlugin.Name = "buttonRefreshPlugin";
+            this.buttonRefreshPlugin.OfficeImageId = "Refresh";
+            this.buttonRefreshPlugin.ScreenTip = "Refresh Plugin";
+            this.buttonRefreshPlugin.ShowImage = true;
+            this.buttonRefreshPlugin.SuperTip = "Unloads and reloads the ExcelCSIToolBoxAddIn plugin to apply updates.";
+            this.buttonRefreshPlugin.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonRefreshPlugin_Click);
             // 
             // ExcelCSIToolBoxAddInRibbon
             // 
@@ -214,6 +227,7 @@ namespace ExcelCSIToolBoxAddIn
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonStoryMaxOverAverageDrifts;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMassSummaryByStory;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAiAgent;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonRefreshPlugin;
     }
 
     partial class ThisRibbonCollection

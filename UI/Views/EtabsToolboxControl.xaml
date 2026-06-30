@@ -205,7 +205,7 @@
                                               FontWeight="Normal"/>
                             </TreeViewItem>
                             <TreeViewItem Header="Modelling Helper" IsExpanded="True" FontWeight="Normal">
-                                <TreeViewItem Header="Array Frame Element" Tag="8" FontWeight="Normal"/>
+                                <TreeViewItem Header="Helpers" Tag="8" FontWeight="Normal"/>
                             </TreeViewItem>
                             <TreeViewItem Header="ANALYSIS RESULTS" IsExpanded="True" FontWeight="Normal">
                                  <TreeViewItem Header="Joint Output" Tag="Results:Joint Output" IsExpanded="True" FontWeight="Normal">
@@ -558,20 +558,7 @@
                                           CanContentScroll="True">
                                 <Border Style="{StaticResource CompactCardBorderStyle}"
                                         Margin="{StaticResource Inset.Small}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="2.2*"/>
-                                            <ColumnDefinition Width="10"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBlock Grid.Column="0"
-                                                   Text="Create Shell Area From Selected Frames"
-                                                   Style="{StaticResource LabelTextStyle}"/>
-                                        <Button Grid.Column="2"
-                                                Content="Create Shell"
-                                                Command="{Binding CreateShellAreasFromSelectedFramesCommand}"/>
-                                    </Grid>
+                                    <Grid MinHeight="120"/>
                                 </Border>
                             </ScrollViewer>
                         </TabItem>
@@ -972,169 +959,55 @@
                             </TabControl>
                         </TabItem>
 
-                        <TabItem Header="Array Frame Element">
-                            <Grid Margin="{StaticResource Inset.Small}">
-                                <Border x:Name="ArrayFrameElementView"
-                                        Style="{StaticResource CompactCardBorderStyle}"
-                                        Visibility="{Binding ArrayFrameElementLandingVisibility}">
-                                    <Grid MinHeight="240">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="*"/>
-                                        </Grid.RowDefinitions>
+                        <TabItem Header="Helpers">
+                            <Border x:Name="ArrayFrameElementView"
+                                    Style="{StaticResource CompactCardBorderStyle}"
+                                    Margin="{StaticResource Inset.Small}">
+                                <Grid MinHeight="240">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
 
-                                        <TextBlock Grid.Row="0"
-                                                   Text="Array Frame Element"
-                                                   Style="{StaticResource SectionHeadingTextStyle}"
-                                                   Margin="{StaticResource Gap.Section}"/>
+                                    <TextBlock Grid.Row="0"
+                                               Text="Helpers"
+                                               Style="{StaticResource SectionHeadingTextStyle}"
+                                               Margin="{StaticResource Gap.Section}"/>
 
-                                        <Button Grid.Row="1"
-                                                Content="Create Array Perpendicular To Path"
-                                                Style="{StaticResource ToolButtonStyle}"
-                                                Width="260"
-                                                Height="44"
-                                                HorizontalAlignment="Left"
-                                                VerticalAlignment="Top"
-                                                Command="{Binding OpenCreateArrayPerpendicularToPathCommand}"/>
-                                    </Grid>
-                                </Border>
-
-                                <Border x:Name="CreateArrayPerpendicularToPathView"
-                                        Style="{StaticResource CompactCardBorderStyle}"
-                                        Visibility="{Binding CreateArrayPerpendicularToPathVisibility}">
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                                                  HorizontalScrollBarVisibility="Disabled">
-                                        <Grid MaxWidth="540"
-                                              HorizontalAlignment="Left">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="10"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="8"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="8"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="12"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="12"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="12"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="18"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="8"/>
-                                                <ColumnDefinition Width="72"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <TextBlock Grid.Row="0"
-                                                       Grid.Column="0"
-                                                       Grid.ColumnSpan="4"
-                                                       Text="Create Array Perpendicular To Path"
-                                                       Style="{StaticResource SectionHeadingTextStyle}"
-                                                       Margin="{StaticResource Gap.Card}"/>
-
-                                            <TextBlock Grid.Row="2"
-                                                       Grid.Column="0"
-                                                       Text="Point 1"
-                                                       Style="{StaticResource LabelTextStyle}"/>
-                                            <TextBox Grid.Row="2"
-                                                     Grid.Column="1"
-                                                     Text="{Binding Point1Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                            <Button Grid.Row="2"
-                                                    Grid.Column="3"
-                                                    Content="Pick"
-                                                    Style="{StaticResource SmallButtonStyle}"
-                                                    Command="{Binding PickPoint1Command}"/>
-
-                                            <TextBlock Grid.Row="4"
-                                                       Grid.Column="0"
-                                                       Text="Point 2"
-                                                       Style="{StaticResource LabelTextStyle}"/>
-                                            <TextBox Grid.Row="4"
-                                                     Grid.Column="1"
-                                                     Text="{Binding Point2Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                            <Button Grid.Row="4"
-                                                    Grid.Column="3"
-                                                    Content="Pick"
-                                                    Style="{StaticResource SmallButtonStyle}"
-                                                    Command="{Binding PickPoint2Command}"/>
-
-                                            <TextBlock Grid.Row="6"
-                                                       Grid.Column="0"
-                                                       Text="Reference Frame"
-                                                       Style="{StaticResource LabelTextStyle}"/>
-                                            <TextBox Grid.Row="6"
-                                                     Grid.Column="1"
-                                                     Text="{Binding ReferenceFrameName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                            <Button Grid.Row="6"
-                                                    Grid.Column="3"
-                                                    Content="Pick"
-                                                    Style="{StaticResource SmallButtonStyle}"
-                                                    Command="{Binding PickReferenceFrameCommand}"/>
-
-                                            <TextBlock Grid.Row="8"
-                                                       Grid.Column="0"
-                                                       Text="Assign Section"
-                                                       Style="{StaticResource LabelTextStyle}"/>
-                                            <ComboBox Grid.Row="8"
-                                                      Grid.Column="1"
-                                                      Grid.ColumnSpan="3"
-                                                      ItemsSource="{Binding AvailableSections}"
-                                                      SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
-                                                      Height="26"
-                                                      VerticalContentAlignment="Center"/>
-
-                                            <TextBlock Grid.Row="10"
-                                                       Grid.Column="0"
-                                                       Text="End Fixity"
-                                                       Style="{StaticResource LabelTextStyle}"
-                                                       VerticalAlignment="Top"/>
-                                            <StackPanel Grid.Row="10"
-                                                        Grid.Column="1"
-                                                        Grid.ColumnSpan="3">
-                                                <RadioButton Content="Fix-Fix"
-                                                             GroupName="EndFixity"
-                                                             IsChecked="{Binding IsFixFixSelected, Mode=TwoWay}"/>
-                                                <RadioButton Content="Pin-Pin"
-                                                             GroupName="EndFixity"
-                                                             Margin="0,5,0,0"
-                                                             IsChecked="{Binding IsPinPinSelected, Mode=TwoWay}"/>
-                                            </StackPanel>
-
-                                            <TextBlock Grid.Row="12"
-                                                       Grid.Column="0"
-                                                       Text="Number of Spaces"
-                                                       Style="{StaticResource LabelTextStyle}"/>
-                                            <TextBox Grid.Row="12"
-                                                     Grid.Column="1"
-                                                     Text="{Binding NumberOfSpaces, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                     HorizontalContentAlignment="Right"/>
-
-                                            <StackPanel Grid.Row="14"
-                                                        Grid.Column="0"
-                                                        Grid.ColumnSpan="4"
-                                                        Orientation="Horizontal"
-                                                        HorizontalAlignment="Right">
-                                                <Button Content="Back"
-                                                        Style="{StaticResource SecondaryButtonStyle}"
-                                                        Margin="{StaticResource Gap.Right}"
-                                                        Command="{Binding BackToArrayFrameElementCommand}"/>
-                                                <Button Content="Create Frames"
-                                                        Style="{StaticResource PrimaryButtonStyle}"
-                                                        Margin="{StaticResource Gap.Right}"
-                                                        Command="{Binding CreateFramesCommand}"/>
-                                                <Button Content="Close"
-                                                        Style="{StaticResource SecondaryButtonStyle}"
-                                                        Command="{Binding CloseCommand}"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </ScrollViewer>
-                                </Border>
-                            </Grid>
+                                    <StackPanel Grid.Row="1"
+                                                VerticalAlignment="Top">
+                                        <Button Style="{StaticResource ToolButtonStyle}"
+                                                MinWidth="180"
+                                                MaxWidth="320"
+                                                MinHeight="44"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding OpenCreateArrayPerpendicularToPathWindowCommand}">
+                                            <TextBlock Text="Create Array Perpendicular To Path"
+                                                       TextWrapping="Wrap"/>
+                                        </Button>
+                                        <Button Style="{StaticResource ToolButtonStyle}"
+                                                MinWidth="180"
+                                                MaxWidth="320"
+                                                MinHeight="44"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding OpenArrayBetweenTwoLinesWindowCommand}">
+                                            <TextBlock Text="Array Between Two Lines"
+                                                       TextWrapping="Wrap"/>
+                                        </Button>
+                                        <Button Style="{StaticResource ToolButtonStyle}"
+                                                MinWidth="180"
+                                                MaxWidth="320"
+                                                MinHeight="44"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding CreateShellAreasFromSelectedFramesCommand}">
+                                            <TextBlock Text="Create Shell Area From Selected Frames"
+                                                       TextWrapping="Wrap"/>
+                                        </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
                         </TabItem>
                     </TabControl>
                 </Border>

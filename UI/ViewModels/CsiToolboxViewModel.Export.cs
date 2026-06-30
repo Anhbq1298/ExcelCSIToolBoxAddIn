@@ -51,7 +51,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ActiveWorkspacePage = index;
                 if (index == 8)
                 {
-                    BackToArrayFrameElement();
                     return;
                 }
 

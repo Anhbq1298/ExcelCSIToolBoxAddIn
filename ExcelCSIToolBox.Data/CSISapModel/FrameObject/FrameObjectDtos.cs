@@ -23,6 +23,7 @@ namespace ExcelCSIToolBox.Data.CSISapModel.FrameObject
     public sealed class FrameAddBatchRequestDto
     {
         public List<FrameAddRequestDto> Frames { get; set; }
+        public bool SuppressViewRefresh { get; set; }
     }
 
     public sealed class FrameAddResultDto

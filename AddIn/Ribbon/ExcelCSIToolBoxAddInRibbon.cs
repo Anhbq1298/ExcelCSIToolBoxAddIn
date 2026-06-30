@@ -73,6 +73,11 @@ namespace ExcelCSIToolBoxAddIn
         {
             AiTaskPaneManager.TogglePane();
         }
+
+        private void buttonRefreshPlugin_Click(object sender, RibbonControlEventArgs e)
+        {
+            AddInCompositionRoot.RefreshPlugin();
+        }
     }
 }
 

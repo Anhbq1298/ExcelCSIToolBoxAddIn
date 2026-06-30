@@ -319,7 +319,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     case 5: return "Load Combination";
                     case 6: return string.IsNullOrWhiteSpace(ActiveAnalysisResultsGroup) ? "Analysis Results" : ActiveAnalysisResultsGroup;
                     case 7: return "Section Property - Stiffness Modifier";
-                    case 8: return IsCreateArrayPerpendicularToPathOpen ? "Create Array Perpendicular To Path" : "Array Frame Element";
+                    case 8: return "Helpers";
                     default: return "Section Property";
                 }
             }
@@ -336,9 +336,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 if (ActiveWorkspacePage == 8)
                 {
-                    return IsCreateArrayPerpendicularToPathOpen
-                        ? "ETABS Toolbox / MODELLING HELPER / Array Frame Element / Create Array Perpendicular To Path"
-                        : "ETABS Toolbox / MODELLING HELPER / Array Frame Element";
+                    return "ETABS Toolbox / MODELLING HELPER / Helpers";
                 }
 
                 return ActiveWorkspacePage == 6

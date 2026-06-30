@@ -213,7 +213,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel
                     }
                 }
 
-                if (batchResult.SuccessCount > 0)
+                if (batchResult.SuccessCount > 0 && !request.SuppressViewRefresh)
                 {
                     OperationResult refreshResult = refreshView(sapModel);
                     if (!refreshResult.IsSuccess)

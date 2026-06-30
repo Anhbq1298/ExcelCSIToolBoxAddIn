@@ -1,0 +1,51 @@
+<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.InteractiveSelectionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pick Object"
+        Width="360"
+        Height="180"
+        MinWidth="340"
+        MinHeight="160"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="{DynamicResource FontFamily.Primary}"
+        FontSize="{DynamicResource FontSize.Body}"
+        Background="{DynamicResource AppBackgroundBrush}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Themes/EtabsToolboxTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="{StaticResource Inset.Medium}">
+        <Border Style="{StaticResource CardBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="8"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="InstructionTextBlock"
+                           Grid.Row="0"
+                           Style="{StaticResource HeadingTextStyle}"
+                           TextWrapping="Wrap"/>
+
+                <TextBlock x:Name="StatusTextBlock"
+                           Grid.Row="2"
+                           Style="{StaticResource BodyTextStyle}"
+                           TextWrapping="Wrap"/>
+
+                <Button Grid.Row="4"
+                        Content="Cancel"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        HorizontalAlignment="Right"
+                        Click="CancelButton_Click"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

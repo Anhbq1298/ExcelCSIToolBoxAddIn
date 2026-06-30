@@ -113,5 +113,67 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 throw new InvalidOperationException("The add-in composition root is not configured.");
             }
         }
+
+        public static void RefreshPlugin()
+        {
+            try
+            {
+                string tempVbsPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "reload_excel_csi_addin.vbs");
+                string vbsScript = @"
+WScript.Sleep 1000
+On Error Resume Next
+Dim excel, addin, i
+Set excel = Nothing
+For i = 1 To 10
+    Err.Clear
+    Set excel = GetObject(, ""Excel.Application"")
+    If Err.Number = 0 And Not excel Is Nothing Then
+        Exit For
+    End If
+    WScript.Sleep 500
+Next
+If Not excel Is Nothing Then
+    Set addin = Nothing
+    For i = 1 To 10
+        Err.Clear
+        Set addin = excel.COMAddIns(""ExcelCSIToolBoxAddIn"")
+        If Err.Number = 0 And Not addin Is Nothing Then
+            Exit For
+        End If
+        WScript.Sleep 500
+    Next
+    If Not addin Is Nothing Then
+        For i = 1 To 10
+            Err.Clear
+            addin.Connect = False
+            If Err.Number = 0 Then
+                Exit For
+            End If
+            WScript.Sleep 500
+        Next
+        WScript.Sleep 1000
+        For i = 1 To 10
+            Err.Clear
+            addin.Connect = True
+            If Err.Number = 0 Then
+                Exit For
+            End If
+            WScript.Sleep 500
+        Next
+    End If
+End If
+";
+                System.IO.File.WriteAllText(tempVbsPath, vbsScript, System.Text.Encoding.ASCII);
+                System.Diagnostics.Process.Start("wscript.exe", "\"" + tempVbsPath + "\"");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(
+                    "Failed to restart the add-in: " + ex.Message,
+                    "Refresh Plugin Error",
+                    System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+        }
     }
 }

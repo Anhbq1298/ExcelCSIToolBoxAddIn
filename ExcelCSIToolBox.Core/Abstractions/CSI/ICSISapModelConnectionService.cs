@@ -28,6 +28,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult SelectPointsByUniqueNames(IReadOnlyList<string> uniqueNames);
         OperationResult SelectFramesByUniqueNames(IReadOnlyList<string> uniqueNames);
         OperationResult ClearSelection();
+        OperationResult<IReadOnlyList<CsiSelectedObjectDto>> GetSelectedObjectsFromActiveModel();
 
         // pointInputs must be executed exactly in the given order.
         // Duplicate rows are valid and must not be merged or de-duplicated.
@@ -35,7 +36,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<CSISapModelAddFramesResultDTO> AddFramesByCoordinates(IReadOnlyList<CSISapModelFrameByCoordInput> frameInputs);
         OperationResult<CSISapModelAddFramesResultDTO> AddFramesByPoint(IReadOnlyList<CSISapModelFrameByPointInput> frameInputs);
         OperationResult<FrameAddBatchResultDto> AddFrameObjects(FrameAddBatchRequestDto request);
-        OperationResult SetFrameReleases(IReadOnlyList<string> frameNames, IReadOnlyList<bool> startReleases, IReadOnlyList<bool> endReleases);
+        OperationResult SetFrameReleases(IReadOnlyList<string> frameNames, IReadOnlyList<bool> startReleases, IReadOnlyList<bool> endReleases, bool suppressViewRefresh = false);
         OperationResult AssignFrameSection(IReadOnlyList<string> frameNames, string sectionName);
         OperationResult AssignFrameDistributedLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double value1, double value2);
         OperationResult AssignFramePointLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double distance, double value);

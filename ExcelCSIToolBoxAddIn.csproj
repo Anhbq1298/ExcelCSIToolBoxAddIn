@@ -327,6 +327,18 @@
       <DependentUpon>EtabsToolboxControl.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\CreateArrayPerpendicularToPathWindow.xaml.cs">
+      <DependentUpon>CreateArrayPerpendicularToPathWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\ArrayBetweenTwoLinesWindow.xaml.cs">
+      <DependentUpon>ArrayBetweenTwoLinesWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\InteractiveSelectionWindow.xaml.cs">
+      <DependentUpon>InteractiveSelectionWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\Views\BatchProgressWindow.xaml.cs">
       <DependentUpon>BatchProgressWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -370,6 +382,18 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\EtabsToolboxControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\CreateArrayPerpendicularToPathWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\ArrayBetweenTwoLinesWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\InteractiveSelectionWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
