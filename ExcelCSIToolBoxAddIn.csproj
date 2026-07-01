@@ -262,6 +262,7 @@
       <DependentUpon>ThisAddIn.Designer.xml</DependentUpon>
     </Compile>
     <Compile Include="AddIn\AiTaskPaneManager.cs" />
+    <Compile Include="AddIn\Composition\AppServiceFactory.cs" />
     <Compile Include="AddIn\WindowManager.cs" />
     <Content Include="icon\etabs.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

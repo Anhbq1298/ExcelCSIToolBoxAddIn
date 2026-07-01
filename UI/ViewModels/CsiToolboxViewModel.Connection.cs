@@ -409,17 +409,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return true;
             }
 
-            OperationResult<CSISapModelConnectionInfoDTO> connectionResult = _csiConnectionService.GetCurrentConnection();
-            if (!connectionResult.IsSuccess)
-            {
-                if (showMessages)
-                {
-                    MessageBox.Show("Please attach to ETABS first.", ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-
-                return false;
-            }
-
             if (SelectedUnitSystem == null)
             {
                 if (showMessages)
@@ -433,21 +422,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             try
             {
                 _isApplyingGlobalUnit = true;
-                OperationResult result = _csiConnectionService.SetPresentUnitSystem(SelectedUnitSystem.ToDto());
-                if (!result.IsSuccess)
-                {
-                    if (showMessages)
-                    {
-                        MessageBox.Show("Failed to set ETABS unit system.", ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-
-                    StatusText = "Failed to set ETABS unit system.";
-                    return false;
-                }
+                _etabsUnitService.SetPresentUnitsFromMainWindow();
 
                 CurrentModelUnitText = SelectedUnitSystem.PresentUnitsText;
                 StatusText = "Unit system set to " + SelectedUnitSystem.DisplayName + ".";
                 return true;
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (showMessages)
+                {
+                    MessageBox.Show(ex.Message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+
+                StatusText = ex.Message;
+                return false;
             }
             finally
             {

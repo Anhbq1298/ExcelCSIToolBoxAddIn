@@ -5,8 +5,11 @@ using System.Windows.Input;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using ExcelCSIToolBox.Application.Interfaces.Etabs;
+using ExcelCSIToolBox.Application.Interfaces.Etabs.AnalysisResults;
 using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBox.Core.Models.AnalysisResults;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
@@ -14,6 +17,8 @@ using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
+using ExcelCSIToolBoxAddIn.AddIn.Composition;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -27,6 +32,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly ICSISapModelConnectionService _csiConnectionService;
         private readonly IExcelSelectionService _excelSelectionService;
         private readonly IExcelOutputService _excelOutputService;
+        private readonly IEtabsAnalysisResultRouter _analysisResultRouter;
+        private readonly IEtabsUnitService _etabsUnitService;
 
         private string _modelName;
         private bool _isConnected;
@@ -61,7 +68,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CsiToolboxUseCaseBundle useCases,
             ICSISapModelConnectionService csiConnectionService,
             IExcelSelectionService excelSelectionService,
-            IExcelOutputService excelOutputService)
+            IExcelOutputService excelOutputService,
+            EtabsAnalysisResultServices analysisResultServices = null)
         {
             if (csiConnectionService == null) throw new ArgumentNullException(nameof(csiConnectionService));
 
@@ -72,12 +80,15 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _csiConnectionService = csiConnectionService;
             _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
+            analysisResultServices = analysisResultServices ?? AppServiceFactory.CreateAnalysisResultServices(csiConnectionService);
+            _analysisResultRouter = analysisResultServices.Router;
+            _etabsUnitService = analysisResultServices.UnitService;
 
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>();
             FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
             SectionDimensionAnnotations = new System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation>();
-            AnalysisResultTables = new System.Collections.ObjectModel.ObservableCollection<string>();
+            AnalysisResultTables = new System.Collections.ObjectModel.ObservableCollection<AnalysisResultItem>();
             RunningCsiInstances = new ObservableCollection<CsiRunningInstanceViewModel>();
             InitializeStiffnessModifierPage();
             InitializeModellingHelperPage();
@@ -91,7 +102,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
             ToggleModelLockCommand = new RelayCommand(ToggleModelLock, () => IsConnected);
             SelectWorkspacePageCommand = new RelayCommand<string>(SelectWorkspacePage);
-            ExportAnalysisResultTableCommand = new RelayCommand<string>(ShowOutputSelectionAndExport);
+            ExportAnalysisResultTableCommand = new RelayCommand<AnalysisResultItem>(RunAnalysisResult, item => item != null);
             RefreshFrameStiffnessSectionsCommand = new RelayCommand(RefreshFrameStiffnessSections, () => IsConnected);
             RefreshAreaStiffnessSectionsCommand = new RelayCommand(RefreshAreaStiffnessSections, () => IsConnected);
             SelectVisibleFrameStiffnessSectionsCommand = new RelayCommand(SelectVisibleFrameStiffnessSections, () => IsConnected);
@@ -243,6 +254,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 {
                     CurrentModelUnitText = value.PresentUnitsText;
                 }
+
+                _etabsUnitService.SetSelectedUnitSystem(
+                    value == null ? null : value.ToDto(),
+                    value == null ? null : value.DisplayName,
+                    value == null ? null : value.PresentUnitsText);
 
                 if (!_isInitializingUnitSystems && IsConnected)
                 {
@@ -404,8 +420,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             get
             {
                 return string.IsNullOrWhiteSpace(SelectedAnalysisResultTable)
-                    ? "Select an ETABS result table. Extraction will be implemented later."
-                    : SelectedAnalysisResultTable + " extraction will be implemented later.";
+                    ? "Select an ETABS result table."
+                    : SelectedAnalysisResultTable;
             }
         }
 
@@ -482,7 +498,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
         public System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO> FrameSections { get; }
         public System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation> SectionDimensionAnnotations { get; }
-        public System.Collections.ObjectModel.ObservableCollection<string> AnalysisResultTables { get; }
+        public System.Collections.ObjectModel.ObservableCollection<AnalysisResultItem> AnalysisResultTables { get; }
 
         private CSISapModelFrameSectionDTO _selectedFrameSection;
         public CSISapModelFrameSectionDTO SelectedFrameSection

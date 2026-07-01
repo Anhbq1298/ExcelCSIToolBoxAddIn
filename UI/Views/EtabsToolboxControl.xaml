@@ -703,10 +703,10 @@
                                             <ItemsControl ItemsSource="{Binding AnalysisResultTables}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
-                                                        <Button Content="{Binding}"
+                                                        <Button Content="{Binding Title}"
                                                                 Command="{Binding DataContext.ExportAnalysisResultTableCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                 CommandParameter="{Binding}"
-                                                                ToolTip="{Binding Converter={StaticResource TableHeaderToolTipConverter}}"
+                                                                ToolTip="{Binding EtabsTableName, Converter={StaticResource TableHeaderToolTipConverter}}"
                                                                 HorizontalAlignment="Stretch"
                                                                 HorizontalContentAlignment="Left"
                                                                 Margin="{StaticResource Gap.Card}"/>

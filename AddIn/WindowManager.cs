@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
+using ExcelCSIToolBoxAddIn.AddIn.Composition;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
 using Microsoft.Office.Core;
@@ -208,11 +209,13 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             {
                 UserControl control = createControl();
                 var useCases = new CsiToolboxUseCaseBundle(connectionService, _excelSelectionService, _excelOutputService);
+                var analysisResultServices = AppServiceFactory.CreateAnalysisResultServices(connectionService);
                 control.DataContext = new CsiToolboxViewModel(
                     useCases,
                     connectionService,
                     _excelSelectionService,
-                    _excelOutputService);
+                    _excelOutputService,
+                    analysisResultServices);
 
                 host = new WpfTaskPaneHost(control);
                 pane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(host, title);
