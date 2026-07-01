@@ -1,195 +1,148 @@
 # ExcelCSIToolBoxAddIn
 
-ExcelCSIToolBoxAddIn is a Microsoft Excel VSTO add-in for integrating Excel-based engineering workflows with CSI products such as **ETABS** and **SAP2000**.
+ExcelCSIToolBoxAddIn là add-in VSTO cho Microsoft Excel, dùng để kết nối các workflow tính toán trong Excel với các sản phẩm CSI như **ETABS** và **SAP2000**.
 
-The add-in provides Excel ribbon commands that open dedicated toolbox windows for ETABS and SAP2000. After a running CSI application is attached and a `SapModel` object is obtained, the downstream workflow can share common logic for model interaction, Excel range I/O, and engineering data processing.
+Add-in cung cấp tab ribbon trong Excel, mở các cửa sổ toolbox riêng cho ETABS/SAP2000, kết nối tới model CSI đang chạy, đọc/ghi dữ liệu qua Excel range, và gom các tiện ích hậu xử lý kết quả.
 
-## Current scope
+## Tính Năng Chính
 
-The repository is being structured as a multi-project C#/.NET Framework 4.8 solution with separate layers for UI, application logic, shared core logic, data/DTO models, infrastructure adapters, and AI-related tooling.
+- Kết nối Excel với ETABS/SAP2000 thông qua CSI Open API.
+- Mở ETABS Toolbox trực tiếp từ ribbon Excel.
+- Đọc/xuất các bảng kết quả như base reactions, modal mass participation ratios, story forces, story drifts, mass summary by story.
+- Tạo và cập nhật đối tượng/model từ dữ liệu Excel.
+- Hỗ trợ workflow WPF/MVVM cho các cửa sổ công cụ.
+- Có lớp AI/MCP đang phát triển cho trợ lý thao tác với model.
 
-The current direction is:
-
-- **Excel VSTO Add-in Shell**: Ribbon, add-in startup, and window launch logic.
-- **WPF Toolbox UI**: ETABS and SAP2000 toolbox windows.
-- **Application Layer**: Use-case orchestration and workflow-level logic.
-- **Core Layer**: Shared result models, domain-neutral contracts, and DTO-free abstractions.
-- **Data Layer**: DTOs, Excel mapping models, table schemas, and data structures.
-- **Infrastructure Layer**: ETABS/SAP2000 API adapters, Excel interop services, COM/API integration, and external system access.
-- **AI Layer**: Future chatbox AI, local LLM, Ollama, or MCP-related integration.
-
-## Solution projects
+## Cấu Trúc Solution
 
 ```text
 ExcelCSIToolBoxAddIn.sln
-│
-├── ExcelCSIToolBoxAddIn
-│   └── Main Excel VSTO add-in project.
-│
-├── ExcelCSIToolBox.Application
-│   └── Application use cases and workflow orchestration.
-│
-├── ExcelCSIToolBox.Core
-│   └── Shared logic, contracts, results, and abstractions.
-│
-├── ExcelCSIToolBox.Data
-│   └── DTOs, mapper models, Excel schema models, and data structures.
-│
-├── ExcelCSIToolBox.Infrastructure
-│   └── ETABS, SAP2000, Excel interop, and external API implementations.
-│
-└── ExcelCSIToolBox.AI
-    └── AI/chatbox-related integration layer.
+|
++-- ExcelCSIToolBoxAddIn              Main Excel VSTO add-in project
++-- ExcelCSIToolBox.Application       Use cases và workflow orchestration
++-- ExcelCSIToolBox.Core              Shared contracts, results, common logic
++-- ExcelCSIToolBox.Data              DTOs, mapper models, table schemas
++-- ExcelCSIToolBox.Infrastructure    ETABS/SAP2000 API adapters, Excel interop
++-- ExcelCSIToolBox.AI                AI/chatbox/MCP integration layer
++-- ExcelCSIToolBox.Tests             Unit tests
 ```
 
-## Folder directory
+## Yêu Cầu Trước Khi Cài
 
-```text
-ExcelCSIToolBoxAddIn/
-│
-├── ExcelCSIToolBoxAddIn.sln
-├── ExcelCSIToolBoxAddIn.csproj
-├── ExcelCSIToolBoxAddin.cs
-├── ThisAddIn.Designer.cs
-├── ThisAddIn.Designer.xml
-├── ExcelCSIToolBoxAddInRibbon.cs
-├── ExcelCSIToolBoxAddInRibbon.Designer.cs
-├── ExcelCSIToolBoxAddInRibbon.resx
-├── ExcelCSIToolBoxAddIn_TemporaryKey.pfx
-│
-├── AddIn/
-│   └── WindowManager.cs
-│
-├── UI/
-│   ├── Views/
-│   │   ├── EtabsToolboxWindow.xaml
-│   │   ├── EtabsToolboxWindow.xaml.cs
-│   │   ├── Sap2000ToolboxWindow.xaml
-│   │   ├── Sap2000ToolboxWindow.xaml.cs
-│   │   ├── BatchProgressWindow.xaml
-│   │   ├── BatchProgressWindow.xaml.cs
-│   │   ├── LoadCombinationDetailsWindow.xaml
-│   │   ├── LoadCombinationDetailsWindow.xaml.cs
-│   │   ├── FrameSectionDetailWindow.xaml
-│   │   └── FrameSectionDetailWindow.xaml.cs
-│   │
-│   ├── ViewModels/
-│   │   ├── CsiToolboxViewModel.cs
-│   │   ├── FrameSectionDetailViewModel.cs
-│   │   ├── FrameSectionDimensionEditItem.cs
-│   │   ├── SectionDimensionAnnotation.cs
-│   │   └── ViewModelBase.cs
-│   │
-│   └── Helpers/
-│       └── SectionShapeRenderer.cs
-│
-├── Properties/
-│   ├── AssemblyInfo.cs
-│   ├── Resources.resx
-│   ├── Resources.Designer.cs
-│   ├── Settings.settings
-│   └── Settings.Designer.cs
-│
-├── icon/
-│   ├── etabs.png
-│   └── sap2000icon.jpg
-│
-├── _ref/
-│   ├── CSI API ETABS v1.chm
-│   └── CSI_OAPI_Documentation.chm
-│
-├── ExcelCSIToolBox.Application/
-│   └── ExcelCSIToolBox.Application.csproj
-│
-├── ExcelCSIToolBox.Core/
-│   └── ExcelCSIToolBox.Core.csproj
-│
-├── ExcelCSIToolBox.Data/
-│   └── ExcelCSIToolBox.Data.csproj
-│
-├── ExcelCSIToolBox.Infrastructure/
-│   └── ExcelCSIToolBox.Infrastructure.csproj
-│
-└── ExcelCSIToolBox.AI/
-    └── ExcelCSIToolBox.AI.csproj
-```
+- Windows.
+- Microsoft Excel desktop app.
+- Microsoft .NET Framework 4.8.
+- Microsoft Visual Studio Tools for Office Runtime.
+- ETABS và/hoặc SAP2000 nếu dùng các tính năng kết nối CSI.
+- Các file CSI interop trong `lib/`:
+  - `ETABSv1.dll`
+  - `SAP2000v1.dll`
 
-## Project reference map
+> Nếu cài bằng `publish/ExcelCSIToolbox/setup.exe`, installer có thể tự cài thêm .NET Framework 4.8 và VSTO Runtime nếu máy chưa có.
 
-RefBuilder is archived as a one-time utility and is not part of the active solution. The current clean direction is: AddIn references Core/Data/Application/Infrastructure/AI; Core has no project references; Application references Core/Data; Infrastructure references Core/Data/Application; AI references Core/Data/Application and does not reference Infrastructure.
+## Cài Đặt Cho User Sau Khi Clone/Download Repo
 
-```text
-ExcelCSIToolBoxAddIn
-├── ExcelCSIToolBox.Core
-├── ExcelCSIToolBox.Data
-├── ExcelCSIToolBox.Infrastructure
-└── ExcelCSIToolBox.Application
+Dùng cách này nếu bạn chỉ muốn cài add-in để sử dụng trong Excel, không cần debug source code.
 
-ExcelCSIToolBox.Application
-├── ExcelCSIToolBox.Core
-└── ExcelCSIToolBox.Data
+1. Clone repo hoặc tải file ZIP từ GitHub:
 
-ExcelCSIToolBox.Core
-└── ExcelCSIToolBox.Data
+   ```powershell
+   git clone <repo-url>
+   ```
 
-ExcelCSIToolBox.Infrastructure
-├── ExcelCSIToolBox.Core
-├── ExcelCSIToolBox.Data
-├── ETABSv1.dll
-└── SAP2000v1.dll
+2. Nếu tải bằng ZIP, nên bấm chuột phải vào file ZIP, chọn **Properties**, tick **Unblock** nếu có, rồi mới extract. Bước này giúp tránh lỗi Windows chặn file `.vsto` sau khi giải nén.
 
-ExcelCSIToolBox.AI
-├── ExcelCSIToolBox.Core
-└── ExcelCSIToolBox.Data
-```
+3. Đóng tất cả cửa sổ Excel đang mở.
 
-## Architecture notes
+4. Mở thư mục publish:
 
-The intended architecture is to keep the CSI-product-specific acquisition logic isolated inside adapters. ETABS and SAP2000 differ mainly in how the running application object is attached and how the initial `SapModel` is retrieved. Once `SapModel` is available, most downstream operations can be shared.
+   ```text
+   publish/ExcelCSIToolbox/
+   ```
 
-Current architectural direction:
+5. Chạy file:
 
-```text
-Excel Ribbon / WPF UI
-        ↓
-Application Use Cases
-        ↓
-Core Contracts / Results / Shared Logic
-        ↓
-Data DTOs / Excel Mapping Models
-        ↓
-Infrastructure Adapters
-        ↓
-ETABS API / SAP2000 API / Excel Interop
-```
+   ```text
+   setup.exe
+   ```
 
-A future clean-up target is to reduce direct dependency pressure on `Core`. Ideally, `Core` should contain domain-neutral contracts, result models, and shared abstractions without needing to reference Data, Infrastructure, or UI directly.
+6. Nếu Windows hiện cảnh báo do add-in được ký bằng certificate tạm thời/self-signed, chỉ tiếp tục cài đặt khi bạn tin tưởng source repo.
 
-## Prerequisites
+7. Mở lại Excel. Trên ribbon sẽ có tab:
 
-- Windows with Microsoft Excel installed.
-- Visual Studio with Office/SharePoint development workload.
-- .NET Framework 4.8 developer tooling.
-- Compatible CSI products depending on the workflow:
-  - ETABS with `ETABSv1.dll`.
-  - SAP2000 with `SAP2000v1.dll`.
-- Microsoft Office interop assemblies / VSTO runtime.
+   ```text
+   ExcelCSIToolBox
+   ```
 
-## Build and run
+8. Bấm **ETABS Toolbox** hoặc các nút công cụ khác để sử dụng. Với các tính năng cần model CSI, hãy mở ETABS/SAP2000 và model trước, sau đó attach từ toolbox.
 
-1. Open `ExcelCSIToolBoxAddIn.sln` in Visual Studio.
-2. Build the solution using the required configuration.
-3. Start debugging from Visual Studio to launch Excel with the add-in loaded.
-4. Use the custom Excel ribbon commands to open the ETABS or SAP2000 toolbox window.
-5. Attach to a running ETABS/SAP2000 instance before running API-dependent operations.
+## Nếu Không Thấy Add-In Trong Excel
 
+- Vào **Excel > File > Options > Add-ins**.
+- Ở **Manage**, chọn **COM Add-ins**, bấm **Go...**.
+- Kiểm tra `ExcelCSIToolBoxAddIn` đã được tick chưa.
+- Nếu add-in nằm trong **Disabled Items**, chọn **Excel > File > Options > Add-ins > Manage: Disabled Items** và enable lại.
+- Nếu vẫn lỗi, đóng Excel và chạy lại `publish/ExcelCSIToolbox/setup.exe`.
 
-## Notes for contributors
+## Gỡ Cài Đặt
+
+1. Đóng Excel.
+2. Vào **Windows Settings > Apps > Installed apps**.
+3. Tìm `ExcelCSIToolBoxAddIn`.
+4. Chọn **Uninstall**.
+
+## Build Và Debug Cho Developer
+
+Dùng cách này nếu bạn muốn sửa code hoặc chạy debug trong Visual Studio.
+
+1. Cài Visual Studio với workload **Office/SharePoint development**.
+2. Đảm bảo máy có .NET Framework 4.8 Developer Pack.
+3. Mở solution:
+
+   ```text
+   ExcelCSIToolBoxAddIn.sln
+   ```
+
+4. Restore/build solution bằng Visual Studio.
+5. Chọn project `ExcelCSIToolBoxAddIn` làm startup project.
+6. Bấm **Start Debugging**. Visual Studio sẽ mở Excel với add-in đã load.
+7. Mở ETABS/SAP2000 trước khi test các command phụ thuộc CSI API.
+
+## Publish Lại Installer
+
+Khi cần tạo gói cài đặt mới:
+
+1. Mở project `ExcelCSIToolBoxAddIn` trong Visual Studio.
+2. Chọn **Build > Publish ExcelCSIToolBoxAddIn**.
+3. Publish vào thư mục mặc định:
+
+   ```text
+   publish/ExcelCSIToolbox/
+   ```
+
+4. Kiểm tra trong thư mục publish có:
+
+   ```text
+   setup.exe
+   ExcelCSIToolBoxAddIn.vsto
+   Application Files/
+   ```
+
+5. Gửi/tổ chức repo kèm nguyên thư mục `publish/ExcelCSIToolbox/` để user cài bằng `setup.exe`.
+
+## Troubleshooting
+
+- **Không hiện tab ExcelCSIToolBox**: kiểm tra COM Add-ins và Disabled Items trong Excel.
+- **Lỗi trust/certificate khi cài**: file publish đang dùng temporary certificate. Chỉ cài khi tin tưởng source repo, hoặc publish lại bằng certificate nội bộ của team.
+- **Lỗi Windows chặn file `.vsto`**: Unblock file ZIP trước khi extract, hoặc Unblock riêng `setup.exe`/`ExcelCSIToolBoxAddIn.vsto`.
+- **Lỗi thiếu VSTO Runtime**: chạy `setup.exe` thay vì mở trực tiếp file `.vsto`.
+- **Lỗi kết nối ETABS/SAP2000**: mở ETABS/SAP2000 và model trước, sau đó attach lại từ toolbox. Kiểm tra version API DLL trong `lib/` có phù hợp với phiên bản CSI đang dùng không.
+
+## Ghi Chú Cho Contributor
 
 - Target framework: **.NET Framework 4.8**.
-- UI pattern: WPF with MVVM-style ViewModels.
-- Main host: Microsoft Excel through VSTO.
-- CSI API access should be isolated behind Infrastructure adapters where possible.
-- Shared workflows should depend on the common `SapModel` abstraction/usage pattern after the CSI model is acquired.
-- Keep UI orchestration thin; place workflow logic in Application/Core where practical.
-
+- Host application: Microsoft Excel thông qua VSTO.
+- UI: WPF với MVVM-style ViewModels.
+- CSI API access nên được cô lập trong Infrastructure adapters.
+- UI chỉ nên giữ logic điều phối mỏng; workflow chính nên nằm trong Application/Core khi phù hợp.
+- RefBuilder là utility phục vụ sinh scaffold/reference và không phải flow chạy chính của add-in.
