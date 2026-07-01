@@ -688,7 +688,7 @@
                             </Border>
                         </TabItem>
 
-                        <TabItem Header="Analysis Results">
+                        <TabItem Header="ETABS Tables">
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Margin="{StaticResource Inset.Small}">

@@ -2,8 +2,10 @@ using System;
 using System.Windows;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.ElementConnectivity;
 using ExcelCSIToolBox.Core.Models.MiscellaneousData;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
+using ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -118,12 +120,41 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        private async void RunElementConnectivity(ElementConnectivityItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await _elementConnectivityRouter.ExecuteAsync(item);
+                StatusText = "Exported " + item.Title + " to Excel.";
+            }
+            catch (Exception ex)
+            {
+                string message = string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Failed to export ETABS element connectivity."
+                    : ex.Message;
+                StatusText = message;
+                MessageBox.Show(message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         private void RunEtabsTableItem(object item)
         {
             AnalysisResultItem analysisResultItem = item as AnalysisResultItem;
             if (analysisResultItem != null)
             {
                 RunAnalysisResult(analysisResultItem);
+                return;
+            }
+
+            ElementConnectivityItem elementConnectivityItem = item as ElementConnectivityItem;
+            if (elementConnectivityItem != null)
+            {
+                RunElementConnectivity(elementConnectivityItem);
                 return;
             }
 
@@ -180,6 +211,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             EtabsTableItems.Clear();
             AnalysisResultTables.Clear();
 
+            if (string.Equals(ActiveTableCategory, "Element Manipulation", StringComparison.OrdinalIgnoreCase))
+            {
+                SetElementConnectivityGroup(groupName);
+                return;
+            }
+
             if (string.Equals(ActiveTableCategory, "MISCELLANEOUS DATA", StringComparison.OrdinalIgnoreCase))
             {
                 SetMiscellaneousDataGroup(groupName);
@@ -207,6 +244,31 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             SelectedAnalysisResultTable = matchingItem == null
                 ? (AnalysisResultTables.Count > 0 ? AnalysisResultTables[0].Title : null)
+                : matchingItem.Title;
+        }
+
+        private void SetElementConnectivityGroup(string groupName)
+        {
+            ElementConnectivityGroup group = EtabsElementConnectivityRegistry.CreateGroupForNavigation(groupName);
+            ActiveAnalysisResultsGroup = group.Name;
+            foreach (ElementConnectivityItem item in group.Items)
+            {
+                EtabsTableItems.Add(item);
+            }
+
+            ElementConnectivityItem matchingItem = null;
+            foreach (ElementConnectivityItem item in group.Items)
+            {
+                if (string.Equals(item.Title, groupName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(item.EtabsTableName, groupName, StringComparison.OrdinalIgnoreCase))
+                {
+                    matchingItem = item;
+                    break;
+                }
+            }
+
+            SelectedAnalysisResultTable = matchingItem == null
+                ? (group.Items.Count > 0 ? group.Items[0].Title : null)
                 : matchingItem.Title;
         }
 
