@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ETABSv1;
 using ExcelCSIToolBox.Application.Interfaces.Etabs;
-using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.EtabsTables;
 
 namespace ExcelCSIToolBox.Infrastructure.Services.Etabs
 {

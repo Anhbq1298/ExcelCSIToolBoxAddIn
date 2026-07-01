@@ -7,9 +7,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ExcelCSIToolBox.Application.Interfaces.Etabs;
 using ExcelCSIToolBox.Application.Interfaces.Etabs.AnalysisResults;
+using ExcelCSIToolBox.Application.Interfaces.Etabs.ElementConnectivity;
+using ExcelCSIToolBox.Application.Interfaces.Etabs.MiscellaneousData;
 using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.ElementConnectivity;
+using ExcelCSIToolBox.Core.Models.MiscellaneousData;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
@@ -18,6 +22,8 @@ using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.Excel;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
+using ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity;
+using ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData;
 using ExcelCSIToolBoxAddIn.AddIn.Composition;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -33,6 +39,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private readonly IExcelSelectionService _excelSelectionService;
         private readonly IExcelOutputService _excelOutputService;
         private readonly IEtabsAnalysisResultRouter _analysisResultRouter;
+        private readonly IEtabsElementConnectivityRouter _elementConnectivityRouter;
+        private readonly IEtabsMiscellaneousDataRouter _miscellaneousDataRouter;
         private readonly IEtabsUnitService _etabsUnitService;
 
         private string _modelName;
@@ -69,7 +77,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ICSISapModelConnectionService csiConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService,
-            EtabsAnalysisResultServices analysisResultServices = null)
+            EtabsAnalysisResultServices analysisResultServices = null,
+            EtabsElementConnectivityServices elementConnectivityServices = null,
+            EtabsMiscellaneousDataServices miscellaneousDataServices = null)
         {
             if (csiConnectionService == null) throw new ArgumentNullException(nameof(csiConnectionService));
 
@@ -81,7 +91,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
             analysisResultServices = analysisResultServices ?? AppServiceFactory.CreateAnalysisResultServices(csiConnectionService);
+            elementConnectivityServices = elementConnectivityServices ?? AppServiceFactory.CreateElementConnectivityServices(csiConnectionService);
+            miscellaneousDataServices = miscellaneousDataServices ?? AppServiceFactory.CreateMiscellaneousDataServices(csiConnectionService);
             _analysisResultRouter = analysisResultServices.Router;
+            _elementConnectivityRouter = elementConnectivityServices.Router;
+            _miscellaneousDataRouter = miscellaneousDataServices.Router;
             _etabsUnitService = analysisResultServices.UnitService;
 
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>();
@@ -89,6 +103,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
             SectionDimensionAnnotations = new System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation>();
             AnalysisResultTables = new System.Collections.ObjectModel.ObservableCollection<AnalysisResultItem>();
+            EtabsTableItems = new System.Collections.ObjectModel.ObservableCollection<object>();
             RunningCsiInstances = new ObservableCollection<CsiRunningInstanceViewModel>();
             InitializeStiffnessModifierPage();
             InitializeModellingHelperPage();
@@ -103,6 +118,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ToggleModelLockCommand = new RelayCommand(ToggleModelLock, () => IsConnected);
             SelectWorkspacePageCommand = new RelayCommand<string>(SelectWorkspacePage);
             ExportAnalysisResultTableCommand = new RelayCommand<AnalysisResultItem>(RunAnalysisResult, item => item != null);
+            ExportEtabsTableItemCommand = new RelayCommand<object>(RunEtabsTableItem, item => item != null);
             RefreshFrameStiffnessSectionsCommand = new RelayCommand(RefreshFrameStiffnessSections, () => IsConnected);
             RefreshAreaStiffnessSectionsCommand = new RelayCommand(RefreshAreaStiffnessSections, () => IsConnected);
             SelectVisibleFrameStiffnessSectionsCommand = new RelayCommand(SelectVisibleFrameStiffnessSections, () => IsConnected);
@@ -431,6 +447,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand ToggleModelLockCommand { get; }
         public ICommand SelectWorkspacePageCommand { get; }
         public ICommand ExportAnalysisResultTableCommand { get; }
+        public ICommand ExportEtabsTableItemCommand { get; }
         public ICommand RefreshFrameStiffnessSectionsCommand { get; }
         public ICommand RefreshAreaStiffnessSectionsCommand { get; }
         public ICommand SelectVisibleFrameStiffnessSectionsCommand { get; }
@@ -499,6 +516,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO> FrameSections { get; }
         public System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation> SectionDimensionAnnotations { get; }
         public System.Collections.ObjectModel.ObservableCollection<AnalysisResultItem> AnalysisResultTables { get; }
+        public System.Collections.ObjectModel.ObservableCollection<object> EtabsTableItems { get; }
 
         private CSISapModelFrameSectionDTO _selectedFrameSection;
         public CSISapModelFrameSectionDTO SelectedFrameSection

@@ -46,6 +46,18 @@ Use these colors when adding or updating shared resources:
 - Use `CommandParameter="{Binding}"` when buttons represent model items.
 - Keep `RelativeSource` command binding patterns consistent in `ItemsControl` templates.
 
+## Toolbox Navigation Areas
+
+Preserve these areas in the tree and breadcrumbs:
+
+- `ANALYSIS RESULTS`: result/table buttons such as Joint Output, Element Output, Structure Output.
+- `MISCELLANEOUS DATA`: project information and material list exports. Keep this category visibly separate from Analysis Results.
+- `Modelling Helper`: helper workflows such as array creation and shell creation from selected frames.
+- `Element Manipulation`: point, frame, shell, and object connectivity tools.
+- `Model`: general information, section property, load pattern, load combination, and stiffness modifier pages.
+
+When updating the shared content area, make sure `ActiveTableCategory`, `ActiveAnalysisResultsGroup`, `ActivePageTitle`, and `ActivePageBreadcrumb` still communicate the selected area correctly. Do not let Miscellaneous Data appear as an Analysis Results breadcrumb unless intentionally requested.
+
 ## Layout Rules
 
 - Preserve current layout structure unless the task explicitly asks for redesign.
@@ -63,4 +75,3 @@ After UI changes:
 - Scan for broken binding names if commands or ViewModel properties were touched.
 - Check that Attach, Close, Lock Model, Unit System, and Analysis Results navigation still bind to existing commands.
 - For Analysis Results, verify button content binds to `Title` and button command receives the full `AnalysisResultItem`.
-

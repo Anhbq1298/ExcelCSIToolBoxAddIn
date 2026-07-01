@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExcelCSIToolBox.Core.Models.AnalysisResults
+namespace ExcelCSIToolBox.Core.Models.EtabsTables
 {
     public class EtabsTableResult
     {

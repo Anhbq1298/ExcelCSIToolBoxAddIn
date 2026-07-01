@@ -1,6 +1,6 @@
 using System;
 using ExcelCSIToolBox.Application.Interfaces.Excel;
-using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.EtabsTables;
 using ExcelCSIToolBox.Infrastructure.Excel;
 using InteropExcel = Microsoft.Office.Interop.Excel;
 

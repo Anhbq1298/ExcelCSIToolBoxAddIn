@@ -11,6 +11,7 @@ using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
 using ExcelCSIToolBox.Data.CSISapModel.PointObject;
+using ExcelCSIToolBoxAddIn.AddIn.Modules.ModellingHelpers;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
@@ -36,6 +37,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool _isFixFixSelected;
         private bool _isPinPinSelected;
         private int _numberOfSpaces;
+        private ModellingHelperActionRouter _modellingHelperActionRouter;
 
         private const string AdjustJEndToFirstIntersection = "Adjust J-End To First Intersection";
         private const string AdjustBothEndsToNearestIntersections = "Adjust Both Ends To Nearest Intersections";
@@ -59,16 +61,32 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _isFixFixSelected = true;
             _numberOfSpaces = 3;
 
-            OpenCreateArrayPerpendicularToPathWindowCommand = new RelayCommand(OpenCreateArrayPerpendicularToPathWindow);
-            OpenArrayBetweenTwoLinesWindowCommand = new RelayCommand(OpenArrayBetweenTwoLinesWindow);
-            PickPoint1Command = new RelayCommand(PickPoint1);
-            PickPoint2Command = new RelayCommand(PickPoint2);
-            PickReferenceFrameCommand = new RelayCommand(PickReferenceFrame);
-            PickLine1Command = new RelayCommand(PickLine1);
-            PickLine2Command = new RelayCommand(PickLine2);
-            CreateFramesCommand = new RelayCommand(CreateFrames);
-            CreateArrayBetweenTwoLinesFramesCommand = new RelayCommand(CreateArrayBetweenTwoLinesFrames);
+            _modellingHelperActionRouter = new ModellingHelperActionRouter()
+                .Register(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath, OpenCreateArrayPerpendicularToPathWindow)
+                .Register(ModellingHelperActionKeys.OpenArrayBetweenTwoLines, OpenArrayBetweenTwoLinesWindow)
+                .Register(ModellingHelperActionKeys.PickPoint1, PickPoint1)
+                .Register(ModellingHelperActionKeys.PickPoint2, PickPoint2)
+                .Register(ModellingHelperActionKeys.PickReferenceFrame, PickReferenceFrame)
+                .Register(ModellingHelperActionKeys.PickLine1, PickLine1)
+                .Register(ModellingHelperActionKeys.PickLine2, PickLine2)
+                .Register(ModellingHelperActionKeys.CreateFrames, CreateFrames)
+                .Register(ModellingHelperActionKeys.CreateArrayBetweenTwoLinesFrames, CreateArrayBetweenTwoLinesFrames);
+
+            OpenCreateArrayPerpendicularToPathWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath));
+            OpenArrayBetweenTwoLinesWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenArrayBetweenTwoLines));
+            PickPoint1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint1));
+            PickPoint2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint2));
+            PickReferenceFrameCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickReferenceFrame));
+            PickLine1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickLine1));
+            PickLine2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickLine2));
+            CreateFramesCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.CreateFrames));
+            CreateArrayBetweenTwoLinesFramesCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.CreateArrayBetweenTwoLinesFrames));
             CloseWindowCommand = new RelayCommand<Window>(CloseWindow);
+        }
+
+        private void ExecuteModellingHelperAction(string key)
+        {
+            _modellingHelperActionRouter.Execute(key);
         }
 
         public string Point1Name

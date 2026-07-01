@@ -2,7 +2,9 @@ using System;
 using System.Windows;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.MiscellaneousData;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
+using ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -94,6 +96,44 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        private async void RunMiscellaneousData(MiscellaneousDataItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await _miscellaneousDataRouter.ExecuteAsync(item);
+                StatusText = "Exported " + item.Title + " to Excel.";
+            }
+            catch (Exception ex)
+            {
+                string message = string.IsNullOrWhiteSpace(ex.Message)
+                    ? "Failed to export ETABS miscellaneous data."
+                    : ex.Message;
+                StatusText = message;
+                MessageBox.Show(message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        private void RunEtabsTableItem(object item)
+        {
+            AnalysisResultItem analysisResultItem = item as AnalysisResultItem;
+            if (analysisResultItem != null)
+            {
+                RunAnalysisResult(analysisResultItem);
+                return;
+            }
+
+            MiscellaneousDataItem miscellaneousDataItem = item as MiscellaneousDataItem;
+            if (miscellaneousDataItem != null)
+            {
+                RunMiscellaneousData(miscellaneousDataItem);
+            }
+        }
+
         private OutputTableExportConfig CreateOutputTableExportConfig(string displayTableName)
         {
             string tableName = string.IsNullOrWhiteSpace(displayTableName) ? "Base Reactions" : displayTableName;
@@ -137,12 +177,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ? "Base Reactions"
                 : groupName;
 
+            EtabsTableItems.Clear();
+            AnalysisResultTables.Clear();
+
+            if (string.Equals(ActiveTableCategory, "MISCELLANEOUS DATA", StringComparison.OrdinalIgnoreCase))
+            {
+                SetMiscellaneousDataGroup(groupName);
+                return;
+            }
+
             AnalysisResultGroup group = EtabsAnalysisResultRegistry.CreateGroupForNavigation(ActiveAnalysisResultsGroup);
             ActiveAnalysisResultsGroup = group.Name;
-            AnalysisResultTables.Clear();
             foreach (AnalysisResultItem item in group.Items)
             {
                 AnalysisResultTables.Add(item);
+                EtabsTableItems.Add(item);
             }
 
             AnalysisResultItem matchingItem = null;
@@ -158,6 +207,31 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             SelectedAnalysisResultTable = matchingItem == null
                 ? (AnalysisResultTables.Count > 0 ? AnalysisResultTables[0].Title : null)
+                : matchingItem.Title;
+        }
+
+        private void SetMiscellaneousDataGroup(string groupName)
+        {
+            MiscellaneousDataGroup group = EtabsMiscellaneousDataRegistry.CreateGroupForNavigation(groupName);
+            ActiveAnalysisResultsGroup = group.Name;
+            foreach (MiscellaneousDataItem item in group.Items)
+            {
+                EtabsTableItems.Add(item);
+            }
+
+            MiscellaneousDataItem matchingItem = null;
+            foreach (MiscellaneousDataItem item in group.Items)
+            {
+                if (string.Equals(item.Title, groupName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(item.EtabsTableName, groupName, StringComparison.OrdinalIgnoreCase))
+                {
+                    matchingItem = item;
+                    break;
+                }
+            }
+
+            SelectedAnalysisResultTable = matchingItem == null
+                ? (group.Items.Count > 0 ? group.Items[0].Title : null)
                 : matchingItem.Title;
         }
 

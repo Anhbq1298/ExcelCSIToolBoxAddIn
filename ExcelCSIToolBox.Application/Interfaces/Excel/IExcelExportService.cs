@@ -1,4 +1,4 @@
-using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.EtabsTables;
 
 namespace ExcelCSIToolBox.Application.Interfaces.Excel
 {

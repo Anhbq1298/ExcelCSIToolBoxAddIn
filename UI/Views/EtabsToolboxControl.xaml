@@ -700,11 +700,11 @@
                                             <TextBlock Text="ETABS Tables"
                                                        Style="{StaticResource SectionHeadingTextStyle}"
                                                        Margin="{StaticResource Gap.Section}"/>
-                                            <ItemsControl ItemsSource="{Binding AnalysisResultTables}">
+                                            <ItemsControl ItemsSource="{Binding EtabsTableItems}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Button Content="{Binding Title}"
-                                                                Command="{Binding DataContext.ExportAnalysisResultTableCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                                Command="{Binding DataContext.ExportEtabsTableItemCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                                 CommandParameter="{Binding}"
                                                                 ToolTip="{Binding EtabsTableName, Converter={StaticResource TableHeaderToolTipConverter}}"
                                                                 HorizontalAlignment="Stretch"

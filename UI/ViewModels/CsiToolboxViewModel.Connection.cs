@@ -64,6 +64,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 DeleteSelectedLoadCombinationsCommand,
                 ViewLoadCombinationCommand,
                 ExportAnalysisResultTableCommand,
+                ExportEtabsTableItemCommand,
                 GetBaseReactionsCommand,
                 GetModalMassParticipationRatiosCommand,
                 GetStoryForcesCommand,

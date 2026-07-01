@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.EtabsTables;
 
 namespace ExcelCSIToolBox.Application.Interfaces.Etabs
 {

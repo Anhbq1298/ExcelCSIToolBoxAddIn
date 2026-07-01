@@ -3,6 +3,7 @@ using ExcelCSIToolBox.Application.Interfaces.Etabs;
 using ExcelCSIToolBox.Application.Interfaces.Etabs.AnalysisResults;
 using ExcelCSIToolBox.Application.Interfaces.Excel;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
+using ExcelCSIToolBox.Core.Models.EtabsTables;
 
 namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults.StructureOutput
 {

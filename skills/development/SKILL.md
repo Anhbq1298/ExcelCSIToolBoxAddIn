@@ -50,6 +50,19 @@ Button click
 
 Tree selection should only navigate; extraction should happen only from the result button command.
 
+## Toolbox Sections
+
+Keep these toolbox areas conceptually separate:
+
+- `Analysis Results`: table/result extraction through registry, router, and handlers.
+- `Modelling Helper`: modelling utilities and geometry/helper workflows, currently centered on `UI/ViewModels/CsiToolboxViewModel.ModellingHelper.cs` and related helper windows.
+- `Miscellaneous Data`: ETABS project/material data exports. Keep menu metadata distinct from Analysis Results even when the UI shares the same content tab surface.
+- `Element Manipulation`: point/frame/shell/object-connectivity tools and selection workflows.
+
+Do not move Modelling Helper commands into Analysis Results handlers unless the user explicitly asks for a shared action architecture. If adding a new helper action, follow the existing helper command/window pattern first, then extract services only when backend logic grows.
+
+For Miscellaneous Data, preserve the left-tree category label and breadcrumb category. If it needs routing later, create a separate registry/router or a clearly named shared table export service rather than hiding it inside Analysis Results-specific classes.
+
 ## Build And Test
 
 Use Visual Studio MSBuild if `msbuild` is not on PATH:
@@ -65,4 +78,3 @@ dotnet test ExcelCSIToolBox.Tests\ExcelCSIToolBox.Tests.csproj --configuration D
 ```
 
 If a change touches WPF XAML, VSTO project includes, project references, or generated resources, run the full solution build.
-

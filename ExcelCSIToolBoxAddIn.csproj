@@ -263,6 +263,8 @@
     </Compile>
     <Compile Include="AddIn\AiTaskPaneManager.cs" />
     <Compile Include="AddIn\Composition\AppServiceFactory.cs" />
+    <Compile Include="AddIn\Modules\ModellingHelpers\ModellingHelperActionKeys.cs" />
+    <Compile Include="AddIn\Modules\ModellingHelpers\ModellingHelperActionRouter.cs" />
     <Compile Include="AddIn\WindowManager.cs" />
     <Content Include="icon\etabs.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

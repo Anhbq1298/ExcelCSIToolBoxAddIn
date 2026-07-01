@@ -80,22 +80,6 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults
             otherOutputItems.Items.Add(new AnalysisResultItem("Stiffness Gravity Ratios", "STIFFNESS_GRAVITY_RATIOS", "Other Output Items", "Stiffness Gravity Ratios"));
             otherOutputItems.Items.Add(new AnalysisResultItem("Tributary Area and LLRF", "TRIBUTARY_AREA_AND_LLRF", "Other Output Items", "Tributary Area and LLRF"));
 
-            AnalysisResultGroup connectivity = new AnalysisResultGroup("Etabs Object Connectivity");
-            connectivity.Items.Add(new AnalysisResultItem("Point Object Connectivity", "POINT_OBJECT_CONNECTIVITY", "Etabs Object Connectivity", "Point Object Connectivity"));
-            connectivity.Items.Add(new AnalysisResultItem("Beam Object Connectivity", "BEAM_OBJECT_CONNECTIVITY", "Etabs Object Connectivity", "Beam Object Connectivity"));
-            connectivity.Items.Add(new AnalysisResultItem("Column Object Connectivity", "COLUMN_OBJECT_CONNECTIVITY", "Etabs Object Connectivity", "Column Object Connectivity"));
-            connectivity.Items.Add(new AnalysisResultItem("Brace Object Connectivity", "BRACE_OBJECT_CONNECTIVITY", "Etabs Object Connectivity", "Brace Object Connectivity"));
-            connectivity.Items.Add(new AnalysisResultItem("Floor Object Connectivity", "FLOOR_OBJECT_CONNECTIVITY", "Etabs Object Connectivity", "Floor Object Connectivity"));
-            connectivity.Items.Add(new AnalysisResultItem("Wall Object Connectivity", "WALL_OBJECT_CONNECTIVITY", "Etabs Object Connectivity", "Wall Object Connectivity"));
-
-            AnalysisResultGroup projectInformation = new AnalysisResultGroup("Project Information");
-            projectInformation.Items.Add(new AnalysisResultItem("Project Information", "PROJECT_INFORMATION", "Project Information", "Project Information"));
-
-            AnalysisResultGroup materialList = new AnalysisResultGroup("Material List");
-            materialList.Items.Add(new AnalysisResultItem("Material List by Object Type", "MATERIAL_LIST_BY_OBJECT_TYPE", "Material List", "Material List by Object Type"));
-            materialList.Items.Add(new AnalysisResultItem("Material List by Section Property", "MATERIAL_LIST_BY_SECTION_PROPERTY", "Material List", "Material List by Section Property"));
-            materialList.Items.Add(new AnalysisResultItem("Material List by Story", "MATERIAL_LIST_BY_STORY", "Material List", "Material List by Story"));
-
             groups.Add(displacements);
             groups.Add(reactions);
             groups.Add(velocityAndAcceleration);
@@ -108,10 +92,6 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults
             groups.Add(modalInformation);
             groups.Add(massData);
             groups.Add(otherOutputItems);
-            groups.Add(connectivity);
-            groups.Add(projectInformation);
-            groups.Add(materialList);
-
             return groups;
         }
 
@@ -182,13 +162,6 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults
                 case "Mass Summary by Diaphragm":
                 case "Mass Summary by Group":
                     return "Mass Data";
-                case "Point Object Connectivity":
-                case "Beam Object Connectivity":
-                case "Column Object Connectivity":
-                case "Brace Object Connectivity":
-                case "Floor Object Connectivity":
-                case "Wall Object Connectivity":
-                    return "Etabs Object Connectivity";
                 default:
                     return groupName;
             }
