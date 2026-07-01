@@ -1,25 +1,25 @@
-# ExcelCSIToolBoxAddIn
+# Excel CSI ToolBox Add-In
 
-ExcelCSIToolBoxAddIn là add-in VSTO cho Microsoft Excel, dùng để kết nối các workflow tính toán trong Excel với các sản phẩm CSI như **ETABS** và **SAP2000**.
+This repository contains a VSTO add-in for Microsoft Excel that integrates Excel workflows with CSI products such as ETABS and SAP2000.
 
-Add-in cung cấp tab ribbon trong Excel, mở các cửa sổ toolbox riêng cho ETABS/SAP2000, kết nối tới model CSI đang chạy, đọc/ghi dữ liệu qua Excel range, và gom các tiện ích hậu xử lý kết quả.
+The add-in adds an Excel ribbon tab with tool windows for ETABS and SAP2000, allows attaching to a running CSI model, reads/writes data via Excel ranges, and includes utilities for post-processing results.
 
-## Tính Năng Chính
+## Key Features
 
-- Kết nối Excel với ETABS/SAP2000 thông qua CSI Open API.
-- Mở ETABS Toolbox trực tiếp từ ribbon Excel.
-- Đọc/xuất các bảng kết quả như base reactions, modal mass participation ratios, story forces, story drifts, mass summary by story.
-- Tạo và cập nhật đối tượng/model từ dữ liệu Excel.
-- Hỗ trợ workflow WPF/MVVM cho các cửa sổ công cụ.
-- Có lớp AI/MCP đang phát triển cho trợ lý thao tác với model.
+- Connects Excel to ETABS and SAP2000 using the CSI Open API.
+- Launch ETABS/SAP2000 toolboxes directly from the Excel ribbon.
+- Import/export result tables such as base reactions, modal mass participation ratios, story forces, story drifts, and mass summaries by story.
+- Create and update model objects from Excel data.
+- WPF-based tool windows following MVVM patterns.
+- Experimental AI/MCP layer for assistant-style interactions with models.
 
-## Cấu Trúc Solution
+## Solution Structure
 
-```text
+```
 ExcelCSIToolBoxAddIn.sln
 |
 +-- ExcelCSIToolBoxAddIn              Main Excel VSTO add-in project
-+-- ExcelCSIToolBox.Application       Use cases và workflow orchestration
++-- ExcelCSIToolBox.Application       Use cases and workflow orchestration
 +-- ExcelCSIToolBox.Core              Shared contracts, results, common logic
 +-- ExcelCSIToolBox.Data              DTOs, mapper models, table schemas
 +-- ExcelCSIToolBox.Infrastructure    ETABS/SAP2000 API adapters, Excel interop
@@ -27,122 +27,110 @@ ExcelCSIToolBoxAddIn.sln
 +-- ExcelCSIToolBox.Tests             Unit tests
 ```
 
-## Yêu Cầu Trước Khi Cài
+## Requirements
 
-- Windows.
-- Microsoft Excel desktop app.
-- Microsoft .NET Framework 4.8.
-- Microsoft Visual Studio Tools for Office Runtime.
-- ETABS và/hoặc SAP2000 nếu dùng các tính năng kết nối CSI.
-- Các file CSI interop trong `lib/`:
-  - `ETABSv1.dll`
-  - `SAP2000v1.dll`
+- Windows
+- Microsoft Excel (desktop)
+- .NET Framework 4.8
+- Visual Studio Tools for Office (VSTO) Runtime
+- ETABS and/or SAP2000 if using CSI-connected features
+- CSI interop assemblies in `lib/` (for example `ETABSv1.dll`, `SAP2000v1.dll`)
 
-> Nếu cài bằng `publish/ExcelCSIToolbox/setup.exe`, installer có thể tự cài thêm .NET Framework 4.8 và VSTO Runtime nếu máy chưa có.
+If you install via `publish/ExcelCSIToolbox/setup.exe`, the installer can include the .NET Framework 4.8 and VSTO Runtime if missing.
 
-## Cài Đặt Cho User Sau Khi Clone/Download Repo
+## Installing (User)
 
-Dùng cách này nếu bạn chỉ muốn cài add-in để sử dụng trong Excel, không cần debug source code.
+Follow these steps to install the add-in for regular use (no development required):
 
-1. Clone repo hoặc tải file ZIP từ GitHub:
+1. Clone the repo or download the ZIP:
 
-   ```powershell
-   git clone <repo-url>
-   ```
+```powershell
+git clone <repo-url>
+```
 
-2. Nếu tải bằng ZIP, nên bấm chuột phải vào file ZIP, chọn **Properties**, tick **Unblock** nếu có, rồi mới extract. Bước này giúp tránh lỗi Windows chặn file `.vsto` sau khi giải nén.
+2. If you downloaded a ZIP, right-click the ZIP file, open **Properties**, select **Unblock** if present, then extract. This prevents Windows blocking the `.vsto`/installer files after extraction.
 
-3. Đóng tất cả cửa sổ Excel đang mở.
+3. Close all running Excel instances.
 
-4. Mở thư mục publish:
+4. Open the publish folder:
 
-   ```text
-   publish/ExcelCSIToolbox/
-   ```
+```
+publish/ExcelCSIToolbox/
+```
 
-5. Chạy file:
+5. Run:
 
-   ```text
-   setup.exe
-   ```
+```
+setup.exe
+```
 
-6. Nếu Windows hiện cảnh báo do add-in được ký bằng certificate tạm thời/self-signed, chỉ tiếp tục cài đặt khi bạn tin tưởng source repo.
+6. If Windows warns about a temporary/self-signed certificate, proceed only if you trust the repository source.
 
-7. Mở lại Excel. Trên ribbon sẽ có tab:
+7. Open Excel. You should see a new ribbon tab named **ExcelCSIToolBox**.
 
-   ```text
-   ExcelCSIToolBox
-   ```
+8. Use **ETABS Toolbox** or other tools. For CSI-connected features, open ETABS/SAP2000 and a model first, then attach from the toolbox.
 
-8. Bấm **ETABS Toolbox** hoặc các nút công cụ khác để sử dụng. Với các tính năng cần model CSI, hãy mở ETABS/SAP2000 và model trước, sau đó attach từ toolbox.
+## If the Add-in Does Not Appear
 
-## Nếu Không Thấy Add-In Trong Excel
+- Go to **File > Options > Add-ins** in Excel.
+- At the bottom, in **Manage**, select **COM Add-ins** and click **Go...**.
+- Ensure `ExcelCSIToolBoxAddIn` is checked.
+- If the add-in is listed under **Disabled Items**, re-enable it via **Manage: Disabled Items**.
+- If issues persist, close Excel and run `publish/ExcelCSIToolbox/setup.exe` again.
 
-- Vào **Excel > File > Options > Add-ins**.
-- Ở **Manage**, chọn **COM Add-ins**, bấm **Go...**.
-- Kiểm tra `ExcelCSIToolBoxAddIn` đã được tick chưa.
-- Nếu add-in nằm trong **Disabled Items**, chọn **Excel > File > Options > Add-ins > Manage: Disabled Items** và enable lại.
-- Nếu vẫn lỗi, đóng Excel và chạy lại `publish/ExcelCSIToolbox/setup.exe`.
+## Uninstall
 
-## Gỡ Cài Đặt
+1. Close Excel.
+2. Open **Settings > Apps > Installed apps**.
+3. Find `ExcelCSIToolBoxAddIn` and choose **Uninstall**.
 
-1. Đóng Excel.
-2. Vào **Windows Settings > Apps > Installed apps**.
-3. Tìm `ExcelCSIToolBoxAddIn`.
-4. Chọn **Uninstall**.
+## Build and Debug (Developer)
 
-## Build Và Debug Cho Developer
+Follow these steps to build and debug from source:
 
-Dùng cách này nếu bạn muốn sửa code hoặc chạy debug trong Visual Studio.
+1. Install Visual Studio with the **Office/SharePoint development** workload.
+2. Ensure the .NET Framework 4.8 Developer Pack is installed.
+3. Open the solution:
 
-1. Cài Visual Studio với workload **Office/SharePoint development**.
-2. Đảm bảo máy có .NET Framework 4.8 Developer Pack.
-3. Mở solution:
+```
+ExcelCSIToolBoxAddIn.sln
+```
 
-   ```text
-   ExcelCSIToolBoxAddIn.sln
-   ```
+4. Restore and build the solution in Visual Studio.
+5. Set `ExcelCSIToolBoxAddIn` as the startup project.
+6. Start debugging. Visual Studio will launch Excel with the add-in loaded.
+7. Start ETABS/SAP2000 and open a model before testing features that rely on the CSI API.
 
-4. Restore/build solution bằng Visual Studio.
-5. Chọn project `ExcelCSIToolBoxAddIn` làm startup project.
-6. Bấm **Start Debugging**. Visual Studio sẽ mở Excel với add-in đã load.
-7. Mở ETABS/SAP2000 trước khi test các command phụ thuộc CSI API.
+## Publishing the Installer
 
-## Publish Lại Installer
+To create a new installer:
 
-Khi cần tạo gói cài đặt mới:
+1. Open `ExcelCSIToolBoxAddIn` in Visual Studio.
+2. Choose **Build > Publish ExcelCSIToolBoxAddIn**.
+3. Publish to:
 
-1. Mở project `ExcelCSIToolBoxAddIn` trong Visual Studio.
-2. Chọn **Build > Publish ExcelCSIToolBoxAddIn**.
-3. Publish vào thư mục mặc định:
+```
+publish/ExcelCSIToolbox/
+```
 
-   ```text
-   publish/ExcelCSIToolbox/
-   ```
+4. Verify the publish folder contains `setup.exe`, `ExcelCSIToolBoxAddIn.vsto`, and an `Application Files/` folder.
 
-4. Kiểm tra trong thư mục publish có:
-
-   ```text
-   setup.exe
-   ExcelCSIToolBoxAddIn.vsto
-   Application Files/
-   ```
-
-5. Gửi/tổ chức repo kèm nguyên thư mục `publish/ExcelCSIToolbox/` để user cài bằng `setup.exe`.
+5. Distribute the `publish/ExcelCSIToolbox/` folder to users for installation via `setup.exe`.
 
 ## Troubleshooting
 
-- **Không hiện tab ExcelCSIToolBox**: kiểm tra COM Add-ins và Disabled Items trong Excel.
-- **Lỗi trust/certificate khi cài**: file publish đang dùng temporary certificate. Chỉ cài khi tin tưởng source repo, hoặc publish lại bằng certificate nội bộ của team.
-- **Lỗi Windows chặn file `.vsto`**: Unblock file ZIP trước khi extract, hoặc Unblock riêng `setup.exe`/`ExcelCSIToolBoxAddIn.vsto`.
-- **Lỗi thiếu VSTO Runtime**: chạy `setup.exe` thay vì mở trực tiếp file `.vsto`.
-- **Lỗi kết nối ETABS/SAP2000**: mở ETABS/SAP2000 và model trước, sau đó attach lại từ toolbox. Kiểm tra version API DLL trong `lib/` có phù hợp với phiên bản CSI đang dùng không.
+- Add-in not visible: check COM Add-ins and Disabled Items in Excel.
+- Certificate/trust errors: published files may use a temporary certificate. Re-publish using a trusted certificate if needed.
+- Windows blocking `.vsto` files: Unblock the ZIP before extraction or unblock the installer files individually.
+- Missing VSTO Runtime: run `setup.exe` rather than trying to load the `.vsto` directly.
+- CSI connection issues: ensure ETABS/SAP2000 and a compatible model are open and the interop DLL versions in `lib/` match your CSI product versions.
 
-## Ghi Chú Cho Contributor
+## Notes for Contributors
 
 - Target framework: **.NET Framework 4.8**.
-- Host application: Microsoft Excel thông qua VSTO.
-- UI: WPF với MVVM-style ViewModels.
-- CSI API access nên được cô lập trong Infrastructure adapters.
-- UI chỉ nên giữ logic điều phối mỏng; workflow chính nên nằm trong Application/Core khi phù hợp.
-- RefBuilder là utility phục vụ sinh scaffold/reference và không phải flow chạy chính của add-in.
+- Host: Microsoft Excel via VSTO.
+- UI: WPF with MVVM-style ViewModels.
+- Keep CSI API access isolated inside Infrastructure adapters.
+- Keep UI code lightweight; place workflow logic in Application/Core projects.
+- `RefBuilder` is a utility used for generating reference scaffolding and is not part of the runtime add-in flow.
+
