@@ -608,6 +608,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             try
             {
+                RaiseRequestHide();
                 var excelApp = ExcelApplicationProvider.GetApplication();
                 if (excelApp == null)
                 {
@@ -647,6 +648,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ShowError($"Failed to select the Excel anchor cell: {ex.Message}");
                 return false;
             }
+            finally
+            {
+                RaiseRequestShow();
+            }
         }
 
         public void Run(System.Collections.IList selectedLoadCases, System.Collections.IList selectedLoadCombinations)
@@ -664,62 +669,71 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            var selectedCases = _profile.ShowCaseComboSelector
-                ? GetSelectedOutputCases(selectedLoadCases, selectedLoadCombinations)
-                : new List<CSISapModelOutputCaseDTO>();
-            if (_profile.ShowCaseComboSelector && selectedCases.Count == 0)
-            {
-                AnalysisExportDiagnostics.Log("Export confirmation blocked because no output case was selected: " + _displayTableName);
-                ShowWarning("Select at least one " + CaseSelectorTitle.ToLowerInvariant() + ".");
-                return;
-            }
-
-            if (_profile.ShowCaseComboSelector && !_profile.AllowMultipleCases && selectedCases.Count > 1)
-            {
-                AnalysisExportDiagnostics.Log("Export confirmation blocked because too many output cases were selected: " + _displayTableName);
-                ShowWarning("Select only one " + CaseSelectorTitle.ToLowerInvariant() + ".");
-                return;
-            }
-
-            if (_profile.ShowUnitSelector && !ApplySelectedUnits())
-            {
-                AnalysisExportDiagnostics.Log("Export confirmation blocked because selected units could not be applied: " + _displayTableName);
-                return;
-            }
-
-            SelectedCasesOrCombos = selectedCases;
-            OnPropertyChanged(nameof(SelectedCasesOrCombos));
-
             try
             {
-                IsBusy = true;
-                StatusText = "Extracting ETABS " + _displayTableName + "...";
-                AnalysisExportDiagnostics.Log(
-                    "Starting report export: " + _displayTableName +
-                    "; selected cases/combinations=" + selectedCases.Count +
-                    "; selected unit=" + (SelectedUnitOption == null ? string.Empty : SelectedUnitOption.Label));
-                if (_config.StaticExportValuesFactory != null)
+                RaiseRequestHide();
+
+                var selectedCases = _profile.ShowCaseComboSelector
+                    ? GetSelectedOutputCases(selectedLoadCases, selectedLoadCombinations)
+                    : new List<CSISapModelOutputCaseDTO>();
+                if (_profile.ShowCaseComboSelector && selectedCases.Count == 0)
                 {
-                    RunStaticTableExport();
+                    AnalysisExportDiagnostics.Log("Export confirmation blocked because no output case was selected: " + _displayTableName);
+                    ShowWarning("Select at least one " + CaseSelectorTitle.ToLowerInvariant() + ".");
+                    return;
                 }
-                else if (IsBaseReactionsTable())
+
+                if (_profile.ShowCaseComboSelector && !_profile.AllowMultipleCases && selectedCases.Count > 1)
                 {
-                    RunBaseReactionsExport(selectedCases);
+                    AnalysisExportDiagnostics.Log("Export confirmation blocked because too many output cases were selected: " + _displayTableName);
+                    ShowWarning("Select only one " + CaseSelectorTitle.ToLowerInvariant() + ".");
+                    return;
                 }
-                else
+
+                if (_profile.ShowUnitSelector && !ApplySelectedUnits())
                 {
-                    RunDisplayTableExport(selectedCases);
+                    AnalysisExportDiagnostics.Log("Export confirmation blocked because selected units could not be applied: " + _displayTableName);
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                StatusText = "Failed to extract " + _displayTableName + ".";
-                AnalysisExportDiagnostics.Log("Failed to extract " + _displayTableName + ": " + ex.Message);
-                ShowError("Failed to extract " + _displayTableName + ": " + ex.Message);
+
+                SelectedCasesOrCombos = selectedCases;
+                OnPropertyChanged(nameof(SelectedCasesOrCombos));
+
+                try
+                {
+                    IsBusy = true;
+                    StatusText = "Extracting ETABS " + _displayTableName + "...";
+                    AnalysisExportDiagnostics.Log(
+                        "Starting report export: " + _displayTableName +
+                        "; selected cases/combinations=" + selectedCases.Count +
+                        "; selected unit=" + (SelectedUnitOption == null ? string.Empty : SelectedUnitOption.Label));
+                    if (_config.StaticExportValuesFactory != null)
+                    {
+                        RunStaticTableExport();
+                    }
+                    else if (IsBaseReactionsTable())
+                    {
+                        RunBaseReactionsExport(selectedCases);
+                    }
+                    else
+                    {
+                        RunDisplayTableExport(selectedCases);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    StatusText = "Failed to extract " + _displayTableName + ".";
+                    AnalysisExportDiagnostics.Log("Failed to extract " + _displayTableName + ": " + ex.Message);
+                    ShowError("Failed to extract " + _displayTableName + ": " + ex.Message);
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
             }
             finally
             {
-                IsBusy = false;
+                RaiseRequestShow();
             }
         }
 

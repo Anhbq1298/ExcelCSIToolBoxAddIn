@@ -19,6 +19,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 ? System.Windows.Controls.DataGridSelectionMode.Extended
                 : System.Windows.Controls.DataGridSelectionMode.Single;
             viewModel.RequestClose += ViewModel_RequestClose;
+            viewModel.RequestHide += ViewModel_RequestHide;
+            viewModel.RequestShow += ViewModel_RequestShow;
         }
 
         protected override void OnClosed(EventArgs e)
@@ -26,6 +28,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (DataContext is OutputTableExportOptionsViewModel viewModel)
             {
                 viewModel.RequestClose -= ViewModel_RequestClose;
+                viewModel.RequestHide -= ViewModel_RequestHide;
+                viewModel.RequestShow -= ViewModel_RequestShow;
             }
 
             base.OnClosed(e);
@@ -34,6 +38,17 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private void ViewModel_RequestClose(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void ViewModel_RequestHide(object sender, EventArgs e)
+        {
+            this.Hide();
+        }
+
+        private void ViewModel_RequestShow(object sender, EventArgs e)
+        {
+            this.Show();
+            this.Activate();
         }
 
         private void RunButton_Click(object sender, RoutedEventArgs e)

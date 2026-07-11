@@ -2554,8 +2554,28 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             string displayTableName,
             ActiveSelectionInfo selectionInfo)
         {
+            if (IsJointOutputTable(displayTableName))
+            {
+                return ValidateJointSelectionForDisplayTable(displayTableName, selectionInfo);
+            }
+
             if (!selectionInfo.HasActiveSelection)
             {
+                if (IsFrameOutputTable(displayTableName))
+                {
+                    return OperationResult.Failure("Select one or more frame objects before exporting " + displayTableName + ".");
+                }
+
+                if (IsAreaOutputTable(displayTableName))
+                {
+                    return OperationResult.Failure("Select one or more area objects before exporting " + displayTableName + ".");
+                }
+
+                if (IsWallOutputTable(displayTableName))
+                {
+                    return OperationResult.Failure("Select one or more wall or pier objects before exporting " + displayTableName + ".");
+                }
+
                 return OperationResult.Success();
             }
 
@@ -2578,6 +2598,30 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
 
             return OperationResult.Success();
+        }
+
+        private static OperationResult ValidateJointSelectionForDisplayTable(
+            string displayTableName,
+            ActiveSelectionInfo selectionInfo)
+        {
+            if (!selectionInfo.HasActiveSelection)
+            {
+                return OperationResult.Failure("Select one or more joint objects before exporting " + displayTableName + ".");
+            }
+
+            if (selectionInfo.SelectedPoints == null || selectionInfo.SelectedPoints.Count == 0)
+            {
+                return OperationResult.Failure("No selected joint objects found in the current ETABS selection.");
+            }
+
+            return OperationResult.Success();
+        }
+
+        private static bool SelectionNameMatches(string name, HashSet<string> selectedNames)
+        {
+            return selectedNames != null &&
+                   !string.IsNullOrWhiteSpace(name) &&
+                   selectedNames.Contains(name.Trim());
         }
 
         private static bool TryGetFrameLabelFilter(
@@ -2636,9 +2680,14 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             string col1, string col2, string col3, string col4, string col5, string col6)
         {
             var selectionInfo = GetActiveSelectionInfo(sapModel);
-            ETABSv1.eItemTypeElm itemType = selectionInfo.HasActiveSelection
-                ? ETABSv1.eItemTypeElm.SelectionElm
-                : ETABSv1.eItemTypeElm.ObjectElm;
+            OperationResult jointSelectionResult = ValidateJointSelectionForDisplayTable(displayTableName, selectionInfo);
+            if (!jointSelectionResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(jointSelectionResult.Message);
+            }
+
+            HashSet<string> selectedJointNames = selectionInfo.SelectedPoints;
+            ETABSv1.eItemTypeElm itemType = ETABSv1.eItemTypeElm.SelectionElm;
 
             if (selectedOutputCases != null && selectedOutputCases.Count > 0)
             {
@@ -2702,8 +2751,14 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             {
                 for (int i = 0; i < numberResults; i++)
                 {
+                    string jointName = i < obj.Length ? obj[i] : string.Empty;
+                    if (!SelectionNameMatches(jointName, selectedJointNames))
+                    {
+                        continue;
+                    }
+
                     var row = new object[10];
-                    row[0] = obj[i];
+                    row[0] = jointName;
                     row[1] = loadCase != null && i < loadCase.Length ? loadCase[i] : "";
                     row[2] = stepType != null && i < stepType.Length ? stepType[i] : "";
                     row[3] = stepNum != null && i < stepNum.Length ? stepNum[i] : 0.0;
@@ -2729,8 +2784,13 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
         {
             var selectionInfo = GetActiveSelectionInfo(sapModel);
-            bool hasSelection = selectionInfo.HasActiveSelection;
-            var selectedJointNames = selectionInfo.SelectedPoints;
+            OperationResult jointSelectionResult = ValidateJointSelectionForDisplayTable("Joint Drifts", selectionInfo);
+            if (!jointSelectionResult.IsSuccess)
+            {
+                return OperationResult<CSISapModelDisplayTableDTO>.Failure(jointSelectionResult.Message);
+            }
+
+            HashSet<string> selectedJointNames = selectionInfo.SelectedPoints;
 
             if (selectedOutputCases != null && selectedOutputCases.Count > 0)
             {
@@ -2793,7 +2853,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     string jointName = name[i];
                     string jointLabel = label != null && i < label.Length ? label[i] : "";
                     
-                    if (!hasSelection || selectedJointNames.Contains(jointName.Trim()) || selectedJointNames.Contains(jointLabel.Trim()))
+                    if (SelectionNameMatches(jointName, selectedJointNames) || SelectionNameMatches(jointLabel, selectedJointNames))
                     {
                         var row = new object[10];
                         row[0] = story != null && i < story.Length ? story[i] : "";

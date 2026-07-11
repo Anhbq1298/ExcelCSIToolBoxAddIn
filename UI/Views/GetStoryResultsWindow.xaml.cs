@@ -13,6 +13,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             InitializeComponent();
             DataContext = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
             viewModel.RequestClose += ViewModel_RequestClose;
+            viewModel.RequestHide += ViewModel_RequestHide;
+            viewModel.RequestShow += ViewModel_RequestShow;
         }
 
         protected override void OnClosed(EventArgs e)
@@ -20,6 +22,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (DataContext is GetStoryResultsViewModel viewModel)
             {
                 viewModel.RequestClose -= ViewModel_RequestClose;
+                viewModel.RequestHide -= ViewModel_RequestHide;
+                viewModel.RequestShow -= ViewModel_RequestShow;
             }
 
             base.OnClosed(e);
@@ -39,6 +43,17 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private void ViewModel_RequestClose(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void ViewModel_RequestHide(object sender, EventArgs e)
+        {
+            this.Hide();
+        }
+
+        private void ViewModel_RequestShow(object sender, EventArgs e)
+        {
+            this.Show();
+            this.Activate();
         }
 
         private void OutputCaseGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

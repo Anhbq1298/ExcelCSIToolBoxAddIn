@@ -272,57 +272,66 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            var selectedCases = GetSelectedOutputCases(selectedLoadCases);
-            if (selectedCases.Count == 0)
-            {
-                ShowWarning("Select at least one ETABS modal load case.");
-                return;
-            }
-
             try
             {
-                IsBusy = true;
-                StatusText = "Extracting ETABS Modal Mass Participation Ratios...";
-                var result = _useCase.Execute(selectedCases);
-                if (!result.IsSuccess)
+                RaiseRequestHide();
+
+                var selectedCases = GetSelectedOutputCases(selectedLoadCases);
+                if (selectedCases.Count == 0)
                 {
-                    StatusText = result.Message;
-                    ShowWarning(result.Message);
+                    ShowWarning("Select at least one ETABS modal load case.");
                     return;
                 }
 
-                if (result.Data == null || result.Data.Count == 0)
+                try
                 {
-                    StatusText = "ETABS returned no Modal Mass Participation Ratio records.";
+                    IsBusy = true;
+                    StatusText = "Extracting ETABS Modal Mass Participation Ratios...";
+                    var result = _useCase.Execute(selectedCases);
+                    if (!result.IsSuccess)
+                    {
+                        StatusText = result.Message;
+                        ShowWarning(result.Message);
+                        return;
+                    }
+
+                    if (result.Data == null || result.Data.Count == 0)
+                    {
+                        StatusText = "ETABS returned no Modal Mass Participation Ratio records.";
+                        MessageBox.Show(
+                            "ETABS returned no Modal Mass Participation Ratio records for the selected modal load cases. Nothing was written to Excel.",
+                            "Modal Mass Participation Ratios",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                        return;
+                    }
+
+                    object[,] values = CreateOutputValues(result.Data, AddHeaders);
+                    OperationResult writeResult = _excelOutputService.WriteValuesToActiveCell(
+                        values,
+                        $"Successfully wrote {result.Data.Count} Modal Mass Participation Ratio record(s) to Excel.",
+                        AddHeaders);
+
+                    StatusText = writeResult.Message;
                     MessageBox.Show(
-                        "ETABS returned no Modal Mass Participation Ratio records for the selected modal load cases. Nothing was written to Excel.",
+                        writeResult.Message,
                         "Modal Mass Participation Ratios",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    return;
+                        writeResult.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
                 }
-
-                object[,] values = CreateOutputValues(result.Data, AddHeaders);
-                OperationResult writeResult = _excelOutputService.WriteValuesToActiveCell(
-                    values,
-                    $"Successfully wrote {result.Data.Count} Modal Mass Participation Ratio record(s) to Excel.",
-                    AddHeaders);
-
-                StatusText = writeResult.Message;
-                MessageBox.Show(
-                    writeResult.Message,
-                    "Modal Mass Participation Ratios",
-                    MessageBoxButton.OK,
-                    writeResult.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
-            }
-            catch (Exception ex)
-            {
-                StatusText = "Failed to extract Modal Mass Participation Ratios.";
-                ShowError($"Failed to extract Modal Mass Participation Ratios: {ex.Message}");
+                catch (Exception ex)
+                {
+                    StatusText = "Failed to extract Modal Mass Participation Ratios.";
+                    ShowError($"Failed to extract Modal Mass Participation Ratios: {ex.Message}");
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
             }
             finally
             {
-                IsBusy = false;
+                RaiseRequestShow();
             }
         }
 
@@ -445,6 +454,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             try
             {
+                RaiseRequestHide();
                 var excelApp = ExcelApplicationProvider.GetApplication();
                 if (excelApp == null)
                 {
@@ -483,6 +493,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 ShowError($"Failed to select the Excel anchor cell: {ex.Message}");
                 return false;
+            }
+            finally
+            {
+                RaiseRequestShow();
             }
         }
 

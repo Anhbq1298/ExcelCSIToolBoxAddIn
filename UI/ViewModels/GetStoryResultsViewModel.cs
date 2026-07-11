@@ -359,20 +359,29 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            var selectedCases = GetSelectedOutputCases(selectedLoadCases, selectedLoadCombinations);
-            if (selectedCases.Count == 0)
+            try
             {
-                ShowWarning("Select at least one ETABS load case or load combination.");
-                return;
-            }
+                RaiseRequestHide();
 
-            if (_kind == StoryPostprocessingResultKind.StoryForces)
-            {
-                RunStoryForces(selectedCases);
+                var selectedCases = GetSelectedOutputCases(selectedLoadCases, selectedLoadCombinations);
+                if (selectedCases.Count == 0)
+                {
+                    ShowWarning("Select at least one ETABS load case or load combination.");
+                    return;
+                }
+
+                if (_kind == StoryPostprocessingResultKind.StoryForces)
+                {
+                    RunStoryForces(selectedCases);
+                }
+                else
+                {
+                    RunStoryTable(selectedCases);
+                }
             }
-            else
+            finally
             {
-                RunStoryTable(selectedCases);
+                RaiseRequestShow();
             }
         }
 
@@ -721,6 +730,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             try
             {
+                RaiseRequestHide();
                 var excelApp = ExcelApplicationProvider.GetApplication();
                 if (excelApp == null)
                 {
@@ -759,6 +769,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 ShowError($"Failed to select the Excel anchor cell: {ex.Message}");
                 return false;
+            }
+            finally
+            {
+                RaiseRequestShow();
             }
         }
 

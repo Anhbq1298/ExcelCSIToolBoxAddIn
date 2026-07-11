@@ -1,8 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Windows;
 using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Core.Abstractions.CSI;
+using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
 using ExcelCSIToolBox.Core.Models.ElementConnectivity;
+using ExcelCSIToolBox.Core.Models.EtabsTables;
 using ExcelCSIToolBox.Core.Models.MiscellaneousData;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity;
@@ -156,8 +161,49 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     return;
                 }
 
-                await _elementConnectivityRouter.ExecuteAsync(item);
-                StatusText = "Exported " + item.Title + " to Excel.";
+                OperationResult<IReadOnlyList<CsiSelectedObjectDto>> selectedResult =
+                    _csiConnectionService.GetSelectedObjectsFromActiveModel();
+                if (!selectedResult.IsSuccess)
+                {
+                    string selectionMessage = string.IsNullOrWhiteSpace(selectedResult.Message)
+                        ? "Failed to read the current ETABS selection."
+                        : selectedResult.Message;
+                    StatusText = selectionMessage;
+                    MessageBox.Show(selectionMessage, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                HashSet<string> selectedObjectNames = CreateSelectedObjectNameSet(selectedResult.Data);
+                if (selectedObjectNames.Count == 0)
+                {
+                    string selectionMessage = "Select one or more ETABS objects before exporting " + item.Title + ".";
+                    StatusText = selectionMessage;
+                    MessageBox.Show(selectionMessage, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                StatusText = "Reading " + item.Title + " for the current ETABS selection.";
+                var etabsConnectionService =
+                    new ExcelCSIToolBox.Infrastructure.Services.Etabs.EtabsConnectionService(_csiConnectionService);
+                var tableService =
+                    new ExcelCSIToolBox.Infrastructure.Services.Etabs.EtabsDatabaseTableService(etabsConnectionService);
+                EtabsTableResult fullTable = await tableService.GetTableAsync(item.EtabsTableName);
+                EtabsTableResult selectedTable = FilterConnectivityRowsBySelection(fullTable, selectedObjectNames);
+                if (selectedTable.Rows.Count == 0)
+                {
+                    string emptyMessage = "No " + item.Title + " rows matched the current ETABS selection.";
+                    StatusText = emptyMessage;
+                    MessageBox.Show(emptyMessage, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                OutputTableExportWorkflow.Run(
+                    CreateElementConnectivityExportConfig(item, selectedTable, selectedObjectNames.Count),
+                    _useCases,
+                    _csiConnectionService,
+                    _excelOutputService,
+                    GetActiveOwnerWindow());
+                StatusText = "Opened export options for " + selectedTable.Rows.Count.ToString(CultureInfo.InvariantCulture) + " selected " + item.Title + " row(s).";
             }
             catch (Exception ex)
             {
@@ -167,6 +213,249 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 StatusText = message;
                 MessageBox.Show(message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        private static OutputTableExportConfig CreateElementConnectivityExportConfig(
+            ElementConnectivityItem item,
+            EtabsTableResult selectedTable,
+            int selectedObjectCount)
+        {
+            string tableName = item == null || string.IsNullOrWhiteSpace(item.Title)
+                ? "Object Connectivity"
+                : item.Title;
+            string groupName = item == null || string.IsNullOrWhiteSpace(item.GroupName)
+                ? "Etabs Object Connectivity"
+                : item.GroupName;
+            int recordCount = selectedTable == null || selectedTable.Rows == null ? 0 : selectedTable.Rows.Count;
+
+            return new OutputTableExportConfig
+            {
+                TableDisplayName = tableName,
+                Breadcrumb = "ETABS Toolbox / Element Manipulation / " + groupName + " / " + tableName,
+                Description = "Export " + tableName + " for " + selectedObjectCount.ToString(CultureInfo.InvariantCulture) + " selected ETABS object(s).",
+                PopupProfileKey = "EtabsObjectConnectivity",
+                EmptyDataMessage = "No " + tableName + " rows matched the current ETABS selection.",
+                WorksheetNamePrefix = tableName,
+                DefaultAddHeaders = true,
+                StaticRecordCount = recordCount,
+                StaticSuccessMessage = "Exported " + recordCount.ToString(CultureInfo.InvariantCulture) + " selected " + tableName + " row(s) to Excel.",
+                StaticExportValuesFactory = addHeaders => CreateEtabsTableExportValues(selectedTable, addHeaders)
+            };
+        }
+
+        private static HashSet<string> CreateSelectedObjectNameSet(IReadOnlyList<CsiSelectedObjectDto> selectedObjects)
+        {
+            var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (selectedObjects == null)
+            {
+                return names;
+            }
+
+            foreach (CsiSelectedObjectDto selectedObject in selectedObjects)
+            {
+                if (selectedObject == null || string.IsNullOrWhiteSpace(selectedObject.UniqueName))
+                {
+                    continue;
+                }
+
+                names.Add(selectedObject.UniqueName.Trim());
+            }
+
+            return names;
+        }
+
+        private static EtabsTableResult FilterConnectivityRowsBySelection(
+            EtabsTableResult source,
+            HashSet<string> selectedObjectNames)
+        {
+            var selectedTable = new EtabsTableResult
+            {
+                TableName = source == null ? string.Empty : source.TableName
+            };
+
+            if (source == null)
+            {
+                return selectedTable;
+            }
+
+            if (source.Headers != null)
+            {
+                selectedTable.Headers.AddRange(source.Headers);
+            }
+
+            if (source.Rows == null || selectedObjectNames == null || selectedObjectNames.Count == 0)
+            {
+                return selectedTable;
+            }
+
+            List<int> objectNameColumns = GetObjectNameColumnIndexes(source.Headers);
+            AddMatchingConnectivityRows(source.Rows, selectedTable.Rows, selectedObjectNames, objectNameColumns);
+
+            return selectedTable;
+        }
+
+        private static List<int> GetObjectNameColumnIndexes(IReadOnlyList<string> headers)
+        {
+            var indexes = new List<int>();
+            if (headers == null)
+            {
+                return indexes;
+            }
+
+            for (int i = 0; i < headers.Count; i++)
+            {
+                string normalized = NormalizeConnectivityHeader(headers[i]);
+                if (normalized == "UNIQUENAME" ||
+                    normalized == "OBJECT" ||
+                    normalized == "OBJECTNAME" ||
+                    normalized == "OBJ" ||
+                    normalized == "OBJNAME" ||
+                    normalized == "NAME" ||
+                    normalized == "LABEL")
+                {
+                    indexes.Add(i);
+                }
+            }
+
+            return indexes;
+        }
+
+        private static string NormalizeConnectivityHeader(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            var chars = new List<char>();
+            foreach (char ch in value)
+            {
+                if (char.IsLetterOrDigit(ch))
+                {
+                    chars.Add(char.ToUpperInvariant(ch));
+                }
+            }
+
+            return chars.Count == 0 ? string.Empty : new string(chars.ToArray());
+        }
+
+        private static void AddMatchingConnectivityRows(
+            IList<List<string>> sourceRows,
+            IList<List<string>> targetRows,
+            HashSet<string> selectedObjectNames,
+            IList<int> columnIndexes)
+        {
+            if (sourceRows == null || targetRows == null)
+            {
+                return;
+            }
+
+            foreach (List<string> row in sourceRows)
+            {
+                if (RowMatchesSelection(row, selectedObjectNames, columnIndexes))
+                {
+                    targetRows.Add(row == null ? new List<string>() : new List<string>(row));
+                }
+            }
+        }
+
+        private static bool RowMatchesSelection(
+            IReadOnlyList<string> row,
+            HashSet<string> selectedObjectNames,
+            IList<int> columnIndexes)
+        {
+            if (row == null || selectedObjectNames == null || selectedObjectNames.Count == 0)
+            {
+                return false;
+            }
+
+            if (columnIndexes != null && columnIndexes.Count > 0)
+            {
+                foreach (int columnIndex in columnIndexes)
+                {
+                    if (columnIndex >= 0 && columnIndex < row.Count && CellMatchesSelection(row[columnIndex], selectedObjectNames))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            for (int columnIndex = 0; columnIndex < row.Count; columnIndex++)
+            {
+                if (CellMatchesSelection(row[columnIndex], selectedObjectNames))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool CellMatchesSelection(string cellValue, HashSet<string> selectedObjectNames)
+        {
+            return !string.IsNullOrWhiteSpace(cellValue) && selectedObjectNames.Contains(cellValue.Trim());
+        }
+
+        private static object[,] CreateEtabsTableExportValues(EtabsTableResult table, bool addHeaders)
+        {
+            int columnCount = GetEtabsTableExportColumnCount(table);
+            int dataRowCount = table == null || table.Rows == null ? 0 : table.Rows.Count;
+            int rowCount = dataRowCount + (addHeaders ? 1 : 0);
+            if (columnCount == 0 || rowCount == 0)
+            {
+                return new object[0, 0];
+            }
+
+            var values = new object[rowCount, columnCount];
+            int dataRowOffset = addHeaders ? 1 : 0;
+            if (addHeaders && table != null && table.Headers != null)
+            {
+                for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+                {
+                    values[0, columnIndex] = columnIndex < table.Headers.Count ? table.Headers[columnIndex] : string.Empty;
+                }
+            }
+
+            if (table == null || table.Rows == null)
+            {
+                return values;
+            }
+
+            for (int rowIndex = 0; rowIndex < table.Rows.Count; rowIndex++)
+            {
+                List<string> row = table.Rows[rowIndex];
+                for (int columnIndex = 0; columnIndex < columnCount; columnIndex++)
+                {
+                    values[rowIndex + dataRowOffset, columnIndex] =
+                        row != null && columnIndex < row.Count ? row[columnIndex] : string.Empty;
+                }
+            }
+
+            return values;
+        }
+
+        private static int GetEtabsTableExportColumnCount(EtabsTableResult table)
+        {
+            if (table == null)
+            {
+                return 0;
+            }
+
+            int columnCount = table.Headers == null ? 0 : table.Headers.Count;
+            if (table.Rows != null)
+            {
+                foreach (List<string> row in table.Rows)
+                {
+                    if (row != null && row.Count > columnCount)
+                    {
+                        columnCount = row.Count;
+                    }
+                }
+            }
+
+            return columnCount;
         }
 
         private void RunEtabsTableItem(object item)

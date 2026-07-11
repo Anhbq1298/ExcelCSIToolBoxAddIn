@@ -165,6 +165,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             try
             {
+                RaiseRequestHide();
                 IsBusy = true;
                 StatusText = "Extracting ETABS Mass Summary by Story...";
                 var result = _useCase.Execute();
@@ -198,6 +199,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             finally
             {
                 IsBusy = false;
+                RaiseRequestShow();
             }
         }
 
@@ -247,6 +249,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             try
             {
+                RaiseRequestHide();
                 var excelApp = ExcelApplicationProvider.GetApplication();
                 object result = excelApp == null ? null : excelApp.InputBox(
                     AddHeaders
@@ -270,6 +273,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 ShowInformation($"Failed to select the Excel anchor cell: {ex.Message}", MessageBoxImage.Error);
                 return false;
+            }
+            finally
+            {
+                RaiseRequestShow();
             }
         }
 

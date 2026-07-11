@@ -3,9 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{Binding WindowTitle, FallbackValue=Export ETABS Table}"
         SizeToContent="WidthAndHeight"
-        MinHeight="200"
+        MinHeight="320"
         MaxHeight="700"
         MinWidth="640"
+        MaxWidth="900"
+        ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI"
         FontSize="12">
@@ -122,6 +124,8 @@
                                       SelectionUnit="FullRow"
                                       BorderBrush="#CCCCCC"
                                       BorderThickness="1"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                                       SelectionChanged="OutputCaseGrid_SelectionChanged">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*"/>
@@ -159,6 +163,8 @@
                                       SelectionUnit="FullRow"
                                       BorderBrush="#CCCCCC"
                                       BorderThickness="1"
+                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
                                       SelectionChanged="OutputCaseGrid_SelectionChanged">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="2*"/>
