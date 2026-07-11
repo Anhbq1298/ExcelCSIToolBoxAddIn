@@ -18,10 +18,11 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
     public static class AppServiceFactory
     {
         public static EtabsAnalysisResultServices CreateAnalysisResultServices(
-            ICSISapModelConnectionService csiConnectionService)
+            ICSISapModelConnectionService csiConnectionService,
+            IEtabsUnitService unitService = null)
         {
             IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
-            IEtabsUnitService unitService = new EtabsUnitService(connectionService);
+            unitService = unitService ?? new EtabsUnitService(connectionService);
             IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService);
             IExcelExportService excelService = new ExcelExportService();
 
@@ -41,10 +42,11 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
         }
 
         public static EtabsMiscellaneousDataServices CreateMiscellaneousDataServices(
-            ICSISapModelConnectionService csiConnectionService)
+            ICSISapModelConnectionService csiConnectionService,
+            IEtabsUnitService unitService = null)
         {
             IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
-            IEtabsUnitService unitService = new EtabsUnitService(connectionService);
+            unitService = unitService ?? new EtabsUnitService(connectionService);
             IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService);
             IExcelExportService excelService = new ExcelExportService();
 
@@ -62,10 +64,11 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
         }
 
         public static EtabsElementConnectivityServices CreateElementConnectivityServices(
-            ICSISapModelConnectionService csiConnectionService)
+            ICSISapModelConnectionService csiConnectionService,
+            IEtabsUnitService unitService = null)
         {
             IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
-            IEtabsUnitService unitService = new EtabsUnitService(connectionService);
+            unitService = unitService ?? new EtabsUnitService(connectionService);
             IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService);
             IExcelExportService excelService = new ExcelExportService();
 

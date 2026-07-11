@@ -92,12 +92,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
             analysisResultServices = analysisResultServices ?? AppServiceFactory.CreateAnalysisResultServices(csiConnectionService);
-            elementConnectivityServices = elementConnectivityServices ?? AppServiceFactory.CreateElementConnectivityServices(csiConnectionService);
-            miscellaneousDataServices = miscellaneousDataServices ?? AppServiceFactory.CreateMiscellaneousDataServices(csiConnectionService);
+            IEtabsUnitService sharedEtabsUnitService = analysisResultServices.UnitService;
+            elementConnectivityServices = elementConnectivityServices ?? AppServiceFactory.CreateElementConnectivityServices(csiConnectionService, sharedEtabsUnitService);
+            miscellaneousDataServices = miscellaneousDataServices ?? AppServiceFactory.CreateMiscellaneousDataServices(csiConnectionService, sharedEtabsUnitService);
             _analysisResultRouter = analysisResultServices.Router;
             _elementConnectivityRouter = elementConnectivityServices.Router;
             _miscellaneousDataRouter = miscellaneousDataServices.Router;
-            _etabsUnitService = analysisResultServices.UnitService;
+            _etabsUnitService = sharedEtabsUnitService;
 
             LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>();
             LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>();
@@ -306,6 +307,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 if (ReferenceEquals(_selectedUnitSystem, value))
                 {
+                    SyncSelectedUnitService(value);
                     return;
                 }
 
@@ -316,16 +318,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     CurrentModelUnitText = value.PresentUnitsText;
                 }
 
-                _etabsUnitService.SetSelectedUnitSystem(
-                    value == null ? null : value.ToDto(),
-                    value == null ? null : value.DisplayName,
-                    value == null ? null : value.PresentUnitsText);
+                SyncSelectedUnitService(value);
 
                 if (!_isInitializingUnitSystems && IsConnected)
                 {
                     ApplySelectedGlobalUnit(showMessages: true);
                 }
             }
+        }
+
+        private void SyncSelectedUnitService(EtabsUnitSystem unitSystem)
+        {
+            _etabsUnitService.SetSelectedUnitSystem(
+                unitSystem == null ? null : unitSystem.ToDto(),
+                unitSystem == null ? null : unitSystem.DisplayName,
+                unitSystem == null ? null : unitSystem.PresentUnitsText);
         }
 
         public string ModelPath

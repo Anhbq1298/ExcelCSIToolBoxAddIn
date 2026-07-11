@@ -118,9 +118,6 @@
                                   Height="26"
                                   VerticalContentAlignment="Center"/>
                     </DockPanel>
-                    <TextBlock Text="{Binding CurrentModelUnitText}"
-                               Style="{StaticResource MutedTextStyle}"
-                               Foreground="{StaticResource TextBrush.NavyMuted}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Row="1"
@@ -1081,14 +1078,6 @@
                                                 HorizontalAlignment="Stretch"
                                                 Command="{Binding OpenShellUniformLoadSetFormCommand}"
                                                 ToolTip="Open the Shell Uniform Load Set manager."
-                                                ToolTipService.ShowOnDisabled="True"/>
-                                        <Button Content="Export Current Shell Uniform Load Set Definitions"
-                                                Style="{StaticResource ToolButtonStyle}"
-                                                MinHeight="42"
-                                                Margin="0,8,0,0"
-                                                HorizontalAlignment="Stretch"
-                                                Command="{Binding ExportShellUniformLoadSetDefinitionsCommand}"
-                                                ToolTip="Export current ETABS Shell Uniform Load Set definitions to Excel."
                                                 ToolTipService.ShowOnDisabled="True"/>
                                     </StackPanel>
                                 </Grid>

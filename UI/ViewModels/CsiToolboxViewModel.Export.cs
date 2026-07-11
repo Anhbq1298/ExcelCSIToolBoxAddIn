@@ -124,6 +124,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             try
             {
+                if (!PrepareExportWithGlobalUnit())
+                {
+                    return;
+                }
+
                 await _miscellaneousDataRouter.ExecuteAsync(item);
                 StatusText = "Exported " + item.Title + " to Excel.";
             }
@@ -146,6 +151,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             try
             {
+                if (!PrepareExportWithGlobalUnit())
+                {
+                    return;
+                }
+
                 await _elementConnectivityRouter.ExecuteAsync(item);
                 StatusText = "Exported " + item.Title + " to Excel.";
             }

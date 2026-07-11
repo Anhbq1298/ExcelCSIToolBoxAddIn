@@ -15,9 +15,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             var commands = new ICommand[]
             {
+                RefreshRunningCsiInstancesCommand,
                 AttachToRunningCsiCommand,
                 CloseCurrentInstanceCommand,
                 ToggleModelLockCommand,
+                SelectWorkspacePageCommand,
                 RefreshFrameStiffnessSectionsCommand,
                 RefreshAreaStiffnessSectionsCommand,
                 SelectVisibleFrameStiffnessSectionsCommand,
@@ -75,6 +77,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 GetMassSummaryByStoryCommand,
                 GetFrameSectionsCommand,
                 EditFrameSectionCommand,
+                OpenCreateSectionDialogCommand,
+                OpenShellUniformLoadSetFormCommand,
+                ExportShellUniformLoadSetDefinitionsCommand,
                 OpenCreateArrayPerpendicularToPathWindowCommand,
                 OpenArrayBetweenTwoLinesWindowCommand,
                 PickPoint1Command,
@@ -89,7 +94,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 OffsetPreviewCommand,
                 OffsetCreateInEtabsCommand,
                 OffsetClearCommand,
-                OffsetRefreshSectionsCommand
+                OffsetRefreshSectionsCommand,
+                CloseWindowCommand,
             };
 
             foreach (ICommand command in commands)
@@ -125,9 +131,23 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private void RefreshRunningCsiInstancesFromUi()
         {
             RefreshRunningCsiInstances();
-            StatusText = RunningCsiInstances.Count == 0
-                ? $"No running {_productName} instance found."
-                : $"Found {RunningCsiInstances.Count} running {_productName} instance(s).";
+            if (RunningCsiInstances.Count == 0)
+            {
+                StatusText = $"No running {_productName} instance found.";
+            }
+            else
+            {
+                StatusText = $"Found {RunningCsiInstances.Count} running {_productName} instance(s).";
+                if (SelectedRunningCsiInstance != null)
+                {
+                    AttachToSelectedRunningInstance(SelectedRunningCsiInstance, showMessage: false);
+                }
+                else
+                {
+                    SelectedRunningCsiInstance = RunningCsiInstances[0];
+                    AttachToSelectedRunningInstance(SelectedRunningCsiInstance, showMessage: false);
+                }
+            }
         }
 
         private void AttachToSelectedRunningInstance(CsiRunningInstanceViewModel instance, bool showMessage)
