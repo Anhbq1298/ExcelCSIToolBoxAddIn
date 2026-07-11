@@ -92,6 +92,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             var viewModel = DataContext as OutputTableExportOptionsViewModel;
             if (viewModel != null)
             {
+                viewModel.InitializeForDialog();
+
                 if (viewModel.CaseComboSelectorVisibility == Visibility.Visible)
                 {
                     // Unsubscribe selection changed events to avoid triggering updates/resets during restoration

@@ -65,6 +65,69 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
             }
         }
 
+        public static OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>> GetDefinitions(ETABSv1.cSapModel sapModel)
+        {
+            if (sapModel == null)
+            {
+                return OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>>.Failure("ETABS SapModel is not available.");
+            }
+
+            try
+            {
+                TableSnapshot snapshot;
+                OperationResult readResult = ReadSnapshot(sapModel, out snapshot);
+                if (!readResult.IsSuccess)
+                {
+                    return OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>>.Failure(readResult.Message);
+                }
+
+                IReadOnlyList<FieldMetadata> fieldMetadata = ReadFieldMetadata(sapModel);
+                var schemaResult = ShellUniformLoadSetTableSchemaResolver.Resolve(snapshot.FieldKeysIncluded, fieldMetadata);
+                if (!schemaResult.IsSuccess)
+                {
+                    return OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>>.Failure(schemaResult.Message);
+                }
+
+                ShellUniformLoadSetTableSchema schema = schemaResult.Data;
+                List<Dictionary<string, string>> records = ParseRecords(snapshot);
+                var definitionsByName = new Dictionary<string, ShellUniformLoadSetDefinitionDto>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (Dictionary<string, string> record in records)
+                {
+                    string setName = NormalizeName(ReadRecordValue(record, schema.SetNameFieldKey));
+                    string patternName = NormalizeName(ReadRecordValue(record, schema.LoadPatternFieldKey));
+                    string valueText = ReadRecordValue(record, schema.LoadValueFieldKey);
+                    double value;
+
+                    if (string.IsNullOrWhiteSpace(setName) ||
+                        string.IsNullOrWhiteSpace(patternName) ||
+                        !TryParseNumber(valueText, out value))
+                    {
+                        continue;
+                    }
+
+                    ShellUniformLoadSetDefinitionDto definition;
+                    if (!definitionsByName.TryGetValue(setName, out definition))
+                    {
+                        definition = new ShellUniformLoadSetDefinitionDto { Name = setName };
+                        definitionsByName.Add(setName, definition);
+                    }
+
+                    definition.LoadValuesByPattern[patternName] = value;
+                }
+
+                IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions = definitionsByName.Values
+                    .OrderBy(definition => definition.Name, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                return OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>>.Success(definitions);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>>.Failure("Could not read Shell Uniform Load Sets: " + ex.Message);
+            }
+        }
+
         public static OperationResult<ShellUniformLoadSetApplyResultDto> Apply(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)
@@ -74,9 +137,9 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
                 return OperationResult<ShellUniformLoadSetApplyResultDto>.Failure("ETABS SapModel is not available.");
             }
 
-            if (definitions == null || definitions.Count == 0)
+            if (definitions == null)
             {
-                return OperationResult<ShellUniformLoadSetApplyResultDto>.Failure("At least one Shell Uniform Load Set is required.");
+                return OperationResult<ShellUniformLoadSetApplyResultDto>.Failure("Shell Uniform Load Set definitions are required.");
             }
 
             try
@@ -113,8 +176,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
                     definitions.Select(definition => NormalizeName(definition.Name)),
                     StringComparer.OrdinalIgnoreCase);
 
-                var existingSubmittedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var unrelatedNamesBefore = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var existingNamesBefore = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 foreach (Dictionary<string, string> record in existingRecords)
                 {
                     string existingName = NormalizeName(ReadRecordValue(record, schema.SetNameFieldKey));
@@ -123,26 +185,10 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
                         continue;
                     }
 
-                    if (submittedNames.Contains(existingName))
-                    {
-                        existingSubmittedNames.Add(existingName);
-                    }
-                    else
-                    {
-                        unrelatedNamesBefore.Add(existingName);
-                    }
+                    existingNamesBefore.Add(existingName);
                 }
 
                 var finalRecords = new List<Dictionary<string, string>>();
-                foreach (Dictionary<string, string> record in existingRecords)
-                {
-                    string existingName = NormalizeName(ReadRecordValue(record, schema.SetNameFieldKey));
-                    if (!submittedNames.Contains(existingName))
-                    {
-                        finalRecords.Add(record);
-                    }
-                }
-
                 int loadEntryCount = 0;
                 foreach (ShellUniformLoadSetDefinitionDto definition in definitions)
                 {
@@ -177,7 +223,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
                 }
 
                 List<Dictionary<string, string>> readBackRecords = ParseRecords(readBackSnapshot);
-                OperationResult verification = VerifyReadBack(readBackRecords, schema, definitions, unrelatedNamesBefore);
+                OperationResult verification = VerifyReadBack(readBackRecords, schema, definitions);
                 if (!verification.IsSuccess)
                 {
                     return OperationResult<ShellUniformLoadSetApplyResultDto>.Failure(
@@ -186,12 +232,14 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
                         "\r\n\r\nReview the ETABS Import Log and model data.");
                 }
 
-                int createdCount = definitions.Count(definition => !existingSubmittedNames.Contains(NormalizeName(definition.Name)));
+                int createdCount = definitions.Count(definition => !existingNamesBefore.Contains(NormalizeName(definition.Name)));
                 int updatedCount = definitions.Count - createdCount;
+                int deletedCount = existingNamesBefore.Count(name => !submittedNames.Contains(name));
                 var result = new ShellUniformLoadSetApplyResultDto
                 {
                     CreatedCount = createdCount,
                     UpdatedCount = updatedCount,
+                    DeletedCount = deletedCount,
                     LoadEntryCount = loadEntryCount,
                     WarningCount = warningCount,
                     ImportLog = importLog
@@ -430,11 +478,13 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
         private static OperationResult VerifyReadBack(
             IReadOnlyList<Dictionary<string, string>> records,
             ShellUniformLoadSetTableSchema schema,
-            IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions,
-            HashSet<string> unrelatedNamesBefore)
+            IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)
         {
             var actual = new Dictionary<string, Dictionary<string, double>>(StringComparer.OrdinalIgnoreCase);
             var namesAfter = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var expectedNames = new HashSet<string>(
+                definitions.Select(definition => NormalizeName(definition.Name)),
+                StringComparer.OrdinalIgnoreCase);
             foreach (Dictionary<string, string> record in records)
             {
                 string setName = NormalizeName(ReadRecordValue(record, schema.SetNameFieldKey));
@@ -495,11 +545,11 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService
                 }
             }
 
-            foreach (string unrelatedName in unrelatedNamesBefore)
+            foreach (string nameAfter in namesAfter)
             {
-                if (!namesAfter.Contains(unrelatedName))
+                if (!expectedNames.Contains(nameAfter))
                 {
-                    return OperationResult.Failure("Unrelated existing load set '" + unrelatedName + "' was not present after apply.");
+                    return OperationResult.Failure("Deleted load set '" + nameAfter + "' was still present after apply.");
                 }
             }
 

@@ -18,7 +18,16 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                     return OperationResult<ExcelSelectedRangeData>.Failure("Excel application is not available.");
                 }
 
-                Range selectedRange = application.Selection as Range;
+                object input = application.InputBox(
+                    "Select a Shell Uniform Load Set range:\r\nUniformLoadSetName | load pattern columns...",
+                    "Select Shell Uniform Load Set Range",
+                    Type: 8);
+                if (input is bool canceled && !canceled)
+                {
+                    return OperationResult<ExcelSelectedRangeData>.Failure("Action canceled by user.");
+                }
+
+                Range selectedRange = input as Range;
                 if (selectedRange == null)
                 {
                     return OperationResult<ExcelSelectedRangeData>.Failure("Please select a rectangular Excel range and try again.");

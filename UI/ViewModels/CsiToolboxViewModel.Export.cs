@@ -53,10 +53,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             int index;
-            if (int.TryParse(pageIndex, out index) && index >= 0 && index <= 8)
+            if (int.TryParse(pageIndex, out index) && index >= 0 && index <= 9)
             {
                 ActiveWorkspacePage = index;
-                if (index == 8)
+                if (index == 8 || index == 9)
                 {
                     return;
                 }
@@ -76,25 +76,42 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
-        private async void RunAnalysisResult(AnalysisResultItem item)
+        private void RunAnalysisResult(AnalysisResultItem item)
         {
             if (item == null)
             {
                 return;
             }
 
+            string tableName = GetAnalysisResultTableName(item);
+            AnalysisExportDiagnostics.Log("Analysis export item clicked: " + tableName);
+
             try
             {
-                await _analysisResultRouter.ExecuteAsync(item);
-                StatusText = "Exported " + item.Title + " to Excel.";
+                if (!PrepareExportWithGlobalUnit())
+                {
+                    AnalysisExportDiagnostics.Log("Analysis export cancelled before popup because ETABS was not ready: " + tableName);
+                    return;
+                }
+
+                OutputTableExportConfig config = CreateAnalysisResultExportConfig(item);
+                StatusText = "Opening export options for " + tableName + ".";
+                AnalysisExportDiagnostics.Log("Command execution resolved report type: " + tableName);
+                OutputTableExportWorkflow.Run(
+                    config,
+                    _useCases,
+                    _csiConnectionService,
+                    _excelOutputService,
+                    GetActiveOwnerWindow());
             }
             catch (Exception ex)
             {
                 string message = string.IsNullOrWhiteSpace(ex.Message)
-                    ? "Failed to export ETABS analysis result."
+                    ? "Failed to open the ETABS analysis export options."
                     : ex.Message;
                 StatusText = message;
-                MessageBox.Show(message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                AnalysisExportDiagnostics.Log("Failed to open export options for " + tableName + ": " + message);
+                MessageBox.Show(message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -191,6 +208,170 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 PopupProfileKey = popupProfileKey,
                 ExportUnitOption = CreateExportUnitOption()
             };
+        }
+
+        private OutputTableExportConfig CreateAnalysisResultExportConfig(AnalysisResultItem item)
+        {
+            string tableName = GetAnalysisResultTableName(item);
+            string groupName = ResolveAnalysisResultExportGroup(item);
+
+            if (string.Equals(tableName, "Base Reactions", StringComparison.OrdinalIgnoreCase))
+            {
+                return new OutputTableExportConfig
+                {
+                    TableDisplayName = tableName,
+                    Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Base Reactions",
+                    Description = "Select load cases/combinations and output unit to export " + tableName + ".",
+                    PopupProfileKey = "ForceOutput",
+                    ExportUnitOption = CreateExportUnitOption()
+                };
+            }
+
+            if (string.Equals(groupName, "Modal Information", StringComparison.OrdinalIgnoreCase))
+            {
+                bool isResponseSpectrumModalInfo = string.Equals(
+                    tableName,
+                    "Response Spectrum Modal Info",
+                    StringComparison.OrdinalIgnoreCase);
+
+                return new OutputTableExportConfig
+                {
+                    TableDisplayName = tableName,
+                    Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Modal Information / " + tableName,
+                    Description = isResponseSpectrumModalInfo
+                        ? "Select response spectrum case to export " + tableName + "."
+                        : "Select modal case to export " + tableName + ".",
+                    PopupProfileKey = isResponseSpectrumModalInfo
+                        ? "ResponseSpectrumModalInfo"
+                        : "ModalInformation",
+                    ExportUnitOption = CreateExportUnitOption()
+                };
+            }
+
+            if (string.Equals(groupName, "Other Output Items", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateOtherOutputItemsExportConfig(tableName);
+            }
+
+            if (string.Equals(groupName, "Mass Data", StringComparison.OrdinalIgnoreCase))
+            {
+                return new OutputTableExportConfig
+                {
+                    TableDisplayName = tableName,
+                    Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Structure Output / Mass Data / " + tableName,
+                    Description = "Select output unit to export " + tableName + ".",
+                    PopupProfileKey = "MassData",
+                    ExportUnitOption = CreateExportUnitOption()
+                };
+            }
+
+            if (IsJointOutputGroup(groupName))
+            {
+                bool isJointMasses = string.Equals(tableName, "Assembled Joint Masses", StringComparison.OrdinalIgnoreCase);
+                return new OutputTableExportConfig
+                {
+                    TableDisplayName = tableName,
+                    Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Joint Output / " + groupName + " / " + tableName,
+                    Description = isJointMasses
+                        ? "Select output unit to export " + tableName + "."
+                        : "Select load cases/combinations and output unit to export " + tableName + ".",
+                    PopupProfileKey = isJointMasses ? "OtherOutputWithUnit" : "JointOutput",
+                    ExportUnitOption = CreateExportUnitOption()
+                };
+            }
+
+            return CreateOutputTableExportConfig(tableName);
+        }
+
+        private OutputTableExportConfig CreateOtherOutputItemsExportConfig(string tableName)
+        {
+            if (string.Equals(tableName, "Story Forces", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateNamedAnalysisOutputConfig(tableName, "StoryForces", "Select load cases/combinations and output unit to export ");
+            }
+
+            if (string.Equals(tableName, "Diaphragm Forces", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateNamedAnalysisOutputConfig(tableName, "DiaphragmForces", "Select load cases/combinations and output unit to export ");
+            }
+
+            if (string.Equals(tableName, "Story Stiffness", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateNamedAnalysisOutputConfig(tableName, "SeismicWindOrRSOnlyWithUnit", "Select seismic, wind, or response spectrum cases and output unit to export ");
+            }
+
+            if (string.Equals(tableName, "Shear Gravity Ratios", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(tableName, "Stiffness Gravity Ratios", StringComparison.OrdinalIgnoreCase))
+            {
+                return CreateNamedAnalysisOutputConfig(tableName, "SeismicWindOrRSOnlyRatio", "Select seismic, wind, or response spectrum cases to export ");
+            }
+
+            return new OutputTableExportConfig
+            {
+                TableDisplayName = tableName,
+                Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / " + tableName,
+                Description = "Select output unit to export " + tableName + ".",
+                PopupProfileKey = "OtherOutputWithUnit",
+                ExportUnitOption = CreateExportUnitOption()
+            };
+        }
+
+        private OutputTableExportConfig CreateNamedAnalysisOutputConfig(
+            string tableName,
+            string popupProfileKey,
+            string descriptionPrefix)
+        {
+            return new OutputTableExportConfig
+            {
+                TableDisplayName = tableName,
+                Breadcrumb = "ETABS Toolbox / ANALYSIS RESULTS / Other Output Items / " + tableName,
+                Description = descriptionPrefix + tableName + ".",
+                PopupProfileKey = popupProfileKey,
+                ExportUnitOption = CreateExportUnitOption()
+            };
+        }
+
+        private string ResolveAnalysisResultExportGroup(AnalysisResultItem item)
+        {
+            if (item == null)
+            {
+                return ActiveAnalysisResultsGroup;
+            }
+
+            if (!string.IsNullOrWhiteSpace(item.Category))
+            {
+                if (string.Equals(item.Category, "Joint Masses", StringComparison.OrdinalIgnoreCase))
+                {
+                    return "Assembled Joint Masses";
+                }
+
+                return item.Category;
+            }
+
+            return string.IsNullOrWhiteSpace(ActiveAnalysisResultsGroup)
+                ? string.Empty
+                : ActiveAnalysisResultsGroup;
+        }
+
+        private static bool IsJointOutputGroup(string groupName)
+        {
+            return string.Equals(groupName, "Displacements", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(groupName, "Reactions", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(groupName, "Velocity and Acceleration", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(groupName, "Assembled Joint Masses", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(groupName, "Joint Output", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string GetAnalysisResultTableName(AnalysisResultItem item)
+        {
+            if (item == null)
+            {
+                return string.Empty;
+            }
+
+            return string.IsNullOrWhiteSpace(item.EtabsTableName)
+                ? item.Title
+                : item.EtabsTableName;
         }
 
         private BaseReactionUnitOption CreateExportUnitOption()

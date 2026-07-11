@@ -194,7 +194,7 @@
                                 <TreeViewItem Header="Section Property - Stiffness Modifier" Tag="7" FontWeight="Normal"/>
                                 <TreeViewItem Header="Load Pattern" Tag="4" FontWeight="Normal"/>
                                 <TreeViewItem Header="Load Combination" Tag="5" FontWeight="Normal"/>
-                                <TreeViewItem Header="Add Shell Uniform Load Set" Tag="Tool:AddShellUniformLoadSet" FontWeight="Normal"/>
+                                <TreeViewItem Header="Shell Uniform Load Set Manager" Tag="9" FontWeight="Normal"/>
                             </TreeViewItem>
                             <TreeViewItem Header="Element Manipulation" IsExpanded="True" FontWeight="Normal">
                                 <TreeViewItem Header="Point" Tag="1" FontWeight="Normal"/>
@@ -1038,6 +1038,45 @@
                                             <TextBlock Text="Offset from Set of Lines"
                                                        TextWrapping="Wrap"/>
                                         </Button>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </TabItem>
+
+                        <TabItem Header="Shell Uniform Load Set">
+                            <Border Style="{StaticResource CompactCardBorderStyle}"
+                                    Margin="{StaticResource Inset.Small}">
+                                <Grid MinHeight="220">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0"
+                                               Text="Shell Uniform Load Set Manager"
+                                               Style="{StaticResource SectionHeadingTextStyle}"
+                                               Margin="{StaticResource Gap.Card}"/>
+
+                                    <StackPanel Grid.Row="1"
+                                                Width="360"
+                                                HorizontalAlignment="Left"
+                                                Margin="{StaticResource Gap.Card}">
+                                        <Button Content="Open Shell Uniform Load Set Manager"
+                                                Style="{StaticResource ToolButtonStyle}"
+                                                MinHeight="42"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding OpenShellUniformLoadSetFormCommand}"
+                                                ToolTip="Open the Shell Uniform Load Set manager."
+                                                ToolTipService.ShowOnDisabled="True"/>
+                                        <Button Content="Export Current Shell Uniform Load Set Definitions"
+                                                Style="{StaticResource ToolButtonStyle}"
+                                                MinHeight="42"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding ExportShellUniformLoadSetDefinitionsCommand}"
+                                                ToolTip="Export current ETABS Shell Uniform Load Set definitions to Excel."
+                                                ToolTipService.ShowOnDisabled="True"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>

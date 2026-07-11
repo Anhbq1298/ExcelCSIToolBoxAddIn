@@ -170,6 +170,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ModifyLoadCombinationsInMatrixViewCommand = new RelayCommand(ModifyLoadCombinationsInMatrixView, CanExecuteCsiAction);
             ExportLoadCombinationMatrixToExcelCommand = new RelayCommand(ExportLoadCombinationMatrixToExcel, CanExecuteCsiAction);
             OpenShellUniformLoadSetFormCommand = new RelayCommand(OpenShellUniformLoadSetForm, CanExecuteEtabsAction);
+            ExportShellUniformLoadSetDefinitionsCommand = new RelayCommand(ExportShellUniformLoadSetDefinitions, CanExecuteEtabsAction);
             AddLoadCombinationFromExcelCommand = ModifyLoadCombinationsInMatrixViewCommand;
             DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => CanUseActiveModel);
             ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => CanUseActiveModel);
@@ -388,6 +389,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     case 6: return string.IsNullOrWhiteSpace(ActiveAnalysisResultsGroup) ? "Analysis Results" : ActiveAnalysisResultsGroup;
                     case 7: return "Section Property - Stiffness Modifier";
                     case 8: return "Helpers";
+                    case 9: return "Shell Uniform Load Set Manager";
                     default: return "Section Property";
                 }
             }
@@ -405,6 +407,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 if (ActiveWorkspacePage == 8)
                 {
                     return "ETABS Toolbox / MODELLING HELPER / Helpers";
+                }
+
+                if (ActiveWorkspacePage == 9)
+                {
+                    return "ETABS Toolbox / Model / Shell Uniform Load Set Manager";
                 }
 
                 return ActiveWorkspacePage == 6
@@ -534,6 +541,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand ModifyLoadCombinationsInMatrixViewCommand { get; }
         public ICommand ExportLoadCombinationMatrixToExcelCommand { get; }
         public ICommand OpenShellUniformLoadSetFormCommand { get; }
+        public ICommand ExportShellUniformLoadSetDefinitionsCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
         public ICommand ViewLoadCombinationCommand { get; }

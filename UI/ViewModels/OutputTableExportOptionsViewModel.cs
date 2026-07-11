@@ -37,6 +37,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private IReadOnlyList<string> _selectedLoadCombinationNames = new string[0];
         private PostprocessingWorkbookState _workbookState;
         private bool _isWorkbookStateLoaded;
+        private bool _hasInitializedForDialog;
         private string _etabsModelName = "ETABS Model: Not attached";
 
         public OutputTableExportOptionsViewModel(
@@ -92,7 +93,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 new BaseReactionUnitOption("kip-ft", 4, "kip", "kip-ft", "ft"),
                 new BaseReactionUnitOption("lb-in", 1, "lb", "lb-in", "in")
             };
-            SelectedUnitOption = _config.ExportUnitOption ?? UnitOptions[1];
+            SelectedUnitOption = FindUnitOption(_config.ExportUnitOption) ?? UnitOptions[1];
             _workbookState = PostprocessingWorkbookStateStore.Load(_workbookStateKey);
             RestoreWorkbookState();
             _isWorkbookStateLoaded = true;
@@ -105,17 +106,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CancelCommand = new RelayCommand(() => RequestClose?.Invoke(this, EventArgs.Empty));
 
             RefreshAnchorDisplay();
-            if (_profile.ShowCaseComboSelector)
-            {
-                LoadOutputCases();
-            }
         }
 
         public event EventHandler RequestClose;
 
         public string WindowTitle
         {
-            get { return "Export " + _displayTableName; }
+            get { return "Export Analysis Report"; }
         }
 
         public string Breadcrumb
@@ -126,6 +123,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public string Description
         {
             get { return _config.Description; }
+        }
+
+        public string ReportType
+        {
+            get { return _displayTableName; }
+        }
+
+        public string ReportTypeText
+        {
+            get { return "Report: " + _displayTableName; }
         }
 
         public Visibility DescriptionVisibility
@@ -145,7 +152,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public Visibility UnitSelectorVisibility
         {
-            get { return Visibility.Collapsed; }
+            get { return _profile.ShowUnitSelector ? Visibility.Visible : Visibility.Collapsed; }
         }
 
         public bool AllowMultipleCases
@@ -458,10 +465,33 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        public void InitializeForDialog()
+        {
+            if (_hasInitializedForDialog)
+            {
+                return;
+            }
+
+            _hasInitializedForDialog = true;
+            AnalysisExportDiagnostics.Log("Export options popup rendered: " + _displayTableName);
+
+            if (_profile.ShowUnitSelector)
+            {
+                SelectCurrentEtabsUnitIfRequested();
+            }
+
+            if (_profile.ShowCaseComboSelector)
+            {
+                LoadOutputCases();
+            }
+        }
+
         private void LoadOutputCases()
         {
+            AnalysisExportDiagnostics.Log("Loading ETABS load cases and combinations for " + _displayTableName);
             if (!EnsureEtabs())
             {
+                AnalysisExportDiagnostics.Log("Unable to load output cases because ETABS is not attached: " + _displayTableName);
                 return;
             }
 
@@ -524,10 +554,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     : _profile.ShowComboSelector
                         ? $"Loaded {LoadCases.Count} load case(s) and {LoadCombinations.Count} load combination(s)."
                         : $"Loaded {LoadCases.Count} {CaseSelectorTitle.ToLowerInvariant()}(s).";
+                AnalysisExportDiagnostics.Log(
+                    $"Loaded {LoadCases.Count} load cases and {LoadCombinations.Count} load combinations for {_displayTableName}");
             }
             catch (Exception ex)
             {
                 StatusText = "Failed to load ETABS output cases.";
+                AnalysisExportDiagnostics.Log("Failed to load ETABS output cases for " + _displayTableName + ": " + ex.Message);
                 ShowError($"Failed to load ETABS load cases and combinations: {ex.Message}");
             }
             finally
@@ -617,8 +650,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public void Run(System.Collections.IList selectedLoadCases, System.Collections.IList selectedLoadCombinations)
         {
+            AnalysisExportDiagnostics.Log("Export confirmation clicked: " + _displayTableName);
+            AnalysisExportDiagnostics.Log("Popup result: Confirmed for " + _displayTableName);
             if (!EnsureEtabs())
             {
+                AnalysisExportDiagnostics.Log("Export confirmation blocked because ETABS is not attached: " + _displayTableName);
                 return;
             }
 
@@ -632,13 +668,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 : new List<CSISapModelOutputCaseDTO>();
             if (_profile.ShowCaseComboSelector && selectedCases.Count == 0)
             {
+                AnalysisExportDiagnostics.Log("Export confirmation blocked because no output case was selected: " + _displayTableName);
                 ShowWarning("Select at least one " + CaseSelectorTitle.ToLowerInvariant() + ".");
                 return;
             }
 
             if (_profile.ShowCaseComboSelector && !_profile.AllowMultipleCases && selectedCases.Count > 1)
             {
+                AnalysisExportDiagnostics.Log("Export confirmation blocked because too many output cases were selected: " + _displayTableName);
                 ShowWarning("Select only one " + CaseSelectorTitle.ToLowerInvariant() + ".");
+                return;
+            }
+
+            if (_profile.ShowUnitSelector && !ApplySelectedUnits())
+            {
+                AnalysisExportDiagnostics.Log("Export confirmation blocked because selected units could not be applied: " + _displayTableName);
                 return;
             }
 
@@ -649,6 +693,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 IsBusy = true;
                 StatusText = "Extracting ETABS " + _displayTableName + "...";
+                AnalysisExportDiagnostics.Log(
+                    "Starting report export: " + _displayTableName +
+                    "; selected cases/combinations=" + selectedCases.Count +
+                    "; selected unit=" + (SelectedUnitOption == null ? string.Empty : SelectedUnitOption.Label));
                 if (IsBaseReactionsTable())
                 {
                     RunBaseReactionsExport(selectedCases);
@@ -661,6 +709,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             catch (Exception ex)
             {
                 StatusText = "Failed to extract " + _displayTableName + ".";
+                AnalysisExportDiagnostics.Log("Failed to extract " + _displayTableName + ": " + ex.Message);
                 ShowError("Failed to extract " + _displayTableName + ": " + ex.Message);
             }
             finally
@@ -676,6 +725,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 StatusText = result.Message;
                 ShowWarning(result.Message);
+                AnalysisExportDiagnostics.Log("Base reactions export failed for " + _displayTableName + ": " + result.Message);
                 return;
             }
 
@@ -687,6 +737,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     WindowTitle,
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
+                AnalysisExportDiagnostics.Log("Base reactions export returned no records for " + _displayTableName);
                 return;
             }
 
@@ -697,6 +748,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 AddHeaders);
 
             StatusText = writeResult.Message;
+            AnalysisExportDiagnostics.Log("Report export completed for " + _displayTableName + ": " + writeResult.Message);
             MessageBox.Show(
                 writeResult.Message,
                 WindowTitle,
@@ -711,6 +763,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 StatusText = result.Message;
                 ShowWarning(result.Message);
+                AnalysisExportDiagnostics.Log("Display table export failed for " + _displayTableName + ": " + result.Message);
                 return;
             }
 
@@ -722,6 +775,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 AddHeaders);
 
             StatusText = writeResult.Message;
+            AnalysisExportDiagnostics.Log("Report export completed for " + _displayTableName + ": " + writeResult.Message);
             MessageBox.Show(
                 writeResult.Message,
                 WindowTitle,
@@ -776,16 +830,19 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 OperationResult unitResult = _csiConnectionService.SetPresentUnits(SelectedUnitOption.EtabsUnitsCode);
                 if (!unitResult.IsSuccess)
                 {
+                    AnalysisExportDiagnostics.Log("Failed to apply selected output unit for " + _displayTableName + ": " + unitResult.Message);
                     ShowWarning(string.IsNullOrWhiteSpace(unitResult.Message)
                         ? "Failed to set ETABS present units."
                         : unitResult.Message);
                     return false;
                 }
 
+                AnalysisExportDiagnostics.Log("Selected output unit: " + SelectedUnitOption.Label + " for " + _displayTableName);
                 return true;
             }
             catch (Exception ex)
             {
+                AnalysisExportDiagnostics.Log("Failed to set ETABS present units for " + _displayTableName + ": " + ex.Message);
                 ShowWarning($"Failed to set ETABS present units: {ex.Message}");
                 return false;
             }
@@ -1112,8 +1169,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 return excelApp.ActiveCell as ExcelRange;
             }
-            catch
+            catch (Exception ex)
             {
+                AnalysisExportDiagnostics.Log("Failed to read active Excel cell: " + ex.Message);
                 return null;
             }
         }
@@ -1161,19 +1219,31 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            OperationResult<int> result = _csiConnectionService.GetPresentUnits();
-            if (!result.IsSuccess)
+            AnalysisExportDiagnostics.Log("Retrieving current ETABS unit for " + _displayTableName);
+            try
             {
-                return;
-            }
-
-            foreach (BaseReactionUnitOption unitOption in UnitOptions)
-            {
-                if (unitOption.EtabsUnitsCode == result.Data)
+                OperationResult<int> result = _csiConnectionService.GetPresentUnits();
+                if (!result.IsSuccess)
                 {
-                    SelectedUnitOption = unitOption;
+                    AnalysisExportDiagnostics.Log("Failed to retrieve current ETABS unit for " + _displayTableName + ": " + result.Message);
                     return;
                 }
+
+                foreach (BaseReactionUnitOption unitOption in UnitOptions)
+                {
+                    if (unitOption.EtabsUnitsCode == result.Data)
+                    {
+                        SelectedUnitOption = unitOption;
+                        AnalysisExportDiagnostics.Log("Retrieved current ETABS unit: " + unitOption.Label + " for " + _displayTableName);
+                        return;
+                    }
+                }
+
+                AnalysisExportDiagnostics.Log("Current ETABS unit code is not supported by popup list: " + result.Data);
+            }
+            catch (Exception ex)
+            {
+                AnalysisExportDiagnostics.Log("Failed to retrieve current ETABS unit for " + _displayTableName + ": " + ex.Message);
             }
         }
 
@@ -1194,6 +1264,25 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             return chars.Count == 0 ? "ETABSTable" : new string(chars.ToArray());
+        }
+
+        private BaseReactionUnitOption FindUnitOption(BaseReactionUnitOption requestedUnit)
+        {
+            if (requestedUnit == null)
+            {
+                return null;
+            }
+
+            foreach (BaseReactionUnitOption unitOption in UnitOptions)
+            {
+                if (unitOption.EtabsUnitsCode == requestedUnit.EtabsUnitsCode ||
+                    string.Equals(unitOption.Label, requestedUnit.Label, StringComparison.OrdinalIgnoreCase))
+                {
+                    return unitOption;
+                }
+            }
+
+            return null;
         }
 
         private void SaveWorkbookState()
@@ -1261,6 +1350,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void ShowWarning(string message)
         {
+            AnalysisExportDiagnostics.Log("Analysis export warning for " + _displayTableName + ": " + message);
             MessageBox.Show(
                 string.IsNullOrWhiteSpace(message) ? "The operation could not be completed." : message,
                 WindowTitle,
@@ -1270,6 +1360,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void ShowError(string message)
         {
+            AnalysisExportDiagnostics.Log("Analysis export error for " + _displayTableName + ": " + message);
             MessageBox.Show(
                 string.IsNullOrWhiteSpace(message) ? "An unexpected error occurred." : message,
                 WindowTitle,

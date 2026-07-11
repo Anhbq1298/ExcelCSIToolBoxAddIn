@@ -76,8 +76,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                AnalysisExportDiagnostics.Log("Failed to load output table popup profiles: " + ex.Message);
                 // Popup profiles are optional configuration; fall back to built-in defaults.
             }
 
@@ -165,9 +166,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         CaseSelectorTitle = string.Empty,
                         AllowMultipleCases = false,
                         ShowCaseComboSelector = false,
-                        ShowUnitSelector = false,
+                        ShowUnitSelector = true,
                         ShowComboSelector = false,
-                        DefaultToCurrentEtabsUnit = false,
+                        DefaultToCurrentEtabsUnit = true,
                         EmptyDataMessage = "No mass data records found.",
                         WorksheetNamePrefix = "Mass Data"
                     }

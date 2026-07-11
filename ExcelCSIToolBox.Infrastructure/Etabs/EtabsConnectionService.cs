@@ -3490,6 +3490,17 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return Infrastructure.CSISapModel.ShellUniformLoadSetService.EtabsShellUniformLoadSetTableService.GetContext(sapModelResult.Data);
         }
 
+        public OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>> GetShellUniformLoadSetDefinitions()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.ShellUniformLoadSetService.EtabsShellUniformLoadSetTableService.GetDefinitions(sapModelResult.Data);
+        }
+
         public OperationResult<ShellUniformLoadSetApplyResultDto> ApplyShellUniformLoadSets(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)
         {
             var sapModelResult = EnsureEtabsSapModel();

@@ -131,6 +131,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<IReadOnlyList<CSISapModelLoadPatternDTO>> GetLoadPatterns();
         OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames);
         OperationResult<ShellUniformLoadSetContextDto> GetShellUniformLoadSetContext();
+        OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>> GetShellUniformLoadSetDefinitions();
         OperationResult<ShellUniformLoadSetApplyResultDto> ApplyShellUniformLoadSets(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions);
         OperationResult<CSISapModelStatisticsDTO> GetModelStatistics();
         OperationResult RefreshView(bool zoomAll = false);

@@ -18,7 +18,6 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         private static Microsoft.Office.Tools.CustomTaskPane _etabsPane;
         private static WpfTaskPaneHost _etabsHost;
-        private static OutputTableExportOptionsWindow _getBaseReactionsWindow;
         private static GetModalMassParticipationRatiosWindow _modalMassParticipationRatiosWindow;
         private static GetStoryResultsWindow _storyForcesWindow;
         private static GetStoryResultsWindow _storyDriftsWindow;
@@ -51,12 +50,6 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         {
             EnsureConfigured(_etabsConnectionService);
 
-            if (_getBaseReactionsWindow != null)
-            {
-                _getBaseReactionsWindow.Activate();
-                return;
-            }
-
             var useCases = new CsiToolboxUseCaseBundle(_etabsConnectionService, _excelSelectionService, _excelOutputService);
             var config = new OutputTableExportConfig
             {
@@ -65,13 +58,11 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 Description = "Select output cases to export Base Reactions.",
                 PopupProfileKey = "ForceOutput"
             };
-            var window = OutputTableExportWorkflow.Run(
+            OutputTableExportWorkflow.Run(
                 config,
                 useCases,
                 _etabsConnectionService,
                 _excelOutputService);
-            window.Closed += delegate { _getBaseReactionsWindow = null; };
-            _getBaseReactionsWindow = window;
         }
 
         internal static void ShowModalMassParticipationRatiosWindow()

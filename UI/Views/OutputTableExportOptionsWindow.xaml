@@ -28,6 +28,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="{Binding ReportTypeText}"
+                       FontWeight="SemiBold"
+                       Margin="0,0,0,4"/>
             <TextBlock Text="{Binding InstructionText}"
                        TextWrapping="Wrap"
                        FontStyle="Italic"
@@ -48,7 +51,7 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Column="0"
-                       Text="ETABS units:"
+                       Text="Output units:"
                        VerticalAlignment="Center"
                        Margin="0,0,8,0"/>
 
@@ -242,12 +245,12 @@
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
                         HorizontalAlignment="Right">
-                <Button Content="OK"
-                        Click="RunButton_Click"
-                        IsDefault="True"/>
                 <Button Content="Cancel"
                         Command="{Binding CancelCommand}"
                         IsCancel="True"/>
+                <Button Content="Export Report"
+                        Click="RunButton_Click"
+                        IsDefault="True"/>
             </StackPanel>
         </Grid>
     </Grid>

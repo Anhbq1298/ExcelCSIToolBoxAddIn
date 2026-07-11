@@ -65,9 +65,9 @@
     <CaseSelectorTitle></CaseSelectorTitle>
     <AllowMultipleCases>false</AllowMultipleCases>
     <ShowCaseComboSelector>false</ShowCaseComboSelector>
-    <ShowUnitSelector>false</ShowUnitSelector>
+    <ShowUnitSelector>true</ShowUnitSelector>
     <ShowComboSelector>false</ShowComboSelector>
-    <DefaultToCurrentEtabsUnit>false</DefaultToCurrentEtabsUnit>
+    <DefaultToCurrentEtabsUnit>true</DefaultToCurrentEtabsUnit>
     <EmptyDataMessage>No mass data records found.</EmptyDataMessage>
     <WorksheetNamePrefix>Mass Data</WorksheetNamePrefix>
   </Profile>

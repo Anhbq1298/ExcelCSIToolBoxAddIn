@@ -1541,6 +1541,11 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return OperationResult<ShellUniformLoadSetContextDto>.Failure("Shell Uniform Load Sets are only available for ETABS models.");
         }
 
+        public OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>> GetShellUniformLoadSetDefinitions()
+        {
+            return OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>>.Failure("Shell Uniform Load Sets are only available for ETABS models.");
+        }
+
         public OperationResult<ShellUniformLoadSetApplyResultDto> ApplyShellUniformLoadSets(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)
         {
             return OperationResult<ShellUniformLoadSetApplyResultDto>.Failure("Shell Uniform Load Sets are only available for ETABS models.");

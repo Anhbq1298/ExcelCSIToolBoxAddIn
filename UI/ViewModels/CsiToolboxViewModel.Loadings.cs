@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBox.Data.DTOs.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -163,6 +167,68 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 form.ShowDialog();
             }
+        }
+
+        private void ExportShellUniformLoadSetDefinitions()
+        {
+            var result = _csiConnectionService.GetShellUniformLoadSetDefinitions();
+            if (!result.IsSuccess)
+            {
+                ShowOperationResult(OperationResult.Failure(result.Message));
+                return;
+            }
+
+            IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions = result.Data ?? new List<ShellUniformLoadSetDefinitionDto>();
+            if (definitions.Count == 0)
+            {
+                ShowOperationResult(OperationResult.Failure("No Shell Uniform Load Set definitions were found in the active ETABS model."));
+                return;
+            }
+
+            object[,] values = CreateShellUniformLoadSetExportValues(definitions);
+            OperationResult exportResult = _excelOutputService.WriteValuesToActiveCell(
+                values,
+                "Exported " + definitions.Count.ToString(CultureInfo.InvariantCulture) + " Shell Uniform Load Set definition(s) to Excel.",
+                true);
+            ShowOperationResult(exportResult);
+        }
+
+        private static object[,] CreateShellUniformLoadSetExportValues(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)
+        {
+            var patternNames = definitions
+                .Where(definition => definition != null && definition.LoadValuesByPattern != null)
+                .SelectMany(definition => definition.LoadValuesByPattern.Keys)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            int rowCount = definitions.Count + 1;
+            int columnCount = patternNames.Count + 1;
+            var values = new object[rowCount, columnCount];
+            values[0, 0] = "UniformLoadSetName";
+            for (int columnIndex = 0; columnIndex < patternNames.Count; columnIndex++)
+            {
+                values[0, columnIndex + 1] = patternNames[columnIndex];
+            }
+
+            for (int rowIndex = 0; rowIndex < definitions.Count; rowIndex++)
+            {
+                ShellUniformLoadSetDefinitionDto definition = definitions[rowIndex];
+                values[rowIndex + 1, 0] = definition == null ? string.Empty : definition.Name ?? string.Empty;
+                for (int columnIndex = 0; columnIndex < patternNames.Count; columnIndex++)
+                {
+                    double loadValue;
+                    if (definition != null &&
+                        definition.LoadValuesByPattern != null &&
+                        definition.LoadValuesByPattern.TryGetValue(patternNames[columnIndex], out loadValue))
+                    {
+                        values[rowIndex + 1, columnIndex + 1] = loadValue;
+                    }
+                }
+            }
+
+            return values;
         }
 
         private OperationResult SaveLoadCombinationMatrixChanges(LoadCombinationMatrixViewModel viewModel)

@@ -57,16 +57,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             var item = e.NewValue as TreeViewItem;
             var viewModel = DataContext as CsiToolboxViewModel;
             var pageIndex = item == null ? null : item.Tag as string;
-            if (string.Equals(pageIndex, "Tool:AddShellUniformLoadSet", StringComparison.OrdinalIgnoreCase))
-            {
-                if (viewModel != null && viewModel.OpenShellUniformLoadSetFormCommand.CanExecute(null))
-                {
-                    viewModel.OpenShellUniformLoadSetFormCommand.Execute(null);
-                }
-
-                return;
-            }
-
             if (viewModel != null && !string.IsNullOrWhiteSpace(pageIndex) &&
                 viewModel.SelectWorkspacePageCommand.CanExecute(pageIndex))
             {

@@ -6,6 +6,8 @@ namespace ExcelCSIToolBox.Data.DTOs.CSI
 
         public int UpdatedCount { get; set; }
 
+        public int DeletedCount { get; set; }
+
         public int LoadEntryCount { get; set; }
 
         public int WarningCount { get; set; }
