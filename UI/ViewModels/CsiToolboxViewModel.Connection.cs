@@ -15,6 +15,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             var commands = new ICommand[]
             {
+                AttachToRunningCsiCommand,
                 CloseCurrentInstanceCommand,
                 ToggleModelLockCommand,
                 RefreshFrameStiffnessSectionsCommand,
@@ -75,11 +76,20 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 GetFrameSectionsCommand,
                 EditFrameSectionCommand,
                 OpenCreateArrayPerpendicularToPathWindowCommand,
+                OpenArrayBetweenTwoLinesWindowCommand,
                 PickPoint1Command,
                 PickPoint2Command,
                 PickReferenceFrameCommand,
+                PickLine1Command,
+                PickLine2Command,
                 CreateFramesCommand,
-                CloseWindowCommand
+                CreateArrayBetweenTwoLinesFramesCommand,
+                OpenOffsetFromSetOfLinesCommand,
+                OffsetGetSelectedLinesCommand,
+                OffsetPreviewCommand,
+                OffsetCreateInEtabsCommand,
+                OffsetClearCommand,
+                OffsetRefreshSectionsCommand
             };
 
             foreach (ICommand command in commands)
@@ -128,6 +138,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (result.IsSuccess && result.Data != null)
             {
                 IsConnected = true;
+                HasRunningCsiInstance = true;
                 ModelName = string.IsNullOrWhiteSpace(result.Data.ModelFileName)
                     ? "Unknown model"
                     : result.Data.ModelFileName;
@@ -165,6 +176,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             FrameSections.Clear();
             FrameStiffnessSections.Clear();
             AreaStiffnessSections.Clear();
+            OffsetAvailableSections.Clear();
+            OffsetSelectedSection = null;
             SelectedFrameSection = null;
 
             if (showMessage)
@@ -183,6 +196,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>> result = _csiConnectionService.GetRunningInstances();
             if (!result.IsSuccess)
             {
+                HasRunningCsiInstance = false;
                 return;
             }
 
@@ -210,6 +224,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
                 SelectedRunningCsiInstance = FindRunningInstanceById(selectedInstanceId)
                     ?? (RunningCsiInstances.Count == 1 ? RunningCsiInstances[0] : null);
+
+                HasRunningCsiInstance = RunningCsiInstances.Count > 0;
             }
             finally
             {
@@ -305,7 +321,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 FrameSections.Clear();
                 FrameStiffnessSections.Clear();
                 AreaStiffnessSections.Clear();
+                OffsetAvailableSections.Clear();
+                OffsetSelectedSection = null;
                 SelectedFrameSection = null;
+                RefreshRunningCsiInstances();
 
                 MessageBox.Show(
                     result.Message,

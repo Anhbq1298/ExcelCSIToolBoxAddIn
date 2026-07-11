@@ -295,6 +295,7 @@
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.Sections.cs" />
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.StiffnessModifiers.cs" />
     <Compile Include="UI\ViewModels\CsiToolboxViewModel.ModellingHelper.cs" />
+    <Compile Include="UI\ViewModels\CsiToolboxViewModel.OffsetFromSetOfLines.cs" />
     <Compile Include="UI\ViewModels\CsiRunningInstanceViewModel.cs" />
     <Compile Include="UI\ViewModels\EtabsUnitSystem.cs" />
     <Compile Include="UI\ViewModels\BaseReactionOutputCaseViewModel.cs" />
@@ -322,6 +323,20 @@
     <Compile Include="UI\ViewModels\AiAgentToolTraceViewModel.cs" />
     <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />
     <Compile Include="UI\Helpers\PostprocessingWorkbookStateStore.cs" />
+    <Compile Include="UI\Forms\ExcelSelectedRangeData.cs" />
+    <Compile Include="UI\Forms\ExcelSelectedRangeReader.cs" />
+    <Compile Include="UI\Forms\LoadPatternPickerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\LoadPatternPickerForm.Designer.cs">
+      <DependentUpon>LoadPatternPickerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Forms\ShellUniformLoadSetForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Forms\ShellUniformLoadSetForm.Designer.cs">
+      <DependentUpon>ShellUniformLoadSetForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -336,6 +351,10 @@
     </Compile>
     <Compile Include="UI\Views\ArrayBetweenTwoLinesWindow.xaml.cs">
       <DependentUpon>ArrayBetweenTwoLinesWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Views\OffsetFromSetOfLinesWindow.xaml.cs">
+      <DependentUpon>OffsetFromSetOfLinesWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Views\InteractiveSelectionWindow.xaml.cs">
@@ -393,6 +412,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Views\ArrayBetweenTwoLinesWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Views\OffsetFromSetOfLinesWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

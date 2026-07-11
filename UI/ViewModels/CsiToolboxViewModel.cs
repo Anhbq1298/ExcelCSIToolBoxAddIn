@@ -59,6 +59,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool _isApplyingGlobalUnit;
         private bool _isModelLocked;
         private bool _isRefreshingRunningCsiInstances;
+        private bool _hasRunningCsiInstance;
 
         public CsiToolboxViewModel(
             ICSISapModelConnectionService csiConnectionService,
@@ -113,75 +114,76 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _isInitializingUnitSystems = false;
 
             RefreshRunningCsiInstancesCommand = new RelayCommand(RefreshRunningCsiInstancesFromUi);
-            AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true));
-            CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, () => IsConnected);
-            ToggleModelLockCommand = new RelayCommand(ToggleModelLock, () => IsConnected);
+            AttachToRunningCsiCommand = new RelayCommand(() => LoadConnectionState(showMessage: true), () => HasRunningCsiInstance);
+            CloseCurrentInstanceCommand = new RelayCommand(CloseCurrentInstance, CanExecuteCsiAction);
+            ToggleModelLockCommand = new RelayCommand(ToggleModelLock, CanExecuteCsiAction);
             SelectWorkspacePageCommand = new RelayCommand<string>(SelectWorkspacePage);
-            ExportAnalysisResultTableCommand = new RelayCommand<AnalysisResultItem>(RunAnalysisResult, item => item != null);
-            ExportEtabsTableItemCommand = new RelayCommand<object>(RunEtabsTableItem, item => item != null);
-            RefreshFrameStiffnessSectionsCommand = new RelayCommand(RefreshFrameStiffnessSections, () => IsConnected);
-            RefreshAreaStiffnessSectionsCommand = new RelayCommand(RefreshAreaStiffnessSections, () => IsConnected);
-            SelectVisibleFrameStiffnessSectionsCommand = new RelayCommand(SelectVisibleFrameStiffnessSections, () => IsConnected);
-            ClearFrameStiffnessSectionSelectionCommand = new RelayCommand(ClearFrameStiffnessSectionSelection, () => IsConnected);
-            SelectVisibleAreaStiffnessSectionsCommand = new RelayCommand(SelectVisibleAreaStiffnessSections, () => IsConnected);
-            ClearAreaStiffnessSectionSelectionCommand = new RelayCommand(ClearAreaStiffnessSectionSelection, () => IsConnected);
-            ApplyFrameStiffnessModifiersCommand = new RelayCommand(ApplyFrameStiffnessModifiers, () => IsConnected);
-            ApplyAreaStiffnessModifiersCommand = new RelayCommand(ApplyAreaStiffnessModifiers, () => IsConnected);
-            ResetFrameStiffnessModifiersCommand = new RelayCommand(ResetFrameModifierFields);
-            ResetAreaStiffnessModifiersCommand = new RelayCommand(ResetAreaModifierFields);
+            ExportAnalysisResultTableCommand = new RelayCommand<AnalysisResultItem>(RunAnalysisResult, item => item != null && CanUseActiveModel);
+            ExportEtabsTableItemCommand = new RelayCommand<object>(RunEtabsTableItem, item => item != null && CanUseActiveModel);
+            RefreshFrameStiffnessSectionsCommand = new RelayCommand(RefreshFrameStiffnessSections, CanExecuteCsiAction);
+            RefreshAreaStiffnessSectionsCommand = new RelayCommand(RefreshAreaStiffnessSections, CanExecuteCsiAction);
+            SelectVisibleFrameStiffnessSectionsCommand = new RelayCommand(SelectVisibleFrameStiffnessSections, CanExecuteCsiAction);
+            ClearFrameStiffnessSectionSelectionCommand = new RelayCommand(ClearFrameStiffnessSectionSelection, CanExecuteCsiAction);
+            SelectVisibleAreaStiffnessSectionsCommand = new RelayCommand(SelectVisibleAreaStiffnessSections, CanExecuteCsiAction);
+            ClearAreaStiffnessSectionSelectionCommand = new RelayCommand(ClearAreaStiffnessSectionSelection, CanExecuteCsiAction);
+            ApplyFrameStiffnessModifiersCommand = new RelayCommand(ApplyFrameStiffnessModifiers, CanExecuteCsiAction);
+            ApplyAreaStiffnessModifiersCommand = new RelayCommand(ApplyAreaStiffnessModifiers, CanExecuteCsiAction);
+            ResetFrameStiffnessModifiersCommand = new RelayCommand(ResetFrameModifierFields, CanExecuteCsiAction);
+            ResetAreaStiffnessModifiersCommand = new RelayCommand(ResetAreaModifierFields, CanExecuteCsiAction);
 
-            CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelISections.Execute()), () => IsConnected);
-            CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelChannelSections.Execute()), () => IsConnected);
-            CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelAngleSections.Execute()), () => IsConnected);
-            CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelTubeSections.Execute()), () => IsConnected);
-            CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelPipeSections.Execute()), () => IsConnected);
+            CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelISections.Execute()), CanExecuteCsiAction);
+            CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelChannelSections.Execute()), CanExecuteCsiAction);
+            CreateAngleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelAngleSections.Execute()), CanExecuteCsiAction);
+            CreateTubeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelTubeSections.Execute()), CanExecuteCsiAction);
+            CreatePipeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelPipeSections.Execute()), CanExecuteCsiAction);
 
-            CreateConcreteRectangleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateConcreteRectangleSections.Execute()), () => IsConnected);
-            CreateConcreteCircleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateConcreteCircleSections.Execute()), () => IsConnected);
+            CreateConcreteRectangleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateConcreteRectangleSections.Execute()), CanExecuteCsiAction);
+            CreateConcreteCircleSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateConcreteCircleSections.Execute()), CanExecuteCsiAction);
 
-            SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName, () => IsConnected);
-            SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName, () => IsConnected);
-            AddPointByCartesianCommand = new RelayCommand(AddPointByCartesian, () => IsConnected);
-            SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"), () => IsConnected);
-            RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"), () => IsConnected);
-            GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints, () => IsConnected);
+            SelectPointsByUniqueNameCommand = new RelayCommand(SelectPointsByUniqueName, CanExecuteCsiAction);
+            SelectFramesByUniqueNameCommand = new RelayCommand(SelectFramesByUniqueName, CanExecuteCsiAction);
+            AddPointByCartesianCommand = new RelayCommand(AddPointByCartesian, CanExecuteCsiAction);
+            SetPointsCommand = new RelayCommand(() => ShowPlaceholder("Set Points"), CanExecuteCsiAction);
+            RenameSelectedPointsCommand = new RelayCommand(() => ShowPlaceholder("Rename Selected Points"), CanExecuteCsiAction);
+            GetSelectedPointsCommand = new RelayCommand(GetSelectedPoints, CanExecuteCsiAction);
 
-            AddFramesByCoordinatesCommand = new RelayCommand(AddFramesByCoordinates, () => IsConnected);
-            AddFramesByPointNamesCommand = new RelayCommand(AddFramesByPointNames, () => IsConnected);
-            SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"), () => IsConnected);
-            RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"), () => IsConnected);
-            GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames, () => IsConnected);
-            GetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Section Property"), () => IsConnected);
-            SetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Section Property"), () => IsConnected);
-            GetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Group Assignment"), () => IsConnected);
-            SetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Group Assignment"), () => IsConnected);
-            GetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Modifier"), () => IsConnected);
-            SetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Modifier"), () => IsConnected);
-            CreateShellAreasFromSelectedFramesCommand = new RelayCommand(CreateShellAreasFromSelectedFrames, () => IsConnected);
-            GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"), () => IsConnected);
-            SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"), () => IsConnected);
+            AddFramesByCoordinatesCommand = new RelayCommand(AddFramesByCoordinates, CanExecuteCsiAction);
+            AddFramesByPointNamesCommand = new RelayCommand(AddFramesByPointNames, CanExecuteCsiAction);
+            SetFramesCommand = new RelayCommand(() => ShowPlaceholder("Set Frames"), CanExecuteCsiAction);
+            RenameFramesCommand = new RelayCommand(() => ShowPlaceholder("Rename Frames"), CanExecuteCsiAction);
+            GetSelectedFramesCommand = new RelayCommand(GetSelectedFrames, CanExecuteCsiAction);
+            GetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Section Property"), CanExecuteCsiAction);
+            SetFrameSectionPropertyCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Section Property"), CanExecuteCsiAction);
+            GetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Group Assignment"), CanExecuteCsiAction);
+            SetFrameGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Group Assignment"), CanExecuteCsiAction);
+            GetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Get Frame Modifier"), CanExecuteCsiAction);
+            SetFrameModifierCommand = new RelayCommand(() => ShowPlaceholder("Set Frame Modifier"), CanExecuteCsiAction);
+            CreateShellAreasFromSelectedFramesCommand = new RelayCommand(CreateShellAreasFromSelectedFrames, CanExecuteCsiAction);
+            GetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Get Point Group Assignment"), CanExecuteCsiAction);
+            SetPointGroupAssignmentCommand = new RelayCommand(() => ShowPlaceholder("Set Point Group Assignment"), CanExecuteCsiAction);
 
-            GetLoadPatternsCommand = new RelayCommand(GetLoadPatterns, () => IsConnected);
-            AddLoadPatternFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Pattern From Excel"), () => IsConnected);
-            DeleteSelectedLoadPatternsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadPatterns, _ => IsConnected);
+            GetLoadPatternsCommand = new RelayCommand(GetLoadPatterns, CanExecuteCsiAction);
+            AddLoadPatternFromExcelCommand = new RelayCommand(() => ShowPlaceholder("Add Load Pattern From Excel"), CanExecuteCsiAction);
+            DeleteSelectedLoadPatternsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadPatterns, _ => CanUseActiveModel);
             
-            GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations, () => IsConnected);
-            ModifyLoadCombinationsInMatrixViewCommand = new RelayCommand(ModifyLoadCombinationsInMatrixView, () => IsConnected);
-            ExportLoadCombinationMatrixToExcelCommand = new RelayCommand(ExportLoadCombinationMatrixToExcel, () => IsConnected);
+            GetLoadCombinationsCommand = new RelayCommand(GetLoadCombinations, CanExecuteCsiAction);
+            ModifyLoadCombinationsInMatrixViewCommand = new RelayCommand(ModifyLoadCombinationsInMatrixView, CanExecuteCsiAction);
+            ExportLoadCombinationMatrixToExcelCommand = new RelayCommand(ExportLoadCombinationMatrixToExcel, CanExecuteCsiAction);
+            OpenShellUniformLoadSetFormCommand = new RelayCommand(OpenShellUniformLoadSetForm, CanExecuteEtabsAction);
             AddLoadCombinationFromExcelCommand = ModifyLoadCombinationsInMatrixViewCommand;
-            DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => IsConnected);
-            ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => IsConnected);
+            DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => CanUseActiveModel);
+            ViewLoadCombinationCommand = new RelayCommand<System.Collections.IList>(ViewLoadCombination, _ => CanUseActiveModel);
 
-            GetBaseReactionsCommand = new RelayCommand(OpenGetBaseReactionsDialog, () => IsEtabs);
-            GetModalMassParticipationRatiosCommand = new RelayCommand(OpenModalMassParticipationRatiosDialog, () => IsEtabs);
-            GetStoryForcesCommand = new RelayCommand(OpenStoryForcesDialog, () => IsEtabs);
-            GetStoryDriftsCommand = new RelayCommand(OpenStoryDriftsDialog, () => IsEtabs);
-            GetStoryMaxOverAverageDisplacementsCommand = new RelayCommand(OpenStoryMaxOverAverageDisplacementsDialog, () => IsEtabs);
-            GetStoryMaxOverAverageDriftsCommand = new RelayCommand(OpenStoryMaxOverAverageDriftsDialog, () => IsEtabs);
-            GetMassSummaryByStoryCommand = new RelayCommand(OpenMassSummaryByStoryDialog, () => IsEtabs);
+            GetBaseReactionsCommand = new RelayCommand(OpenGetBaseReactionsDialog, CanExecuteEtabsAction);
+            GetModalMassParticipationRatiosCommand = new RelayCommand(OpenModalMassParticipationRatiosDialog, CanExecuteEtabsAction);
+            GetStoryForcesCommand = new RelayCommand(OpenStoryForcesDialog, CanExecuteEtabsAction);
+            GetStoryDriftsCommand = new RelayCommand(OpenStoryDriftsDialog, CanExecuteEtabsAction);
+            GetStoryMaxOverAverageDisplacementsCommand = new RelayCommand(OpenStoryMaxOverAverageDisplacementsDialog, CanExecuteEtabsAction);
+            GetStoryMaxOverAverageDriftsCommand = new RelayCommand(OpenStoryMaxOverAverageDriftsDialog, CanExecuteEtabsAction);
+            GetMassSummaryByStoryCommand = new RelayCommand(OpenMassSummaryByStoryDialog, CanExecuteEtabsAction);
             
-            GetFrameSectionsCommand = new RelayCommand(GetFrameSections, () => IsConnected);
-            EditFrameSectionCommand = new RelayCommand<CSISapModelFrameSectionDTO>(EditFrameSection, _ => IsConnected);
+            GetFrameSectionsCommand = new RelayCommand(GetFrameSections, CanExecuteCsiAction);
+            EditFrameSectionCommand = new RelayCommand<CSISapModelFrameSectionDTO>(EditFrameSection, _ => CanUseActiveModel);
 
             CurrentModelUnitText = "Not yet attached";
             SetTableGroup("ANALYSIS RESULTS", "Base Reactions");
@@ -206,8 +208,41 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _isConnected = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CanUseActiveModel));
                 RefreshCommandStates();
             }
+        }
+
+        public bool HasRunningCsiInstance
+        {
+            get { return _hasRunningCsiInstance; }
+            private set
+            {
+                if (_hasRunningCsiInstance == value)
+                {
+                    return;
+                }
+
+                _hasRunningCsiInstance = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CanUseActiveModel));
+                RefreshCommandStates();
+            }
+        }
+
+        public bool CanUseActiveModel
+        {
+            get { return IsConnected && HasRunningCsiInstance; }
+        }
+
+        private bool CanExecuteCsiAction()
+        {
+            return CanUseActiveModel;
+        }
+
+        private bool CanExecuteEtabsAction()
+        {
+            return IsEtabs && CanUseActiveModel;
         }
 
         public bool IsModelLocked
@@ -248,6 +283,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 _currentModelUnitText = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(OffsetLengthUnitText));
                 RefreshSectionDimensionAnnotations();
             }
         }
@@ -497,6 +533,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand GetLoadCombinationsCommand { get; }
         public ICommand ModifyLoadCombinationsInMatrixViewCommand { get; }
         public ICommand ExportLoadCombinationMatrixToExcelCommand { get; }
+        public ICommand OpenShellUniformLoadSetFormCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }
         public ICommand ViewLoadCombinationCommand { get; }

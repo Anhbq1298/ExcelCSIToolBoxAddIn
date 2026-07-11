@@ -66,6 +66,58 @@
     <SolidColorBrush x:Key="TreeHoverBrush" Color="#EEF7FF"/>
     <SolidColorBrush x:Key="TableHeaderBrush" Color="#F7FAFC"/>
 
+    <DrawingImage x:Key="OffsetSetOfLinesGuideImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="#FFFFFF">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="0,0,240,118" RadiusX="8" RadiusY="8"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#EEF7FF">
+                    <GeometryDrawing.Geometry>
+                        <RectangleGeometry Rect="7,7,226,104" RadiusX="7" RadiusY="7"/>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M 66,33 L 151,30 L 181,77 L 95,90 Z">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#64748B" Thickness="4" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M 46,19 L 164,17 L 207,88 L 82,106 Z">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#2F80ED" Thickness="4" LineJoin="Round"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#64748B">
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <EllipseGeometry Center="66,33" RadiusX="5" RadiusY="5"/>
+                            <EllipseGeometry Center="151,30" RadiusX="5" RadiusY="5"/>
+                            <EllipseGeometry Center="181,77" RadiusX="5" RadiusY="5"/>
+                            <EllipseGeometry Center="95,90" RadiusX="5" RadiusY="5"/>
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Brush="#2F80ED">
+                    <GeometryDrawing.Geometry>
+                        <GeometryGroup>
+                            <EllipseGeometry Center="46,19" RadiusX="5" RadiusY="5"/>
+                            <EllipseGeometry Center="164,17" RadiusX="5" RadiusY="5"/>
+                            <EllipseGeometry Center="207,88" RadiusX="5" RadiusY="5"/>
+                            <EllipseGeometry Center="82,106" RadiusX="5" RadiusY="5"/>
+                        </GeometryGroup>
+                    </GeometryDrawing.Geometry>
+                </GeometryDrawing>
+                <GeometryDrawing Geometry="M 120,51 L 143,44">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="#1F7A3A" Thickness="3" StartLineCap="Round" EndLineCap="Triangle"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
     <DropShadowEffect x:Key="CardShadow"
                       BlurRadius="14"
                       ShadowDepth="2"

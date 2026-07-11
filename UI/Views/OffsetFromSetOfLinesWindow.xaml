@@ -1,0 +1,226 @@
+<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.OffsetFromSetOfLinesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Offset from Set of Lines"
+        Width="840"
+        Height="640"
+        MinWidth="720"
+        MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="{DynamicResource FontFamily.Primary}"
+        FontSize="{DynamicResource FontSize.Body}"
+        Background="{DynamicResource AppBackgroundBrush}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Themes/EtabsToolboxTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="{StaticResource Inset.Medium}">
+        <Border Style="{StaticResource CardBorderStyle}">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          CanContentScroll="False">
+                <Grid MinWidth="660">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0"
+                            Style="{StaticResource SectionPanelBorderStyle}">
+                        <TextBlock Text="{Binding OffsetStatusMessage}"
+                                   Style="{StaticResource BodyTextStyle}"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="310"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+                                Style="{StaticResource CompactCardBorderStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Selection"
+                                           Style="{StaticResource SectionHeadingTextStyle}"
+                                           Margin="{StaticResource Gap.Card}"/>
+                                <Button Content="Get Selected Lines"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        HorizontalAlignment="Stretch"
+                                        Command="{Binding OffsetGetSelectedLinesCommand}"
+                                        Margin="{StaticResource Gap.Card}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        ToolTipService.ShowDuration="20000">
+                                    <Button.ToolTip>
+                                        <ToolTip MaxWidth="320">
+                                            <StackPanel>
+                                                <Image Source="{StaticResource OffsetSetOfLinesGuideImage}"
+                                                       Width="240"
+                                                       Height="118"
+                                                       Stretch="Uniform"
+                                                       Margin="0,0,0,8"/>
+                                                <TextBlock Text="Reads the selected ETABS frame objects and checks that they form one closed boundary."
+                                                           TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </Button.ToolTip>
+                                </Button>
+
+                                <Grid Margin="{StaticResource Gap.Card}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="Selected Line Count" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding OffsetSelectedLineCount}" Style="{StaticResource BodyTextStyle}"/>
+                                    <TextBlock Grid.Row="1" Text="Detected Vertex Count" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OffsetDetectedVertexCount}" Style="{StaticResource BodyTextStyle}"/>
+                                    <TextBlock Grid.Row="2" Text="Ordered Segments" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding OffsetOrderedSegmentCount}" Style="{StaticResource BodyTextStyle}"/>
+                                    <TextBlock Grid.Row="3" Text="Validation Status" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding OffsetValidationStatus}" Style="{StaticResource BodyTextStyle}" TextWrapping="Wrap" MaxWidth="150"/>
+                                    <TextBlock Grid.Row="4" Text="Polygon Orientation" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding OffsetPolygonOrientation}" Style="{StaticResource BodyTextStyle}"/>
+                                    <TextBlock Grid.Row="5" Text="Polygon Plane" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding OffsetPlaneInfo}" Style="{StaticResource BodyTextStyle}" TextWrapping="Wrap" MaxWidth="150"/>
+                                    <TextBlock Grid.Row="6" Text="Offset Direction" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding OffsetDirectionText}" Style="{StaticResource BodyTextStyle}"/>
+                                    <TextBlock Grid.Row="7" Text="Result Type" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding OffsetResultTypeText}" Style="{StaticResource BodyTextStyle}" TextWrapping="Wrap" MaxWidth="150"/>
+                                </Grid>
+
+                                <TextBlock Text="Offset"
+                                           Style="{StaticResource SectionHeadingTextStyle}"
+                                           Margin="{StaticResource Gap.Card}"/>
+                                <Grid Margin="{StaticResource Gap.Card}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="116"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="56"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="Distance" Style="{StaticResource LabelTextStyle}"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding OffsetDistanceText, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding OffsetLengthUnitText}" Style="{StaticResource MutedTextStyle}" Margin="6,0,0,0"/>
+                                    <TextBlock Grid.Row="1" Text="Tolerance" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding OffsetCoordinateToleranceText, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding OffsetLengthUnitText}" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0"/>
+                                    <TextBlock Grid.Row="2" Text="Miter Limit" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding OffsetMiterLimitText, UpdateSourceTrigger=PropertyChanged}" Margin="0,6,0,0"/>
+                                </Grid>
+
+                                <TextBlock Text="Section"
+                                           Style="{StaticResource SectionHeadingTextStyle}"
+                                           Margin="{StaticResource Gap.Card}"/>
+                                <CheckBox Content="Copy Section Property"
+                                          IsChecked="{Binding OffsetCopySectionProperty}"
+                                          Margin="{StaticResource Gap.Card}"/>
+                                <Grid Margin="{StaticResource Gap.Card}"
+                                      IsEnabled="{Binding OffsetAssignedSectionInputEnabled}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="8"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ComboBox Grid.Column="0"
+                                              ItemsSource="{Binding OffsetAvailableSections}"
+                                              SelectedItem="{Binding OffsetSelectedSection, Mode=TwoWay}"
+                                              Height="26"
+                                              VerticalContentAlignment="Center"/>
+                                    <Button Grid.Column="2"
+                                            Content="Refresh"
+                                            Style="{StaticResource SmallButtonStyle}"
+                                            Command="{Binding OffsetRefreshSectionsCommand}"
+                                            ToolTip="Reload frame section names from the attached ETABS model."
+                                            ToolTipService.ShowOnDisabled="True"/>
+                                </Grid>
+                                <TextBlock Text="{Binding OffsetAssignedSectionText}"
+                                           Style="{StaticResource MutedTextStyle}"
+                                           Margin="{StaticResource Gap.Card}"/>
+
+                                <CheckBox Content="Add Result to Group"
+                                          IsChecked="{Binding OffsetAddResultToGroup}"
+                                          Margin="{StaticResource Gap.Card}"/>
+                                <TextBox Text="{Binding OffsetGroupName, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding OffsetGroupNameInputEnabled}"
+                                         Margin="{StaticResource Gap.Card}"/>
+
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,6,0,0">
+                                    <Button Content="Preview"
+                                            Style="{StaticResource PrimaryButtonStyle}"
+                                            Margin="{StaticResource Gap.Right}"
+                                            Command="{Binding OffsetPreviewCommand}"
+                                            ToolTip="Calculate the offset result and draw it in the preview pane."
+                                            ToolTipService.ShowOnDisabled="True"/>
+                                    <Button Content="Create in ETABS"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Margin="{StaticResource Gap.Right}"
+                                            Command="{Binding OffsetCreateInEtabsCommand}"
+                                            ToolTip="Create the previewed offset segments as frame objects in ETABS."
+                                            ToolTipService.ShowOnDisabled="True"/>
+                                    <Button Content="Clear"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding OffsetClearCommand}"
+                                            ToolTip="Clear the selected lines, validation data, preview, and result list."/>
+                                </StackPanel>
+                                <Button Content="Close"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        HorizontalAlignment="Right"
+                                        MinWidth="76"
+                                        Margin="0,10,0,0"
+                                        Command="{Binding CloseWindowCommand}"
+                                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                                        ToolTip="Close this offset tool window."/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2"
+                                Style="{StaticResource PreviewPanelBorderStyle}"
+                                MinHeight="420">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <DockPanel Margin="{StaticResource Gap.Card}">
+                                    <TextBlock DockPanel.Dock="Left"
+                                               Text="Preview"
+                                               Style="{StaticResource SectionHeadingTextStyle}"/>
+                                    <TextBlock DockPanel.Dock="Right"
+                                               Text="{Binding OffsetResultSegmentCount}"
+                                               Style="{StaticResource BodyTextStyle}"/>
+                                </DockPanel>
+                                <Canvas x:Name="OffsetPolylinePreviewCanvas"
+                                        Grid.Row="1"
+                                        MinHeight="360"
+                                        Background="#FFFFFF"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

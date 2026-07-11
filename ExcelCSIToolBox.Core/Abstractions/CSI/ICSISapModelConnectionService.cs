@@ -41,6 +41,7 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult AssignFrameDistributedLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double value1, double value2);
         OperationResult AssignFramePointLoad(IReadOnlyList<string> frameNames, string loadPattern, int direction, double distance, double value);
         OperationResult DeleteFrameObjects(IReadOnlyList<string> frameNames);
+        OperationResult AddFramesToGroup(IReadOnlyList<string> frameNames, string groupName);
         OperationResult RunAnalysis();
         OperationResult SaveModel();
 
@@ -129,6 +130,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
 
         OperationResult<IReadOnlyList<CSISapModelLoadPatternDTO>> GetLoadPatterns();
         OperationResult DeleteLoadPatterns(IReadOnlyList<string> loadPatternNames);
+        OperationResult<ShellUniformLoadSetContextDto> GetShellUniformLoadSetContext();
+        OperationResult<ShellUniformLoadSetApplyResultDto> ApplyShellUniformLoadSets(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions);
         OperationResult<CSISapModelStatisticsDTO> GetModelStatistics();
         OperationResult RefreshView(bool zoomAll = false);
         OperationResult<int> GetPresentUnits();

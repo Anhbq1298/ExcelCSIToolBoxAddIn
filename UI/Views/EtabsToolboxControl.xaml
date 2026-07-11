@@ -194,6 +194,7 @@
                                 <TreeViewItem Header="Section Property - Stiffness Modifier" Tag="7" FontWeight="Normal"/>
                                 <TreeViewItem Header="Load Pattern" Tag="4" FontWeight="Normal"/>
                                 <TreeViewItem Header="Load Combination" Tag="5" FontWeight="Normal"/>
+                                <TreeViewItem Header="Add Shell Uniform Load Set" Tag="Tool:AddShellUniformLoadSet" FontWeight="Normal"/>
                             </TreeViewItem>
                             <TreeViewItem Header="Element Manipulation" IsExpanded="True" FontWeight="Normal">
                                 <TreeViewItem Header="Point" Tag="1" FontWeight="Normal"/>
@@ -259,6 +260,7 @@
                         Padding="{StaticResource Inset.Small}">
                     <TabControl x:Name="WorkspaceTabs"
                                 Style="{StaticResource WorkspaceContentTabControlStyle}"
+                                IsEnabled="{Binding CanUseActiveModel}"
                                 SelectedIndex="{Binding ActiveWorkspacePage, Mode=TwoWay}">
                         <TabItem Header="Section Property">
                             <Grid Margin="{StaticResource Inset.Small}">
@@ -981,7 +983,9 @@
                                                 MaxWidth="320"
                                                 MinHeight="44"
                                                 HorizontalAlignment="Stretch"
-                                                Command="{Binding OpenCreateArrayPerpendicularToPathWindowCommand}">
+                                                Command="{Binding OpenCreateArrayPerpendicularToPathWindowCommand}"
+                                                ToolTip="Open a form for creating repeated frame objects perpendicular to a selected path."
+                                                ToolTipService.ShowOnDisabled="True">
                                             <TextBlock Text="Create Array Perpendicular To Path"
                                                        TextWrapping="Wrap"/>
                                         </Button>
@@ -991,7 +995,9 @@
                                                 MinHeight="44"
                                                 Margin="0,8,0,0"
                                                 HorizontalAlignment="Stretch"
-                                                Command="{Binding OpenArrayBetweenTwoLinesWindowCommand}">
+                                                Command="{Binding OpenArrayBetweenTwoLinesWindowCommand}"
+                                                ToolTip="Open a form for creating frame objects between two selected boundary lines."
+                                                ToolTipService.ShowOnDisabled="True">
                                             <TextBlock Text="Array Between Two Lines"
                                                        TextWrapping="Wrap"/>
                                         </Button>
@@ -1001,14 +1007,42 @@
                                                 MinHeight="44"
                                                 Margin="0,8,0,0"
                                                 HorizontalAlignment="Stretch"
-                                                Command="{Binding CreateShellAreasFromSelectedFramesCommand}">
+                                                Command="{Binding CreateShellAreasFromSelectedFramesCommand}"
+                                                ToolTip="Create shell area objects from the currently selected frame boundary."
+                                                ToolTipService.ShowOnDisabled="True">
                                             <TextBlock Text="Create Shell Area From Selected Frames"
+                                                       TextWrapping="Wrap"/>
+                                        </Button>
+                                        <Button Style="{StaticResource ToolButtonStyle}"
+                                                MinWidth="180"
+                                                MaxWidth="320"
+                                                MinHeight="44"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding OpenOffsetFromSetOfLinesCommand}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                ToolTipService.ShowDuration="20000">
+                                            <Button.ToolTip>
+                                                <ToolTip MaxWidth="320">
+                                                    <StackPanel>
+                                                        <Image Source="{StaticResource OffsetSetOfLinesGuideImage}"
+                                                               Width="240"
+                                                               Height="118"
+                                                               Stretch="Uniform"
+                                                               Margin="0,0,0,8"/>
+                                                        <TextBlock Text="Open the offset tool for selected ETABS frame objects that form one closed boundary."
+                                                                   TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </ToolTip>
+                                            </Button.ToolTip>
+                                            <TextBlock Text="Offset from Set of Lines"
                                                        TextWrapping="Wrap"/>
                                         </Button>
                                     </StackPanel>
                                 </Grid>
                             </Border>
                         </TabItem>
+
                     </TabControl>
                 </Border>
             </Grid>

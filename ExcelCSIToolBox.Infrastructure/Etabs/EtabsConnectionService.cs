@@ -264,6 +264,41 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return failures.Count == 0 ? OperationResult.Success(msg) : OperationResult.Failure(msg);
         }
 
+        public OperationResult AddFramesToGroup(IReadOnlyList<string> frameNames, string groupName)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess) return OperationResult.Failure(sapModelResult.Message);
+            if (frameNames == null || frameNames.Count == 0) return OperationResult.Failure("At least one frame name is required.");
+            if (string.IsNullOrWhiteSpace(groupName)) return OperationResult.Failure("Group name is required.");
+
+            groupName = groupName.Trim();
+            if (groupName.IndexOfAny(new[] { '\r', '\n', '\t', ';', ',' }) >= 0)
+            {
+                return OperationResult.Failure("Group name contains invalid characters.");
+            }
+
+            var sapModel = sapModelResult.Data;
+            int groupRet = EnsureGroupExists(sapModel, groupName);
+            if (groupRet != 0)
+            {
+                return OperationResult.Failure($"Failed to create or update ETABS group '{groupName}' (return code {groupRet}).");
+            }
+
+            int success = 0;
+            var failures = new List<string>();
+            foreach (string frameName in frameNames)
+            {
+                if (string.IsNullOrWhiteSpace(frameName)) continue;
+                int ret = sapModel.FrameObj.SetGroupAssign(frameName, groupName, false, ETABSv1.eItemType.Objects);
+                if (ret == 0) success++; else failures.Add($"{frameName}: return code {ret}");
+            }
+
+            RefreshView(sapModel);
+            string msg = $"Added {success} frame object(s) to group '{groupName}'.";
+            if (failures.Count > 0) msg += " Failed: " + string.Join("; ", failures);
+            return failures.Count == 0 ? OperationResult.Success(msg) : OperationResult.Failure(msg);
+        }
+
         public OperationResult RunAnalysis()
         {
             var sapModelResult = EnsureEtabsSapModel();
@@ -3444,6 +3479,28 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return result;
         }
 
+        public OperationResult<ShellUniformLoadSetContextDto> GetShellUniformLoadSetContext()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<ShellUniformLoadSetContextDto>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.ShellUniformLoadSetService.EtabsShellUniformLoadSetTableService.GetContext(sapModelResult.Data);
+        }
+
+        public OperationResult<ShellUniformLoadSetApplyResultDto> ApplyShellUniformLoadSets(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<ShellUniformLoadSetApplyResultDto>.Failure(sapModelResult.Message);
+            }
+
+            return Infrastructure.CSISapModel.ShellUniformLoadSetService.EtabsShellUniformLoadSetTableService.Apply(sapModelResult.Data, definitions);
+        }
+
         public OperationResult<IReadOnlyList<CSISapModelFrameSectionDTO>> GetFrameSections()
         {
             var sapModelResult = EnsureEtabsSapModel();
@@ -4008,6 +4065,38 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             }
 
             return OperationResult.Success();
+        }
+
+        private static int EnsureGroupExists(ETABSv1.cSapModel sapModel, string groupName)
+        {
+            int numberNames = 0;
+            string[] names = null;
+            int listRet = sapModel.GroupDef.GetNameList(ref numberNames, ref names);
+            if (listRet == 0 && names != null)
+            {
+                for (int i = 0; i < names.Length; i++)
+                {
+                    if (string.Equals(names[i], groupName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return 0;
+                    }
+                }
+            }
+
+            return sapModel.GroupDef.SetGroup(
+                groupName,
+                -1,
+                true,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false);
         }
 
         private static OperationResult SelectOutputCasesForTables(

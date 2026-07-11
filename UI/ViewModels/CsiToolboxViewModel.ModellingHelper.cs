@@ -72,16 +72,17 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 .Register(ModellingHelperActionKeys.CreateFrames, CreateFrames)
                 .Register(ModellingHelperActionKeys.CreateArrayBetweenTwoLinesFrames, CreateArrayBetweenTwoLinesFrames);
 
-            OpenCreateArrayPerpendicularToPathWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath));
-            OpenArrayBetweenTwoLinesWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenArrayBetweenTwoLines));
-            PickPoint1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint1));
-            PickPoint2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint2));
-            PickReferenceFrameCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickReferenceFrame));
-            PickLine1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickLine1));
-            PickLine2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickLine2));
-            CreateFramesCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.CreateFrames));
-            CreateArrayBetweenTwoLinesFramesCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.CreateArrayBetweenTwoLinesFrames));
+            OpenCreateArrayPerpendicularToPathWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath), CanExecuteCsiAction);
+            OpenArrayBetweenTwoLinesWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenArrayBetweenTwoLines), CanExecuteCsiAction);
+            PickPoint1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint1), CanExecuteCsiAction);
+            PickPoint2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint2), CanExecuteCsiAction);
+            PickReferenceFrameCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickReferenceFrame), CanExecuteCsiAction);
+            PickLine1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickLine1), CanExecuteCsiAction);
+            PickLine2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickLine2), CanExecuteCsiAction);
+            CreateFramesCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.CreateFrames), CanExecuteCsiAction);
+            CreateArrayBetweenTwoLinesFramesCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.CreateArrayBetweenTwoLinesFrames), CanExecuteCsiAction);
             CloseWindowCommand = new RelayCommand<Window>(CloseWindow);
+            InitializeOffsetFromSetOfLinesPage();
         }
 
         private void ExecuteModellingHelperAction(string key)

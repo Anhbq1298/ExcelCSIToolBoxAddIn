@@ -157,6 +157,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ShowOperationResult(OperationResult.Failure("Excel export service is not available."));
         }
 
+        private void OpenShellUniformLoadSetForm()
+        {
+            using (var form = new ExcelCSIToolBoxAddIn.UI.Forms.ShellUniformLoadSetForm(_csiConnectionService))
+            {
+                form.ShowDialog();
+            }
+        }
+
         private OperationResult SaveLoadCombinationMatrixChanges(LoadCombinationMatrixViewModel viewModel)
         {
             OperationResult deleteResult = null;
