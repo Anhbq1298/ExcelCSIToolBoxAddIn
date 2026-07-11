@@ -1,4 +1,4 @@
-# UI Skills - ExcelToolbox CSI Addin
+# UI Style Guide - ExcelToolbox CSI Addin
 
 ## General Style
 

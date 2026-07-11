@@ -19,15 +19,20 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
         private const int LoadPatternColumnMinimumWidth = 70;
         private const int LoadPatternColumnMaximumWidth = 160;
         private readonly ICSISapModelConnectionService _connectionService;
+        private readonly ICsiApiDispatcher _csiApiDispatcher;
         private readonly Action<IntPtr> _exportCurrentDefinitionsAction;
         private readonly ExcelSelectedRangeReader _excelRangeReader;
         private readonly Dictionary<string, string> _loadPatternLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly List<UnitOption> _unitOptions = new List<UnitOption>();
 
-        public ShellUniformLoadSetForm(ICSISapModelConnectionService connectionService, Action<IntPtr> exportCurrentDefinitionsAction = null)
+        public ShellUniformLoadSetForm(
+            ICSISapModelConnectionService connectionService,
+            Action<IntPtr> exportCurrentDefinitionsAction = null,
+            ICsiApiDispatcher csiApiDispatcher = null)
         {
             if (connectionService == null) throw new ArgumentNullException(nameof(connectionService));
             _connectionService = connectionService;
+            _csiApiDispatcher = csiApiDispatcher ?? new ExcelCSIToolBox.Infrastructure.CSISapModel.CurrentThreadCsiApiDispatcher();
             _exportCurrentDefinitionsAction = exportCurrentDefinitionsAction;
             _excelRangeReader = new ExcelSelectedRangeReader();
             InitializeComponent();
@@ -588,7 +593,10 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             {
                 using (var progressForm = new ProgressForm("Applying Changes", "Applying changes to ETABS, please wait..."))
                 {
-                    System.Threading.Tasks.Task.Run(() =>
+                    progressForm.Show(this);
+                    progressForm.Refresh();
+
+                    _csiApiDispatcher.Invoke(() =>
                     {
                         try
                         {
@@ -608,14 +616,9 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                         }
                         finally
                         {
-                            if (progressForm.IsHandleCreated)
-                            {
-                                progressForm.BeginInvoke(new Action(progressForm.Close));
-                            }
+                            progressForm.Close();
                         }
                     });
-
-                    progressForm.ShowDialog(this);
                 }
 
                 if (unitResult != null && !unitResult.IsSuccess)

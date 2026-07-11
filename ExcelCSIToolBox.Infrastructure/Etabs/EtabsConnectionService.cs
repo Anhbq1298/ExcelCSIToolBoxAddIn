@@ -7,6 +7,7 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
+using ExcelCSIToolBox.Core.Tabular;
 using ExcelCSIToolBox.Data;
 using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
 using ExcelCSIToolBox.Data.CSISapModel.PointObject;
@@ -4701,23 +4702,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
 
         private static int FindFieldIndex(IReadOnlyList<string> fields, params string[] aliases)
         {
-            if (fields == null || aliases == null)
-            {
-                return -1;
-            }
-
-            for (int fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
-            {
-                foreach (string alias in aliases)
-                {
-                    if (string.Equals(NormalizeFieldKey(fields[fieldIndex]), NormalizeFieldKey(alias), StringComparison.OrdinalIgnoreCase))
-                    {
-                        return fieldIndex;
-                    }
-                }
-            }
-
-            return -1;
+            return CsiTableFieldAliasResolver.FindFirstIndex(fields, aliases);
         }
 
         private static int FindPreferredFieldIndex(IReadOnlyList<string> fields, params string[] aliases)
@@ -4744,24 +4729,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
 
         private static int FindFrameNameFieldIndex(IReadOnlyList<string> fields)
         {
-            int uniqueNameIndex = FindFieldIndex(fields, "Unique Name", "UniqueName");
-            if (uniqueNameIndex >= 0)
-            {
-                return uniqueNameIndex;
-            }
-
-            return FindFieldIndex(
-                fields,
-                "Frame",
-                "Frame Name",
-                "FrameName",
-                "Column",
-                "Beam",
-                "Brace",
-                "Element",
-                "Element Name",
-                "ElementName",
-                "Label");
+            return CsiTableFieldAliasResolver.FindObjectNameColumn(fields, CsiObjectTypes.Frame);
         }
 
         private static object ParseDisplayTableValue(string fieldKey, string value)
@@ -4947,22 +4915,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
 
         private static string NormalizeFieldKey(string fieldKey)
         {
-            if (string.IsNullOrWhiteSpace(fieldKey))
-            {
-                return string.Empty;
-            }
-
-            char[] chars = fieldKey.ToCharArray();
-            var normalized = new System.Text.StringBuilder(chars.Length);
-            foreach (char c in chars)
-            {
-                if (char.IsLetterOrDigit(c))
-                {
-                    normalized.Append(char.ToUpperInvariant(c));
-                }
-            }
-
-            return normalized.ToString();
+            return CsiTableFieldAliasResolver.NormalizeFieldKey(fieldKey);
         }
 
         private static string FormatResponseCombinationType(int type)

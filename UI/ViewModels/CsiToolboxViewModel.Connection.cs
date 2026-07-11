@@ -454,7 +454,23 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private bool PrepareExportWithGlobalUnit()
         {
-            return ApplySelectedGlobalUnit(showMessages: true);
+            if (!IsConnected)
+            {
+                const string message = "Please attach to ETABS first.";
+                MessageBox.Show(message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                StatusText = message;
+                return false;
+            }
+
+            if (SelectedUnitSystem == null)
+            {
+                const string message = "Please select a unit system first.";
+                MessageBox.Show(message, ProductTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+                StatusText = message;
+                return false;
+            }
+
+            return true;
         }
 
         private bool ApplySelectedGlobalUnit(bool showMessages)

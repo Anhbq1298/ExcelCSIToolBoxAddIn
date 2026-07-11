@@ -8,6 +8,7 @@ description: Manage WPF UI and MVVM changes for the ExcelCSIToolBoxAddIn ETABS/S
 ## Visual Style
 
 Use the repo's existing WPF theme resources first, especially `UI/Themes/EtabsToolboxTheme.xaml`.
+For detailed legacy palette and selected-state rules, see `references/UI_STYLE_GUIDE.md`.
 
 Preferred feel:
 

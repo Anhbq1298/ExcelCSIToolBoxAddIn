@@ -1,3 +1,8 @@
+---
+name: etabs-api-integration
+description: Work with ETABS OAPI selection, unique names vs labels, database table field keys, and selected-object filtering for ETABS result/connectivity exports in ExcelCSIToolBoxAddIn.
+---
+
 # ETABS API Integration Guideline (Unique Names vs. Labels & Database Tables)
 
 This document outlines key technical behaviors of the ETABS Open Application Programming Interface (OAPI) to prevent common mistakes when implementing selection-only filtering, object mappings, or data extraction workflows.

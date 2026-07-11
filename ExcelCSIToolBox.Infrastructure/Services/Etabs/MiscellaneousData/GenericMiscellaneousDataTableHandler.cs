@@ -5,6 +5,7 @@ using ExcelCSIToolBox.Application.Interfaces.Etabs.MiscellaneousData;
 using ExcelCSIToolBox.Application.Interfaces.Excel;
 using ExcelCSIToolBox.Core.Models.EtabsTables;
 using ExcelCSIToolBox.Core.Models.MiscellaneousData;
+using ExcelCSIToolBox.Infrastructure.Services.Etabs;
 
 namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData
 {
@@ -34,9 +35,16 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData
 
         public async Task ExecuteAsync(MiscellaneousDataItem item)
         {
-            _unitService.SetPresentUnitsFromMainWindow();
-            EtabsTableResult result = await _tableService.GetTableAsync(item.EtabsTableName);
-            _excelExportService.ExportTable(result);
+            var unitScope = EtabsPresentUnitScopeRunner.Begin(_unitService);
+            try
+            {
+                EtabsTableResult result = await _tableService.GetTableAsync(item.EtabsTableName);
+                _excelExportService.ExportTable(result);
+            }
+            finally
+            {
+                EtabsPresentUnitScopeRunner.Restore(unitScope, item == null ? null : item.Title);
+            }
         }
     }
 }

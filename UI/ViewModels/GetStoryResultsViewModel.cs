@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using ExcelCSIToolBox.Application.Services;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
@@ -359,6 +360,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
+            CsiPresentUnitScope unitScope = null;
             try
             {
                 RaiseRequestHide();
@@ -370,6 +372,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     return;
                 }
 
+                OperationResult<CsiPresentUnitScope> unitScopeResult = ApplySelectedUnitScope();
+                if (!unitScopeResult.IsSuccess)
+                {
+                    return;
+                }
+
+                unitScope = unitScopeResult.Data;
                 if (_kind == StoryPostprocessingResultKind.StoryForces)
                 {
                     RunStoryForces(selectedCases);
@@ -381,6 +390,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
             finally
             {
+                RestoreSelectedUnitScope(unitScope);
                 RaiseRequestShow();
             }
         }
@@ -502,31 +512,48 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             Run(null, null);
         }
 
-        private bool ApplySelectedUnits()
+        private OperationResult<CsiPresentUnitScope> ApplySelectedUnitScope()
         {
             if (SelectedUnitOption == null)
             {
                 ShowWarning("Select ETABS output units before running.");
-                return false;
+                return OperationResult<CsiPresentUnitScope>.Failure("Select ETABS output units before running.");
             }
 
             try
             {
-                OperationResult unitResult = _csiConnectionService.SetPresentUnits(SelectedUnitOption.EtabsUnitsCode);
-                if (!unitResult.IsSuccess)
+                OperationResult<CsiPresentUnitScope> unitScopeResult = CsiPresentUnitScope.Apply(
+                    _csiConnectionService,
+                    SelectedUnitOption.ToPresentUnitSystemDto());
+                if (!unitScopeResult.IsSuccess)
                 {
-                    ShowWarning(string.IsNullOrWhiteSpace(unitResult.Message)
+                    ShowWarning(string.IsNullOrWhiteSpace(unitScopeResult.Message)
                         ? "Failed to set ETABS present units."
-                        : unitResult.Message);
-                    return false;
+                        : unitScopeResult.Message);
+                    return unitScopeResult;
                 }
 
-                return true;
+                return unitScopeResult;
             }
             catch (Exception ex)
             {
                 ShowWarning($"Failed to set ETABS present units: {ex.Message}");
-                return false;
+                return OperationResult<CsiPresentUnitScope>.Failure("Failed to set ETABS present units: " + ex.Message);
+            }
+        }
+
+        private void RestoreSelectedUnitScope(CsiPresentUnitScope unitScope)
+        {
+            if (unitScope == null)
+            {
+                return;
+            }
+
+            unitScope.Dispose();
+            if (unitScope.RestoreResult != null && !unitScope.RestoreResult.IsSuccess)
+            {
+                AnalysisExportDiagnostics.Log(
+                    "Failed to restore ETABS present units after " + WindowTitle + ": " + unitScope.RestoreResult.Message);
             }
         }
 

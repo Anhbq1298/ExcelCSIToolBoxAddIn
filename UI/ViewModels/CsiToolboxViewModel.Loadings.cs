@@ -5,6 +5,7 @@ using System.Linq;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBoxAddIn.AddIn.Composition;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -166,7 +167,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             using (var form = new ExcelCSIToolBoxAddIn.UI.Forms.ShellUniformLoadSetForm(
                 _csiConnectionService,
-                ownerHandle => ExportShellUniformLoadSetDefinitions(ownerHandle)))
+                ownerHandle => ExportShellUniformLoadSetDefinitions(ownerHandle),
+                AppServiceFactory.CsiApiDispatcher))
             {
                 System.Windows.Forms.IWin32Window owner = null;
                 try

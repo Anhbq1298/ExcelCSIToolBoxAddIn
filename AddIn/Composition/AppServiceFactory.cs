@@ -4,7 +4,9 @@ using ExcelCSIToolBox.Application.Interfaces.Etabs.AnalysisResults;
 using ExcelCSIToolBox.Application.Interfaces.Etabs.ElementConnectivity;
 using ExcelCSIToolBox.Application.Interfaces.Etabs.MiscellaneousData;
 using ExcelCSIToolBox.Application.Interfaces.Excel;
+using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
+using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults.JointOutput;
@@ -17,13 +19,15 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
 {
     public static class AppServiceFactory
     {
+        public static readonly ICsiApiDispatcher CsiApiDispatcher = new CurrentThreadCsiApiDispatcher();
+
         public static EtabsAnalysisResultServices CreateAnalysisResultServices(
             ICSISapModelConnectionService csiConnectionService,
             IEtabsUnitService unitService = null)
         {
             IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
             unitService = unitService ?? new EtabsUnitService(connectionService);
-            IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService);
+            IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService, CsiApiDispatcher);
             IExcelExportService excelService = new ExcelExportService();
 
             List<IEtabsAnalysisResultHandler> handlers = new List<IEtabsAnalysisResultHandler>
@@ -47,7 +51,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
         {
             IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
             unitService = unitService ?? new EtabsUnitService(connectionService);
-            IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService);
+            IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService, CsiApiDispatcher);
             IExcelExportService excelService = new ExcelExportService();
 
             List<IEtabsMiscellaneousDataHandler> handlers = new List<IEtabsMiscellaneousDataHandler>
@@ -69,7 +73,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
         {
             IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
             unitService = unitService ?? new EtabsUnitService(connectionService);
-            IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService);
+            IEtabsDatabaseTableService tableService = new EtabsDatabaseTableService(connectionService, CsiApiDispatcher);
             IExcelExportService excelService = new ExcelExportService();
 
             List<IEtabsElementConnectivityHandler> handlers = new List<IEtabsElementConnectivityHandler>
@@ -82,7 +86,9 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
             };
 
             IEtabsElementConnectivityRouter router = new EtabsElementConnectivityRouter(handlers);
-            return new EtabsElementConnectivityServices(router);
+            var identityResolver = new EtabsSelectedObjectIdentityResolver(connectionService);
+            var exportSelectedObjectConnectivity = new ExportSelectedObjectConnectivityUseCase(tableService, identityResolver);
+            return new EtabsElementConnectivityServices(router, exportSelectedObjectConnectivity);
         }
     }
 }

@@ -5,6 +5,7 @@ using ExcelCSIToolBox.Application.Interfaces.Etabs.ElementConnectivity;
 using ExcelCSIToolBox.Application.Interfaces.Excel;
 using ExcelCSIToolBox.Core.Models.ElementConnectivity;
 using ExcelCSIToolBox.Core.Models.EtabsTables;
+using ExcelCSIToolBox.Infrastructure.Services.Etabs;
 
 namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity
 {
@@ -34,9 +35,16 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity
 
         public async Task ExecuteAsync(ElementConnectivityItem item)
         {
-            _unitService.SetPresentUnitsFromMainWindow();
-            EtabsTableResult result = await _tableService.GetTableAsync(item.EtabsTableName);
-            _excelExportService.ExportTable(result);
+            var unitScope = EtabsPresentUnitScopeRunner.Begin(_unitService);
+            try
+            {
+                EtabsTableResult result = await _tableService.GetTableAsync(item.EtabsTableName);
+                _excelExportService.ExportTable(result);
+            }
+            finally
+            {
+                EtabsPresentUnitScopeRunner.Restore(unitScope, item == null ? null : item.Title);
+            }
         }
     }
 }

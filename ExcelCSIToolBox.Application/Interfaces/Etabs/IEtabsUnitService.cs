@@ -1,3 +1,5 @@
+using ExcelCSIToolBox.Application.Services;
+using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 
 namespace ExcelCSIToolBox.Application.Interfaces.Etabs
@@ -10,5 +12,7 @@ namespace ExcelCSIToolBox.Application.Interfaces.Etabs
             string presentUnitsText);
 
         void SetPresentUnitsFromMainWindow();
+
+        OperationResult<CsiPresentUnitScope> CreatePresentUnitScopeFromMainWindow();
     }
 }

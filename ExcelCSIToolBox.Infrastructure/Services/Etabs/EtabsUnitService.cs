@@ -1,5 +1,6 @@
 using System;
 using ExcelCSIToolBox.Application.Interfaces.Etabs;
+using ExcelCSIToolBox.Application.Services;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.DTOs.CSI;
 
@@ -37,19 +38,13 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs
                 throw new InvalidOperationException("Please attach to ETABS first.");
             }
 
-            CSISapModelPresentUnitSystemDTO unitSystem = SelectedUnitSystem;
-            if (unitSystem == null)
+            OperationResult<CSISapModelPresentUnitSystemDTO> unitSystemResult = ResolveUnitSystemFromMainWindow();
+            if (!unitSystemResult.IsSuccess)
             {
-                OperationResult<CSISapModelPresentUnitSystemDTO> currentUnitResult = _connectionService.GetPresentUnitSystem();
-                if (!currentUnitResult.IsSuccess || currentUnitResult.Data == null)
-                {
-                    throw new InvalidOperationException("Please select a unit system first.");
-                }
-
-                unitSystem = currentUnitResult.Data;
+                throw new InvalidOperationException(unitSystemResult.Message);
             }
 
-            OperationResult result = _connectionService.SetPresentUnitSystem(unitSystem);
+            OperationResult result = _connectionService.SetPresentUnitSystem(unitSystemResult.Data);
             if (!result.IsSuccess)
             {
                 string message = string.IsNullOrWhiteSpace(result.Message)
@@ -57,6 +52,41 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs
                     : result.Message;
                 throw new InvalidOperationException(message);
             }
+        }
+
+        public OperationResult<CsiPresentUnitScope> CreatePresentUnitScopeFromMainWindow()
+        {
+            if (_connectionService.SapModel == null)
+            {
+                return OperationResult<CsiPresentUnitScope>.Failure("Please attach to ETABS first.");
+            }
+
+            OperationResult<CSISapModelPresentUnitSystemDTO> unitSystemResult = ResolveUnitSystemFromMainWindow();
+            if (!unitSystemResult.IsSuccess)
+            {
+                return OperationResult<CsiPresentUnitScope>.Failure(unitSystemResult.Message);
+            }
+
+            return CsiPresentUnitScope.Apply(_connectionService, unitSystemResult.Data);
+        }
+
+        private OperationResult<CSISapModelPresentUnitSystemDTO> ResolveUnitSystemFromMainWindow()
+        {
+            if (SelectedUnitSystem != null)
+            {
+                return OperationResult<CSISapModelPresentUnitSystemDTO>.Success(SelectedUnitSystem);
+            }
+
+            OperationResult<CSISapModelPresentUnitSystemDTO> currentUnitResult = _connectionService.GetPresentUnitSystem();
+            if (currentUnitResult != null && currentUnitResult.IsSuccess && currentUnitResult.Data != null)
+            {
+                return currentUnitResult;
+            }
+
+            string message = currentUnitResult == null || string.IsNullOrWhiteSpace(currentUnitResult.Message)
+                ? "Please select a unit system first."
+                : currentUnitResult.Message;
+            return OperationResult<CSISapModelPresentUnitSystemDTO>.Failure(message);
         }
     }
 }

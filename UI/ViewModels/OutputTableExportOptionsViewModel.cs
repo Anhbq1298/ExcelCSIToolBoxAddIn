@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using ExcelCSIToolBox.Application.Services;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
@@ -669,6 +670,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
+            CsiPresentUnitScope unitScope = null;
             try
             {
                 RaiseRequestHide();
@@ -690,10 +692,16 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     return;
                 }
 
-                if (_profile.ShowUnitSelector && !ApplySelectedUnits())
+                if (_profile.ShowUnitSelector)
                 {
-                    AnalysisExportDiagnostics.Log("Export confirmation blocked because selected units could not be applied: " + _displayTableName);
-                    return;
+                    OperationResult<CsiPresentUnitScope> unitScopeResult = ApplySelectedUnitScope();
+                    if (!unitScopeResult.IsSuccess)
+                    {
+                        AnalysisExportDiagnostics.Log("Export confirmation blocked because selected units could not be applied: " + _displayTableName);
+                        return;
+                    }
+
+                    unitScope = unitScopeResult.Data;
                 }
 
                 SelectedCasesOrCombos = selectedCases;
@@ -729,6 +737,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 finally
                 {
                     IsBusy = false;
+                    RestoreSelectedUnitScope(unitScope);
                 }
             }
             finally
@@ -876,34 +885,51 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             return true;
         }
 
-        private bool ApplySelectedUnits()
+        private OperationResult<CsiPresentUnitScope> ApplySelectedUnitScope()
         {
             if (SelectedUnitOption == null)
             {
                 ShowWarning("Select ETABS output units before running.");
-                return false;
+                return OperationResult<CsiPresentUnitScope>.Failure("Select ETABS output units before running.");
             }
 
             try
             {
-                OperationResult unitResult = _csiConnectionService.SetPresentUnits(SelectedUnitOption.EtabsUnitsCode);
-                if (!unitResult.IsSuccess)
+                OperationResult<CsiPresentUnitScope> unitScopeResult = CsiPresentUnitScope.Apply(
+                    _csiConnectionService,
+                    SelectedUnitOption.ToPresentUnitSystemDto());
+                if (!unitScopeResult.IsSuccess)
                 {
-                    AnalysisExportDiagnostics.Log("Failed to apply selected output unit for " + _displayTableName + ": " + unitResult.Message);
-                    ShowWarning(string.IsNullOrWhiteSpace(unitResult.Message)
+                    AnalysisExportDiagnostics.Log("Failed to apply selected output unit for " + _displayTableName + ": " + unitScopeResult.Message);
+                    ShowWarning(string.IsNullOrWhiteSpace(unitScopeResult.Message)
                         ? "Failed to set ETABS present units."
-                        : unitResult.Message);
-                    return false;
+                        : unitScopeResult.Message);
+                    return unitScopeResult;
                 }
 
                 AnalysisExportDiagnostics.Log("Selected output unit: " + SelectedUnitOption.Label + " for " + _displayTableName);
-                return true;
+                return unitScopeResult;
             }
             catch (Exception ex)
             {
                 AnalysisExportDiagnostics.Log("Failed to set ETABS present units for " + _displayTableName + ": " + ex.Message);
                 ShowWarning($"Failed to set ETABS present units: {ex.Message}");
-                return false;
+                return OperationResult<CsiPresentUnitScope>.Failure("Failed to set ETABS present units: " + ex.Message);
+            }
+        }
+
+        private void RestoreSelectedUnitScope(CsiPresentUnitScope unitScope)
+        {
+            if (unitScope == null)
+            {
+                return;
+            }
+
+            unitScope.Dispose();
+            if (unitScope.RestoreResult != null && !unitScope.RestoreResult.IsSuccess)
+            {
+                AnalysisExportDiagnostics.Log(
+                    "Failed to restore ETABS present units after " + _displayTableName + ": " + unitScope.RestoreResult.Message);
             }
         }
 
@@ -1451,5 +1477,32 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public string MomentUnit { get; private set; }
 
         public string LengthUnit { get; private set; }
+
+        public CSISapModelPresentUnitSystemDTO ToPresentUnitSystemDto()
+        {
+            switch (EtabsUnitsCode)
+            {
+                case 1:
+                    return Unit(1, 1, 2);
+                case 4:
+                    return Unit(2, 2, 2);
+                case 6:
+                    return Unit(4, 6, 2);
+                case 9:
+                    return Unit(3, 4, 2);
+                default:
+                    return Unit(4, 6, 2);
+            }
+        }
+
+        private static CSISapModelPresentUnitSystemDTO Unit(int forceUnit, int lengthUnit, int temperatureUnit)
+        {
+            return new CSISapModelPresentUnitSystemDTO
+            {
+                ForceUnit = forceUnit,
+                LengthUnit = lengthUnit,
+                TemperatureUnit = temperatureUnit
+            };
+        }
     }
 }
