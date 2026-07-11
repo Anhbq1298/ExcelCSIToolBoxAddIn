@@ -130,6 +130,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ApplyAreaStiffnessModifiersCommand = new RelayCommand(ApplyAreaStiffnessModifiers, CanExecuteCsiAction);
             ResetFrameStiffnessModifiersCommand = new RelayCommand(ResetFrameModifierFields, CanExecuteCsiAction);
             ResetAreaStiffnessModifiersCommand = new RelayCommand(ResetAreaModifierFields, CanExecuteCsiAction);
+            OpenCreateSectionDialogCommand = new RelayCommand(OpenCreateSectionDialog, CanExecuteCsiAction);
 
             CreateIshapeSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelISections.Execute()), CanExecuteCsiAction);
             CreateChannelSectionCommand = new RelayCommand(() => ShowOperationResult(_useCases.CreateSteelChannelSections.Execute()), CanExecuteCsiAction);
@@ -279,7 +280,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public string CurrentModelUnitText
         {
-            get { return _currentModelUnitText; }
+            get
+            {
+                if (IsSap2000)
+                {
+                    return "kN-m-C";
+                }
+                return string.IsNullOrWhiteSpace(_currentModelUnitText) ? "Not yet attached" : _currentModelUnitText;
+            }
             private set
             {
                 _currentModelUnitText = value;
@@ -332,9 +340,21 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public string ModelDisplayText => $"{ModelName}";
 
+        public CsiProductType ProductType => string.Equals(_productName, "SAP2000", StringComparison.OrdinalIgnoreCase) 
+            ? CsiProductType.SAP2000 
+            : CsiProductType.ETABS;
+
+        public bool IsSap2000 => ProductType == CsiProductType.SAP2000;
+
+        public bool IsEtabs => ProductType == CsiProductType.ETABS;
+
         public string ProductTitle => $"{_productName} Toolbox";
 
-        public bool IsEtabs => string.Equals(_productName, "ETABS", StringComparison.OrdinalIgnoreCase);
+        public string ObjectConnectivityTitle => $"{_productName} Object Connectivity";
+
+        public Visibility EtabsVisibility => IsEtabs ? Visibility.Visible : Visibility.Collapsed;
+
+        public Visibility Sap2000Visibility => IsSap2000 ? Visibility.Visible : Visibility.Collapsed;
 
         public ObservableCollection<CsiRunningInstanceViewModel> RunningCsiInstances { get; private set; }
 
@@ -399,24 +419,25 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             get
             {
+                string prefix = ProductTitle;
                 if (ActiveWorkspacePage == 7)
                 {
-                    return "ETABS Toolbox / General Information / Section Property - Stiffness Modifier";
+                    return $"{prefix} / General Information / Section Property - Stiffness Modifier";
                 }
 
                 if (ActiveWorkspacePage == 8)
                 {
-                    return "ETABS Toolbox / MODELLING HELPER / Helpers";
+                    return $"{prefix} / MODELLING HELPER / Helpers";
                 }
 
                 if (ActiveWorkspacePage == 9)
                 {
-                    return "ETABS Toolbox / Model / Shell Uniform Load Set Manager";
+                    return $"{prefix} / Model / Shell Uniform Load Set Manager";
                 }
 
                 return ActiveWorkspacePage == 6
-                    ? $"ETABS Toolbox / {ActiveTableCategory} / {ActivePageTitle}"
-                    : $"ETABS Toolbox / {ActivePageTitle}";
+                    ? $"{prefix} / {ActiveTableCategory} / {ActivePageTitle}"
+                    : $"{prefix} / {ActivePageTitle}";
             }
         }
 
@@ -555,6 +576,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         
         public ICommand GetFrameSectionsCommand { get; }
         public ICommand EditFrameSectionCommand { get; }
+        public ICommand OpenCreateSectionDialogCommand { get; }
 
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO> LoadPatterns { get; }
         public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO> LoadCombinations { get; }

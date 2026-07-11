@@ -85,6 +85,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _profile = OutputTablePopupProfileProvider.GetProfile(_config.PopupProfileKey);
             _displayTableName = _config.TableDisplayName;
             _workbookStateKey = "OutputTableExport." + CreateStateKey(_profile.WorksheetNamePrefix + "." + _config.TableDisplayName);
+            _addHeaders = _config.DefaultAddHeaders;
 
             UnitOptions = new ObservableCollection<BaseReactionUnitOption>
             {
@@ -697,7 +698,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     "Starting report export: " + _displayTableName +
                     "; selected cases/combinations=" + selectedCases.Count +
                     "; selected unit=" + (SelectedUnitOption == null ? string.Empty : SelectedUnitOption.Label));
-                if (IsBaseReactionsTable())
+                if (_config.StaticExportValuesFactory != null)
+                {
+                    RunStaticTableExport();
+                }
+                else if (IsBaseReactionsTable())
                 {
                     RunBaseReactionsExport(selectedCases);
                 }
@@ -716,6 +721,46 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             {
                 IsBusy = false;
             }
+        }
+
+        private void RunStaticTableExport()
+        {
+            object[,] values = _config.StaticExportValuesFactory(AddHeaders);
+            int rowCount = values == null ? 0 : values.GetLength(0);
+            int recordCount = _config.StaticRecordCount > 0
+                ? _config.StaticRecordCount
+                : Math.Max(0, rowCount - (AddHeaders ? 1 : 0));
+
+            if (values == null || values.Length == 0 || rowCount == 0)
+            {
+                string emptyMessage = string.IsNullOrWhiteSpace(_config.EmptyDataMessage)
+                    ? _profile.EmptyDataMessage
+                    : _config.EmptyDataMessage;
+                StatusText = emptyMessage;
+                MessageBox.Show(
+                    emptyMessage + " Nothing was written to Excel.",
+                    WindowTitle,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                AnalysisExportDiagnostics.Log("Static export returned no records for " + _displayTableName);
+                return;
+            }
+
+            string successMessage = string.IsNullOrWhiteSpace(_config.StaticSuccessMessage)
+                ? "Successfully wrote " + recordCount + " " + _displayTableName + " record(s) to Excel."
+                : _config.StaticSuccessMessage;
+            OperationResult writeResult = _excelOutputService.WriteValuesToActiveCell(
+                values,
+                successMessage,
+                AddHeaders);
+
+            StatusText = writeResult.Message;
+            AnalysisExportDiagnostics.Log("Static export completed for " + _displayTableName + ": " + writeResult.Message);
+            MessageBox.Show(
+                writeResult.Message,
+                WindowTitle,
+                MessageBoxButton.OK,
+                writeResult.IsSuccess ? MessageBoxImage.Information : MessageBoxImage.Warning);
         }
 
         private void RunBaseReactionsExport(IReadOnlyList<CSISapModelOutputCaseDTO> selectedCases)
@@ -1195,7 +1240,10 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            AddHeaders = _workbookState.AddHeaders;
+            if (_workbookState.HasStoredValue)
+            {
+                AddHeaders = _workbookState.AddHeaders;
+            }
             if (_workbookState.UsePickedAnchor)
             {
                 ExcelRange anchorCell = PostprocessingWorkbookStateStore.TryGetAnchorCell(_workbookState.AnchorAddress);

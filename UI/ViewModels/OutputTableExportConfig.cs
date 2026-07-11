@@ -25,6 +25,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public BaseReactionUnitOption ExportUnitOption { get; set; }
 
+        public Func<bool, object[,]> StaticExportValuesFactory { get; set; }
+
+        public int StaticRecordCount { get; set; }
+
+        public string StaticSuccessMessage { get; set; }
+
+        public bool DefaultAddHeaders { get; set; }
+
         public static OutputTableExportConfig ForTable(string tableDisplayName, string breadcrumb)
         {
             return new OutputTableExportConfig

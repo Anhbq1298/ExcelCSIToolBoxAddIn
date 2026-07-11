@@ -37,6 +37,7 @@ namespace ExcelCSIToolBoxAddIn
             this.tabExcelCSIToolBox = this.Factory.CreateRibbonTab();
             this.group1 = this.Factory.CreateRibbonGroup();
             this.buttonEtabs = this.Factory.CreateRibbonButton();
+            this.buttonSap2000 = this.Factory.CreateRibbonButton();
             this.groupEtabsPostprocessing = this.Factory.CreateRibbonGroup();
             this.buttonGetBaseReactions = this.Factory.CreateRibbonButton();
             this.buttonModalMassParticipationRatios = this.Factory.CreateRibbonButton();
@@ -48,10 +49,13 @@ namespace ExcelCSIToolBoxAddIn
             this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonAiAgent = this.Factory.CreateRibbonButton();
             this.buttonRefreshPlugin = this.Factory.CreateRibbonButton();
+            this.groupSystem = this.Factory.CreateRibbonGroup();
+            this.buttonAbout = this.Factory.CreateRibbonButton();
             this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
             this.groupEtabsPostprocessing.SuspendLayout();
             this.groupAiAssistant.SuspendLayout();
+            this.groupSystem.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabExcelCSIToolBox
@@ -59,12 +63,14 @@ namespace ExcelCSIToolBoxAddIn
             this.tabExcelCSIToolBox.Groups.Add(this.group1);
             this.tabExcelCSIToolBox.Groups.Add(this.groupEtabsPostprocessing);
             this.tabExcelCSIToolBox.Groups.Add(this.groupAiAssistant);
+            this.tabExcelCSIToolBox.Groups.Add(this.groupSystem);
             this.tabExcelCSIToolBox.Label = "ExcelCSIToolBox";
             this.tabExcelCSIToolBox.Name = "tabExcelCSIToolBox";
             // 
             // group1
             // 
             this.group1.Items.Add(this.buttonEtabs);
+            this.group1.Items.Add(this.buttonSap2000);
             this.group1.Label = "CSI Toolbox";
             this.group1.Name = "group1";
             // 
@@ -75,6 +81,14 @@ namespace ExcelCSIToolBoxAddIn
             this.buttonEtabs.Name = "buttonEtabs";
             this.buttonEtabs.ShowImage = true;
             this.buttonEtabs.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonEtabs_Click);
+            // 
+            // buttonSap2000
+            // 
+            this.buttonSap2000.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonSap2000.Label = "SAP2000 Toolbox";
+            this.buttonSap2000.Name = "buttonSap2000";
+            this.buttonSap2000.ShowImage = true;
+            this.buttonSap2000.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonSap2000_Click);
             // 
             // groupEtabsPostprocessing
             // 
@@ -168,9 +182,15 @@ namespace ExcelCSIToolBoxAddIn
             // groupAiAssistant
             // 
             this.groupAiAssistant.Items.Add(this.buttonAiAgent);
-            this.groupAiAssistant.Items.Add(this.buttonRefreshPlugin);
             this.groupAiAssistant.Label = "AI Assistant";
             this.groupAiAssistant.Name = "groupAiAssistant";
+            // 
+            // groupSystem
+            // 
+            this.groupSystem.Items.Add(this.buttonRefreshPlugin);
+            this.groupSystem.Items.Add(this.buttonAbout);
+            this.groupSystem.Label = "System";
+            this.groupSystem.Name = "groupSystem";
             // 
             // buttonAiAgent
             // 
@@ -194,7 +214,19 @@ namespace ExcelCSIToolBoxAddIn
             this.buttonRefreshPlugin.SuperTip = "Unloads and reloads the ExcelCSIToolBoxAddIn plugin to apply updates.";
             this.buttonRefreshPlugin.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonRefreshPlugin_Click);
             // 
+            // buttonAbout
+            // 
+            this.buttonAbout.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonAbout.Label = "About";
+            this.buttonAbout.Name = "buttonAbout";
+            this.buttonAbout.OfficeImageId = "Info";
+            this.buttonAbout.ScreenTip = "About Excel CSI ToolBox";
+            this.buttonAbout.ShowImage = true;
+            this.buttonAbout.SuperTip = "Display information about Excel CSI ToolBox, including version and author.";
+            this.buttonAbout.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonAbout_Click);
+            // 
             // ExcelCSIToolBoxAddInRibbon
+
             // 
             this.Name = "ExcelCSIToolBoxAddInRibbon";
             this.RibbonType = "Microsoft.Excel.Workbook";
@@ -208,6 +240,8 @@ namespace ExcelCSIToolBoxAddIn
             this.groupEtabsPostprocessing.PerformLayout();
             this.groupAiAssistant.ResumeLayout(false);
             this.groupAiAssistant.PerformLayout();
+            this.groupSystem.ResumeLayout(false);
+            this.groupSystem.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -228,6 +262,9 @@ namespace ExcelCSIToolBoxAddIn
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMassSummaryByStory;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAiAgent;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonRefreshPlugin;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupSystem;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAbout;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonSap2000;
     }
 
     partial class ThisRibbonCollection

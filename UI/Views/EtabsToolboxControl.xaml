@@ -163,7 +163,7 @@
 
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="214"/>
+                <ColumnDefinition Width="260"/>
                 <ColumnDefinition Width="10"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -188,7 +188,7 @@
                               Background="{StaticResource CardBackgroundBrush}"
                               Padding="3,6,2,6">
                         <TreeViewItem Header="ETABS Toolbox" IsExpanded="True" FontWeight="Bold">
-                            <TreeViewItem Header="Model" IsExpanded="True" FontWeight="Normal">
+                            <TreeViewItem Header="MODEL" IsExpanded="True" FontWeight="Bold">
                                 <TreeViewItem Header="General Information" Tag="0" FontWeight="Normal"/>
                                 <TreeViewItem Header="Section Property" Tag="0" FontWeight="Normal"/>
                                 <TreeViewItem Header="Section Property - Stiffness Modifier" Tag="7" FontWeight="Normal"/>
@@ -196,39 +196,39 @@
                                 <TreeViewItem Header="Load Combination" Tag="5" FontWeight="Normal"/>
                                 <TreeViewItem Header="Shell Uniform Load Set Manager" Tag="9" FontWeight="Normal"/>
                             </TreeViewItem>
-                            <TreeViewItem Header="Element Manipulation" IsExpanded="True" FontWeight="Normal">
+                            <TreeViewItem Header="ELEMENT MANIPULATION" IsExpanded="True" FontWeight="Bold">
                                 <TreeViewItem Header="Point" Tag="1" FontWeight="Normal"/>
                                 <TreeViewItem Header="Frame" Tag="2" FontWeight="Normal"/>
                                 <TreeViewItem Header="Shell" Tag="3" FontWeight="Normal"/>
-                                <TreeViewItem Header="Etabs Object Connectivity"
+                                <TreeViewItem Header="{Binding ObjectConnectivityTitle, FallbackValue=Etabs Object Connectivity}"
                                               Tag="Tables:Element Manipulation:Etabs Object Connectivity"
                                               IsExpanded="True"
                                               FontWeight="Normal"/>
                             </TreeViewItem>
-                            <TreeViewItem Header="Modelling Helper" IsExpanded="True" FontWeight="Normal">
+                            <TreeViewItem Header="MODELLING HELPER" IsExpanded="True" FontWeight="Bold">
                                 <TreeViewItem Header="Helpers" Tag="8" FontWeight="Normal"/>
                             </TreeViewItem>
-                            <TreeViewItem Header="ANALYSIS RESULTS" IsExpanded="True" FontWeight="Normal">
-                                 <TreeViewItem Header="Joint Output" Tag="Results:Joint Output" IsExpanded="True" FontWeight="Normal">
+                            <TreeViewItem Header="ANALYSIS RESULTS" IsExpanded="True" FontWeight="Bold">
+                                 <TreeViewItem Header="JOINT OUTPUT" Tag="Results:Joint Output" IsExpanded="True" FontWeight="Bold">
                                      <TreeViewItem Header="Displacements" Tag="Results:Displacements" FontWeight="Normal"/>
                                      <TreeViewItem Header="Reactions" Tag="Results:Reactions" FontWeight="Normal"/>
                                      <TreeViewItem Header="Velocity and Acceleration" Tag="Results:Velocity and Acceleration" FontWeight="Normal"/>
                                      <TreeViewItem Header="Joint Masses" Tag="Results:Assembled Joint Masses" FontWeight="Normal"/>
                                  </TreeViewItem>
-                                 <TreeViewItem Header="Element Output" IsExpanded="True" FontWeight="Normal">
+                                 <TreeViewItem Header="ELEMENT OUTPUT" IsExpanded="True" FontWeight="Bold">
                                      <TreeViewItem Header="Frame Output" Tag="Results:Frame Output" FontWeight="Normal"/>
                                      <TreeViewItem Header="Area Output" Tag="Results:Area Output" FontWeight="Normal"/>
                                      <TreeViewItem Header="Wall Output" Tag="Results:Wall Output" FontWeight="Normal"/>
                                      <TreeViewItem Header="Objects and Elements" Tag="Results:Objects and Elements" FontWeight="Normal"/>
                                  </TreeViewItem>
-                                <TreeViewItem Header="Structure Output" IsExpanded="True" FontWeight="Normal">
+                                <TreeViewItem Header="STRUCTURE OUTPUT" IsExpanded="True" FontWeight="Bold">
                                     <TreeViewItem Header="Base Reactions" Tag="Results:Base Reactions" FontWeight="Normal"/>
                                     <TreeViewItem Header="Modal Information" Tag="Results:Modal Information" FontWeight="Normal"/>
                                     <TreeViewItem Header="Mass Data" Tag="Results:Mass Data" FontWeight="Normal"/>
                                     <TreeViewItem Header="Other Output Items" Tag="Results:Other Output Items" FontWeight="Normal"/>
                                 </TreeViewItem>
                             </TreeViewItem>
-                             <TreeViewItem Header="MISCELLANEOUS DATA" IsExpanded="True" FontWeight="Normal">
+                             <TreeViewItem Header="MISCELLANEOUS DATA" IsExpanded="True" FontWeight="Bold">
                                  <TreeViewItem Header="Project Information" Tag="Tables:MISCELLANEOUS DATA:Project Information" FontWeight="Normal"/>
                                  <TreeViewItem Header="Material List" Tag="Tables:MISCELLANEOUS DATA:Material List" FontWeight="Normal"/>
                              </TreeViewItem>
@@ -269,33 +269,8 @@
                                     <RowDefinition Height="10"/>
                                     <RowDefinition Height="*"/>
                                 </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border Grid.Row="0"
-                                        Grid.RowSpan="3"
-                                        Grid.Column="0"
-                                        Style="{StaticResource CompactCardBorderStyle}">
-                                    <StackPanel>
-                                        <TextBlock Text="Create From Excel Range"
-                                                   Style="{StaticResource SectionHeadingTextStyle}"
-                                                   Margin="{StaticResource Gap.Card}"/>
-                                        <Button Content="Ishape" Margin="{StaticResource Gap.Card}" Command="{Binding CreateIshapeSectionCommand}"/>
-                                        <Button Content="Channel" Margin="{StaticResource Gap.Card}" Command="{Binding CreateChannelSectionCommand}"/>
-                                        <Button Content="Angle" Margin="{StaticResource Gap.Card}" Command="{Binding CreateAngleSectionCommand}"/>
-                                        <Button Content="Tube" Margin="{StaticResource Gap.Card}" Command="{Binding CreateTubeSectionCommand}"/>
-                                        <Button Content="Pipe" Margin="{StaticResource Gap.Card}" Command="{Binding CreatePipeSectionCommand}"/>
-                                        <Button Content="Rectangle" Margin="{StaticResource Gap.Card}" Command="{Binding CreateConcreteRectangleSectionCommand}"/>
-                                        <Button Content="Circle" Command="{Binding CreateConcreteCircleSectionCommand}"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Grid.Row="0"
-                                        Grid.Column="2"
-                                        Style="{StaticResource CompactCardBorderStyle}">
+                                 <Border Grid.Row="0"
+                                         Style="{StaticResource CompactCardBorderStyle}">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
@@ -406,7 +381,6 @@
                                 </Border>
 
                                 <Border Grid.Row="2"
-                                        Grid.Column="2"
                                         Style="{StaticResource CompactCardBorderStyle}">
                                     <Grid>
                                         <Grid.RowDefinitions>
@@ -438,12 +412,19 @@
                                                 <DataGridTextColumn Header="Type" Binding="{Binding ShapeType}" Width="*"/>
                                             </DataGrid.Columns>
                                         </DataGrid>
-                                        <Button Grid.Row="2"
-                                                Content="Refresh List"
-                                                Style="{StaticResource SecondaryButtonStyle}"
-                                                HorizontalAlignment="Left"
-                                                Margin="0,8,0,0"
-                                                Command="{Binding GetFrameSectionsCommand}"/>
+                                        <StackPanel Grid.Row="2"
+                                                    Orientation="Horizontal"
+                                                    Margin="0,8,0,0">
+                                            <Button Content="Refresh List"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    Command="{Binding GetFrameSectionsCommand}"/>
+                                            <Button Content="+"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    MinWidth="36"
+                                                    Margin="8,0,0,0"
+                                                    Command="{Binding OpenCreateSectionDialogCommand}"
+                                                    ToolTip="Add new section from Excel range"/>
+                                        </StackPanel>
                                     </Grid>
                                 </Border>
                             </Grid>
@@ -766,10 +747,26 @@
                                                          BorderBrush="{StaticResource BorderBrush.Light}"
                                                          BorderThickness="1"
                                                          SelectionMode="Multiple">
+                                                    <ListBox.ItemContainerStyle>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <ContentPresenter 
+                                                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </ListBox.ItemContainerStyle>
                                                     <ListBox.ItemTemplate>
                                                         <DataTemplate>
                                                             <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                       Content="{Binding Name}"
+                                                                      FontWeight="Normal"
                                                                       Margin="4,2"/>
                                                         </DataTemplate>
                                                     </ListBox.ItemTemplate>
@@ -884,10 +881,26 @@
                                                          BorderBrush="{StaticResource BorderBrush.Light}"
                                                          BorderThickness="1"
                                                          SelectionMode="Multiple">
+                                                    <ListBox.ItemContainerStyle>
+                                                        <Style TargetType="ListBoxItem">
+                                                            <Setter Property="Background" Value="Transparent"/>
+                                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="ListBoxItem">
+                                                                        <ContentPresenter 
+                                                                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </ListBox.ItemContainerStyle>
                                                     <ListBox.ItemTemplate>
                                                         <DataTemplate>
                                                             <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                       Content="{Binding Name}"
+                                                                      FontWeight="Normal"
                                                                       Margin="4,2"/>
                                                         </DataTemplate>
                                                     </ListBox.ItemTemplate>

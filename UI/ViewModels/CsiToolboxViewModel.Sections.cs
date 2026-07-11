@@ -284,6 +284,12 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
         }
 
+        private void OpenCreateSectionDialog()
+        {
+            var window = new ExcelCSIToolBoxAddIn.UI.Views.CreateSectionWindow(this);
+            window.ShowDialog();
+        }
+
         private void SelectFrameSectionByName(string sectionName)
         {
             foreach (var section in FrameSections)

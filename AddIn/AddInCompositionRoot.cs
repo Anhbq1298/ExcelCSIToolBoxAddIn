@@ -49,6 +49,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
             WindowManager.Configure(
                 _etabsConnectionService,
+                _sap2000ConnectionService,
                 _excelSelectionService,
                 _excelOutputService);
 

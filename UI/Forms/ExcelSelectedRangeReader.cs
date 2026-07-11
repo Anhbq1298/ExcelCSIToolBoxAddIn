@@ -8,6 +8,60 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
 {
     internal sealed class ExcelSelectedRangeReader
     {
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsIconic(IntPtr hWnd);
+
+        private const int SW_RESTORE = 9;
+        private const int SW_SHOW = 5;
+
+        public void ActivateExcel()
+        {
+            try
+            {
+                Application application = ExcelApplicationProvider.GetApplication();
+                IntPtr hwnd = IntPtr.Zero;
+                if (application != null)
+                {
+                    hwnd = new IntPtr(application.Hwnd);
+                }
+
+                if (hwnd == IntPtr.Zero)
+                {
+                    hwnd = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
+                }
+
+                if (hwnd != IntPtr.Zero)
+                {
+                    if (IsIconic(hwnd))
+                    {
+                        ShowWindow(hwnd, SW_RESTORE);
+                    }
+                    else
+                    {
+                        ShowWindow(hwnd, SW_SHOW);
+                    }
+                    SetForegroundWindow(hwnd);
+
+                    if (application != null && application.ActiveWindow != null)
+                    {
+                        application.ActiveWindow.Activate();
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore activation failures
+            }
+        }
+
         public OperationResult<ExcelSelectedRangeData> ReadSelectedRange()
         {
             try
@@ -17,6 +71,10 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 {
                     return OperationResult<ExcelSelectedRangeData>.Failure("Excel application is not available.");
                 }
+
+                ActivateExcel();
+                System.Windows.Forms.Application.DoEvents();
+                System.Threading.Thread.Sleep(100);
 
                 object input = application.InputBox(
                     "Select a Shell Uniform Load Set range:\r\nUniformLoadSetName | load pattern columns...",

@@ -13,24 +13,30 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     internal static class WindowManager
     {
         private static ICSISapModelConnectionService _etabsConnectionService;
+        private static ICSISapModelConnectionService _sap2000ConnectionService;
         private static IExcelSelectionService _excelSelectionService;
         private static IExcelOutputService _excelOutputService;
 
         private static Microsoft.Office.Tools.CustomTaskPane _etabsPane;
         private static WpfTaskPaneHost _etabsHost;
+        private static Microsoft.Office.Tools.CustomTaskPane _sap2000Pane;
+        private static WpfTaskPaneHost _sap2000Host;
         private static GetModalMassParticipationRatiosWindow _modalMassParticipationRatiosWindow;
         private static GetStoryResultsWindow _storyForcesWindow;
         private static GetStoryResultsWindow _storyDriftsWindow;
         private static GetStoryResultsWindow _storyMaxOverAverageDisplacementsWindow;
         private static GetStoryResultsWindow _storyMaxOverAverageDriftsWindow;
         private static GetMassSummaryByStoryWindow _massSummaryByStoryWindow;
+        private static AboutWindow _aboutWindow;
 
         internal static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
+            ICSISapModelConnectionService sap2000ConnectionService,
             IExcelSelectionService excelSelectionService,
             IExcelOutputService excelOutputService)
         {
             _etabsConnectionService = etabsConnectionService ?? throw new ArgumentNullException(nameof(etabsConnectionService));
+            _sap2000ConnectionService = sap2000ConnectionService ?? throw new ArgumentNullException(nameof(sap2000ConnectionService));
             _excelSelectionService = excelSelectionService ?? throw new ArgumentNullException(nameof(excelSelectionService));
             _excelOutputService = excelOutputService ?? throw new ArgumentNullException(nameof(excelOutputService));
         }
@@ -42,6 +48,16 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 ref _etabsHost,
                 "ETABS Toolbox",
                 _etabsConnectionService,
+                () => new EtabsToolboxControl());
+        }
+
+        internal static void ShowSap2000Window()
+        {
+            ToggleCsiPane(
+                ref _sap2000Pane,
+                ref _sap2000Host,
+                "SAP2000 Toolbox",
+                _sap2000ConnectionService,
                 () => new EtabsToolboxControl());
         }
 
@@ -138,6 +154,20 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             window.Show();
         }
 
+        internal static void ShowAboutWindow()
+        {
+            if (_aboutWindow != null)
+            {
+                _aboutWindow.Activate();
+                return;
+            }
+
+            var window = new AboutWindow();
+            window.Closed += delegate { _aboutWindow = null; };
+            _aboutWindow = window;
+            window.Show();
+        }
+
         private static void ShowStoryResultsWindow(
             StoryPostprocessingResultKind kind,
             ref GetStoryResultsWindow existingWindow)
@@ -185,6 +215,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         internal static void DisposePanes()
         {
             DisposePane(ref _etabsPane, ref _etabsHost);
+            DisposePane(ref _sap2000Pane, ref _sap2000Host);
         }
 
         private static void ToggleCsiPane(

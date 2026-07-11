@@ -10,6 +10,7 @@ namespace ExcelCSIToolBoxAddIn
             try
             {
                 groupEtabsPostprocessing.Visible = false;
+                buttonAiAgent.Visible = false;
 
                 // In VSTO, the base directory is usually more reliable than Assembly.Location
                 string baseDir = System.AppDomain.CurrentDomain.BaseDirectory;
@@ -20,6 +21,15 @@ namespace ExcelCSIToolBoxAddIn
                     using (var stream = new System.IO.FileStream(etabsIconPath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
                     {
                         this.buttonEtabs.Image = System.Drawing.Image.FromStream(stream);
+                    }
+                }
+
+                string sapIconPath = System.IO.Path.Combine(baseDir, "icon", "sap2000icon.jpg");
+                if (System.IO.File.Exists(sapIconPath))
+                {
+                    using (var stream = new System.IO.FileStream(sapIconPath, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                    {
+                        this.buttonSap2000.Image = System.Drawing.Image.FromStream(stream);
                     }
                 }
             }
@@ -77,6 +87,16 @@ namespace ExcelCSIToolBoxAddIn
         private void buttonRefreshPlugin_Click(object sender, RibbonControlEventArgs e)
         {
             AddInCompositionRoot.RefreshPlugin();
+        }
+
+        private void buttonAbout_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowAboutWindow();
+        }
+
+        private void buttonSap2000_Click(object sender, RibbonControlEventArgs e)
+        {
+            WindowManager.ShowSap2000Window();
         }
     }
 }

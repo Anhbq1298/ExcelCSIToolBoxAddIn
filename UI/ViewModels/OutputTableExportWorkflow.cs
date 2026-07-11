@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Interop;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
@@ -16,7 +17,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             CsiToolboxUseCaseBundle useCases,
             ICSISapModelConnectionService csiConnectionService,
             IExcelOutputService excelOutputService,
-            Window owner = null)
+            Window owner = null,
+            IntPtr ownerHandle = default(IntPtr))
         {
             if (config == null)
             {
@@ -33,6 +35,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (owner != null && !ReferenceEquals(owner, window))
             {
                 window.Owner = owner;
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            }
+            else if (ownerHandle != IntPtr.Zero)
+            {
+                new WindowInteropHelper(window).Owner = ownerHandle;
                 window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
             else

@@ -11,6 +11,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
 {
     internal sealed class PostprocessingWorkbookState
     {
+        public bool HasStoredValue { get; set; }
         public string UnitLabel { get; set; }
         public bool AddHeaders { get; set; }
         public bool UsePickedAnchor { get; set; }
@@ -30,6 +31,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Helpers
             var values = ParseValues(serialized);
             return new PostprocessingWorkbookState
             {
+                HasStoredValue = !string.IsNullOrWhiteSpace(serialized),
                 UnitLabel = GetValue(values, "Unit"),
                 AddHeaders = string.Equals(GetValue(values, "Headers"), "1", StringComparison.Ordinal),
                 UsePickedAnchor = string.Equals(GetValue(values, "Pick"), "1", StringComparison.Ordinal),

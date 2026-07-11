@@ -13,19 +13,22 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
     internal partial class ShellUniformLoadSetForm : Form
     {
         private const string NameColumnKey = "UniformLoadSetName";
+        private const string SuggestedNameColumnKey = "SuggestedName";
         private const int NameColumnMinimumWidth = 180;
         private const int NameColumnMaximumWidth = 320;
         private const int LoadPatternColumnMinimumWidth = 70;
         private const int LoadPatternColumnMaximumWidth = 160;
         private readonly ICSISapModelConnectionService _connectionService;
+        private readonly Action<IntPtr> _exportCurrentDefinitionsAction;
         private readonly ExcelSelectedRangeReader _excelRangeReader;
         private readonly Dictionary<string, string> _loadPatternLookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly List<UnitOption> _unitOptions = new List<UnitOption>();
 
-        public ShellUniformLoadSetForm(ICSISapModelConnectionService connectionService)
+        public ShellUniformLoadSetForm(ICSISapModelConnectionService connectionService, Action<IntPtr> exportCurrentDefinitionsAction = null)
         {
             if (connectionService == null) throw new ArgumentNullException(nameof(connectionService));
             _connectionService = connectionService;
+            _exportCurrentDefinitionsAction = exportCurrentDefinitionsAction;
             _excelRangeReader = new ExcelSelectedRangeReader();
             InitializeComponent();
             InitializeUnitOptions();
@@ -47,11 +50,13 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 btnApply.Enabled = false;
                 btnImportExcelRange.Enabled = false;
                 btnAddLoadPattern.Enabled = false;
+                btnExportDefinitions.Enabled = false;
                 return;
             }
 
             btnApply.Enabled = true;
             btnImportExcelRange.Enabled = true;
+            btnExportDefinitions.Enabled = _exportCurrentDefinitionsAction != null;
 
             ShellUniformLoadSetContextDto context = result.Data ?? new ShellUniformLoadSetContextDto();
             lblModelName.Text = "ETABS Model: " + (string.IsNullOrWhiteSpace(context.ModelFileName) ? "-" : context.ModelFileName);
@@ -72,14 +77,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             UpdateLoadPatternButtonState();
         }
 
-        private void LoadCurrentModelDefinitions()
+        private bool LoadCurrentModelDefinitions()
         {
             OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>> definitionsResult = _connectionService.GetShellUniformLoadSetDefinitions();
             if (!definitionsResult.IsSuccess)
             {
                 SetStatus("Status: Could not load current Shell Uniform Load Sets.");
                 MessageBox.Show(this, definitionsResult.Message, "Shell Uniform Load Set Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                return false;
             }
 
             IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions = definitionsResult.Data ?? new List<ShellUniformLoadSetDefinitionDto>();
@@ -88,10 +93,11 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             if (definitions.Count == 0)
             {
                 SetStatus("Status: No existing Shell Uniform Load Sets found.");
-                return;
+                return true;
             }
 
             SetStatus("Status: Loaded " + definitions.Count.ToString(CultureInfo.InvariantCulture) + " Shell Uniform Load Set(s) from ETABS.");
+            return true;
         }
 
         private void btnRefreshDefinitions_Click(object sender, EventArgs e)
@@ -122,6 +128,24 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             {
                 Cursor.Current = previousCursor;
                 btnRefreshDefinitions.Enabled = true;
+            }
+        }
+
+        private void btnExportDefinitions_Click(object sender, EventArgs e)
+        {
+            if (_exportCurrentDefinitionsAction == null)
+            {
+                MessageBox.Show(this, "Excel export is not available from this manager instance.", "Export Current Definitions", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            try
+            {
+                _exportCurrentDefinitionsAction(Handle);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, "Failed to export current Shell Uniform Load Set definitions:\r\n\r\n" + ex.Message, "Export Current Definitions", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -219,11 +243,25 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             }
         }
 
+        private bool IsLoadPatternColumn(int columnIndex)
+        {
+            if (columnIndex < 0 || columnIndex >= dgvLoadSets.Columns.Count) return false;
+            var col = dgvLoadSets.Columns[columnIndex];
+            return col.Name != NameColumnKey && col.Name != SuggestedNameColumnKey;
+        }
+
+        private bool IsLoadPatternColumn(DataGridViewColumn column)
+        {
+            return column != null && column.Name != NameColumnKey && column.Name != SuggestedNameColumnKey;
+        }
+
         private void InitializeGrid()
         {
             ConfigureGridTextWrapping();
             dgvLoadSets.Columns.Clear();
             dgvLoadSets.Rows.Clear();
+            
+            // Name Column (always editable)
             DataGridViewTextBoxColumn nameColumn = new DataGridViewTextBoxColumn
             {
                 Name = NameColumnKey,
@@ -233,18 +271,44 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 MinimumWidth = NameColumnMinimumWidth,
                 Width = 220,
                 Frozen = true,
-                ReadOnly = chkApplySuggestedName != null && chkApplySuggestedName.Checked
+                ReadOnly = false
             };
             nameColumn.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
             nameColumn.HeaderCell.Style.WrapMode = DataGridViewTriState.True;
             dgvLoadSets.Columns.Add(nameColumn);
+
+            // Suggested Name Column (read-only, visibility toggled by checkbox)
+            DataGridViewTextBoxColumn suggestedNameColumn = new DataGridViewTextBoxColumn
+            {
+                Name = SuggestedNameColumnKey,
+                HeaderText = "Suggested Name",
+                Tag = SuggestedNameColumnKey,
+                SortMode = DataGridViewColumnSortMode.NotSortable,
+                MinimumWidth = NameColumnMinimumWidth,
+                Width = 220,
+                Frozen = true,
+                ReadOnly = true,
+                Visible = chkApplySuggestedName != null && chkApplySuggestedName.Checked
+            };
+            suggestedNameColumn.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            suggestedNameColumn.HeaderCell.Style.WrapMode = DataGridViewTriState.True;
+            dgvLoadSets.Columns.Add(suggestedNameColumn);
+
             AutoFitGrid();
         }
 
         private void btnImportExcelRange_Click(object sender, EventArgs e)
         {
             OperationResult<ExcelSelectedRangeData> readResult;
+            
+            // Bring Excel to the foreground before hiding the form to make the transition seamless
+            _excelRangeReader.ActivateExcel();
+            Application.DoEvents();
+            System.Threading.Thread.Sleep(50);
+
             Hide();
+            Application.DoEvents();
+
             try
             {
                 readResult = _excelRangeReader.ReadSelectedRange();
@@ -273,20 +337,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             {
                 MessageBox.Show(this, headerResult.Message, "Header Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            }
-
-            if (GridContainsData())
-            {
-                DialogResult replace = MessageBox.Show(
-                    this,
-                    "The current table contains data.\r\n\r\nImporting the selected Excel range will replace the current table.\r\n\r\nContinue?",
-                    "Replace Current Table",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-                if (replace != DialogResult.Yes)
-                {
-                    return;
-                }
             }
 
             TransferExcelDataToGrid(range, headerResult.Data);
@@ -349,7 +399,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
 
         private void TransferExcelDataToGrid(ExcelSelectedRangeData range, IReadOnlyList<string> canonicalHeaders)
         {
-            InitializeGrid();
+            ConfigureGridTextWrapping();
             foreach (string header in canonicalHeaders)
             {
                 AddLoadPatternColumn(header);
@@ -364,9 +414,15 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
 
                 int gridRowIndex = dgvLoadSets.Rows.Add();
                 DataGridViewRow gridRow = dgvLoadSets.Rows[gridRowIndex];
-                for (int column = 1; column <= range.ColumnCount; column++)
+                
+                // First column in Excel is the load set name
+                gridRow.Cells[NameColumnKey].Value = ToCellText(range.GetValue(row, 1));
+                
+                // Subsequent columns are load pattern values
+                for (int column = 2; column <= range.ColumnCount; column++)
                 {
-                    gridRow.Cells[column - 1].Value = ToCellText(range.GetValue(row, column));
+                    string header = canonicalHeaders[column - 2];
+                    gridRow.Cells[header].Value = ToCellText(range.GetValue(row, column));
                 }
             }
 
@@ -510,25 +566,93 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 return;
             }
 
+            UnitOption selectedUnitOption = cboSelectedUnits.SelectedItem as UnitOption;
+            if (selectedUnitOption == null)
+            {
+                SetStatus("Status: Please select an ETABS unit system.");
+                MessageBox.Show(this, "Please select an ETABS unit system.", "Unit Selection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            var unitSystemDto = selectedUnitOption.ToDto();
+            var definitionsToApply = parseResult.Data;
+
             btnApply.Enabled = false;
             Cursor previousCursor = Cursor.Current;
             Cursor.Current = Cursors.WaitCursor;
+
+            OperationResult unitResult = null;
+            OperationResult<ShellUniformLoadSetApplyResultDto> applyResult = null;
+            OperationResult<IReadOnlyList<ShellUniformLoadSetDefinitionDto>> refreshResult = null;
+
             try
             {
-                OperationResult unitResult = ApplySelectedUnitSystem();
-                if (!unitResult.IsSuccess)
+                using (var progressForm = new ProgressForm("Applying Changes", "Applying changes to ETABS, please wait..."))
+                {
+                    System.Threading.Tasks.Task.Run(() =>
+                    {
+                        try
+                        {
+                            unitResult = _connectionService.SetPresentUnitSystem(unitSystemDto);
+                            if (unitResult.IsSuccess)
+                            {
+                                applyResult = _connectionService.ApplyShellUniformLoadSets(definitionsToApply);
+                                if (applyResult.IsSuccess)
+                                {
+                                    refreshResult = _connectionService.GetShellUniformLoadSetDefinitions();
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            applyResult = OperationResult<ShellUniformLoadSetApplyResultDto>.Failure("An error occurred: " + ex.Message);
+                        }
+                        finally
+                        {
+                            if (progressForm.IsHandleCreated)
+                            {
+                                progressForm.BeginInvoke(new Action(progressForm.Close));
+                            }
+                        }
+                    });
+
+                    progressForm.ShowDialog(this);
+                }
+
+                if (unitResult != null && !unitResult.IsSuccess)
                 {
                     SetStatus("Status: Could not set ETABS units.");
                     MessageBox.Show(this, unitResult.Message, "Unit Selection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                OperationResult<ShellUniformLoadSetApplyResultDto> applyResult = _connectionService.ApplyShellUniformLoadSets(parseResult.Data);
-                if (!applyResult.IsSuccess)
+                if (applyResult == null || !applyResult.IsSuccess)
                 {
                     SetStatus("Status: ETABS table update failed.");
-                    MessageBox.Show(this, applyResult.Message, "ETABS Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    string errMsg = applyResult != null ? applyResult.Message : "ETABS application did not respond.";
+                    MessageBox.Show(this, errMsg, "ETABS Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
+                }
+
+                if (refreshResult != null && refreshResult.IsSuccess)
+                {
+                    IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions = refreshResult.Data ?? new List<ShellUniformLoadSetDefinitionDto>();
+                    PopulateDefinitions(definitions);
+                    UpdateLoadPatternButtonState();
+
+                    if (definitions.Count == 0)
+                    {
+                        SetStatus("Status: No existing Shell Uniform Load Sets found.");
+                    }
+                    else
+                    {
+                        SetStatus("Status: Loaded " + definitions.Count.ToString(CultureInfo.InvariantCulture) + " Shell Uniform Load Set(s) from ETABS.");
+                    }
+                }
+                else
+                {
+                    string refreshErr = refreshResult != null ? refreshResult.Message : "Failed to retrieve updated definitions.";
+                    SetStatus("Status: ETABS table updated, but current definitions could not be refreshed.");
+                    MessageBox.Show(this, "ETABS table updated successfully, but current definitions could not be refreshed:\r\n" + refreshErr, "Refresh Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
 
                 ShellUniformLoadSetApplyResultDto result = applyResult.Data ?? new ShellUniformLoadSetApplyResultDto();
@@ -544,7 +668,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                     message += "\r\n\r\nETABS Import Log:\r\n" + result.ImportLog;
                 }
 
-                SetStatus("Status: ETABS table updated successfully.");
                 MessageBox.Show(this, message, "Shell Uniform Load Sets Updated", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             finally
@@ -595,23 +718,35 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                     continue;
                 }
 
-                string name = NormalizeText(ToCellText(row.Cells[NameColumnKey].Value));
+                string name;
+                string displayColumnKey;
+                if (chkApplySuggestedName.Checked)
+                {
+                    name = NormalizeText(ToCellText(row.Cells[SuggestedNameColumnKey].Value));
+                    displayColumnKey = SuggestedNameColumnKey;
+                }
+                else
+                {
+                    name = NormalizeText(ToCellText(row.Cells[NameColumnKey].Value));
+                    displayColumnKey = NameColumnKey;
+                }
+
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    HighlightCell(row.Cells[NameColumnKey]);
-                    errors.Add("Row " + (row.Index + 1).ToString(CultureInfo.InvariantCulture) + ": UniformLoadSetName is required.");
+                    HighlightCell(row.Cells[displayColumnKey]);
+                    errors.Add("Row " + (row.Index + 1).ToString(CultureInfo.InvariantCulture) + ": " + (chkApplySuggestedName.Checked ? "Suggested Name" : "UniformLoadSetName") + " is required.");
                     continue;
                 }
 
                 if (!names.Add(name))
                 {
-                    HighlightCell(row.Cells[NameColumnKey]);
-                    errors.Add("Row " + (row.Index + 1).ToString(CultureInfo.InvariantCulture) + ": duplicate UniformLoadSetName '" + name + "'.");
+                    HighlightCell(row.Cells[displayColumnKey]);
+                    errors.Add("Row " + (row.Index + 1).ToString(CultureInfo.InvariantCulture) + ": duplicate " + (chkApplySuggestedName.Checked ? "Suggested Name" : "UniformLoadSetName") + " '" + name + "'.");
                     continue;
                 }
 
                 var definition = new ShellUniformLoadSetDefinitionDto { Name = name };
-                foreach (DataGridViewColumn column in dgvLoadSets.Columns.Cast<DataGridViewColumn>().Where(column => column.Index > 0))
+                foreach (DataGridViewColumn column in dgvLoadSets.Columns.Cast<DataGridViewColumn>().Where(IsLoadPatternColumn))
                 {
                     string text = NormalizeText(ToCellText(row.Cells[column.Index].Value));
                     if (string.IsNullOrWhiteSpace(text))
@@ -718,14 +853,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
 
         private DataGridViewColumn GetSelectedLoadPatternColumn()
         {
-            if (dgvLoadSets.CurrentCell != null && dgvLoadSets.CurrentCell.ColumnIndex > 0)
+            if (dgvLoadSets.CurrentCell != null && IsLoadPatternColumn(dgvLoadSets.CurrentCell.ColumnIndex))
             {
                 return dgvLoadSets.Columns[dgvLoadSets.CurrentCell.ColumnIndex];
             }
 
             foreach (DataGridViewColumn column in dgvLoadSets.SelectedColumns)
             {
-                if (column.Index > 0)
+                if (IsLoadPatternColumn(column))
                 {
                     return column;
                 }
@@ -740,10 +875,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             {
                 dgvLoadSets.Columns[0].Name = NameColumnKey;
                 dgvLoadSets.Columns[0].HeaderText = NameColumnKey;
-                if (chkApplySuggestedName.Checked)
-                {
-                    e.Cancel = true;
-                }
             }
         }
 
@@ -752,7 +883,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
             {
                 dgvLoadSets.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.Empty;
-                if (chkApplySuggestedName.Checked && e.ColumnIndex > 0)
+                if (chkApplySuggestedName.Checked && IsLoadPatternColumn(e.ColumnIndex))
                 {
                     ApplySuggestedNamesToAllRows();
                 }
@@ -774,9 +905,9 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
 
         private void SetSuggestedNameMode()
         {
-            if (dgvLoadSets.Columns.Count > 0)
+            if (dgvLoadSets.Columns.Contains(SuggestedNameColumnKey))
             {
-                dgvLoadSets.Columns[0].ReadOnly = chkApplySuggestedName.Checked;
+                dgvLoadSets.Columns[SuggestedNameColumnKey].Visible = chkApplySuggestedName.Checked;
             }
         }
 
@@ -800,11 +931,17 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
 
                 if (!RowHasAnyLoadValue(row))
                 {
-                    row.Cells[NameColumnKey].Value = string.Empty;
+                    if (dgvLoadSets.Columns.Contains(SuggestedNameColumnKey))
+                    {
+                        row.Cells[SuggestedNameColumnKey].Value = string.Empty;
+                    }
                     continue;
                 }
 
-                row.Cells[NameColumnKey].Value = CreateSuggestedName(row, suggestedIndex);
+                if (dgvLoadSets.Columns.Contains(SuggestedNameColumnKey))
+                {
+                    row.Cells[SuggestedNameColumnKey].Value = CreateSuggestedName(row, suggestedIndex);
+                }
                 suggestedIndex++;
             }
         }
@@ -812,7 +949,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
         private string CreateSuggestedName(DataGridViewRow row, int suggestedIndex)
         {
             var parts = new List<string>();
-            foreach (DataGridViewColumn column in dgvLoadSets.Columns.Cast<DataGridViewColumn>().Where(column => column.Index > 0))
+            foreach (DataGridViewColumn column in dgvLoadSets.Columns.Cast<DataGridViewColumn>().Where(IsLoadPatternColumn))
             {
                 string valueText = NormalizeText(ToCellText(row.Cells[column.Index].Value));
                 if (string.IsNullOrWhiteSpace(valueText))
@@ -843,24 +980,26 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
         private DataGridViewColumn FindLoadPatternColumn(string patternName)
         {
             return dgvLoadSets.Columns.Cast<DataGridViewColumn>()
-                .FirstOrDefault(column => column.Index > 0 && string.Equals(column.HeaderText, patternName, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(column => IsLoadPatternColumn(column) && string.Equals(column.HeaderText, patternName, StringComparison.OrdinalIgnoreCase));
         }
 
         private bool GridContainsData()
         {
-            return dgvLoadSets.Columns.Count > 1 || dgvLoadSets.Rows.Cast<DataGridViewRow>().Any(row => !row.IsNewRow && !IsBlankGridRow(row));
+            return dgvLoadSets.Columns.Cast<DataGridViewColumn>().Any(IsLoadPatternColumn) ||
+                   dgvLoadSets.Rows.Cast<DataGridViewRow>().Any(row => !row.IsNewRow && !IsBlankGridRow(row));
         }
 
         private bool IsBlankGridRow(DataGridViewRow row)
         {
             return dgvLoadSets.Columns.Cast<DataGridViewColumn>()
+                .Where(IsLoadPatternColumn)
                 .All(column => string.IsNullOrWhiteSpace(ToCellText(row.Cells[column.Index].Value)));
         }
 
         private bool RowHasAnyLoadValue(DataGridViewRow row)
         {
             return dgvLoadSets.Columns.Cast<DataGridViewColumn>()
-                .Where(column => column.Index > 0)
+                .Where(IsLoadPatternColumn)
                 .Any(column => !string.IsNullOrWhiteSpace(ToCellText(row.Cells[column.Index].Value)));
         }
 
@@ -1017,6 +1156,65 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             {
                 return DisplayName;
             }
+        }
+    }
+
+    internal class Win32WindowWrapper : IWin32Window
+    {
+        public IntPtr Handle { get; }
+        public Win32WindowWrapper(IntPtr handle)
+        {
+            Handle = handle;
+        }
+    }
+
+    internal sealed class ProgressForm : Form
+    {
+        private readonly Label _lblMessage;
+        private readonly ProgressBar _progressBar;
+
+        public ProgressForm(string title, string message)
+        {
+            Text = title;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            MinimizeBox = false;
+            ShowInTaskbar = false;
+            StartPosition = FormStartPosition.CenterParent;
+            ClientSize = new Size(400, 110);
+            BackColor = Color.FromArgb(11, 31, 58); // #0B1F3A Navy background
+
+            TableLayoutPanel panel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Padding = new Padding(20)
+            };
+            panel.RowStyles.Add(new RowStyle(SizeType.Percent, 45F));
+            panel.RowStyles.Add(new RowStyle(SizeType.Percent, 55F));
+
+            _lblMessage = new Label
+            {
+                Text = message,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 9.75F, FontStyle.Regular),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true
+            };
+
+            _progressBar = new ProgressBar
+            {
+                Style = ProgressBarStyle.Marquee,
+                MarqueeAnimationSpeed = 30,
+                Height = 18,
+                Dock = DockStyle.Fill
+            };
+
+            panel.Controls.Add(_lblMessage, 0, 0);
+            panel.Controls.Add(_progressBar, 0, 1);
+            Controls.Add(panel);
         }
     }
 }

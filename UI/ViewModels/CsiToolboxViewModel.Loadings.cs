@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Infrastructure.Excel;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -163,13 +164,41 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void OpenShellUniformLoadSetForm()
         {
-            using (var form = new ExcelCSIToolBoxAddIn.UI.Forms.ShellUniformLoadSetForm(_csiConnectionService))
+            using (var form = new ExcelCSIToolBoxAddIn.UI.Forms.ShellUniformLoadSetForm(
+                _csiConnectionService,
+                ownerHandle => ExportShellUniformLoadSetDefinitions(ownerHandle)))
             {
-                form.ShowDialog();
+                System.Windows.Forms.IWin32Window owner = null;
+                try
+                {
+                    var excelApp = ExcelApplicationProvider.GetApplication();
+                    if (excelApp != null)
+                    {
+                        owner = new ExcelCSIToolBoxAddIn.UI.Forms.Win32WindowWrapper(new IntPtr(excelApp.Hwnd));
+                    }
+                }
+                catch
+                {
+                    // Ignore wrapper creation errors
+                }
+
+                if (owner != null)
+                {
+                    form.ShowDialog(owner);
+                }
+                else
+                {
+                    form.ShowDialog();
+                }
             }
         }
 
         private void ExportShellUniformLoadSetDefinitions()
+        {
+            ExportShellUniformLoadSetDefinitions(IntPtr.Zero);
+        }
+
+        private void ExportShellUniformLoadSetDefinitions(IntPtr ownerHandle)
         {
             var result = _csiConnectionService.GetShellUniformLoadSetDefinitions();
             if (!result.IsSuccess)
@@ -185,15 +214,28 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 return;
             }
 
-            object[,] values = CreateShellUniformLoadSetExportValues(definitions);
-            OperationResult exportResult = _excelOutputService.WriteValuesToActiveCell(
-                values,
-                "Exported " + definitions.Count.ToString(CultureInfo.InvariantCulture) + " Shell Uniform Load Set definition(s) to Excel.",
-                true);
-            ShowOperationResult(exportResult);
+            OutputTableExportWorkflow.Run(
+                new OutputTableExportConfig
+                {
+                    TableDisplayName = "Shell Uniform Load Set Definitions",
+                    Breadcrumb = "ETABS Toolbox / Model / Shell Uniform Load Set Manager / Export Current Definitions",
+                    Description = "Select the Excel anchor cell and output format for current Shell Uniform Load Set definitions.",
+                    PopupProfileKey = "EtabsObjectConnectivity",
+                    EmptyDataMessage = "No Shell Uniform Load Set definitions were found in the active ETABS model.",
+                    WorksheetNamePrefix = "Shell Uniform Load Set",
+                    DefaultAddHeaders = true,
+                    StaticRecordCount = definitions.Count,
+                    StaticSuccessMessage = "Exported " + definitions.Count.ToString(CultureInfo.InvariantCulture) + " Shell Uniform Load Set definition(s) to Excel.",
+                    StaticExportValuesFactory = addHeaders => CreateShellUniformLoadSetExportValues(definitions, addHeaders)
+                },
+                _useCases,
+                _csiConnectionService,
+                _excelOutputService,
+                ownerHandle == IntPtr.Zero ? GetActiveOwnerWindow() : null,
+                ownerHandle);
         }
 
-        private static object[,] CreateShellUniformLoadSetExportValues(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)
+        private static object[,] CreateShellUniformLoadSetExportValues(IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions, bool addHeaders)
         {
             var patternNames = definitions
                 .Where(definition => definition != null && definition.LoadValuesByPattern != null)
@@ -203,19 +245,24 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            int rowCount = definitions.Count + 1;
+            int dataRowOffset = addHeaders ? 1 : 0;
+            int rowCount = definitions.Count + dataRowOffset;
             int columnCount = patternNames.Count + 1;
             var values = new object[rowCount, columnCount];
-            values[0, 0] = "UniformLoadSetName";
-            for (int columnIndex = 0; columnIndex < patternNames.Count; columnIndex++)
+            if (addHeaders)
             {
-                values[0, columnIndex + 1] = patternNames[columnIndex];
+                values[0, 0] = "UniformLoadSetName";
+                for (int columnIndex = 0; columnIndex < patternNames.Count; columnIndex++)
+                {
+                    values[0, columnIndex + 1] = patternNames[columnIndex];
+                }
             }
 
             for (int rowIndex = 0; rowIndex < definitions.Count; rowIndex++)
             {
                 ShellUniformLoadSetDefinitionDto definition = definitions[rowIndex];
-                values[rowIndex + 1, 0] = definition == null ? string.Empty : definition.Name ?? string.Empty;
+                int outputRowIndex = rowIndex + dataRowOffset;
+                values[outputRowIndex, 0] = definition == null ? string.Empty : definition.Name ?? string.Empty;
                 for (int columnIndex = 0; columnIndex < patternNames.Count; columnIndex++)
                 {
                     double loadValue;
@@ -223,7 +270,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                         definition.LoadValuesByPattern != null &&
                         definition.LoadValuesByPattern.TryGetValue(patternNames[columnIndex], out loadValue))
                     {
-                        values[rowIndex + 1, columnIndex + 1] = loadValue;
+                        values[outputRowIndex, columnIndex + 1] = loadValue;
                     }
                 }
             }

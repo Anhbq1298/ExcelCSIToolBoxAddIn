@@ -341,10 +341,19 @@
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\AboutWindow.xaml.cs">
+      <DependentUpon>AboutWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\Views\EtabsToolboxControl.xaml.cs">
       <DependentUpon>EtabsToolboxControl.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Views\CreateSectionWindow.xaml.cs">
+      <DependentUpon>CreateSectionWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\ViewModels\CsiProductType.cs" />
     <Compile Include="UI\Views\CreateArrayPerpendicularToPathWindow.xaml.cs">
       <DependentUpon>CreateArrayPerpendicularToPathWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -403,10 +412,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UI\Views\AboutWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\Views\EtabsToolboxControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="UI\Views\CreateSectionWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+
     <Page Include="UI\Views\CreateArrayPerpendicularToPathWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

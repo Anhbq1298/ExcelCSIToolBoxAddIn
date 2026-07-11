@@ -105,6 +105,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void LoadConnectionState(bool showMessage)
         {
+            if (ProductType == CsiProductType.SAP2000)
+            {
+                IsConnected = false;
+                HasRunningCsiInstance = false;
+                StatusText = "Not attached";
+                return;
+            }
+
             RefreshRunningCsiInstances();
 
             OperationResult<CSISapModelConnectionInfoDTO> result = SelectedRunningCsiInstance == null
@@ -192,6 +200,13 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void RefreshRunningCsiInstances()
         {
+            if (ProductType == CsiProductType.SAP2000)
+            {
+                RunningCsiInstances.Clear();
+                HasRunningCsiInstance = false;
+                return;
+            }
+
             string selectedInstanceId = SelectedRunningCsiInstance == null ? null : SelectedRunningCsiInstance.InstanceId;
             OperationResult<IReadOnlyList<CSISapModelRunningInstanceDTO>> result = _csiConnectionService.GetRunningInstances();
             if (!result.IsSuccess)
