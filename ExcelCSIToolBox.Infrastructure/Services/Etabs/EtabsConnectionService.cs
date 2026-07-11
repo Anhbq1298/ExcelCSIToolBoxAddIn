@@ -24,6 +24,11 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs
             }
         }
 
+        public OperationResult<CSISapModelPresentUnitSystemDTO> GetPresentUnitSystem()
+        {
+            return _connectionService.GetPresentUnitSystem();
+        }
+
         public OperationResult SetPresentUnitSystem(CSISapModelPresentUnitSystemDTO unitSystem)
         {
             return _connectionService.SetPresentUnitSystem(unitSystem);

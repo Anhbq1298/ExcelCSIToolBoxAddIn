@@ -37,12 +37,19 @@ namespace ExcelCSIToolBox.Infrastructure.Services.Etabs
                 throw new InvalidOperationException("Please attach to ETABS first.");
             }
 
-            if (SelectedUnitSystem == null)
+            CSISapModelPresentUnitSystemDTO unitSystem = SelectedUnitSystem;
+            if (unitSystem == null)
             {
-                throw new InvalidOperationException("Please select a unit system first.");
+                OperationResult<CSISapModelPresentUnitSystemDTO> currentUnitResult = _connectionService.GetPresentUnitSystem();
+                if (!currentUnitResult.IsSuccess || currentUnitResult.Data == null)
+                {
+                    throw new InvalidOperationException("Please select a unit system first.");
+                }
+
+                unitSystem = currentUnitResult.Data;
             }
 
-            OperationResult result = _connectionService.SetPresentUnitSystem(SelectedUnitSystem);
+            OperationResult result = _connectionService.SetPresentUnitSystem(unitSystem);
             if (!result.IsSuccess)
             {
                 string message = string.IsNullOrWhiteSpace(result.Message)

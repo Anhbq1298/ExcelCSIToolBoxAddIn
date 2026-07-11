@@ -7,6 +7,8 @@ namespace ExcelCSIToolBox.Application.Interfaces.Etabs
     {
         object SapModel { get; }
 
+        OperationResult<CSISapModelPresentUnitSystemDTO> GetPresentUnitSystem();
+
         OperationResult SetPresentUnitSystem(CSISapModelPresentUnitSystemDTO unitSystem);
     }
 }
