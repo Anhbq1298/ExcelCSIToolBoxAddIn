@@ -39,8 +39,6 @@ ExcelCSIToolBox.sln
 - ETABS and/or SAP2000 if using CSI-connected features
 - CSI interop assemblies in `lib/` (for example `ETABSv1.dll`, `SAP2000v1.dll`)
 
-If you install via `publish/ExcelCSIToolbox/setup.exe`, the installer can include the .NET Framework 4.8 and VSTO Runtime if missing.
-
 ## 🛠️ Prerequisites
 Before building and installing the add-in, ensure your computer has the following tools installed:
 1. **Operating System**: Windows 10 or Windows 11.
@@ -89,18 +87,6 @@ Once the build completes successfully:
 
 ---
 
-## 📦 User Installation
-
-To install the add-in for regular use (no development/build required):
-
-1. Close all running Excel instances.
-2. Open the publish folder: `publish/ExcelCSIToolbox/`
-3. Run `setup.exe`.
-4. If Windows warns about a temporary/self-signed certificate, proceed only if you trust the repository source.
-5. Open Excel. You should see a new ribbon tab named **ExcelCSIToolBox**.
-
----
-
 ## 🛑 Troubleshooting & Common Issues
 
 ### 1. CSI Toolbox Tab is Missing in Excel
@@ -121,9 +107,9 @@ If Excel blocks the add-in from loading due to trust policies:
    - Select `Disable VBA macros with notification` or `Enable all macros`.
 4. Restart Excel to apply the changes.
 
-### 3. Certificate/Trust or Zip Block Errors
+### 3. Verification & Setup Issues
 - **Windows blocking `.vsto` files**: If downloaded as a ZIP, right-click the ZIP file, open **Properties**, select **Unblock** if present, then extract.
-- **Missing VSTO Runtime**: Run `setup.exe` rather than trying to load the `.vsto` directly.
+- **Missing VSTO Runtime**: If you get a runtime error about a missing bootstrapper or framework, install the Visual Studio 2010 Tools for Office Runtime manually from Microsoft's download page.
 - **CSI connection issues**: Ensure ETABS/SAP2000 and a compatible model are open, and the interop DLL versions in `lib/` match your CSI product versions.
 
 ---
@@ -134,16 +120,6 @@ If you want to remove the add-in or perform a clean reinstall:
 2. Open Windows **Settings** -> **Apps** -> **Installed Apps** (or **Control Panel** -> **Uninstall a Program**).
 3. Search for **`ExcelCSIToolBoxAddIn`**.
 4. Click **Uninstall** and follow the prompts.
-
----
-
-## 🚀 Publishing the Installer
-To create a new installer:
-1. Open `src/ExcelCSIToolBoxAddIn` in Visual Studio.
-2. Choose **Build > Publish ExcelCSIToolBoxAddIn**.
-3. Publish to `publish/ExcelCSIToolbox/`.
-4. Verify the folder contains `setup.exe`, `ExcelCSIToolBoxAddIn.vsto`, and an `Application Files/` folder.
-5. Distribute the `publish/ExcelCSIToolbox/` folder to users for installation via `setup.exe`.
 
 ## Notes for Contributors
 
