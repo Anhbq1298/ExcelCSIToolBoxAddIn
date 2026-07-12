@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBox.AI.Ollama
+namespace ExcelCSIToolBox.AI.Providers.Ollama
 {
     public static class AiModelDefaults
     {

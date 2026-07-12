@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ExcelCSIToolBox.AI.Mcp.Client;
 using ExcelCSIToolBox.AI.Mcp.Contracts;
-using ExcelCSIToolBox.AI.Ollama;
+using ExcelCSIToolBox.AI.Providers.Ollama;
 using Newtonsoft.Json.Linq;
 
 namespace ExcelCSIToolBox.AI.Agent

@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace ExcelCSIToolBox.AI.Ollama
+namespace ExcelCSIToolBox.AI.Providers.Ollama
 {
     /// <summary>
     /// HTTP client service for communicating with a local Ollama instance.

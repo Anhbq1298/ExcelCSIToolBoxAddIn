@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBox.AI.Ollama
+namespace ExcelCSIToolBox.AI.Providers.Ollama
 {
     /// <summary>
     /// Represents a single chat message in an Ollama conversation.

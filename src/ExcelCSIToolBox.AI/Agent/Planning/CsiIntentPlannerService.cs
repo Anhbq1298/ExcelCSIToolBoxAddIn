@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
 using ExcelCSIToolBox.Application.ToolCatalog.Registry;
 using ExcelCSIToolBox.Application.ToolCatalog.Validation;
-using ExcelCSIToolBox.AI.Ollama;
+using ExcelCSIToolBox.AI.Providers.Ollama;
 using ExcelCSIToolBox.Core.Contracts.CSI.Intent;
 using ExcelCSIToolBox.Core.Contracts.CSI.Workflow;
 using Newtonsoft.Json;

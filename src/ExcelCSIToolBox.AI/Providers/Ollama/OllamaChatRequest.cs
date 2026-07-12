@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExcelCSIToolBox.AI.Ollama
+namespace ExcelCSIToolBox.AI.Providers.Ollama
 {
     /// <summary>
     /// Request payload sent to the Ollama /api/chat endpoint.

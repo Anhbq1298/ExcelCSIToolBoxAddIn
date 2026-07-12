@@ -7,7 +7,7 @@ using ExcelCSIToolBox.AI.Agent;
 using ExcelCSIToolBox.AI.Mcp.Client;
 using ExcelCSIToolBox.AI.Mcp.Safety;
 using ExcelCSIToolBox.AI.Mcp.Server;
-using ExcelCSIToolBox.AI.Ollama;
+using ExcelCSIToolBox.AI.Providers.Ollama;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBox.Infrastructure.CSI.Common;

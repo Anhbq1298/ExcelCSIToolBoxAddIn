@@ -1,4 +1,4 @@
-namespace ExcelCSIToolBox.AI.Ollama
+namespace ExcelCSIToolBox.AI.Providers.Ollama
 {
     /// <summary>
     /// Parsed response from the Ollama /api/chat endpoint (stream=false).
