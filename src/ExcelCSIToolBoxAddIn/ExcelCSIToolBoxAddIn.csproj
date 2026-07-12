@@ -231,6 +231,7 @@
     <EmbeddedResource Include="UI\Modules\AiAgent\AiAgentTaskPaneHost.resx">
       <DependentUpon>AiAgentTaskPaneHost.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="ExcelCSIToolBoxAddIn_TemporaryKey.pfx" />
     <None Include="Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -427,7 +428,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-
     <Page Include="UI\Modules\ModellingHelpers\CreateArrayPerpendicularToPathWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -500,10 +500,16 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>DAE9A0AB0DEBBC19F78AB3173B0750B9658AE3C2</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>058D0F853A8DD9BD9984330CDEA40AB532D8B611</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DelaySign>true</DelaySign>
   </PropertyGroup>
   <!-- Include the build rules for a C# project. -->
   <ItemGroup>
