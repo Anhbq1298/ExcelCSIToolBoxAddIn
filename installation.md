@@ -45,7 +45,7 @@ Alternatively, you can build the solution using MSBuild via PowerShell:
 ### Step 3: Install the Add-in from the Debug Folder
 Once the build completes successfully:
 1. Open the compiled output folder:
-   - Path: `[Cloned_Repository_Root]\src\ExcelCSIToolBoxAddIn\bin\Debug\`
+   - Path: `[Cloned_Repository_Root]\bin\Debug\`
 2. Double-click the deployment manifest file named **`ExcelCSIToolBoxAddIn.vsto`** inside this folder.
 3. The **Microsoft Office Customization Installer** dialog will appear. Click **Install**.
 4. Once completed, restart **Microsoft Excel**. You will see the new **CSI Toolbox** tab on the Excel Ribbon bar.

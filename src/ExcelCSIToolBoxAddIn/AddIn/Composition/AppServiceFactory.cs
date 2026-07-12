@@ -13,6 +13,8 @@ using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults.JointOutput;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults.StructureOutput;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Connectivity;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.DatabaseTables.MiscellaneousData;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Units;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Selection;
 using ExcelCSIToolBox.Infrastructure.Excel.Interop.Writing;
 
 namespace ExcelCSIToolBoxAddIn.AddIn.Composition

@@ -16,6 +16,8 @@ using ExcelCSIToolBox.Infrastructure.CSI.Common.ReadOnly;
 using ExcelCSIToolBox.Infrastructure.CSI.Common.Modelling.Truss;
 using ExcelCSIToolBox.Infrastructure.CSI.Common.Workflow;
 using ExcelCSIToolBox.Infrastructure.Excel.Interop;
+using ExcelCSIToolBox.Infrastructure.Excel.Reading;
+using ExcelCSIToolBox.Infrastructure.Excel.Writing;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
