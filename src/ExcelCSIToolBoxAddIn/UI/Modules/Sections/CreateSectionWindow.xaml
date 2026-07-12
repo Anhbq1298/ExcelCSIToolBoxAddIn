@@ -10,7 +10,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Themes/EtabsToolboxTheme.xaml"/>
+                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Shared/Themes/EtabsToolboxTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
 
             <SolidColorBrush x:Key="DialogBackgroundBrush" Color="#F3F6FA"/>

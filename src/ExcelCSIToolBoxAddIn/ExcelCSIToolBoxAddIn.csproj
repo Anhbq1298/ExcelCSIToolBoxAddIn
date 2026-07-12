@@ -228,7 +228,7 @@
     <EmbeddedResource Include="AddIn\Ribbon\ExcelCSIToolBoxAddInRibbon.resx">
       <DependentUpon>ExcelCSIToolBoxAddInRibbon.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\Views\AiAgentTaskPaneHost.resx">
+    <EmbeddedResource Include="UI\Modules\AiAgent\AiAgentTaskPaneHost.resx">
       <DependentUpon>AiAgentTaskPaneHost.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx" />
@@ -284,210 +284,210 @@
     <Content Include="icon\StoryDisplacements.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="UI\Config\OutputTablePopupProfiles.xml">
+    <Content Include="UI\Modules\AnalysisResults\Config\OutputTablePopupProfiles.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Connection.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.PointFrame.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Loadings.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Export.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.Sections.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.StiffnessModifiers.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.ModellingHelper.cs" />
-    <Compile Include="UI\ViewModels\CsiToolboxViewModel.OffsetFromSetOfLines.cs" />
-    <Compile Include="UI\ViewModels\AnalysisResultsViewModel.cs" />
-    <Compile Include="UI\ViewModels\CsiRunningInstanceViewModel.cs" />
-    <Compile Include="UI\ViewModels\EtabsUnitSystem.cs" />
-    <Compile Include="UI\ViewModels\BaseReactionOutputCaseViewModel.cs" />
-    <Compile Include="UI\ViewModels\FrameSectionDetailViewModel.cs" />
-    <Compile Include="UI\ViewModels\FrameSectionDimensionEditItem.cs" />
-    <Compile Include="UI\ViewModels\ModifierFieldViewModel.cs" />
-    <Compile Include="UI\ViewModels\OutputCaseSelectionMode.cs" />
-    <Compile Include="UI\ViewModels\OutputTableExportConfig.cs" />
-    <Compile Include="UI\ViewModels\OutputTableExportOptionsViewModel.cs" />
-    <Compile Include="UI\ViewModels\OutputTableExportWorkflow.cs" />
-    <Compile Include="UI\ViewModels\OutputTablePopupProfile.cs" />
-    <Compile Include="UI\ViewModels\OutputTablePopupProfileProvider.cs" />
-    <Compile Include="UI\ViewModels\GetModalMassParticipationRatiosViewModel.cs" />
-    <Compile Include="UI\ViewModels\GetStoryResultsViewModel.cs" />
-    <Compile Include="UI\ViewModels\GetMassSummaryByStoryViewModel.cs" />
-    <Compile Include="UI\ViewModels\LoadCombinationMatrixRowViewModel.cs" />
-    <Compile Include="UI\ViewModels\LoadCombinationMatrixViewModel.cs" />
-    <Compile Include="UI\ViewModels\LoadCombinationTypeOption.cs" />
-    <Compile Include="UI\ViewModels\SectionDimensionAnnotation.cs" />
-    <Compile Include="UI\ViewModels\SelectableSectionItem.cs" />
-    <Compile Include="UI\ViewModels\StoryPostprocessingResultKind.cs" />
-    <Compile Include="UI\ViewModels\ViewModelBase.cs" />
-    <Compile Include="UI\Common\Commands\RelayCommand.cs" />
-    <Compile Include="UI\Common\Commands\RelayCommandOfT.cs" />
-    <Compile Include="UI\ViewModels\AiAgentChatMessageViewModel.cs" />
-    <Compile Include="UI\ViewModels\AiAgentChatViewModel.cs" />
-    <Compile Include="UI\ViewModels\AiAgentToolTraceViewModel.cs" />
-    <Compile Include="UI\Helpers\SectionShapeRenderer.cs" />
-    <Compile Include="UI\Helpers\PostprocessingWorkbookStateStore.cs" />
-    <Compile Include="UI\Forms\ExcelSelectedRangeData.cs" />
-    <Compile Include="UI\Forms\ExcelSelectedRangeReader.cs" />
-    <Compile Include="UI\Forms\LoadPatternPickerForm.cs">
+    <Compile Include="UI\Modules\ToolboxShell\CsiToolboxViewModel.cs" />
+    <Compile Include="UI\Modules\ToolboxShell\CsiToolboxViewModel.Connection.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\CsiToolboxViewModel.PointFrame.cs" />
+    <Compile Include="UI\Modules\Loadings\CsiToolboxViewModel.Loadings.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\CsiToolboxViewModel.Export.cs" />
+    <Compile Include="UI\Modules\Sections\CsiToolboxViewModel.Sections.cs" />
+    <Compile Include="UI\Modules\Sections\CsiToolboxViewModel.StiffnessModifiers.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\CsiToolboxViewModel.ModellingHelper.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\CsiToolboxViewModel.OffsetFromSetOfLines.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\AnalysisResultsViewModel.cs" />
+    <Compile Include="UI\Modules\ToolboxShell\CsiRunningInstanceViewModel.cs" />
+    <Compile Include="UI\Modules\ToolboxShell\EtabsUnitSystem.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\BaseReactionOutputCaseViewModel.cs" />
+    <Compile Include="UI\Modules\Sections\FrameSectionDetailViewModel.cs" />
+    <Compile Include="UI\Modules\Sections\FrameSectionDimensionEditItem.cs" />
+    <Compile Include="UI\Modules\Sections\ModifierFieldViewModel.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\OutputCaseSelectionMode.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\OutputTableExportConfig.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\OutputTableExportOptionsViewModel.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\OutputTableExportWorkflow.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\OutputTablePopupProfile.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\OutputTablePopupProfileProvider.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\GetModalMassParticipationRatiosViewModel.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\GetStoryResultsViewModel.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\GetMassSummaryByStoryViewModel.cs" />
+    <Compile Include="UI\Modules\Loadings\LoadCombinationMatrixRowViewModel.cs" />
+    <Compile Include="UI\Modules\Loadings\LoadCombinationMatrixViewModel.cs" />
+    <Compile Include="UI\Modules\Loadings\LoadCombinationTypeOption.cs" />
+    <Compile Include="UI\Modules\Sections\SectionDimensionAnnotation.cs" />
+    <Compile Include="UI\Modules\Sections\SelectableSectionItem.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\StoryPostprocessingResultKind.cs" />
+    <Compile Include="UI\Shared\ViewModels\ViewModelBase.cs" />
+    <Compile Include="UI\Shared\Common\Commands\RelayCommand.cs" />
+    <Compile Include="UI\Shared\Common\Commands\RelayCommandOfT.cs" />
+    <Compile Include="UI\Modules\AiAgent\AiAgentChatMessageViewModel.cs" />
+    <Compile Include="UI\Modules\AiAgent\AiAgentChatViewModel.cs" />
+    <Compile Include="UI\Modules\AiAgent\AiAgentToolTraceViewModel.cs" />
+    <Compile Include="UI\Modules\Sections\SectionShapeRenderer.cs" />
+    <Compile Include="UI\Modules\AnalysisResults\PostprocessingWorkbookStateStore.cs" />
+    <Compile Include="UI\Shared\Excel\ExcelSelectedRangeData.cs" />
+    <Compile Include="UI\Shared\Excel\ExcelSelectedRangeReader.cs" />
+    <Compile Include="UI\Modules\Loadings\LoadPatternPickerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\Forms\LoadPatternPickerForm.Designer.cs">
+    <Compile Include="UI\Modules\Loadings\LoadPatternPickerForm.Designer.cs">
       <DependentUpon>LoadPatternPickerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Forms\ShellUniformLoadSetForm.cs">
+    <Compile Include="UI\Modules\Loadings\ShellUniformLoadSetForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\Forms\ShellUniformLoadSetForm.Designer.cs">
+    <Compile Include="UI\Modules\Loadings\ShellUniformLoadSetForm.Designer.cs">
       <DependentUpon>ShellUniformLoadSetForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\Views\EtabsToolboxWindow.xaml.cs">
+    <Compile Include="UI\Modules\ToolboxShell\EtabsToolboxWindow.xaml.cs">
       <DependentUpon>EtabsToolboxWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\AboutWindow.xaml.cs">
+    <Compile Include="UI\Modules\ToolboxShell\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\EtabsToolboxControl.xaml.cs">
+    <Compile Include="UI\Modules\ToolboxShell\EtabsToolboxControl.xaml.cs">
       <DependentUpon>EtabsToolboxControl.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\CreateSectionWindow.xaml.cs">
+    <Compile Include="UI\Modules\Sections\CreateSectionWindow.xaml.cs">
       <DependentUpon>CreateSectionWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\ViewModels\CsiProductType.cs" />
-    <Compile Include="UI\Views\CreateArrayPerpendicularToPathWindow.xaml.cs">
+    <Compile Include="UI\Modules\ToolboxShell\CsiProductType.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\CreateArrayPerpendicularToPathWindow.xaml.cs">
       <DependentUpon>CreateArrayPerpendicularToPathWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\ArrayBetweenTwoLinesWindow.xaml.cs">
+    <Compile Include="UI\Modules\ModellingHelpers\ArrayBetweenTwoLinesWindow.xaml.cs">
       <DependentUpon>ArrayBetweenTwoLinesWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\OffsetFromSetOfLinesWindow.xaml.cs">
+    <Compile Include="UI\Modules\ModellingHelpers\OffsetFromSetOfLinesWindow.xaml.cs">
       <DependentUpon>OffsetFromSetOfLinesWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\InteractiveSelectionWindow.xaml.cs">
+    <Compile Include="UI\Modules\ModellingHelpers\InteractiveSelectionWindow.xaml.cs">
       <DependentUpon>InteractiveSelectionWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\BatchProgressWindow.xaml.cs">
+    <Compile Include="UI\Shared\Progress\BatchProgressWindow.xaml.cs">
       <DependentUpon>BatchProgressWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\LoadCombinationDetailsWindow.xaml.cs">
+    <Compile Include="UI\Modules\Loadings\LoadCombinationDetailsWindow.xaml.cs">
       <DependentUpon>LoadCombinationDetailsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\LoadCombinationMatrixView.xaml.cs">
+    <Compile Include="UI\Modules\Loadings\LoadCombinationMatrixView.xaml.cs">
       <DependentUpon>LoadCombinationMatrixView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\FrameSectionDetailWindow.xaml.cs">
+    <Compile Include="UI\Modules\Sections\FrameSectionDetailWindow.xaml.cs">
       <DependentUpon>FrameSectionDetailWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\OutputTableExportOptionsWindow.xaml.cs">
+    <Compile Include="UI\Modules\AnalysisResults\OutputTableExportOptionsWindow.xaml.cs">
       <DependentUpon>OutputTableExportOptionsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\GetModalMassParticipationRatiosWindow.xaml.cs">
+    <Compile Include="UI\Modules\AnalysisResults\GetModalMassParticipationRatiosWindow.xaml.cs">
       <DependentUpon>GetModalMassParticipationRatiosWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\GetStoryResultsWindow.xaml.cs">
+    <Compile Include="UI\Modules\AnalysisResults\GetStoryResultsWindow.xaml.cs">
       <DependentUpon>GetStoryResultsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\GetMassSummaryByStoryWindow.xaml.cs">
+    <Compile Include="UI\Modules\AnalysisResults\GetMassSummaryByStoryWindow.xaml.cs">
       <DependentUpon>GetMassSummaryByStoryWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\Views\AiAgentChatControl.xaml.cs">
+    <Compile Include="UI\Modules\AiAgent\AiAgentChatControl.xaml.cs">
       <DependentUpon>AiAgentChatControl.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <None Include="..\..\docs\reference\csi\CSI API ETABS v1.chm" />
     <None Include="..\..\docs\reference\csi\CSI_OAPI_Documentation.chm" />
-    <Page Include="UI\Views\EtabsToolboxWindow.xaml">
+    <Page Include="UI\Modules\ToolboxShell\EtabsToolboxWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\AboutWindow.xaml">
+    <Page Include="UI\Modules\ToolboxShell\AboutWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\EtabsToolboxControl.xaml">
+    <Page Include="UI\Modules\ToolboxShell\EtabsToolboxControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\CreateSectionWindow.xaml">
+    <Page Include="UI\Modules\Sections\CreateSectionWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
 
-    <Page Include="UI\Views\CreateArrayPerpendicularToPathWindow.xaml">
+    <Page Include="UI\Modules\ModellingHelpers\CreateArrayPerpendicularToPathWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\ArrayBetweenTwoLinesWindow.xaml">
+    <Page Include="UI\Modules\ModellingHelpers\ArrayBetweenTwoLinesWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\OffsetFromSetOfLinesWindow.xaml">
+    <Page Include="UI\Modules\ModellingHelpers\OffsetFromSetOfLinesWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\InteractiveSelectionWindow.xaml">
+    <Page Include="UI\Modules\ModellingHelpers\InteractiveSelectionWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\BatchProgressWindow.xaml">
+    <Page Include="UI\Shared\Progress\BatchProgressWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\LoadCombinationDetailsWindow.xaml">
+    <Page Include="UI\Modules\Loadings\LoadCombinationDetailsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\LoadCombinationMatrixView.xaml">
+    <Page Include="UI\Modules\Loadings\LoadCombinationMatrixView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\FrameSectionDetailWindow.xaml">
+    <Page Include="UI\Modules\Sections\FrameSectionDetailWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\OutputTableExportOptionsWindow.xaml">
+    <Page Include="UI\Modules\AnalysisResults\OutputTableExportOptionsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\GetModalMassParticipationRatiosWindow.xaml">
+    <Page Include="UI\Modules\AnalysisResults\GetModalMassParticipationRatiosWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\GetStoryResultsWindow.xaml">
+    <Page Include="UI\Modules\AnalysisResults\GetStoryResultsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\GetMassSummaryByStoryWindow.xaml">
+    <Page Include="UI\Modules\AnalysisResults\GetMassSummaryByStoryWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Views\AiAgentChatControl.xaml">
+    <Page Include="UI\Modules\AiAgent\AiAgentChatControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UI\Themes\EtabsToolboxTheme.xaml">
+    <Page Include="UI\Shared\Themes\EtabsToolboxTheme.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="UI\Views\AiAgentTaskPaneHost.cs">
+    <Compile Include="UI\Modules\AiAgent\AiAgentTaskPaneHost.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UI\Views\WpfTaskPaneHost.cs">
+    <Compile Include="UI\Shared\Host\WpfTaskPaneHost.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <AppDesigner Include="Properties\" />

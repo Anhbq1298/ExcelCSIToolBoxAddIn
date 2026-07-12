@@ -12,7 +12,7 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Themes/EtabsToolboxTheme.xaml"/>
+                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Shared/Themes/EtabsToolboxTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <views:TableHeaderToolTipConverter x:Key="TableHeaderToolTipConverter"/>
         </ResourceDictionary>

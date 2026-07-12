@@ -51,7 +51,18 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private static IDictionary<string, OutputTablePopupProfile> LoadProfiles()
         {
             var profiles = CreateDefaultProfiles();
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UI", "Config", ProfileFileName);
+            string path = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "UI",
+                "Modules",
+                "AnalysisResults",
+                "Config",
+                ProfileFileName);
+            if (!File.Exists(path))
+            {
+                path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UI", "Config", ProfileFileName);
+            }
+
             if (!File.Exists(path))
             {
                 path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileFileName);
