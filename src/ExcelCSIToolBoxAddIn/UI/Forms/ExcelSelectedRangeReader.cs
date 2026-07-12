@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBox.Infrastructure.Excel.Interop;
 using Microsoft.Office.Interop.Excel;
 
 namespace ExcelCSIToolBoxAddIn.UI.Forms

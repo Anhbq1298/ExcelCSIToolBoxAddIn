@@ -5,9 +5,9 @@ using ExcelCSIToolBoxAddIn.UI.Common.Commands;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
 using ExcelCSIToolBox.Core.Models.ElementConnectivity;
 using ExcelCSIToolBox.Core.Models.MiscellaneousData;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Connectivity;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.DatabaseTables.MiscellaneousData;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {

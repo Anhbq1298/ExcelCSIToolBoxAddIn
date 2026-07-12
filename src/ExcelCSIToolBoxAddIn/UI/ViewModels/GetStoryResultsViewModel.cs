@@ -10,7 +10,7 @@ using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBoxAddIn.UI.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Contracts.CSI;
-using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBox.Infrastructure.Excel.Interop;
 using ExcelCSIToolBoxAddIn.UI.Helpers;
 using ExcelRange = Microsoft.Office.Interop.Excel.Range;
 

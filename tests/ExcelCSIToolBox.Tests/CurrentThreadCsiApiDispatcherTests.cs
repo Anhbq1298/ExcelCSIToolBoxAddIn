@@ -1,5 +1,5 @@
 using System;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
+using ExcelCSIToolBox.Infrastructure.CSI.Common;
 using FluentAssertions;
 using Xunit;
 

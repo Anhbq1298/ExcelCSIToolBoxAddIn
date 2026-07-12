@@ -32,7 +32,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
         {
             if (connectionService == null) throw new ArgumentNullException(nameof(connectionService));
             _connectionService = connectionService;
-            _csiApiDispatcher = csiApiDispatcher ?? new ExcelCSIToolBox.Infrastructure.CSISapModel.CurrentThreadCsiApiDispatcher();
+            _csiApiDispatcher = csiApiDispatcher ?? new ExcelCSIToolBox.Infrastructure.CSI.Common.CurrentThreadCsiApiDispatcher();
             _exportCurrentDefinitionsAction = exportCurrentDefinitionsAction;
             _excelRangeReader = new ExcelSelectedRangeReader();
             InitializeComponent();

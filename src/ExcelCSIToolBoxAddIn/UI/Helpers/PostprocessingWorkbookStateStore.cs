@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBox.Infrastructure.Excel.Interop;
 using ExcelRange = Microsoft.Office.Interop.Excel.Range;
 using ExcelWorkbook = Microsoft.Office.Interop.Excel.Workbook;
 using ExcelWorksheet = Microsoft.Office.Interop.Excel.Worksheet;

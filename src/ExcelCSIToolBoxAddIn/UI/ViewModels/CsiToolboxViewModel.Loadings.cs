@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Contracts.CSI;
-using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBox.Infrastructure.Excel.Interop;
 using ExcelCSIToolBoxAddIn.AddIn.Composition;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels

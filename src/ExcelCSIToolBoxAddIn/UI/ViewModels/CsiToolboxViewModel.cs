@@ -18,11 +18,11 @@ using ExcelCSIToolBox.Application.Features.Connectivity;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBox.Core.Contracts.CSI;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
-using ExcelCSIToolBox.Infrastructure.Excel;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData;
+using ExcelCSIToolBox.Infrastructure.CSI.Common;
+using ExcelCSIToolBox.Infrastructure.Excel.Interop;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Connectivity;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.DatabaseTables.MiscellaneousData;
 using ExcelCSIToolBoxAddIn.AddIn.Composition;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels

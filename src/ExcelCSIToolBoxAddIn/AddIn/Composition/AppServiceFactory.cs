@@ -6,14 +6,14 @@ using ExcelCSIToolBox.Application.Interfaces.Etabs.MiscellaneousData;
 using ExcelCSIToolBox.Application.Interfaces.Excel;
 using ExcelCSIToolBox.Application.Features.Connectivity;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults.JointOutput;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults.StructureOutput;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity;
-using ExcelCSIToolBox.Infrastructure.Services.Etabs.MiscellaneousData;
-using ExcelCSIToolBox.Infrastructure.Services.Excel;
+using ExcelCSIToolBox.Infrastructure.CSI.Common;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.DatabaseTables;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults.JointOutput;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults.StructureOutput;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Connectivity;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.DatabaseTables.MiscellaneousData;
+using ExcelCSIToolBox.Infrastructure.Excel.Interop.Writing;
 
 namespace ExcelCSIToolBoxAddIn.AddIn.Composition
 {

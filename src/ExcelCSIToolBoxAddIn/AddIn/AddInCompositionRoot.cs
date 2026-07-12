@@ -10,12 +10,12 @@ using ExcelCSIToolBox.AI.Mcp.Server;
 using ExcelCSIToolBox.AI.Ollama;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Random;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.ReadOnly;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Truss;
-using ExcelCSIToolBox.Infrastructure.CSISapModel.Workflow;
-using ExcelCSIToolBox.Infrastructure.Excel;
+using ExcelCSIToolBox.Infrastructure.CSI.Common;
+using ExcelCSIToolBox.Infrastructure.CSI.Common.Modelling.Random;
+using ExcelCSIToolBox.Infrastructure.CSI.Common.ReadOnly;
+using ExcelCSIToolBox.Infrastructure.CSI.Common.Modelling.Truss;
+using ExcelCSIToolBox.Infrastructure.CSI.Common.Workflow;
+using ExcelCSIToolBox.Infrastructure.Excel.Interop;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
 

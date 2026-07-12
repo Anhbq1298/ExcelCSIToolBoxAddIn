@@ -1,6 +1,6 @@
 using System;
 using System.Windows;
-using ExcelCSIToolBox.Infrastructure.CSISapModel;
+using ExcelCSIToolBox.Infrastructure.CSI.Common;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
 {
