@@ -9,12 +9,13 @@ description: Work on the ExcelCSIToolBoxAddIn solution safely. Use when changing
 
 Treat the solution as layered:
 
-- `ExcelCSIToolBox.Core`: pure shared models, result types, abstractions, and common logic. Do not reference ETABS/SAP2000 COM, Excel Interop, WPF, or VSTO.
-- `ExcelCSIToolBox.Application`: use cases, workflows, and interface contracts. Do not place direct COM or Excel Interop calls here.
-- `ExcelCSIToolBox.Infrastructure`: ETABS/SAP2000 API adapters, Excel Interop implementations, file/system integrations, and concrete service implementations.
-- `ExcelCSIToolBoxAddIn`: VSTO add-in host, ribbon, WPF views, ViewModels, task panes, and dependency wiring.
-- `ExcelCSIToolBox.Data`: DTOs, data models, and table/data-frame structures.
-- `ExcelCSIToolBox.Tests`: focused unit tests.
+- `src/ExcelCSIToolBox.Core`: pure shared models, result types, abstractions, and common logic. Do not reference ETABS/SAP2000 COM, Excel Interop, WPF, or VSTO.
+- `src/ExcelCSIToolBox.Application`: use cases, workflows, and interface contracts. Do not place direct COM or Excel Interop calls here.
+- `src/ExcelCSIToolBox.Infrastructure`: ETABS/SAP2000 API adapters, Excel Interop implementations, file/system integrations, and concrete service implementations.
+- `src/ExcelCSIToolBoxAddIn`: VSTO add-in host, ribbon, WPF views, ViewModels, task panes, and dependency wiring.
+- `src/ExcelCSIToolBox.Data`: legacy DTO/data model project kept only during migration.
+- `tests/ExcelCSIToolBox.Tests`: focused unit tests.
+- `tools/ExcelCSIToolBox.RefBuilder`: development-time CSI API reference/index utility.
 
 ## Development Rules
 
@@ -68,13 +69,13 @@ For Miscellaneous Data, preserve the left-tree category label and breadcrumb cat
 Use Visual Studio MSBuild if `msbuild` is not on PATH:
 
 ```powershell
-& 'C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe' ExcelCSIToolBoxAddIn.sln /t:Build /p:Configuration=Debug /p:Platform='Any CPU' /m
+& 'C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe' ExcelCSIToolBox.sln /t:Build /p:Configuration=Debug /p:Platform='Any CPU' /m
 ```
 
 Run tests:
 
 ```powershell
-dotnet test ExcelCSIToolBox.Tests\ExcelCSIToolBox.Tests.csproj --configuration Debug --no-build
+dotnet test tests\ExcelCSIToolBox.Tests\ExcelCSIToolBox.Tests.csproj --configuration Debug --no-build
 ```
 
 If a change touches WPF XAML, VSTO project includes, project references, or generated resources, run the full solution build.

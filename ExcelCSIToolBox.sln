@@ -3,19 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36511.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBoxAddIn", "ExcelCSIToolBoxAddIn.csproj", "{CDD86528-0232-488F-853C-908F41C4C3DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBoxAddIn", "src\ExcelCSIToolBoxAddIn\ExcelCSIToolBoxAddIn.csproj", "{CDD86528-0232-488F-853C-908F41C4C3DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Core", "ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj", "{11111111-1111-4111-8111-111111111111}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Core", "src\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj", "{11111111-1111-4111-8111-111111111111}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Data", "ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj", "{22222222-2222-4222-8222-222222222222}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Data", "src\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj", "{22222222-2222-4222-8222-222222222222}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Infrastructure", "ExcelCSIToolBox.Infrastructure\ExcelCSIToolBox.Infrastructure.csproj", "{33333333-3333-4333-8333-333333333333}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Infrastructure", "src\ExcelCSIToolBox.Infrastructure\ExcelCSIToolBox.Infrastructure.csproj", "{33333333-3333-4333-8333-333333333333}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.AI", "ExcelCSIToolBox.AI\ExcelCSIToolBox.AI.csproj", "{44444444-4444-4444-8444-444444444444}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.AI", "src\ExcelCSIToolBox.AI\ExcelCSIToolBox.AI.csproj", "{44444444-4444-4444-8444-444444444444}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Application", "ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj", "{C76C05E8-6B93-4A80-9C75-BEC22F58C3AF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Application", "src\ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj", "{C76C05E8-6B93-4A80-9C75-BEC22F58C3AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Tests", "ExcelCSIToolBox.Tests\ExcelCSIToolBox.Tests.csproj", "{498AFB4A-A17B-459B-A346-5C4B3B1C21FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.Tests", "tests\ExcelCSIToolBox.Tests\ExcelCSIToolBox.Tests.csproj", "{498AFB4A-A17B-459B-A346-5C4B3B1C21FB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{07C2787E-EAC7-C090-1BA3-A61EC2A24D84}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelCSIToolBox.RefBuilder", "tools\ExcelCSIToolBox.RefBuilder\ExcelCSIToolBox.RefBuilder.csproj", "{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -111,9 +115,24 @@ Global
 		{498AFB4A-A17B-459B-A346-5C4B3B1C21FB}.Release|x64.Build.0 = Release|Any CPU
 		{498AFB4A-A17B-459B-A346-5C4B3B1C21FB}.Release|x86.ActiveCfg = Release|Any CPU
 		{498AFB4A-A17B-459B-A346-5C4B3B1C21FB}.Release|x86.Build.0 = Release|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Release|x64.Build.0 = Release|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5C2A3744-1FEE-484F-BAD2-4C3FC8C38680} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A1762B48-8F9A-4EE6-BB68-973A940DD1EA}

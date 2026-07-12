@@ -1,0 +1,1 @@
+CHM extraction is a development-time step. This fallback records discovered CHM files; replace IChmExtractor with an hh.exe/7zip extractor when needed.

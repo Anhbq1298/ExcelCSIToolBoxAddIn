@@ -30,14 +30,14 @@ cd ExcelCSIToolBoxAddIn
 ### Step 2: Open and Build the Solution
 
 #### Option A: Using Visual Studio (Recommended)
-1. Open the solution file `ExcelCSIToolBoxAddIn.sln` in Visual Studio 2022.
+1. Open the solution file `ExcelCSIToolBox.sln` in Visual Studio 2022.
 2. In the top toolbar, ensure the build configuration is set to **Debug** and the platform is set to **Any CPU** (or **Active**).
 3. Build the solution by selecting **Build** -> **Build Solution** from the top menu, or press `Ctrl + Shift + B`.
 
 #### Option B: Using Command Line (MSBuild)
 Alternatively, you can build the solution using MSBuild via PowerShell:
 ```powershell
-& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ExcelCSIToolBoxAddIn.sln /t:Build /p:Configuration=Debug
+& "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ExcelCSIToolBox.sln /t:Build /p:Configuration=Debug
 ```
 
 ---
@@ -45,7 +45,7 @@ Alternatively, you can build the solution using MSBuild via PowerShell:
 ### Step 3: Install the Add-in from the Debug Folder
 Once the build completes successfully:
 1. Open the compiled output folder:
-   - Path: `[Cloned_Repository_Root]\bin\Debug\`
+   - Path: `[Cloned_Repository_Root]\src\ExcelCSIToolBoxAddIn\bin\Debug\`
 2. Double-click the deployment manifest file named **`ExcelCSIToolBoxAddIn.vsto`** inside this folder.
 3. The **Microsoft Office Customization Installer** dialog will appear. Click **Install**.
 4. Once completed, restart **Microsoft Excel**. You will see the new **CSI Toolbox** tab on the Excel Ribbon bar.

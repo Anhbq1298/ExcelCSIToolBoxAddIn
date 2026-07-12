@@ -16,15 +16,19 @@ The add-in adds an Excel ribbon tab with tool windows for ETABS and SAP2000, all
 ## Solution Structure
 
 ```
-ExcelCSIToolBoxAddIn.sln
+ExcelCSIToolBox.sln
 |
-+-- ExcelCSIToolBoxAddIn              Main Excel VSTO add-in project
-+-- ExcelCSIToolBox.Application       Use cases and workflow orchestration
-+-- ExcelCSIToolBox.Core              Shared contracts, results, common logic
-+-- ExcelCSIToolBox.Data              DTOs, mapper models, table schemas
-+-- ExcelCSIToolBox.Infrastructure    ETABS/SAP2000 API adapters, Excel interop
-+-- ExcelCSIToolBox.AI                AI/chatbox/MCP integration layer
-+-- ExcelCSIToolBox.Tests             Unit tests
++-- src/
+|   +-- ExcelCSIToolBoxAddIn              Main Excel VSTO add-in project
+|   +-- ExcelCSIToolBox.Application       Use cases and workflow orchestration
+|   +-- ExcelCSIToolBox.Core              Shared contracts, results, common logic
+|   +-- ExcelCSIToolBox.Data              DTOs and mapper models during migration
+|   +-- ExcelCSIToolBox.Infrastructure    ETABS/SAP2000 API adapters, Excel interop
+|   +-- ExcelCSIToolBox.AI                AI/chatbox/MCP integration layer
++-- tests/
+|   +-- ExcelCSIToolBox.Tests             Unit tests
++-- tools/
+    +-- ExcelCSIToolBox.RefBuilder        CSI API reference/index utility
 ```
 
 ## Requirements
@@ -93,7 +97,7 @@ Follow these steps to build and debug from source:
 3. Open the solution:
 
 ```
-ExcelCSIToolBoxAddIn.sln
+ExcelCSIToolBox.sln
 ```
 
 4. Restore and build the solution in Visual Studio.
@@ -105,7 +109,7 @@ ExcelCSIToolBoxAddIn.sln
 
 To create a new installer:
 
-1. Open `ExcelCSIToolBoxAddIn` in Visual Studio.
+1. Open `src/ExcelCSIToolBoxAddIn` in Visual Studio.
 2. Choose **Build > Publish ExcelCSIToolBoxAddIn**.
 3. Publish to:
 
@@ -133,4 +137,3 @@ publish/ExcelCSIToolbox/
 - Keep CSI API access isolated inside Infrastructure adapters.
 - Keep UI code lightweight; place workflow logic in Application/Core projects.
 - `RefBuilder` is a utility used for generating reference scaffolding and is not part of the runtime add-in flow.
-
