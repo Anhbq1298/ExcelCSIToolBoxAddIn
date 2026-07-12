@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using ExcelCSIToolBox.Application.Interfaces.Etabs;
 using ExcelCSIToolBox.Application.Interfaces.Etabs.MiscellaneousData;
-using ExcelCSIToolBox.Core.Common.Commands;
+using ExcelCSIToolBoxAddIn.UI.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
 using ExcelCSIToolBox.Core.Models.ElementConnectivity;

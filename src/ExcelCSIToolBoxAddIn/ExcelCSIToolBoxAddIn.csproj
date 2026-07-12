@@ -319,6 +319,8 @@
     <Compile Include="UI\ViewModels\SelectableSectionItem.cs" />
     <Compile Include="UI\ViewModels\StoryPostprocessingResultKind.cs" />
     <Compile Include="UI\ViewModels\ViewModelBase.cs" />
+    <Compile Include="UI\Common\Commands\RelayCommand.cs" />
+    <Compile Include="UI\Common\Commands\RelayCommandOfT.cs" />
     <Compile Include="UI\ViewModels\AiAgentChatMessageViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentChatViewModel.cs" />
     <Compile Include="UI\ViewModels\AiAgentToolTraceViewModel.cs" />

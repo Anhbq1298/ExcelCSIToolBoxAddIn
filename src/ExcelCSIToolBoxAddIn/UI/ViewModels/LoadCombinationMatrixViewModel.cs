@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using ExcelCSIToolBox.Core.Common.Commands;
+using ExcelCSIToolBoxAddIn.UI.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBox.Core.Contracts.CSI;

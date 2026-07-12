@@ -1,22 +1,14 @@
 using System;
 using System.Windows.Input;
 
-namespace ExcelCSIToolBox.Core.Common.Commands
+namespace ExcelCSIToolBoxAddIn.UI.Common.Commands
 {
-    public interface IRelayCommand
+    public class RelayCommand<T> : ICommand, IRelayCommand
     {
-        void RaiseCanExecuteChanged();
-    }
+        private readonly Action<T> _execute;
+        private readonly Predicate<T> _canExecute;
 
-    /// <summary>
-    /// Lightweight ICommand implementation for MVVM command binding.
-    /// </summary>
-    public class RelayCommand : ICommand, IRelayCommand
-    {
-        private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
-
-        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        public RelayCommand(Action<T> execute, Predicate<T> canExecute = null)
         {
             _execute = execute ?? throw new ArgumentNullException(nameof(execute));
             _canExecute = canExecute;
@@ -35,12 +27,12 @@ namespace ExcelCSIToolBox.Core.Common.Commands
 
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null || _canExecute();
+            return _canExecute == null || _canExecute((T)parameter);
         }
 
         public void Execute(object parameter)
         {
-            _execute();
+            _execute((T)parameter);
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
-using ExcelCSIToolBox.Core.Common.Commands;
+using ExcelCSIToolBoxAddIn.UI.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
 using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;

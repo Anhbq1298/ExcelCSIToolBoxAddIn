@@ -1,7 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
-using ExcelCSIToolBox.Core.Common.Commands;
+using ExcelCSIToolBoxAddIn.UI.Common.Commands;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
 using ExcelCSIToolBox.Core.Models.ElementConnectivity;
 using ExcelCSIToolBox.Core.Models.MiscellaneousData;
