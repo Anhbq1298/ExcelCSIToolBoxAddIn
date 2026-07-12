@@ -1,20 +1,24 @@
 <Project>
   <!--
     VSTO requires ClickOnce manifest signing even for local development.
-    The repository does not commit a private PFX. When the local test certificate
-    is missing, create a machine-local development certificate before the build.
+    The repository does not commit a private PFX, so create a machine-local
+    development certificate when the file is missing.
   -->
   <PropertyGroup>
+    <LocalVstoCertificatePath>$(MSBuildProjectDirectory)\Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx</LocalVstoCertificatePath>
     <SignManifests>true</SignManifests>
-    <ManifestKeyFile>$(MSBuildProjectDirectory)\Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
     <ManifestCertificateThumbprint />
   </PropertyGroup>
 
   <Target Name="EnsureLocalVstoSigningCertificate"
           BeforeTargets="PrepareForBuild"
-          Condition="!Exists('$(ManifestKeyFile)')">
+          Condition="!Exists('$(LocalVstoCertificatePath)')">
+    <MakeDir Directories="$(MSBuildProjectDirectory)\Properties" />
     <Message Importance="high"
-             Text="Creating a local VSTO development signing certificate at $(ManifestKeyFile)" />
-    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=ExcelCSIToolBoxAddIn Development' -CertStoreLocation 'Cert:\CurrentUser\My' -NotAfter (Get-Date).AddYears(5); $password = New-Object System.Security.SecureString; Export-PfxCertificate -Cert $cert -FilePath '$(ManifestKeyFile)' -Password $password | Out-Null&quot;" />
+             Text="Creating a local VSTO development signing certificate at $(LocalVstoCertificatePath)" />
+    <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command &quot;$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=ExcelCSIToolBoxAddIn Development' -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy Exportable -HashAlgorithm SHA256 -NotAfter (Get-Date).AddYears(5); $password = New-Object System.Security.SecureString; Export-PfxCertificate -Cert $cert -FilePath '$(LocalVstoCertificatePath)' -Password $password -Force | Out-Null&quot;" />
+    <Error Condition="!Exists('$(LocalVstoCertificatePath)')"
+           Text="Failed to create the local VSTO signing certificate at $(LocalVstoCertificatePath)." />
   </Target>
 </Project>
