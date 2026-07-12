@@ -1,15 +1,20 @@
 <Project>
   <!--
-    VSTO projects require ClickOnce manifest signing, even for local development.
-    The original test certificate is intentionally not committed to this public repository.
-
-    When the referenced PFX is unavailable on a cloned machine, keep signing enabled and
-    clear only the stale certificate references. Visual Studio can then create a new,
-    machine-local temporary certificate during the first build.
+    VSTO requires ClickOnce manifest signing even for local development.
+    The repository does not commit a private PFX. When the local test certificate
+    is missing, create a machine-local development certificate before the build.
   -->
-  <PropertyGroup Condition="!Exists('$(MSBuildProjectDirectory)\Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx')">
+  <PropertyGroup>
     <SignManifests>true</SignManifests>
-    <ManifestKeyFile />
+    <ManifestKeyFile>$(MSBuildProjectDirectory)\Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
     <ManifestCertificateThumbprint />
   </PropertyGroup>
+
+  <Target Name="EnsureLocalVstoSigningCertificate"
+          BeforeTargets="PrepareForBuild"
+          Condition="!Exists('$(ManifestKeyFile)')">
+    <Message Importance="high"
+             Text="Creating a local VSTO development signing certificate at $(ManifestKeyFile)" />
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=ExcelCSIToolBoxAddIn Development' -CertStoreLocation 'Cert:\CurrentUser\My' -NotAfter (Get-Date).AddYears(5); $password = New-Object System.Security.SecureString; Export-PfxCertificate -Cert $cert -FilePath '$(ManifestKeyFile)' -Password $password | Out-Null&quot;" />
+  </Target>
 </Project>
