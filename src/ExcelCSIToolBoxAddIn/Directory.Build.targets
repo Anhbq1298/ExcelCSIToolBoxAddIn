@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    The ClickOnce test certificate is intentionally not committed to the public repository.
+    Disable manifest signing on machines where the local certificate file is unavailable.
+  -->
+  <PropertyGroup Condition="!Exists('$(MSBuildProjectDirectory)\Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx')">
+    <SignManifests>false</SignManifests>
+    <ManifestKeyFile />
+    <ManifestCertificateThumbprint />
+  </PropertyGroup>
+</Project>
