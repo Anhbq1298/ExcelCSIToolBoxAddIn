@@ -2,7 +2,8 @@
   <!--
     VSTO requires ClickOnce manifest signing even for local development.
     The repository does not commit a private PFX, so create a machine-local
-    development certificate when the file is missing.
+    development certificate when the file is missing and resolve its thumbprint
+    before the VSTO build target executes.
   -->
   <PropertyGroup>
     <LocalVstoCertificatePath>$(MSBuildProjectDirectory)\Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx</LocalVstoCertificatePath>
@@ -12,13 +13,25 @@
   </PropertyGroup>
 
   <Target Name="EnsureLocalVstoSigningCertificate"
-          BeforeTargets="PrepareForBuild"
-          Condition="!Exists('$(LocalVstoCertificatePath)')">
+          BeforeTargets="VisualStudioForApplicationsBuild">
     <MakeDir Directories="$(MSBuildProjectDirectory)\Properties" />
     <Message Importance="high"
-             Text="Creating a local VSTO development signing certificate at $(LocalVstoCertificatePath)" />
-    <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command &quot;$cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=ExcelCSIToolBoxAddIn Development' -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy Exportable -HashAlgorithm SHA256 -NotAfter (Get-Date).AddYears(5); $password = New-Object System.Security.SecureString; Export-PfxCertificate -Cert $cert -FilePath '$(LocalVstoCertificatePath)' -Password $password -Force | Out-Null&quot;" />
-    <Error Condition="!Exists('$(LocalVstoCertificatePath)')"
-           Text="Failed to create the local VSTO signing certificate at $(LocalVstoCertificatePath)." />
+             Text="Resolving the local VSTO development signing certificate." />
+
+    <Exec Command="powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command &quot;$ErrorActionPreference = 'Stop'; $path = '$(LocalVstoCertificatePath)'; $plainPassword = 'ExcelCSIToolBoxAddIn-Dev'; $securePassword = ConvertTo-SecureString -String $plainPassword -AsPlainText -Force; function New-DevCertificate { $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject 'CN=ExcelCSIToolBoxAddIn Development' -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy Exportable -HashAlgorithm SHA256 -NotAfter (Get-Date).AddYears(5); Export-PfxCertificate -Cert $cert -FilePath $path -Password $securePassword -Force | Out-Null }; if (Test-Path -LiteralPath $path) { try { $pfx = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($path, $plainPassword) } catch { Remove-Item -LiteralPath $path -Force; New-DevCertificate; $pfx = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($path, $plainPassword) } } else { New-DevCertificate; $pfx = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($path, $plainPassword) }; Write-Output $pfx.Thumbprint&quot;"
+          ConsoleToMSBuild="true"
+          StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" ItemName="_VstoCertificateThumbprintOutput" />
+    </Exec>
+
+    <PropertyGroup>
+      <CertificateThumbprint>@(_VstoCertificateThumbprintOutput)</CertificateThumbprint>
+      <ManifestCertificateThumbprint>$(CertificateThumbprint)</ManifestCertificateThumbprint>
+    </PropertyGroup>
+
+    <Error Condition="'$(CertificateThumbprint)' == ''"
+           Text="Failed to resolve the local VSTO signing certificate thumbprint." />
+    <Message Importance="high"
+             Text="Using VSTO signing certificate thumbprint $(CertificateThumbprint)." />
   </Target>
 </Project>
