@@ -4,7 +4,7 @@ using ExcelCSIToolBox.Application.Interfaces.Etabs.AnalysisResults;
 using ExcelCSIToolBox.Application.Interfaces.Etabs.ElementConnectivity;
 using ExcelCSIToolBox.Application.Interfaces.Etabs.MiscellaneousData;
 using ExcelCSIToolBox.Application.Interfaces.Excel;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Features.Connectivity;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs;

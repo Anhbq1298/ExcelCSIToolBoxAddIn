@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ExcelCSIToolBox.Application.Interfaces.Etabs;
 using ExcelCSIToolBox.Application.Models.Export;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Features.Connectivity;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;

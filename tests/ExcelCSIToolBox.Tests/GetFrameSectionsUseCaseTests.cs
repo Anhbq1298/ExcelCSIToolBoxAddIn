@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Features.Sections;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Contracts.CSI;

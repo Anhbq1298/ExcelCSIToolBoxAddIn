@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Features.Selection;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Services;

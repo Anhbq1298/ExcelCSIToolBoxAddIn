@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBox.Application.Services;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Composition;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBoxAddIn.UI.Common.Commands;

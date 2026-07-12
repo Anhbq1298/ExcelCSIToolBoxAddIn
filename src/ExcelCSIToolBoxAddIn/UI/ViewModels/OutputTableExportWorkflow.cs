@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Interop;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Composition;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBoxAddIn.UI.Views;

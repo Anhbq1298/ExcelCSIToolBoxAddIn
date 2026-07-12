@@ -1,0 +1,22 @@
+using System.Collections.Generic;
+using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBox.Core.Abstractions.CSI;
+
+namespace ExcelCSIToolBox.Application.Features.Loadings
+{
+    public class GetLoadPatternsUseCase
+    {
+        private readonly ICSISapModelConnectionService _connectionService;
+
+        public GetLoadPatternsUseCase(ICSISapModelConnectionService connectionService)
+        {
+            _connectionService = connectionService;
+        }
+
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>> Execute()
+        {
+            return _connectionService.GetLoadPatterns();
+        }
+    }
+}
+

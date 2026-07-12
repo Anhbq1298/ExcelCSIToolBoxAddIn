@@ -1,0 +1,23 @@
+using System;
+using System.Collections.Generic;
+using ExcelCSIToolBox.Core.Abstractions.CSI;
+using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBox.Core.Contracts.CSI;
+
+namespace ExcelCSIToolBox.Application.Features.AnalysisResults
+{
+    public class GetBaseReactionsUseCase
+    {
+        private readonly ICSISapModelConnectionService _csiConnectionService;
+
+        public GetBaseReactionsUseCase(ICSISapModelConnectionService csiConnectionService)
+        {
+            _csiConnectionService = csiConnectionService ?? throw new ArgumentNullException(nameof(csiConnectionService));
+        }
+
+        public OperationResult<IReadOnlyList<CSISapModelBaseReactionRowDTO>> Execute(IReadOnlyList<CSISapModelOutputCaseDTO> selectedOutputCases)
+        {
+            return _csiConnectionService.GetBaseReactions(selectedOutputCases);
+        }
+    }
+}

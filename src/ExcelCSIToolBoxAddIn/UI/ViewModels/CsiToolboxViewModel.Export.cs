@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Windows;
 using ExcelCSIToolBox.Application.Models.Export;
 using ExcelCSIToolBox.Application.Services;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Composition;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
 using ExcelCSIToolBox.Core.Models.ElementConnectivity;

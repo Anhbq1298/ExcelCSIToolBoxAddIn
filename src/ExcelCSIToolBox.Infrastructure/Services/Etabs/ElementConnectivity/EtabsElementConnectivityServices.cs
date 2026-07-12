@@ -1,5 +1,5 @@
 using ExcelCSIToolBox.Application.Interfaces.Etabs.ElementConnectivity;
-using ExcelCSIToolBox.Application.UseCases;
+using ExcelCSIToolBox.Application.Features.Connectivity;
 
 namespace ExcelCSIToolBox.Infrastructure.Services.Etabs.ElementConnectivity
 {
