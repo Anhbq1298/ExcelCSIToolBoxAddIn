@@ -25,15 +25,16 @@ graph TD
 - Core must not reference WPF, WinForms, VSTO, Office Interop, `ETABSv1`, `SAP2000v1`, Infrastructure, AI providers, or AddIn host code.
 - Application must not reference concrete Infrastructure, AddIn UI, WPF, WinForms, Office Interop, `ETABSv1`, or `SAP2000v1`.
 - Infrastructure may reference Core and Application and may contain product-specific COM implementation code.
-- Direct `ETABSv1` usage belongs under `Infrastructure/CSI/Etabs`.
-- Direct `SAP2000v1` usage belongs under `Infrastructure/CSI/Sap2000`.
+- Direct `using ETABSv1` usage belongs under `Infrastructure/CSI/Etabs`.
+- Direct `using SAP2000v1` usage belongs under `Infrastructure/CSI/Sap2000`.
 - Direct Excel Interop services belong under `Infrastructure/Excel` or AddIn host/UI code that is explicitly reading the active Excel selection.
+- The existing shared session/read-only layer under `Infrastructure/CSI/Common` may hold internal `ETABSv1.cSapModel` and `SAP2000v1.cSapModel` generic adapter fields so it can switch active products without exposing raw COM objects. Do not expand this exception into new feature code.
 - AddIn owns composition, Ribbon, task panes, WPF windows, WinForms dialogs, and UI resources.
 - AI provider clients belong under `ExcelCSIToolBox.AI/Providers`; MCP code belongs under `ExcelCSIToolBox.AI/Mcp`.
 
 ## Product and feature ownership
 
-Product-specific implementation comes after the product folder: `CSI/Etabs/Selection`, `CSI/Etabs/DatabaseTables`, `CSI/Sap2000/Session`. Shared CSI code goes in `CSI/Common` only when it is genuinely product-neutral. Do not create fake shared abstractions just to reduce folder count.
+Product-specific implementation comes after the product folder: `CSI/Etabs/Selection`, `CSI/Etabs/DatabaseTables`, `CSI/Sap2000/Session`. Shared CSI code goes in `CSI/Common` only when it is genuinely product-neutral or part of the existing shared session/read-only adapter bridge. Do not create fake shared abstractions just to reduce folder count.
 
 Feature ownership is vertical in Application and UI. A connectivity export belongs in `Application/Features/Connectivity` and the UI that exposes it belongs in the matching module area under `UI/Modules`.
 
@@ -77,4 +78,3 @@ Checklist:
 - External APIs do not leak into Core or Application.
 - Shared code is genuinely shared.
 - Architecture tests cover enforceable rules.
-

@@ -1,6 +1,7 @@
-namespace ExcelCSIToolBox.Infrastructure.CSI.Common.Adapters
+namespace ExcelCSIToolBox.Infrastructure.CSI.Sap2000.Session
 {
     using System.Collections.Generic;
+    using ExcelCSIToolBox.Infrastructure.CSI.Common.Adapters;
 
     public class Sap2000ModelAdapter : ICsiModelAdapter
     {

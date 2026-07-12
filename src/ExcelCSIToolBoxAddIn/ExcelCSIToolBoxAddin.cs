@@ -1,5 +1,4 @@
 using ExcelCSIToolBox.Core.Abstractions;
-using ExcelCSIToolBox.Infrastructure.CSI.Common.Adapters;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Session;
 using ExcelCSIToolBox.Infrastructure.CSI.Sap2000.Session;
 using ExcelCSIToolBoxAddIn.AddIn;

@@ -1,6 +1,7 @@
-namespace ExcelCSIToolBox.Infrastructure.CSI.Common.Adapters
+namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Session
 {
     using System.Collections.Generic;
+    using ExcelCSIToolBox.Infrastructure.CSI.Common.Adapters;
 
     public class EtabsModelAdapter : ICsiModelAdapter
     {

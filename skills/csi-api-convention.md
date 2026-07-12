@@ -8,8 +8,9 @@ CSI API implementations live in `src/ExcelCSIToolBox.Infrastructure/CSI`.
 
 ## Mandatory rules
 
-- Direct `ETABSv1` references must stay under `CSI/Etabs`.
-- Direct `SAP2000v1` references must stay under `CSI/Sap2000`.
+- Direct `using ETABSv1` references must stay under `CSI/Etabs`.
+- Direct `using SAP2000v1` references must stay under `CSI/Sap2000`.
+- The existing `CSI/Common/Session` and `CSI/Common/ReadOnly` bridge may use internal `ETABSv1.cSapModel` and `SAP2000v1.cSapModel` generic adapter fields to route shared read-only behavior. This exception must not leak raw COM objects outside Infrastructure.
 - Do not call CSI COM APIs from thread-pool threads.
 - Use the established dispatcher/session boundary for API calls that must remain on the owning thread.
 - Check every CSI return code and include operation context in failures.
@@ -83,4 +84,3 @@ Checklist:
 - Return codes are checked.
 - Units/model state are restored.
 - ETABS/SAP2000 differences are visible.
-
