@@ -1,10 +1,14 @@
 <Project>
   <!--
-    The ClickOnce test certificate is intentionally not committed to the public repository.
-    Disable manifest signing on machines where the local certificate file is unavailable.
+    VSTO projects require ClickOnce manifest signing, even for local development.
+    The original test certificate is intentionally not committed to this public repository.
+
+    When the referenced PFX is unavailable on a cloned machine, keep signing enabled and
+    clear only the stale certificate references. Visual Studio can then create a new,
+    machine-local temporary certificate during the first build.
   -->
   <PropertyGroup Condition="!Exists('$(MSBuildProjectDirectory)\Properties\ExcelCSIToolBoxAddIn_TemporaryKey.pfx')">
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
     <ManifestKeyFile />
     <ManifestCertificateThumbprint />
   </PropertyGroup>
