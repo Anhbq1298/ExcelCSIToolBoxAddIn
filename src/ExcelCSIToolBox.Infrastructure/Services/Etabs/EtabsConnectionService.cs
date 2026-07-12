@@ -2,7 +2,7 @@ using System;
 using ExcelCSIToolBox.Application.Interfaces.Etabs;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 
 namespace ExcelCSIToolBox.Infrastructure.Services.Etabs
 {

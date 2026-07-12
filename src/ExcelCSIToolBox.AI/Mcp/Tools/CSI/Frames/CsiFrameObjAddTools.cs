@@ -6,8 +6,8 @@ using ExcelCSIToolBox.AI.Mcp.Tools;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
-using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Frames

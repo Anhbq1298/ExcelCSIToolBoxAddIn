@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBoxAddIn.UI.Helpers;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 

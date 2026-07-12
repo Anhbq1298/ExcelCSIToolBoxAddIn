@@ -1,8 +1,7 @@
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Contracts.CSI;
+using ExcelCSIToolBox.Core.Models.CSI;
 
 
 namespace ExcelCSIToolBox.Application.UseCases

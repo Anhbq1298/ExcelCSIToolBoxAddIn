@@ -6,9 +6,7 @@ using ExcelCSIToolBox.Core.Abstractions;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel
 {

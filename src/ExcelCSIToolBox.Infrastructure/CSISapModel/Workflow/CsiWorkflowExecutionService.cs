@@ -4,10 +4,10 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
-using ExcelCSIToolBox.Data.CSISapModel.Workflow;
-using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.Workflow;
+using ExcelCSIToolBox.Core.Contracts.CSI;
+using ExcelCSIToolBox.Core.Models.CSI;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Workflow
 {
@@ -511,8 +511,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Workflow
                     return Failed(task, pointsResult.Message);
                 }
 
-                OperationResult<ExcelCSIToolBox.Data.CSISapModel.PointObject.PointObjectInfo> pi = service.GetPointCoordinates(pointsResult.Data.PointI);
-                OperationResult<ExcelCSIToolBox.Data.CSISapModel.PointObject.PointObjectInfo> pj = service.GetPointCoordinates(pointsResult.Data.PointJ);
+                OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.PointObject.PointObjectInfo> pi = service.GetPointCoordinates(pointsResult.Data.PointI);
+                OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.PointObject.PointObjectInfo> pj = service.GetPointCoordinates(pointsResult.Data.PointJ);
                 if (!pi.IsSuccess || !pj.IsSuccess)
                 {
                     return Failed(task, "Failed to read frame endpoint coordinates.");

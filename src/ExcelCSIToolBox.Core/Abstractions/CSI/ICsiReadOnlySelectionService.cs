@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 
 namespace ExcelCSIToolBox.Core.Abstractions.CSI
 {

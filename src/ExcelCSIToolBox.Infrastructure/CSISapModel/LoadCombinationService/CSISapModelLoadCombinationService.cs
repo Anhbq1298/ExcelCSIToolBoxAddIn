@@ -52,7 +52,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
         private const int LoadCaseNameType = 0;
         private const int LoadCombinationNameType = 1;
 
-        internal static OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations<TSapModel>(
+        internal static OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations<TSapModel>(
             TSapModel sapModel,
             CSISapModelGetCombinationNames<TSapModel> getCombinationNames,
             CSISapModelGetCombinationType<TSapModel> getCombinationType)
@@ -63,17 +63,17 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             int ret = getCombinationNames(sapModel, ref numberNames, ref names);
             if (ret != 0)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>>.Failure("Failed to get load combination names from model.");
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>>.Failure("Failed to get load combination names from model.");
                 return errorResult;
             }
 
-            var comboList = new List<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>();
+            var comboList = new List<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>();
             if (names != null)
             {
                 foreach (var name in names)
                 {
                     string type = getCombinationType(sapModel, name);
-                    comboList.Add(new ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO
+                    comboList.Add(new ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO
                     {
                         Name = name,
                         Type = type
@@ -81,11 +81,11 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                 }
             }
 
-            var successResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>>.Success(comboList);
+            var successResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>>.Success(comboList);
             return successResult;
         }
 
-        public static OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails<TSapModel>(
+        public static OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails<TSapModel>(
             TSapModel sapModel,
             string combinationName,
             CSISapModelGetCombinationCases<TSapModel> getCombinationCases,
@@ -99,15 +99,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             int ret = getCombinationCases(sapModel, combinationName, ref numberItems, ref caseNames, ref caseTypes, ref scaleFactors);
             if (ret != 0)
             {
-                var failureResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>>.Failure($"Failed to get load combination details for '{combinationName}'.");
+                var failureResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>>.Failure($"Failed to get load combination details for '{combinationName}'.");
                 return failureResult;
             }
 
-            var result = new System.Collections.Generic.List<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>();
+            var result = new System.Collections.Generic.List<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>();
             for (int i = 0; i < numberItems; i++)
             {
                 string typeName = resolveTypeName(sapModel, caseNames[i], caseTypes[i]);
-                result.Add(new ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO
+                result.Add(new ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO
                 {
                     LoadCaseName = caseNames[i],
                     LoadCaseType = typeName,
@@ -115,7 +115,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                 });
             }
 
-            var successResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>>.Success(result);
+            var successResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>>.Success(result);
             return successResult;
         }
 
@@ -180,7 +180,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             return OperationResult<IReadOnlyList<string>>.Success(result);
         }
 
-        internal static OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto> GetLoadCombinationMatrix<TSapModel>(
+        internal static OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixDto> GetLoadCombinationMatrix<TSapModel>(
             TSapModel sapModel,
             CSISapModelGetPatternNames<TSapModel> getPatternNames,
             CSISapModelGetCombinationNames<TSapModel> getCombinationNames,
@@ -190,7 +190,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             var patternResult = GetLoadPatternNames(sapModel, getPatternNames);
             if (!patternResult.IsSuccess)
             {
-                return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto>.Failure(patternResult.Message);
+                return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixDto>.Failure(patternResult.Message);
             }
 
             int numberNames = 0;
@@ -198,15 +198,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             int ret = getCombinationNames(sapModel, ref numberNames, ref names);
             if (ret != 0)
             {
-                return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto>.Failure("Failed to get load combination names from model.");
+                return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixDto>.Failure("Failed to get load combination names from model.");
             }
 
-            var matrix = new ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto();
+            var matrix = new ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixDto();
             matrix.LoadPatternNames.AddRange(patternResult.Data);
 
             if (names == null)
             {
-                return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto>.Success(matrix);
+                return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixDto>.Success(matrix);
             }
 
             var loadCaseColumnNames = new HashSet<string>(matrix.LoadPatternNames, System.StringComparer.OrdinalIgnoreCase);
@@ -226,7 +226,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                     continue;
                 }
 
-                var row = new ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixRowDto
+                var row = new ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixRowDto
                 {
                     LoadCombinationName = name,
                     CombinationType = getCombinationType(sapModel, name)
@@ -275,12 +275,12 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
                 matrix.Rows.Add(row);
             }
 
-            return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixDto>.Success(matrix);
+            return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixDto>.Success(matrix);
         }
 
-        internal static OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyResultDto> ApplyLoadCombinationMatrix<TSapModel>(
+        internal static OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyResultDto> ApplyLoadCombinationMatrix<TSapModel>(
             TSapModel sapModel,
-            IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationMatrixRowDto> rows,
+            IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationMatrixRowDto> rows,
             CSISapModelGetCombinationNames<TSapModel> getCombinationNames,
             CSISapModelAddCombination<TSapModel> addCombination,
             CSISapModelDeleteCombination<TSapModel> deleteCombination,
@@ -288,10 +288,10 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             CSISapModelDeleteCombinationCase<TSapModel> deleteCombinationCase,
             CSISapModelSetCombinationCase<TSapModel> setCombinationCase)
         {
-            var result = new ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyResultDto();
+            var result = new ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyResultDto();
             if (rows == null || rows.Count == 0)
             {
-                return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyResultDto>.Failure("No load combinations were provided.");
+                return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyResultDto>.Failure("No load combinations were provided.");
             }
 
             int numberNames = 0;
@@ -299,7 +299,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             int listRet = getCombinationNames(sapModel, ref numberNames, ref names);
             if (listRet != 0)
             {
-                return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyResultDto>.Failure("Failed to get existing load combination names from model.");
+                return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyResultDto>.Failure("Failed to get existing load combination names from model.");
             }
 
             var existing = new HashSet<string>(System.StringComparer.OrdinalIgnoreCase);
@@ -400,10 +400,10 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             if (result.FailedCount > 0)
             {
                 message += " " + FormatFailures(result.Failures);
-                return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyResultDto>.Failure(message);
+                return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyResultDto>.Failure(message);
             }
 
-            return OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyResultDto>.Success(result, message);
+            return OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyResultDto>.Success(result, message);
         }
 
         private static int ClearExistingCases<TSapModel>(
@@ -440,12 +440,12 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
         }
 
         private static void AddFailure(
-            ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyResultDto result,
+            ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyResultDto result,
             string combinationName,
             string operationName,
             string reason)
         {
-            result.Failures.Add(new ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyFailureDto
+            result.Failures.Add(new ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyFailureDto
             {
                 LoadCombinationName = string.IsNullOrWhiteSpace(combinationName) ? "(blank)" : combinationName,
                 OperationName = operationName,
@@ -453,7 +453,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadCombinationService
             });
         }
 
-        private static string FormatFailures(IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationApplyFailureDto> failures)
+        private static string FormatFailures(IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationApplyFailureDto> failures)
         {
             var messages = new List<string>();
             foreach (var failure in failures)

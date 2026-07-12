@@ -8,11 +8,9 @@ using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Core.Tabular;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
-using ExcelCSIToolBox.Data.CSISapModel.PointObject;
-using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Contracts.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 
 namespace ExcelCSIToolBox.Infrastructure.Etabs
@@ -815,7 +813,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     for (int i = 0; i < numberItems; i++)
                     {
                         if (i >= objectTypes.Length || i >= objectNames.Length) continue;
-                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        if (objectTypes[i] == ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(objectNames[i]))
                         {
                             string uniqueName = objectNames[i].Trim();
                             ETABSv1.eFrameDesignOrientation designOrientation = 0;
@@ -1304,12 +1302,12 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                 RefreshView);
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations()
         {
             var sapModelResult = EnsureEtabsSapModel();
             if (!sapModelResult.IsSuccess)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>>.Failure(sapModelResult.Message);
                 return errorResult;
             }
 
@@ -1336,12 +1334,12 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return comboResult;
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName)
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName)
         {
             var sapModelResult = EnsureEtabsSapModel();
             if (!sapModelResult.IsSuccess)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>>.Failure(sapModelResult.Message);
                 return errorResult;
             }
 
@@ -3093,7 +3091,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     for (int i = 0; i < numberItems; i++)
                     {
                         if (i >= objectTypes.Length || i >= objectNames.Length) continue;
-                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        if (objectTypes[i] == ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelObjectTypeIds.Frame && !string.IsNullOrWhiteSpace(objectNames[i]))
                         {
                             string uniqueName = objectNames[i].Trim();
                             selectedFrames.Add(uniqueName);
@@ -3129,7 +3127,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     for (int i = 0; i < numberItems; i++)
                     {
                         if (i >= objectTypes.Length || i >= objectNames.Length) continue;
-                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Point && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        if (objectTypes[i] == ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelObjectTypeIds.Point && !string.IsNullOrWhiteSpace(objectNames[i]))
                         {
                             string uniqueName = objectNames[i].Trim();
                             selectedPoints.Add(uniqueName);
@@ -3165,7 +3163,7 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
                     for (int i = 0; i < numberItems; i++)
                     {
                         if (i >= objectTypes.Length || i >= objectNames.Length) continue;
-                        if (objectTypes[i] == ExcelCSIToolBox.Data.CSISapModelObjectTypeIds.Shell && !string.IsNullOrWhiteSpace(objectNames[i]))
+                        if (objectTypes[i] == ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelObjectTypeIds.Shell && !string.IsNullOrWhiteSpace(objectNames[i]))
                         {
                             string uniqueName = objectNames[i].Trim();
                             selectedAreas.Add(uniqueName);
@@ -3496,12 +3494,12 @@ namespace ExcelCSIToolBox.Infrastructure.Etabs
             return result;
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>> GetLoadPatterns()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>> GetLoadPatterns()
         {
             var sapModelResult = EnsureEtabsSapModel();
             if (!sapModelResult.IsSuccess)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>>.Failure(sapModelResult.Message);
                 return errorResult;
             }
 

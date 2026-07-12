@@ -13,7 +13,7 @@ namespace ExcelCSIToolBox.Application.UseCases
             _connectionService = connectionService;
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> Execute(string combinationName)
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>> Execute(string combinationName)
         {
             var result = _connectionService.GetLoadCombinationDetails(combinationName);
             return result;

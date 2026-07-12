@@ -7,7 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj" />
-    <ProjectReference Include="..\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
     <ProjectReference Include="..\ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj" />
   </ItemGroup>
   <ItemGroup>

@@ -1,6 +1,6 @@
 using ExcelCSIToolBox.Application.Services;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 
 namespace ExcelCSIToolBox.Application.Interfaces.Etabs
 {

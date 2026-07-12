@@ -6,7 +6,7 @@ using ExcelCSIToolBox.AI.Mcp.Contracts;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.CSI;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using Newtonsoft.Json;
 
 namespace ExcelCSIToolBox.AI.Mcp.Tools.CSI.Base

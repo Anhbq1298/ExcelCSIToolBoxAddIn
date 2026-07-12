@@ -9,7 +9,7 @@ using System.Windows.Input;
 using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {

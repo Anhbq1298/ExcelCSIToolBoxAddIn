@@ -17,7 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\ExcelCSIToolBox.Core\ExcelCSIToolBox.Core.csproj" />
-    <ProjectReference Include="..\..\src\ExcelCSIToolBox.Data\ExcelCSIToolBox.Data.csproj" />
     <ProjectReference Include="..\..\src\ExcelCSIToolBox.Application\ExcelCSIToolBox.Application.csproj" />
     <ProjectReference Include="..\..\src\ExcelCSIToolBox.Infrastructure\ExcelCSIToolBox.Infrastructure.csproj" />
   </ItemGroup>

@@ -326,7 +326,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private bool EnsureAttachedForStiffnessModifier()
         {
-            OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelConnectionInfoDTO> result = _csiConnectionService.GetCurrentConnection();
+            OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelConnectionInfoDTO> result = _csiConnectionService.GetCurrentConnection();
             if (result.IsSuccess)
             {
                 return true;

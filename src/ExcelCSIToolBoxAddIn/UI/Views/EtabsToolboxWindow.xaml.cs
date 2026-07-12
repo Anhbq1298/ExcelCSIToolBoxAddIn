@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBoxAddIn.UI.Helpers;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 

@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBox.Infrastructure.Etabs;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel.ShellUniformLoadSetService

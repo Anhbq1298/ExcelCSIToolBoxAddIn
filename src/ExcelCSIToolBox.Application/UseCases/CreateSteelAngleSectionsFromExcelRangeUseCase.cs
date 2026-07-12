@@ -1,4 +1,4 @@
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Models.CSI;
 using System.Collections.Generic;
 using System.Globalization;
 using ExcelCSIToolBox.Core.Common.Results;

@@ -2,11 +2,9 @@ using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
-using ExcelCSIToolBox.Data.CSISapModel.PointObject;
-using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Contracts.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 
 
 namespace ExcelCSIToolBox.Core.Abstractions.CSI
@@ -108,8 +106,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<double[]> GetAreaSectionModifiers(string sectionName);
         OperationResult SetAreaSectionModifiers(string sectionName, double[] modifiers);
 
-        OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
-        OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);
+        OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
+        OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);
         OperationResult<LoadCombinationMatrixDto> GetLoadCombinationMatrix();
         OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetAnalysisOutputCases();
         OperationResult<IReadOnlyList<CSISapModelOutputCaseDTO>> GetModalOutputCases();

@@ -1,7 +1,7 @@
 using ExcelCSIToolBox.Application.Services;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using FluentAssertions;
 using NSubstitute;
 using Xunit;

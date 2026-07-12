@@ -22,7 +22,6 @@ ExcelCSIToolBox.sln
 |   +-- ExcelCSIToolBoxAddIn              Main Excel VSTO add-in project
 |   +-- ExcelCSIToolBox.Application       Use cases and workflow orchestration
 |   +-- ExcelCSIToolBox.Core              Shared contracts, results, common logic
-|   +-- ExcelCSIToolBox.Data              DTOs and mapper models during migration
 |   +-- ExcelCSIToolBox.Infrastructure    ETABS/SAP2000 API adapters, Excel interop
 |   +-- ExcelCSIToolBox.AI                AI/chatbox/MCP integration layer
 +-- tests/

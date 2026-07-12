@@ -6,11 +6,9 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
-using ExcelCSIToolBox.Data.CSISapModel.PointObject;
-using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Contracts.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using SAP2000v1;
 
@@ -1211,12 +1209,12 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return _connectionAdapter.EnsureSapModel();
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations()
         {
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>>.Failure(sapModelResult.Message);
                 return errorResult;
             }
 
@@ -1242,12 +1240,12 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return comboResult;
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName)
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName)
         {
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.LoadCombinationItemDTO>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>>.Failure(sapModelResult.Message);
                 return errorResult;
             }
 
@@ -1492,12 +1490,12 @@ namespace ExcelCSIToolBox.Infrastructure.Sap2000
             return result;
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>> GetLoadPatterns()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>> GetLoadPatterns()
         {
             var sapModelResult = EnsureSap2000SapModel();
             if (!sapModelResult.IsSuccess)
             {
-                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>>.Failure(sapModelResult.Message);
+                var errorResult = OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>>.Failure(sapModelResult.Message);
                 return errorResult;
             }
 

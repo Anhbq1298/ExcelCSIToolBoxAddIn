@@ -8,8 +8,8 @@ using ExcelCSIToolBox.Application.ToolCatalog.Contracts;
 using ExcelCSIToolBox.Application.ToolCatalog.Registry;
 using ExcelCSIToolBox.Application.ToolCatalog.Validation;
 using ExcelCSIToolBox.AI.Ollama;
-using ExcelCSIToolBox.Data.CSISapModel.Intent;
-using ExcelCSIToolBox.Data.CSISapModel.Workflow;
+using ExcelCSIToolBox.Core.Contracts.CSI.Intent;
+using ExcelCSIToolBox.Core.Contracts.CSI.Workflow;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

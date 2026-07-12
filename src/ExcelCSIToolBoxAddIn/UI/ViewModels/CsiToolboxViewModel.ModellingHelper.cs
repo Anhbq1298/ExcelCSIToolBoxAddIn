@@ -9,8 +9,8 @@ using System.Windows.Input;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Commands;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
-using ExcelCSIToolBox.Data.CSISapModel.PointObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 using ExcelCSIToolBoxAddIn.AddIn.Modules.ModellingHelpers;
 using ExcelCSIToolBoxAddIn.UI.Views;
 
@@ -674,7 +674,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             try
             {
-                OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelConnectionInfoDTO> connectionResult =
+                OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelConnectionInfoDTO> connectionResult =
                     _csiConnectionService.GetCurrentConnection();
                 if (!connectionResult.IsSuccess ||
                     connectionResult.Data == null ||
@@ -1489,7 +1489,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private double GetDefaultSearchRadius()
         {
-            OperationResult<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelPresentUnitSystemDTO> unitResult =
+            OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelPresentUnitSystemDTO> unitResult =
                 _csiConnectionService.GetPresentUnitSystem();
             int lengthUnit = unitResult.IsSuccess && unitResult.Data != null
                 ? unitResult.Data.LengthUnit

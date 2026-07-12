@@ -13,7 +13,6 @@ Treat the solution as layered:
 - `src/ExcelCSIToolBox.Application`: use cases, workflows, and interface contracts. Do not place direct COM or Excel Interop calls here.
 - `src/ExcelCSIToolBox.Infrastructure`: ETABS/SAP2000 API adapters, Excel Interop implementations, file/system integrations, and concrete service implementations.
 - `src/ExcelCSIToolBoxAddIn`: VSTO add-in host, ribbon, WPF views, ViewModels, task panes, and dependency wiring.
-- `src/ExcelCSIToolBox.Data`: legacy DTO/data model project kept only during migration.
 - `tests/ExcelCSIToolBox.Tests`: focused unit tests.
 - `tools/ExcelCSIToolBox.RefBuilder`: development-time CSI API reference/index utility.
 

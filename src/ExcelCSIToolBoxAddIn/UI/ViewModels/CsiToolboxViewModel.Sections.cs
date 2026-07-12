@@ -2,7 +2,7 @@ using System;
 using System.Windows;
 using System.Globalization;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {

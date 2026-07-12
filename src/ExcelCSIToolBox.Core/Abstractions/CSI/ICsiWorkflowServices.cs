@@ -1,7 +1,7 @@
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.CSISapModel.Random;
-using ExcelCSIToolBox.Data.CSISapModel.Truss;
-using ExcelCSIToolBox.Data.CSISapModel.Workflow;
+using ExcelCSIToolBox.Core.Contracts.CSI.Random;
+using ExcelCSIToolBox.Core.Contracts.CSI.Truss;
+using ExcelCSIToolBox.Core.Contracts.CSI.Workflow;
 
 namespace ExcelCSIToolBox.Core.Abstractions.CSI
 {

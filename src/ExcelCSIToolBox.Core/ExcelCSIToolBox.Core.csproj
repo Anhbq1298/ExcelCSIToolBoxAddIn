@@ -5,9 +5,4 @@
     <AssemblyName>ExcelCSIToolBox.Core</AssemblyName>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="..\ExcelCSIToolBox.Data\CSISapModel\**\*.cs" Link="DataContracts\CSISapModel\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\ExcelCSIToolBox.Data\DTOs\CSI\*.cs" Link="DataContracts\DTOs\CSI\%(Filename)%(Extension)" />
-    <Compile Include="..\ExcelCSIToolBox.Data\Models\*.cs" Link="DataContracts\Models\%(Filename)%(Extension)" />
-  </ItemGroup>
 </Project>

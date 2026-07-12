@@ -16,8 +16,7 @@ using ExcelCSIToolBox.Core.Models.MiscellaneousData;
 using ExcelCSIToolBox.Application.UseCases;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBox.Infrastructure.CSISapModel;
 using ExcelCSIToolBox.Infrastructure.Excel;
 using ExcelCSIToolBox.Infrastructure.Services.Etabs.AnalysisResults;
@@ -107,8 +106,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 OpenMassSummaryByStoryDialog);
             AnalysisResults.PropertyChanged += OnAnalysisResultsPropertyChanged;
 
-            LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO>();
-            LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>();
+            LoadCombinations = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>();
+            LoadPatterns = new System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>();
             FrameSections = new System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO>();
             SectionDimensionAnnotations = new System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation>();
             RunningCsiInstances = new ObservableCollection<CsiRunningInstanceViewModel>();
@@ -581,8 +580,8 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand EditFrameSectionCommand { get; }
         public ICommand OpenCreateSectionDialogCommand { get; }
 
-        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO> LoadPatterns { get; }
-        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
+        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO> LoadPatterns { get; }
+        public System.Collections.ObjectModel.ObservableCollection<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO> LoadCombinations { get; }
         public System.Collections.ObjectModel.ObservableCollection<CSISapModelFrameSectionDTO> FrameSections { get; }
         public System.Collections.ObjectModel.ObservableCollection<SectionDimensionAnnotation> SectionDimensionAnnotations { get; }
         public AnalysisResultsViewModel AnalysisResults { get; private set; }

@@ -4,8 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Common.Commands;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {

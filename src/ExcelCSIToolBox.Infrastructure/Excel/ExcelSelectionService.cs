@@ -4,7 +4,7 @@ using System.Globalization;
 using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBox.Core.Tabular;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using Microsoft.Office.Interop.Excel;
 
 namespace ExcelCSIToolBox.Infrastructure.Excel

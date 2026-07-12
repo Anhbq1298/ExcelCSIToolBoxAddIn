@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.DTOs.CSI;
+using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBox.Infrastructure.Excel;
 using ExcelCSIToolBoxAddIn.AddIn.Composition;
 
@@ -38,7 +38,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var list = new System.Collections.Generic.List<string>();
             foreach (var item in selectedItems)
             {
-                if (item is ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO dto)
+                if (item is ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO dto)
                 {
                     list.Add(dto.Name);
                 }
@@ -81,7 +81,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             var list = new System.Collections.Generic.List<string>();
             foreach (var item in selectedItems)
             {
-                if (item is ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO dto)
+                if (item is ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO dto)
                 {
                     list.Add(dto.Name);
                 }
@@ -103,7 +103,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             
             // Only view the first selected item
             var firstItem = selectedItems[0];
-            if (firstItem is ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadCombinationDTO dto)
+            if (firstItem is ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO dto)
             {
                 var result = _useCases.GetLoadCombinationDetails.Execute(dto.Name);
                 if (result.IsSuccess)

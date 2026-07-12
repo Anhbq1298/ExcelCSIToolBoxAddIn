@@ -13,7 +13,7 @@ namespace ExcelCSIToolBox.Application.UseCases
             _connectionService = connectionService;
         }
 
-        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>> Execute()
+        public OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>> Execute()
         {
             return _connectionService.GetLoadPatterns();
         }

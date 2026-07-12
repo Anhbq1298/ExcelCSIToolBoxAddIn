@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using ExcelCSIToolBox.Data.CSISapModel.Intent;
+using ExcelCSIToolBox.Core.Contracts.CSI.Intent;
 
 namespace ExcelCSIToolBox.AI.Agent
 {

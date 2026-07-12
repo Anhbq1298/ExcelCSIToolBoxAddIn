@@ -18,7 +18,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadPatternService
 
     internal static class CSISapModelLoadPatternService
     {
-        internal static OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>> GetLoadPatterns<TSapModel>(
+        internal static OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>> GetLoadPatterns<TSapModel>(
             TSapModel sapModel,
             CSISapModelGetPatternNames<TSapModel> getPatternNames,
             CSISapModelGetPatternType<TSapModel> getPatternType)
@@ -29,16 +29,16 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadPatternService
             int ret = getPatternNames(sapModel, ref numberNames, ref names);
             if (ret != 0)
             {
-                return OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>>.Failure("Failed to get load pattern names from model.");
+                return OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>>.Failure("Failed to get load pattern names from model.");
             }
 
-            var patternList = new List<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>();
+            var patternList = new List<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>();
             if (names != null)
             {
                 foreach (var name in names)
                 {
                     string type = getPatternType(sapModel, name);
-                    patternList.Add(new ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO
+                    patternList.Add(new ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO
                     {
                         Name = name,
                         Type = type
@@ -46,7 +46,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSISapModel.LoadPatternService
                 }
             }
 
-            return OperationResult<IReadOnlyList<ExcelCSIToolBox.Data.DTOs.CSI.CSISapModelLoadPatternDTO>>.Success(patternList);
+            return OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadPatternDTO>>.Success(patternList);
         }
 
         internal static OperationResult DeleteLoadPatterns<TSapModel>(

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data.CSISapModel.FrameObject;
-using ExcelCSIToolBox.Data.CSISapModel.Truss;
+using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.Truss;
 
 namespace ExcelCSIToolBox.Infrastructure.CSISapModel.Truss
 {

@@ -6,9 +6,8 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using ExcelCSIToolBox.Infrastructure.CSISapModel.Adapters;
 using ExcelCSIToolBox.Core.Common.Results;
-using ExcelCSIToolBox.Data;
-using ExcelCSIToolBox.Data.DTOs.CSI;
-using ExcelCSIToolBox.Data.Models;
+using ExcelCSIToolBox.Core.Contracts.CSI;
+using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Infrastructure.Etabs;
 using ExcelCSIToolBox.Infrastructure.Sap2000;
 
