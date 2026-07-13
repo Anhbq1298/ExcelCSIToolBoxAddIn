@@ -99,6 +99,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             var window = new GetModalMassParticipationRatiosWindow(viewModel);
             window.Closed += delegate { _modalMassParticipationRatiosWindow = null; };
             _modalMassParticipationRatiosWindow = window;
+            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
             window.Show();
         }
 
@@ -151,6 +152,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             var window = new GetMassSummaryByStoryWindow(viewModel);
             window.Closed += delegate { _massSummaryByStoryWindow = null; };
             _massSummaryByStoryWindow = window;
+            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
             window.Show();
         }
 
@@ -165,6 +167,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             var window = new AboutWindow();
             window.Closed += delegate { _aboutWindow = null; };
             _aboutWindow = window;
+            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
             window.Show();
         }
 
@@ -209,6 +212,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 _storyMaxOverAverageDriftsWindow = window;
             }
 
+            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
             window.Show();
         }
 

@@ -342,6 +342,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             window.Closed += delegate { _offsetFromSetOfLinesWindow = null; };
             _offsetFromSetOfLinesWindow = window;
+            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
             window.Show();
         }
 
