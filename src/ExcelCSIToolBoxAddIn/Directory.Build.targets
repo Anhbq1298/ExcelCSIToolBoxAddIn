@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <Target Name="EnsureLocalVstoSigningCertificate"
-          BeforeTargets="VisualStudioForApplicationsBuild">
+          BeforeTargets="ResolveKeySource;VisualStudioForApplicationsBuild">
     <MakeDir Directories="$(MSBuildProjectDirectory)\Properties" />
     <Message Importance="high"
              Text="Resolving the local VSTO development signing certificate." />

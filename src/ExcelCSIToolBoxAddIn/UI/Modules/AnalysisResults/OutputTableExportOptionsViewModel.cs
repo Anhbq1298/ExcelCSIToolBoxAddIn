@@ -592,6 +592,19 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             return _csiConnectionService.GetAnalysisOutputCases();
         }
 
+        private void SafeSelect(ExcelRange range)
+        {
+            if (range == null) return;
+            try
+            {
+                range.Select();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SafeSelect ignored exception: {ex.Message}");
+            }
+        }
+
         private void RefreshActiveCellDisplay()
         {
             ExcelRange activeCell = GetActiveExcelCell();
@@ -639,7 +652,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 }
 
                 _pickedAnchorCell = startCell;
-                startCell.Select();
+                SafeSelect(startCell);
                 AnchorCellAddress = FormatAddress(startCell);
                 StatusText = $"Anchor cell set to {AnchorCellAddress}.";
                 SaveWorkbookState();
@@ -861,17 +874,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     return false;
                 }
 
-                try
-                {
-                    _pickedAnchorCell.Select();
-                    AnchorCellAddress = FormatAddress(_pickedAnchorCell);
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    ShowWarning($"Failed to activate the picked Excel anchor cell: {ex.Message}");
-                    return false;
-                }
+                SafeSelect(_pickedAnchorCell);
+                AnchorCellAddress = FormatAddress(_pickedAnchorCell);
+                return true;
             }
 
             ExcelRange activeCell = GetActiveExcelCell();

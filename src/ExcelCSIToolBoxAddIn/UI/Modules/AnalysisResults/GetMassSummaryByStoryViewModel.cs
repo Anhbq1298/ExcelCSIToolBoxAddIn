@@ -230,7 +230,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             if (IsPickCellMode)
             {
                 if (_pickedAnchorCell == null && !PickAnchorCell()) return false;
-                _pickedAnchorCell.Select();
+                SafeSelect(_pickedAnchorCell);
                 AnchorCellAddress = FormatAddress(_pickedAnchorCell);
                 return true;
             }
@@ -264,7 +264,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 if (startCell == null) return false;
 
                 _pickedAnchorCell = startCell;
-                startCell.Select();
+                SafeSelect(startCell);
                 AnchorCellAddress = FormatAddress(startCell);
                 StatusText = $"Anchor cell set to {AnchorCellAddress}.";
                 SaveWorkbookState();
@@ -278,6 +278,19 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             finally
             {
                 RaiseRequestShow();
+            }
+        }
+
+        private void SafeSelect(ExcelRange range)
+        {
+            if (range == null) return;
+            try
+            {
+                range.Select();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SafeSelect ignored exception: {ex.Message}");
             }
         }
 

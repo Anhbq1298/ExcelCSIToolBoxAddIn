@@ -34,7 +34,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool _offsetAddResultToGroup;
         private bool _offsetSelectionIsValid;
         private int _offsetPreviewVersion;
-        private ExcelCSIToolBoxAddIn.UI.Views.OffsetFromSetOfLinesWindow _offsetFromSetOfLinesWindow;
 
         private void InitializeOffsetFromSetOfLinesPage()
         {
@@ -326,12 +325,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         {
             RefreshAvailableFrameSectionsForOffsetTool();
 
-            if (_offsetFromSetOfLinesWindow != null)
-            {
-                _offsetFromSetOfLinesWindow.Activate();
-                return;
-            }
-
             var window = new ExcelCSIToolBoxAddIn.UI.Views.OffsetFromSetOfLinesWindow(this);
             Window owner = GetActiveOwnerWindow();
             if (owner != null && !ReferenceEquals(owner, window))
@@ -340,10 +333,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             }
 
-            window.Closed += delegate { _offsetFromSetOfLinesWindow = null; };
-            _offsetFromSetOfLinesWindow = window;
-            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
-            window.Show();
+            window.ShowDialog();
         }
 
         private void GetOffsetSelectedLines()
