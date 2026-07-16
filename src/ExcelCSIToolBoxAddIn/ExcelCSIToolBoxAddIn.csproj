@@ -335,6 +335,12 @@
     <Compile Include="UI\Modules\Loadings\LoadPatternPickerForm.Designer.cs">
       <DependentUpon>LoadPatternPickerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="UI\Modules\Loadings\ShellUniformLoadSetSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\Modules\Loadings\ShellUniformLoadSetSelectionForm.Designer.cs">
+      <DependentUpon>ShellUniformLoadSetSelectionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\Modules\Loadings\ShellUniformLoadSetForm.cs">
       <SubType>Form</SubType>
     </Compile>

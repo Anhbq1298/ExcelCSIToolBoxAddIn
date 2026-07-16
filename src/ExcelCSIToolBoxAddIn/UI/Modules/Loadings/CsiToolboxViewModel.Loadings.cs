@@ -170,19 +170,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ownerHandle => ExportShellUniformLoadSetDefinitions(ownerHandle),
                 AppServiceFactory.CsiApiDispatcher))
             {
-                System.Windows.Forms.IWin32Window owner = null;
-                try
-                {
-                    var excelApp = ExcelApplicationProvider.GetApplication();
-                    if (excelApp != null)
-                    {
-                        owner = new ExcelCSIToolBoxAddIn.UI.Forms.Win32WindowWrapper(new IntPtr(excelApp.Hwnd));
-                    }
-                }
-                catch
-                {
-                    // Ignore wrapper creation errors
-                }
+                System.Windows.Forms.IWin32Window owner = GetExcelOwnerWindow();
 
                 if (owner != null)
                 {
@@ -193,6 +181,51 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                     form.ShowDialog();
                 }
             }
+        }
+
+        private void OpenShellUniformLoadSetSelectionForm()
+        {
+            OperationResult<CSISapModelConnectionInfoDTO> connectionResult = _csiConnectionService.GetCurrentConnection();
+            if (!connectionResult.IsSuccess || connectionResult.Data == null || connectionResult.Data.SapModel == null)
+            {
+                string message = connectionResult.IsSuccess
+                    ? "Connect to an ETABS model before selecting shells by load set."
+                    : connectionResult.Message;
+                ShowOperationResult(OperationResult.Failure(message));
+                return;
+            }
+
+            using (var form = new ExcelCSIToolBoxAddIn.UI.Forms.ShellUniformLoadSetSelectionForm(
+                AppServiceFactory.CreateShellUniformLoadSetSelectionService(_csiConnectionService)))
+            {
+                System.Windows.Forms.IWin32Window owner = GetExcelOwnerWindow();
+                if (owner != null)
+                {
+                    form.ShowDialog(owner);
+                }
+                else
+                {
+                    form.ShowDialog();
+                }
+            }
+        }
+
+        private static System.Windows.Forms.IWin32Window GetExcelOwnerWindow()
+        {
+            try
+            {
+                var excelApp = ExcelApplicationProvider.GetApplication();
+                if (excelApp != null)
+                {
+                    return new ExcelCSIToolBoxAddIn.UI.Forms.Win32WindowWrapper(new IntPtr(excelApp.Hwnd));
+                }
+            }
+            catch
+            {
+                // Ignore wrapper creation errors and fall back to an unowned dialog.
+            }
+
+            return null;
         }
 
         private void ExportShellUniformLoadSetDefinitions()

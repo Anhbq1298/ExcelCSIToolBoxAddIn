@@ -1079,6 +1079,14 @@
                                                 Command="{Binding OpenShellUniformLoadSetFormCommand}"
                                                 ToolTip="Open the Shell Uniform Load Set manager."
                                                 ToolTipService.ShowOnDisabled="True"/>
+                                        <Button Content="Select Shells by Load Set"
+                                                Style="{StaticResource ToolButtonStyle}"
+                                                MinHeight="42"
+                                                HorizontalAlignment="Stretch"
+                                                Margin="0,8,0,0"
+                                                Command="{Binding SelectShellsByLoadSetCommand}"
+                                                ToolTip="Select ETABS shell objects assigned to one or more Shell Uniform Load Sets."
+                                                ToolTipService.ShowOnDisabled="True"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>

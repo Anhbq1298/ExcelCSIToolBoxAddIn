@@ -177,6 +177,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             ModifyLoadCombinationsInMatrixViewCommand = new RelayCommand(ModifyLoadCombinationsInMatrixView, CanExecuteCsiAction);
             ExportLoadCombinationMatrixToExcelCommand = new RelayCommand(ExportLoadCombinationMatrixToExcel, CanExecuteCsiAction);
             OpenShellUniformLoadSetFormCommand = new RelayCommand(OpenShellUniformLoadSetForm, CanExecuteEtabsAction);
+            SelectShellsByLoadSetCommand = new RelayCommand(OpenShellUniformLoadSetSelectionForm, CanExecuteEtabsAction);
             ExportShellUniformLoadSetDefinitionsCommand = new RelayCommand(ExportShellUniformLoadSetDefinitions, CanExecuteEtabsAction);
             AddLoadCombinationFromExcelCommand = ModifyLoadCombinationsInMatrixViewCommand;
             DeleteSelectedLoadCombinationsCommand = new RelayCommand<System.Collections.IList>(DeleteSelectedLoadCombinations, _ => CanUseActiveModel);
@@ -565,6 +566,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand ModifyLoadCombinationsInMatrixViewCommand { get; }
         public ICommand ExportLoadCombinationMatrixToExcelCommand { get; }
         public ICommand OpenShellUniformLoadSetFormCommand { get; }
+        public ICommand SelectShellsByLoadSetCommand { get; }
         public ICommand ExportShellUniformLoadSetDefinitionsCommand { get; }
         public ICommand AddLoadCombinationFromExcelCommand { get; }
         public ICommand DeleteSelectedLoadCombinationsCommand { get; }

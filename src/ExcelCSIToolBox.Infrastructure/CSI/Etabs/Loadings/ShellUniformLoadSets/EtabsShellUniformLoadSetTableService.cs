@@ -128,6 +128,46 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
             }
         }
 
+        public static OperationResult<IReadOnlyList<string>> GetDefinitionNames(ETABSv1.cSapModel sapModel)
+        {
+            if (sapModel == null)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure("ETABS SapModel is not available.");
+            }
+
+            try
+            {
+                TableSnapshot snapshot;
+                OperationResult readResult = ReadSnapshot(sapModel, out snapshot);
+                if (!readResult.IsSuccess)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure(readResult.Message);
+                }
+
+                IReadOnlyList<FieldMetadata> fieldMetadata = ReadFieldMetadata(sapModel);
+                var schemaResult = ShellUniformLoadSetTableSchemaResolver.Resolve(snapshot.FieldKeysIncluded, fieldMetadata);
+                if (!schemaResult.IsSuccess)
+                {
+                    return OperationResult<IReadOnlyList<string>>.Failure(schemaResult.Message);
+                }
+
+                ShellUniformLoadSetTableSchema schema = schemaResult.Data;
+                List<Dictionary<string, string>> records = ParseRecords(snapshot);
+                IReadOnlyList<string> names = records
+                    .Select(record => NormalizeName(ReadRecordValue(record, schema.SetNameFieldKey)))
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                return OperationResult<IReadOnlyList<string>>.Success(names);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure("Could not read Shell Uniform Load Set names: " + ex.Message);
+            }
+        }
+
         public static OperationResult<ShellUniformLoadSetApplyResultDto> Apply(
             ETABSv1.cSapModel sapModel,
             IReadOnlyList<ShellUniformLoadSetDefinitionDto> definitions)

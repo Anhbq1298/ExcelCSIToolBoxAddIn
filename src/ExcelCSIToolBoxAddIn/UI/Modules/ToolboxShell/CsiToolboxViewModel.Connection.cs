@@ -78,6 +78,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 EditFrameSectionCommand,
                 OpenCreateSectionDialogCommand,
                 OpenShellUniformLoadSetFormCommand,
+                SelectShellsByLoadSetCommand,
                 ExportShellUniformLoadSetDefinitionsCommand,
                 OpenCreateArrayPerpendicularToPathWindowCommand,
                 OpenArrayBetweenTwoLinesWindowCommand,

@@ -13,6 +13,7 @@ using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults.JointOutput;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.AnalysisResults.StructureOutput;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Connectivity;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.DatabaseTables.MiscellaneousData;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Units;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Selection;
 using ExcelCSIToolBox.Infrastructure.Excel.Interop.Writing;
@@ -91,6 +92,13 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
             var identityResolver = new EtabsSelectedObjectIdentityResolver(connectionService);
             var exportSelectedObjectConnectivity = new ExportSelectedObjectConnectivityUseCase(tableService, identityResolver);
             return new EtabsElementConnectivityServices(router, exportSelectedObjectConnectivity);
+        }
+
+        public static IEtabsShellUniformLoadSetSelectionService CreateShellUniformLoadSetSelectionService(
+            ICSISapModelConnectionService csiConnectionService)
+        {
+            IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
+            return new EtabsShellUniformLoadSetSelectionService(connectionService, CsiApiDispatcher);
         }
     }
 }
