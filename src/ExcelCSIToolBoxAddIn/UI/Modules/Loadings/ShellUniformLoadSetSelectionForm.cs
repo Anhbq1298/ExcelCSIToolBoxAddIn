@@ -19,6 +19,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
         private bool _hasLoadedInitialLoadSets;
         private bool _hasPopulatedStoryNames;
         private bool _isBusy;
+        private bool _allowCloseWhileBusy;
         private bool _updatingCheckState;
         private bool _updatingStoryCheckState;
 
@@ -147,10 +148,14 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             Cursor previousCursor = Cursor.Current;
             Cursor.Current = Cursors.WaitCursor;
             SetBusy(true, "Selecting ETABS shell objects...");
+            ResetSelectionProgress(true, "Preparing selection...");
             try
             {
                 OperationResult<ShellUniformLoadSetSelectionResultDto> result =
-                    _selectionService.SelectShellsByLoadSets(selectedLoadSets, selectedStoryNames);
+                    _selectionService.SelectShellsByLoadSets(
+                        selectedLoadSets,
+                        selectedStoryNames,
+                        new ImmediateProgress<ShellUniformLoadSetSelectionProgressDto>(UpdateSelectionProgress));
                 if (!result.IsSuccess)
                 {
                     lblStatus.Text = result.Message;
@@ -166,6 +171,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 }
 
                 MessageBox.Show(this, message, "Select Shells", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _allowCloseWhileBusy = true;
                 DialogResult = DialogResult.OK;
                 Close();
             }
@@ -175,9 +181,25 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 if (!IsDisposed)
                 {
                     SetBusy(false, lblStatus.Text);
+                    if (DialogResult != DialogResult.OK)
+                    {
+                        ResetSelectionProgress(false, lblStatus.Text);
+                    }
+
                     UpdateSelectionStatus();
                 }
             }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (_isBusy && !_allowCloseWhileBusy)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            base.OnFormClosing(e);
         }
 
         private void RefreshLoadSetNames()
@@ -365,6 +387,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 btnSelectAllStories.Enabled = false;
                 btnClearStories.Enabled = false;
                 btnRefresh.Enabled = false;
+                btnCancel.Enabled = false;
                 txtFilter.Enabled = false;
                 chkStories.Enabled = false;
                 chkLoadSets.Enabled = false;
@@ -380,6 +403,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             btnClearSelection.Enabled = selectedCount > 0;
             btnSelectAllStories.Enabled = chkStories.Items.Count > 0;
             btnClearStories.Enabled = selectedStoryCount > 0;
+            btnCancel.Enabled = true;
         }
 
         private void SetBusy(bool isBusy, string status)
@@ -391,6 +415,63 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             }
 
             UpdateSelectionStatus();
+        }
+
+        private void ResetSelectionProgress(bool visible, string status)
+        {
+            progressSelection.Style = ProgressBarStyle.Continuous;
+            progressSelection.Minimum = 0;
+            progressSelection.Maximum = 100;
+            progressSelection.Value = 0;
+            progressSelection.Visible = visible;
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                lblStatus.Text = status;
+            }
+
+            progressSelection.Refresh();
+            lblStatus.Refresh();
+        }
+
+        private void UpdateSelectionProgress(ShellUniformLoadSetSelectionProgressDto progress)
+        {
+            if (progressSelection.IsDisposed || IsDisposed)
+            {
+                return;
+            }
+
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action<ShellUniformLoadSetSelectionProgressDto>(UpdateSelectionProgress), progress);
+                return;
+            }
+
+            if (progress == null)
+            {
+                return;
+            }
+
+            progressSelection.Visible = true;
+            if (!string.IsNullOrWhiteSpace(progress.Message))
+            {
+                lblStatus.Text = progress.Message;
+            }
+
+            if (progress.IsIndeterminate || progress.Total <= 0)
+            {
+                progressSelection.Style = ProgressBarStyle.Marquee;
+            }
+            else
+            {
+                progressSelection.Style = ProgressBarStyle.Continuous;
+                progressSelection.Minimum = 0;
+                progressSelection.Maximum = Math.Max(1, progress.Total);
+                progressSelection.Value = Math.Max(0, Math.Min(progress.Current, progressSelection.Maximum));
+            }
+
+            progressSelection.Refresh();
+            lblStatus.Refresh();
+            Application.DoEvents();
         }
 
         private void PopulateStoryList()
@@ -452,6 +533,21 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             }
 
             return names;
+        }
+
+        private sealed class ImmediateProgress<T> : IProgress<T>
+        {
+            private readonly Action<T> _handler;
+
+            public ImmediateProgress(Action<T> handler)
+            {
+                _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            }
+
+            public void Report(T value)
+            {
+                _handler(value);
+            }
         }
     }
 }

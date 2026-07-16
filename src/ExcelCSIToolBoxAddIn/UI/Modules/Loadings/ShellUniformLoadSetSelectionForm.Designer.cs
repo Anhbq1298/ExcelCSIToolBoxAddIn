@@ -18,6 +18,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
         private System.Windows.Forms.Button btnSelectShells;
         private System.Windows.Forms.Label lblSelectionStatus;
         private System.Windows.Forms.Label lblStorySelectionStatus;
+        private System.Windows.Forms.ProgressBar progressSelection;
         private System.Windows.Forms.Label lblStatus;
 
         protected override void Dispose(bool disposing)
@@ -47,6 +48,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             this.btnSelectShells = new System.Windows.Forms.Button();
             this.lblSelectionStatus = new System.Windows.Forms.Label();
             this.lblStorySelectionStatus = new System.Windows.Forms.Label();
+            this.progressSelection = new System.Windows.Forms.ProgressBar();
             this.lblStatus = new System.Windows.Forms.Label();
             this.SuspendLayout();
             this.lblFilter.AutoSize = true;
@@ -154,20 +156,27 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             this.lblStorySelectionStatus.TabIndex = 12;
             this.lblStorySelectionStatus.Text = "0 story(s) selected";
             this.lblStorySelectionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.progressSelection.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.progressSelection.Location = new System.Drawing.Point(19, 434);
+            this.progressSelection.Name = "progressSelection";
+            this.progressSelection.Size = new System.Drawing.Size(523, 12);
+            this.progressSelection.TabIndex = 13;
+            this.progressSelection.Visible = false;
             this.lblStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblStatus.AutoEllipsis = true;
             this.lblStatus.Location = new System.Drawing.Point(16, 456);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(526, 23);
-            this.lblStatus.TabIndex = 13;
+            this.lblStatus.TabIndex = 14;
             this.lblStatus.Text = "Ready.";
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.btnCancel.Location = new System.Drawing.Point(563, 451);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(86, 30);
-            this.btnCancel.TabIndex = 14;
+            this.btnCancel.TabIndex = 15;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnSelectShells.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -175,7 +184,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             this.btnSelectShells.Location = new System.Drawing.Point(655, 451);
             this.btnSelectShells.Name = "btnSelectShells";
             this.btnSelectShells.Size = new System.Drawing.Size(90, 30);
-            this.btnSelectShells.TabIndex = 15;
+            this.btnSelectShells.TabIndex = 16;
             this.btnSelectShells.Text = "Select Shells";
             this.btnSelectShells.UseVisualStyleBackColor = true;
             this.btnSelectShells.Click += new System.EventHandler(this.btnSelectShells_Click);
@@ -187,6 +196,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
             this.Controls.Add(this.btnSelectShells);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.lblStatus);
+            this.Controls.Add(this.progressSelection);
             this.Controls.Add(this.lblStorySelectionStatus);
             this.Controls.Add(this.lblSelectionStatus);
             this.Controls.Add(this.btnClearStories);

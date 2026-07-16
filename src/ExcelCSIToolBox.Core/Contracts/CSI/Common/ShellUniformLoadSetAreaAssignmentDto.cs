@@ -41,4 +41,15 @@ namespace ExcelCSIToolBox.Core.Contracts.CSI
 
         public List<string> UnresolvedAreaReferences { get; set; } = new List<string>();
     }
+
+    public class ShellUniformLoadSetSelectionProgressDto
+    {
+        public int Current { get; set; }
+
+        public int Total { get; set; }
+
+        public bool IsIndeterminate { get; set; }
+
+        public string Message { get; set; }
+    }
 }

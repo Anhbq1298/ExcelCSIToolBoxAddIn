@@ -57,7 +57,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
             IReadOnlyList<string> loadSetNames,
             IReadOnlyList<string> storyNames)
         {
-            return _dispatcher.Invoke(() => SelectShellsByLoadSetsCore(loadSetNames, storyNames));
+            return SelectShellsByLoadSets(loadSetNames, storyNames, null);
+        }
+
+        public OperationResult<ShellUniformLoadSetSelectionResultDto> SelectShellsByLoadSets(
+            IReadOnlyList<string> loadSetNames,
+            IReadOnlyList<string> storyNames,
+            IProgress<ShellUniformLoadSetSelectionProgressDto> progress)
+        {
+            return _dispatcher.Invoke(() => SelectShellsByLoadSetsCore(loadSetNames, storyNames, progress));
         }
 
         private OperationResult<IReadOnlyList<string>> GetLoadSetNamesCore()
@@ -123,8 +131,10 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
 
         private OperationResult<ShellUniformLoadSetSelectionResultDto> SelectShellsByLoadSetsCore(
             IReadOnlyList<string> rawLoadSetNames,
-            IReadOnlyList<string> rawStoryNames)
+            IReadOnlyList<string> rawStoryNames,
+            IProgress<ShellUniformLoadSetSelectionProgressDto> progress)
         {
+            ReportProgress(progress, 0, 0, true, "Preparing selection...");
             IReadOnlyList<string> requestedLoadSetNames = ShellUniformLoadSetSelectionPlanner.NormalizeLoadSetNames(rawLoadSetNames);
             if (requestedLoadSetNames.Count == 0)
             {
@@ -140,6 +150,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
                 return OperationResult<ShellUniformLoadSetSelectionResultDto>.Failure(modelResult.Message);
             }
 
+            ReportProgress(progress, 0, 0, true, "Checking Shell Uniform Load Sets...");
             OperationResult<IReadOnlyList<string>> existingLoadSetsResult = GetLoadSetNamesCore();
             if (!existingLoadSetsResult.IsSuccess)
             {
@@ -152,12 +163,14 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
                 return OperationResult<ShellUniformLoadSetSelectionResultDto>.Failure("No Shell Uniform Load Sets exist in the connected ETABS model.");
             }
 
+            ReportProgress(progress, 0, 0, true, "Reading Shell Uniform Load Set assignments...");
             OperationResult<IReadOnlyList<ShellUniformLoadSetAreaAssignmentDto>> assignmentsResult = ReadAreaLoadSetAssignments(sapModel);
             if (!assignmentsResult.IsSuccess)
             {
                 return OperationResult<ShellUniformLoadSetSelectionResultDto>.Failure(assignmentsResult.Message);
             }
 
+            ReportProgress(progress, 0, 0, true, "Resolving matching shell objects...");
             ShellUniformLoadSetSelectionPlan plan = ShellUniformLoadSetSelectionPlanner.CreatePlan(
                 requestedLoadSetNames,
                 existingLoadSets,
@@ -170,7 +183,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
                 return OperationResult<ShellUniformLoadSetSelectionResultDto>.Failure(CreateNoMatchingShellsMessage(plan));
             }
 
-            OperationResult selectResult = SelectAreaObjects(sapModel, plan.AreaObjectNames);
+            OperationResult selectResult = SelectAreaObjects(sapModel, plan.AreaObjectNames, progress);
             if (!selectResult.IsSuccess)
             {
                 return OperationResult<ShellUniformLoadSetSelectionResultDto>.Failure(selectResult.Message);
@@ -377,8 +390,13 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
             return ret == 0 ? NormalizeName(areaObjectName) : string.Empty;
         }
 
-        private static OperationResult SelectAreaObjects(cSapModel sapModel, IReadOnlyList<string> areaObjectNames)
+        private static OperationResult SelectAreaObjects(
+            cSapModel sapModel,
+            IReadOnlyList<string> areaObjectNames,
+            IProgress<ShellUniformLoadSetSelectionProgressDto> progress)
         {
+            int total = areaObjectNames == null ? 0 : areaObjectNames.Count;
+            ReportProgress(progress, 0, total, false, "Clearing current ETABS selection...");
             int clearRet = sapModel.SelectObj.ClearSelection();
             if (clearRet != 0)
             {
@@ -386,9 +404,20 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
             }
 
             List<string> failures = new List<string>();
+            int current = 0;
             foreach (string areaObjectName in areaObjectNames ?? new string[0])
             {
                 int ret = sapModel.AreaObj.SetSelected(areaObjectName, true, eItemType.Objects);
+                current++;
+                ReportProgress(
+                    progress,
+                    current,
+                    total,
+                    false,
+                    "Selecting ETABS shell objects: " +
+                    current.ToString(CultureInfo.InvariantCulture) +
+                    " / " +
+                    total.ToString(CultureInfo.InvariantCulture));
                 if (ret != 0)
                 {
                     failures.Add(areaObjectName + " (return code " + ret.ToString(CultureInfo.InvariantCulture) + ")");
@@ -403,12 +432,14 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
                     (failures.Count > 10 ? "; ..." : string.Empty));
             }
 
+            ReportProgress(progress, total, total, false, "Refreshing ETABS view...");
             int refreshRet = sapModel.View.RefreshView(0, false);
             if (refreshRet != 0)
             {
                 return OperationResult.Failure("ETABS selected the shells, but View.RefreshView failed (return code " + refreshRet.ToString(CultureInfo.InvariantCulture) + ").");
             }
 
+            ReportProgress(progress, total, total, false, "Selection complete.");
             return OperationResult.Success();
         }
 
@@ -497,6 +528,27 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
             }
 
             return " on " + selectedStoryNames.Count.ToString(CultureInfo.InvariantCulture) + " selected story(s)";
+        }
+
+        private static void ReportProgress(
+            IProgress<ShellUniformLoadSetSelectionProgressDto> progress,
+            int current,
+            int total,
+            bool isIndeterminate,
+            string message)
+        {
+            if (progress == null)
+            {
+                return;
+            }
+
+            progress.Report(new ShellUniformLoadSetSelectionProgressDto
+            {
+                Current = current,
+                Total = total,
+                IsIndeterminate = isIndeterminate,
+                Message = message
+            });
         }
 
         private static IReadOnlyList<string> NormalizeStoryNames(IEnumerable<string> storyNames)
