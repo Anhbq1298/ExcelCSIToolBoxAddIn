@@ -17,6 +17,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
     public sealed class EtabsShellUniformLoadSetSelectionService : IEtabsShellUniformLoadSetSelectionService
     {
         private const string AssignmentTableKey = "Area Load Assignments - Uniform Load Sets";
+        private const string TemporarySelectionGroupPrefix = "__ExcelCSIToolBox_LoadSetSelection_";
         private readonly IEtabsConnectionService _connectionService;
         private readonly ICsiApiDispatcher _dispatcher;
 
@@ -183,7 +184,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
                 return OperationResult<ShellUniformLoadSetSelectionResultDto>.Failure(CreateNoMatchingShellsMessage(plan));
             }
 
-            OperationResult selectResult = SelectAreaObjects(sapModel, plan.AreaObjectNames, progress);
+            OperationResult selectResult = SelectAreaObjectsByTemporaryGroup(sapModel, plan.AreaObjectNames, progress);
             if (!selectResult.IsSuccess)
             {
                 return OperationResult<ShellUniformLoadSetSelectionResultDto>.Failure(selectResult.Message);
@@ -390,12 +391,13 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
             return ret == 0 ? NormalizeName(areaObjectName) : string.Empty;
         }
 
-        private static OperationResult SelectAreaObjects(
+        private static OperationResult SelectAreaObjectsByTemporaryGroup(
             cSapModel sapModel,
             IReadOnlyList<string> areaObjectNames,
             IProgress<ShellUniformLoadSetSelectionProgressDto> progress)
         {
             int total = areaObjectNames == null ? 0 : areaObjectNames.Count;
+            string groupName = TemporarySelectionGroupPrefix + Guid.NewGuid().ToString("N");
             ReportProgress(progress, 0, total, false, "Clearing current ETABS selection...");
             int clearRet = sapModel.SelectObj.ClearSelection();
             if (clearRet != 0)
@@ -403,44 +405,109 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets
                 return OperationResult.Failure("Failed to clear the current ETABS selection (return code " + clearRet.ToString(CultureInfo.InvariantCulture) + ").");
             }
 
-            List<string> failures = new List<string>();
-            int current = 0;
-            foreach (string areaObjectName in areaObjectNames ?? new string[0])
+            try
             {
-                int ret = sapModel.AreaObj.SetSelected(areaObjectName, true, eItemType.Objects);
-                current++;
+                OperationResult createGroupResult = CreateTemporarySelectionGroup(sapModel, groupName);
+                if (!createGroupResult.IsSuccess)
+                {
+                    return createGroupResult;
+                }
+
                 ReportProgress(
                     progress,
-                    current,
+                    0,
                     total,
                     false,
-                    "Selecting ETABS shell objects: " +
-                    current.ToString(CultureInfo.InvariantCulture) +
-                    " / " +
-                    total.ToString(CultureInfo.InvariantCulture));
-                if (ret != 0)
+                    "Preparing temporary ETABS selection group...");
+
+                List<string> failures = new List<string>();
+                int current = 0;
+                foreach (string areaObjectName in areaObjectNames ?? new string[0])
                 {
-                    failures.Add(areaObjectName + " (return code " + ret.ToString(CultureInfo.InvariantCulture) + ")");
+                    int ret = sapModel.AreaObj.SetGroupAssign(areaObjectName, groupName, false, eItemType.Objects);
+                    current++;
+                    ReportProgress(
+                        progress,
+                        current,
+                        total,
+                        false,
+                        "Adding shells to ETABS selection group: " +
+                        current.ToString(CultureInfo.InvariantCulture) +
+                        " / " +
+                        total.ToString(CultureInfo.InvariantCulture));
+                    if (ret != 0)
+                    {
+                        failures.Add(areaObjectName + " (return code " + ret.ToString(CultureInfo.InvariantCulture) + ")");
+                    }
+                }
+
+                if (failures.Count > 0)
+                {
+                    return OperationResult.Failure(
+                        "ETABS could not add " + failures.Count.ToString(CultureInfo.InvariantCulture) + " area object(s) to the temporary selection group: " +
+                        string.Join("; ", failures.Take(10)) +
+                        (failures.Count > 10 ? "; ..." : string.Empty));
+                }
+
+                ReportProgress(progress, total, total, false, "Selecting ETABS group...");
+                int groupSelectRet = sapModel.SelectObj.Group(groupName, false);
+                if (groupSelectRet != 0)
+                {
+                    return OperationResult.Failure("Failed to select temporary ETABS group (return code " + groupSelectRet.ToString(CultureInfo.InvariantCulture) + ").");
+                }
+
+                ReportProgress(progress, total, total, false, "Refreshing ETABS view...");
+                int refreshRet = sapModel.View.RefreshView(0, false);
+                if (refreshRet != 0)
+                {
+                    return OperationResult.Failure("ETABS selected the shells, but View.RefreshView failed (return code " + refreshRet.ToString(CultureInfo.InvariantCulture) + ").");
+                }
+
+                ReportProgress(progress, total, total, false, "Selection complete.");
+                return OperationResult.Success();
+            }
+            finally
+            {
+                TryDeleteTemporaryGroup(sapModel, groupName);
+            }
+        }
+
+        private static OperationResult CreateTemporarySelectionGroup(cSapModel sapModel, string groupName)
+        {
+            int ret = sapModel.GroupDef.SetGroup(
+                groupName,
+                16711680,
+                true,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false);
+            if (ret != 0)
+            {
+                return OperationResult.Failure("Failed to create temporary ETABS selection group (return code " + ret.ToString(CultureInfo.InvariantCulture) + ").");
+            }
+
+            return OperationResult.Success();
+        }
+
+        private static void TryDeleteTemporaryGroup(cSapModel sapModel, string groupName)
+        {
+            try
+            {
+                if (sapModel != null && sapModel.GroupDef != null && !string.IsNullOrWhiteSpace(groupName))
+                {
+                    sapModel.GroupDef.Delete(groupName);
                 }
             }
-
-            if (failures.Count > 0)
+            catch
             {
-                return OperationResult.Failure(
-                    "ETABS could not select " + failures.Count.ToString(CultureInfo.InvariantCulture) + " area object(s): " +
-                    string.Join("; ", failures.Take(10)) +
-                    (failures.Count > 10 ? "; ..." : string.Empty));
             }
-
-            ReportProgress(progress, total, total, false, "Refreshing ETABS view...");
-            int refreshRet = sapModel.View.RefreshView(0, false);
-            if (refreshRet != 0)
-            {
-                return OperationResult.Failure("ETABS selected the shells, but View.RefreshView failed (return code " + refreshRet.ToString(CultureInfo.InvariantCulture) + ").");
-            }
-
-            ReportProgress(progress, total, total, false, "Selection complete.");
-            return OperationResult.Success();
         }
 
         private static ShellUniformLoadSetSelectionResultDto CreateSelectionResult(ShellUniformLoadSetSelectionPlan plan)

@@ -19,7 +19,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
         private bool _hasLoadedInitialLoadSets;
         private bool _hasPopulatedStoryNames;
         private bool _isBusy;
-        private bool _allowCloseWhileBusy;
         private bool _updatingCheckState;
         private bool _updatingStoryCheckState;
 
@@ -170,10 +169,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                     message += "\r\n\r\n" + data.WarningMessage;
                 }
 
+                lblStatus.Text = message;
                 MessageBox.Show(this, message, "Select Shells", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                _allowCloseWhileBusy = true;
-                DialogResult = DialogResult.OK;
-                Close();
             }
             finally
             {
@@ -181,11 +178,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
                 if (!IsDisposed)
                 {
                     SetBusy(false, lblStatus.Text);
-                    if (DialogResult != DialogResult.OK)
-                    {
-                        ResetSelectionProgress(false, lblStatus.Text);
-                    }
-
+                    ResetSelectionProgress(false, lblStatus.Text);
                     UpdateSelectionStatus();
                 }
             }
@@ -193,7 +186,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Forms
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (_isBusy && !_allowCloseWhileBusy)
+            if (_isBusy)
             {
                 e.Cancel = true;
                 return;
