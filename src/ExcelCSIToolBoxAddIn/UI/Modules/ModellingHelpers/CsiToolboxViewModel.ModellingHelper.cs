@@ -38,6 +38,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private bool _isPinPinSelected;
         private int _numberOfSpaces;
         private ModellingHelperActionRouter _modellingHelperActionRouter;
+        private QuickCreatePileCapWindowService _quickCreatePileCapWindowService;
 
         private const string AdjustJEndToFirstIntersection = "Adjust J-End To First Intersection";
         private const string AdjustBothEndsToNearestIntersections = "Adjust Both Ends To Nearest Intersections";
@@ -60,10 +61,14 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             _selectedAdjustmentMode = AdjustJEndToFirstIntersection;
             _isFixFixSelected = true;
             _numberOfSpaces = 3;
+            _quickCreatePileCapWindowService = new QuickCreatePileCapWindowService(
+                _csiConnectionService,
+                GetExcelMainWindowHandle);
 
             _modellingHelperActionRouter = new ModellingHelperActionRouter()
                 .Register(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath, OpenCreateArrayPerpendicularToPathWindow)
                 .Register(ModellingHelperActionKeys.OpenArrayBetweenTwoLines, OpenArrayBetweenTwoLinesWindow)
+                .Register(ModellingHelperActionKeys.OpenQuickCreatePileCap, OpenQuickCreatePileCapWindow)
                 .Register(ModellingHelperActionKeys.PickPoint1, PickPoint1)
                 .Register(ModellingHelperActionKeys.PickPoint2, PickPoint2)
                 .Register(ModellingHelperActionKeys.PickReferenceFrame, PickReferenceFrame)
@@ -74,6 +79,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
             OpenCreateArrayPerpendicularToPathWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath), CanExecuteCsiAction);
             OpenArrayBetweenTwoLinesWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenArrayBetweenTwoLines), CanExecuteCsiAction);
+            OpenQuickCreatePileCapWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenQuickCreatePileCap), CanExecuteCsiAction);
             PickPoint1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint1), CanExecuteCsiAction);
             PickPoint2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint2), CanExecuteCsiAction);
             PickReferenceFrameCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickReferenceFrame), CanExecuteCsiAction);
@@ -395,6 +401,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         public ICommand OpenCreateArrayPerpendicularToPathWindowCommand { get; private set; }
         public ICommand OpenArrayBetweenTwoLinesWindowCommand { get; private set; }
+        public ICommand OpenQuickCreatePileCapWindowCommand { get; private set; }
         public ICommand PickPoint1Command { get; private set; }
         public ICommand PickPoint2Command { get; private set; }
         public ICommand PickReferenceFrameCommand { get; private set; }
@@ -432,6 +439,29 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             window.ShowDialog();
+        }
+
+        private void OpenQuickCreatePileCapWindow()
+        {
+            _quickCreatePileCapWindowService.ShowWindow();
+        }
+
+        private static IntPtr GetExcelMainWindowHandle()
+        {
+            try
+            {
+                if (ExcelCSIToolBoxAddIn.Globals.ExcelCSIToolBoxAddin != null &&
+                    ExcelCSIToolBoxAddIn.Globals.ExcelCSIToolBoxAddin.Application != null)
+                {
+                    return new IntPtr(ExcelCSIToolBoxAddIn.Globals.ExcelCSIToolBoxAddin.Application.Hwnd);
+                }
+            }
+            catch
+            {
+                return IntPtr.Zero;
+            }
+
+            return IntPtr.Zero;
         }
 
         private static Window GetActiveOwnerWindow()

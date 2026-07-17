@@ -10,8 +10,10 @@ using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Core.Tabular;
 using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.PileCap;
 using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 using ExcelCSIToolBox.Infrastructure.CSI.Common;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling;
 
 namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Session
 {
@@ -3924,6 +3926,28 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Session
 
             RefreshView(sapModelResult.Data);
             return OperationResult.Success();
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetConcreteMaterialNames()
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            return EtabsPileCapCreationService.GetConcreteMaterialNames(sapModelResult.Data);
+        }
+
+        public OperationResult<PileCapAssignmentSummaryDto> QuickCreatePileCaps(PileCapAssignmentRequestDto request)
+        {
+            var sapModelResult = EnsureEtabsSapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<PileCapAssignmentSummaryDto>.Failure(sapModelResult.Message);
+            }
+
+            return EtabsPileCapCreationService.QuickCreatePileCaps(sapModelResult.Data, request);
         }
 
         private static OperationResult SetFrameSectionProperty(ETABSv1.cSapModel sapModel, string sectionName, CSISapModelFrameSectionUpdateDTO input)

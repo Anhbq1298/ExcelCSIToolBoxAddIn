@@ -82,6 +82,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 ExportShellUniformLoadSetDefinitionsCommand,
                 OpenCreateArrayPerpendicularToPathWindowCommand,
                 OpenArrayBetweenTwoLinesWindowCommand,
+                OpenQuickCreatePileCapWindowCommand,
                 PickPoint1Command,
                 PickPoint2Command,
                 PickReferenceFrameCommand,

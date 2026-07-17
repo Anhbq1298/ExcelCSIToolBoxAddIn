@@ -1,0 +1,412 @@
+<Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.QuickCreatePileCapWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:ExcelCSIToolBoxAddIn.UI.Views"
+        Title="Quick Create Pile Cap and Pile"
+        Width="1080"
+        Height="720"
+        MinWidth="920"
+        MinHeight="620"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="{DynamicResource FontFamily.Primary}"
+        FontSize="{DynamicResource FontSize.Body}"
+        Background="{DynamicResource AppBackgroundBrush}">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Shared/Themes/EtabsToolboxTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="PileCapBoundaryStroke" Color="#B91C1C"/>
+            <SolidColorBrush x:Key="PileCircleStroke" Color="#B91C1C"/>
+            <SolidColorBrush x:Key="PileCentrelineStroke" Color="#2563EB"/>
+
+            <Style x:Key="ArrangementCardStyle" TargetType="RadioButton">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Margin" Value="0,0,8,8"/>
+                <Setter Property="Width" Value="142"/>
+                <Setter Property="Height" Value="158"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <Border x:Name="Card"
+                                    Background="#FFFFFF"
+                                    BorderBrush="{StaticResource BorderBrush.Light}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource CornerRadius.Card}"
+                                    Padding="8"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Card" Property="Background" Value="{StaticResource ButtonBrush.Hover}"/>
+                                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource ButtonBrush.HoverBorder}"/>
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Card" Property="Background" Value="{StaticResource ButtonBrush.Active}"/>
+                                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource ButtonBrush.ActiveBorder}"/>
+                                    <Setter TargetName="Card" Property="BorderThickness" Value="2"/>
+                                </Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True">
+                                    <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource ButtonBrush.ActiveBorder}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="{StaticResource Inset.Medium}">
+        <Border Style="{StaticResource CardBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Quick Create Pile Cap and Pile"
+                                   Style="{StaticResource HeadingTextStyle}"/>
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="190"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="80"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Connected Model:" Style="{StaticResource MutedTextStyle}" Margin="0,0,4,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding ConnectedModelName}" Style="{StaticResource LabelTextStyle}" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="2" Text="Current Units:" Style="{StaticResource MutedTextStyle}" Margin="10,0,4,0"/>
+                            <TextBlock Grid.Column="3" Text="{Binding CurrentUnitsText}" Style="{StaticResource LabelTextStyle}"/>
+                            <TextBlock Grid.Column="4" Text="Selected Points:" Style="{StaticResource MutedTextStyle}" Margin="10,0,4,0"/>
+                            <TextBlock Grid.Column="5" Text="{Binding SelectedPointCount}" Style="{StaticResource LabelTextStyle}"/>
+                            <TextBlock Grid.Column="6" Text="Ignored:" Style="{StaticResource MutedTextStyle}" Margin="10,0,4,0"/>
+                            <TextBlock Grid.Column="7" Text="{Binding IgnoredNonPointObjectCount}" Style="{StaticResource LabelTextStyle}"/>
+                        </Grid>
+                        <TextBlock Text="{Binding SelectedPointNamesText}"
+                                   Style="{StaticResource MutedTextStyle}"
+                                   TextWrapping="Wrap"
+                                   MaxHeight="38"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Refresh Selection"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding RefreshSelectionCommand}"
+                            VerticalAlignment="Top"/>
+                </Grid>
+
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.18*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="0.82*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Column="0"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  CanContentScroll="False">
+                        <StackPanel>
+                            <TextBlock Text="1. Arrangement"
+                                       Style="{StaticResource SectionHeadingTextStyle}"
+                                       Margin="{StaticResource Gap.Card}"/>
+                            <WrapPanel HorizontalAlignment="Center">
+                                <RadioButton Style="{StaticResource ArrangementCardStyle}"
+                                             GroupName="PileCapArrangement"
+                                             Command="{Binding SelectArrangementCommand}"
+                                             CommandParameter="Mono"
+                                             IsChecked="{Binding IsMonoSelected, Mode=TwoWay}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="102"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <views:PileCapArrangementPreviewControl Grid.Row="0"
+                                                                                Height="96"
+                                                                                Geometry="{Binding MonoCardGeometry}"
+                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
+                                                                                PileStroke="{StaticResource PileCircleStroke}"
+                                                                                CentrelineStroke="{StaticResource PileCentrelineStroke}"
+                                                                                IsSelected="{Binding IsMonoSelected}"/>
+                                        <StackPanel Grid.Row="1"
+                                                    Grid.RowSpan="2"
+                                                    VerticalAlignment="Bottom">
+                                            <TextBlock Text="Mono Pile Cap" Style="{StaticResource LabelTextStyle}" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="1 pile" Style="{StaticResource MutedTextStyle}" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </RadioButton>
+
+                                <RadioButton Style="{StaticResource ArrangementCardStyle}"
+                                             GroupName="PileCapArrangement"
+                                             Command="{Binding SelectArrangementCommand}"
+                                             CommandParameter="TwoPile"
+                                             IsChecked="{Binding IsTwoPileSelected, Mode=TwoWay}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="102"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <views:PileCapArrangementPreviewControl Grid.Row="0"
+                                                                                Height="96"
+                                                                                Geometry="{Binding TwoPileCardGeometry}"
+                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
+                                                                                PileStroke="{StaticResource PileCircleStroke}"
+                                                                                CentrelineStroke="{StaticResource PileCentrelineStroke}"
+                                                                                IsSelected="{Binding IsTwoPileSelected}"/>
+                                        <StackPanel Grid.Row="1"
+                                                    Grid.RowSpan="2"
+                                                    VerticalAlignment="Bottom">
+                                            <TextBlock Text="Two-Pile Cap" Style="{StaticResource LabelTextStyle}" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="2 piles" Style="{StaticResource MutedTextStyle}" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </RadioButton>
+
+                                <RadioButton Style="{StaticResource ArrangementCardStyle}"
+                                             GroupName="PileCapArrangement"
+                                             Command="{Binding SelectArrangementCommand}"
+                                             CommandParameter="ThreePile"
+                                             IsChecked="{Binding IsThreePileSelected, Mode=TwoWay}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="102"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <views:PileCapArrangementPreviewControl Grid.Row="0"
+                                                                                Height="96"
+                                                                                Geometry="{Binding ThreePileCardGeometry}"
+                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
+                                                                                PileStroke="{StaticResource PileCircleStroke}"
+                                                                                CentrelineStroke="{StaticResource PileCentrelineStroke}"
+                                                                                IsSelected="{Binding IsThreePileSelected}"/>
+                                        <StackPanel Grid.Row="1"
+                                                    Grid.RowSpan="2"
+                                                    VerticalAlignment="Bottom">
+                                            <TextBlock Text="Three-Pile Cap" Style="{StaticResource LabelTextStyle}" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="3 piles" Style="{StaticResource MutedTextStyle}" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </RadioButton>
+
+                                <RadioButton Style="{StaticResource ArrangementCardStyle}"
+                                             GroupName="PileCapArrangement"
+                                             Command="{Binding SelectArrangementCommand}"
+                                             CommandParameter="FourPile"
+                                             IsChecked="{Binding IsFourPileSelected, Mode=TwoWay}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="102"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <views:PileCapArrangementPreviewControl Grid.Row="0"
+                                                                                Height="96"
+                                                                                Geometry="{Binding FourPileCardGeometry}"
+                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
+                                                                                PileStroke="{StaticResource PileCircleStroke}"
+                                                                                CentrelineStroke="{StaticResource PileCentrelineStroke}"
+                                                                                IsSelected="{Binding IsFourPileSelected}"/>
+                                        <StackPanel Grid.Row="1"
+                                                    Grid.RowSpan="2"
+                                                    VerticalAlignment="Bottom">
+                                            <TextBlock Text="Four-Pile Cap" Style="{StaticResource LabelTextStyle}" FontWeight="Bold" TextAlignment="Center" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="4 piles" Style="{StaticResource MutedTextStyle}" TextAlignment="Center" HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </RadioButton>
+                            </WrapPanel>
+
+                            <Grid Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Style="{StaticResource SectionPanelBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="2. Pile Parameters" Style="{StaticResource SectionHeadingTextStyle}" Margin="{StaticResource Gap.Card}"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="132"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="42"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <TextBlock Grid.Row="0" Text="Pile Diameter" Style="{StaticResource LabelTextStyle}"/>
+                                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PileDiameterText, UpdateSourceTrigger=PropertyChanged, Delay=200}" HorizontalContentAlignment="Right"/>
+                                            <TextBlock Grid.Row="0" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,0,0,0"/>
+
+                                            <TextBlock Grid.Row="1" Text="Pile Length" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PileLengthText, UpdateSourceTrigger=PropertyChanged, Delay=200}" HorizontalContentAlignment="Right" Margin="0,6,0,0"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0"/>
+
+                                            <TextBlock Grid.Row="2" Text="Pile Material" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                            <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding ConcreteMaterials}" SelectedItem="{Binding SelectedPileMaterial, Mode=TwoWay}" Height="26" Margin="0,6,0,0"/>
+
+                                            <TextBlock Grid.Row="3" Text="Rotation" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RotationText, UpdateSourceTrigger=PropertyChanged, Delay=200}" HorizontalContentAlignment="Right" Margin="0,6,0,0"/>
+                                            <TextBlock Grid.Row="3" Grid.Column="2" Text="deg" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0"/>
+
+                                            <CheckBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Content="Automatic Spacing" IsChecked="{Binding IsAutomaticSpacing}" Margin="0,8,0,0" Visibility="{Binding MonoSpacingVisibility}"/>
+                                            <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Text="{Binding SpacingDescriptionText}" Style="{StaticResource MutedTextStyle}" Margin="0,4,0,0" Visibility="{Binding MonoSpacingVisibility}"/>
+
+                                            <TextBlock Grid.Row="6" Text="Pile Spacing" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0" Visibility="{Binding SingleSpacingVisibility}"/>
+                                            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding PileSpacingText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right" Margin="0,6,0,0" Visibility="{Binding SingleSpacingVisibility}"/>
+                                            <TextBlock Grid.Row="6" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0" Visibility="{Binding SingleSpacingVisibility}"/>
+
+                                            <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding FourSpacingVisibility}">
+                                                <CheckBox Content="Lock Spacing X and Y" IsChecked="{Binding LockSpacingXAndY}" Margin="0,8,0,0"/>
+                                                <Grid Margin="0,6,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="132"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="42"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock Grid.Row="0" Text="Spacing X" Style="{StaticResource LabelTextStyle}"/>
+                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SpacingXText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right"/>
+                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,0,0,0"/>
+                                                    <TextBlock Grid.Row="1" Text="Spacing Y" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SpacingYText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right" Margin="0,6,0,0"/>
+                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" Style="{StaticResource SectionPanelBorderStyle}">
+                                    <StackPanel>
+                                        <TextBlock Text="3. Pile-Cap Parameters" Style="{StaticResource SectionHeadingTextStyle}" Margin="{StaticResource Gap.Card}"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="132"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="42"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Text="Thickness" Style="{StaticResource LabelTextStyle}"/>
+                                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PileCapThicknessText, UpdateSourceTrigger=PropertyChanged, Delay=200}" HorizontalContentAlignment="Right"/>
+                                            <TextBlock Grid.Row="0" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,0,0,0"/>
+                                            <TextBlock Grid.Row="1" Text="Edge Distance" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding EdgeDistanceText, UpdateSourceTrigger=PropertyChanged, Delay=200}" HorizontalContentAlignment="Right" Margin="0,6,0,0"/>
+                                            <TextBlock Grid.Row="1" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0"/>
+                                            <TextBlock Grid.Row="2" Text="Material" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
+                                            <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" ItemsSource="{Binding ConcreteMaterials}" SelectedItem="{Binding SelectedPileCapMaterial, Mode=TwoWay}" Height="26" Margin="0,6,0,0"/>
+                                        </Grid>
+
+                                        <TextBlock Text="4. Generated Properties" Style="{StaticResource SectionHeadingTextStyle}" Margin="0,14,0,8"/>
+                                        <TextBlock Text="Pile Property" Style="{StaticResource MutedTextStyle}"/>
+                                        <TextBox Text="{Binding PilePropertyName}" IsReadOnly="True" Margin="0,3,0,8"/>
+                                        <TextBlock Text="Pile-Cap Property" Style="{StaticResource MutedTextStyle}"/>
+                                        <TextBox Text="{Binding PileCapPropertyName}" IsReadOnly="True" Margin="0,3,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <Border Grid.Column="2" Style="{StaticResource PreviewPanelBorderStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="5. Live Preview" Style="{StaticResource SectionHeadingTextStyle}" Margin="{StaticResource Gap.Card}"/>
+                            <views:PileCapPreviewCanvas Grid.Row="1"
+                                                        MinHeight="330"
+                                                        Geometry="{Binding PreviewGeometry}"
+                                                        PileDiameter="{Binding PreviewPileDiameter}"
+                                                        PileCapThickness="{Binding PreviewPileCapThickness}"
+                                                        EdgeDistance="{Binding PreviewEdgeDistance}"
+                                                        ShowDimensions="True"
+                                                        ShowMesh="False"
+                                                        ShowAxes="False"/>
+                            <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                                <Border Background="#FFF8E1"
+                                        BorderBrush="#E0C36A"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="8"
+                                        Visibility="{Binding ValidationVisibility}">
+                                    <TextBlock Text="{Binding ValidationMessage}"
+                                               Foreground="{StaticResource AccentBrush.Warning}"
+                                               TextWrapping="Wrap"/>
+                                </Border>
+                                <Border Background="#FFFFFF"
+                                        BorderBrush="{StaticResource BorderBrush.Light}"
+                                        BorderThickness="1"
+                                        CornerRadius="4"
+                                        Padding="8"
+                                        MinHeight="72"
+                                        Margin="0,8,0,0">
+                                    <TextBlock Text="{Binding StatusMessage}"
+                                               TextWrapping="Wrap"/>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Refresh Selection"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="{StaticResource Gap.Right}"
+                            Command="{Binding RefreshSelectionCommand}"/>
+                    <Button Content="Assign"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            MinWidth="90"
+                            Margin="{StaticResource Gap.Right}"
+                            Command="{Binding AssignCommand}"/>
+                    <Button Content="Close"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            MinWidth="76"
+                            Command="{Binding CloseCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -4,6 +4,7 @@ using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.PileCap;
 using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 
 
@@ -105,6 +106,8 @@ namespace ExcelCSIToolBox.Core.Abstractions.CSI
         OperationResult<IReadOnlyList<string>> GetAreaSectionNames();
         OperationResult<double[]> GetAreaSectionModifiers(string sectionName);
         OperationResult SetAreaSectionModifiers(string sectionName, double[] modifiers);
+        OperationResult<IReadOnlyList<string>> GetConcreteMaterialNames();
+        OperationResult<PileCapAssignmentSummaryDto> QuickCreatePileCaps(PileCapAssignmentRequestDto request);
 
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelLoadCombinationDTO>> GetLoadCombinations();
         OperationResult<IReadOnlyList<ExcelCSIToolBox.Core.Contracts.CSI.LoadCombinationItemDTO>> GetLoadCombinationDetails(string combinationName);

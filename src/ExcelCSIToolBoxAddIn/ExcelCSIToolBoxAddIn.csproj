@@ -297,6 +297,10 @@
     <Compile Include="UI\Modules\Sections\CsiToolboxViewModel.StiffnessModifiers.cs" />
     <Compile Include="UI\Modules\ModellingHelpers\CsiToolboxViewModel.ModellingHelper.cs" />
     <Compile Include="UI\Modules\ModellingHelpers\CsiToolboxViewModel.OffsetFromSetOfLines.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\QuickCreatePileCapViewModel.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\QuickCreatePileCapWindowService.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\PileCapArrangementPreviewControl.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\PileCapPreviewCanvas.cs" />
     <Compile Include="UI\Modules\AnalysisResults\AnalysisResultsViewModel.cs" />
     <Compile Include="UI\Modules\ToolboxShell\CsiRunningInstanceViewModel.cs" />
     <Compile Include="UI\Modules\ToolboxShell\EtabsUnitSystem.cs" />
@@ -376,6 +380,10 @@
       <DependentUpon>OffsetFromSetOfLinesWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Modules\ModellingHelpers\QuickCreatePileCapWindow.xaml.cs">
+      <DependentUpon>QuickCreatePileCapWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\Modules\ModellingHelpers\InteractiveSelectionWindow.xaml.cs">
       <DependentUpon>InteractiveSelectionWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -443,6 +451,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Modules\ModellingHelpers\OffsetFromSetOfLinesWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Modules\ModellingHelpers\QuickCreatePileCapWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

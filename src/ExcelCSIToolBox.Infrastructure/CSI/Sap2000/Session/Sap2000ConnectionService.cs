@@ -8,6 +8,7 @@ using ExcelCSIToolBox.Core.Geometry;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
+using ExcelCSIToolBox.Core.Contracts.CSI.PileCap;
 using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 using ExcelCSIToolBox.Infrastructure.CSI.Common;
 using SAP2000v1;
@@ -1902,6 +1903,30 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Sap2000.Session
 
             RefreshView(sapModelResult.Data);
             return OperationResult.Success();
+        }
+
+        public OperationResult<IReadOnlyList<string>> GetConcreteMaterialNames()
+        {
+            var sapModelResult = EnsureSap2000SapModel();
+            if (!sapModelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure(sapModelResult.Message);
+            }
+
+            int numberNames = 0;
+            string[] names = null;
+            int ret = sapModelResult.Data.PropMaterial.GetNameList(ref numberNames, ref names, SAP2000v1.eMatType.Concrete);
+            if (ret != 0 || names == null)
+            {
+                return OperationResult<IReadOnlyList<string>>.Failure("Failed to get concrete material names from SAP2000.");
+            }
+
+            return OperationResult<IReadOnlyList<string>>.Success(new List<string>(names));
+        }
+
+        public OperationResult<PileCapAssignmentSummaryDto> QuickCreatePileCaps(PileCapAssignmentRequestDto request)
+        {
+            return OperationResult<PileCapAssignmentSummaryDto>.Failure("Quick Create Pile Cap and Pile is available for ETABS models only.");
         }
 
         private static OperationResult SetFrameSectionProperty(SAP2000v1.cSapModel sapModel, string sectionName, CSISapModelFrameSectionUpdateDTO input)

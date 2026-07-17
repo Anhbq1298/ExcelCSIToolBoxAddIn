@@ -1017,6 +1017,18 @@
                                                 MinHeight="44"
                                                 Margin="0,8,0,0"
                                                 HorizontalAlignment="Stretch"
+                                                Command="{Binding OpenQuickCreatePileCapWindowCommand}"
+                                                ToolTip="Open a modeless form for creating pile caps and piles at selected ETABS points."
+                                                ToolTipService.ShowOnDisabled="True">
+                                            <TextBlock Text="Quick Create Pile Cap and Pile"
+                                                       TextWrapping="Wrap"/>
+                                        </Button>
+                                        <Button Style="{StaticResource ToolButtonStyle}"
+                                                MinWidth="180"
+                                                MaxWidth="320"
+                                                MinHeight="44"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Stretch"
                                                 Command="{Binding CreateShellAreasFromSelectedFramesCommand}"
                                                 ToolTip="Create shell area objects from the currently selected frame boundary."
                                                 ToolTipService.ShowOnDisabled="True">
