@@ -521,7 +521,7 @@
     <ManifestKeyFile>ExcelCSIToolBoxAddIn_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>058D0F853A8DD9BD9984330CDEA40AB532D8B611</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>99F979B4224C1AD1FEDA608E6AD2FC3A8EC1879F</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>

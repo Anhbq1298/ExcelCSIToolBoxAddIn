@@ -43,7 +43,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         internal static void ShowEtabsWindow()
         {
-            ToggleCsiPane(
+            ShowCsiPane(
                 ref _etabsPane,
                 ref _etabsHost,
                 "ETABS Toolbox",
@@ -53,7 +53,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         internal static void ShowSap2000Window()
         {
-            ToggleCsiPane(
+            ShowCsiPane(
                 ref _sap2000Pane,
                 ref _sap2000Host,
                 "SAP2000 Toolbox",
@@ -222,7 +222,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             DisposePane(ref _sap2000Pane, ref _sap2000Host);
         }
 
-        private static void ToggleCsiPane(
+        private static void ShowCsiPane(
             ref Microsoft.Office.Tools.CustomTaskPane pane,
             ref WpfTaskPaneHost host,
             string title,
@@ -249,7 +249,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 pane.Width = 820;
             }
 
-            pane.Visible = !pane.Visible;
+            pane.Visible = true;
         }
 
         private static void EnsureConfigured(ICSISapModelConnectionService connectionService)
