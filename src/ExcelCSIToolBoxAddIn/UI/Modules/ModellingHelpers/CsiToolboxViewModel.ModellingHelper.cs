@@ -82,7 +82,9 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             OpenCreateArrayPerpendicularToPathWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath), CanExecuteCsiAction);
             OpenArrayBetweenTwoLinesWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenArrayBetweenTwoLines), CanExecuteCsiAction);
             OpenQuickCreatePileCapWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenQuickCreatePileCap), CanExecuteCsiAction);
-            OpenDropPanelWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenDropPanel), CanExecuteCsiAction);
+            OpenDropPanelWindowCommand = new RelayCommand(
+                () => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenDropPanel),
+                CanOpenDropPanelWindow);
             PickPoint1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint1), CanExecuteCsiAction);
             PickPoint2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint2), CanExecuteCsiAction);
             PickReferenceFrameCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickReferenceFrame), CanExecuteCsiAction);
@@ -418,6 +420,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         private void OpenDropPanelWindow()
         {
             WindowManager.ShowDropPanelWindow();
+        }
+
+        private bool CanOpenDropPanelWindow()
+        {
+            return IsEtabs;
         }
 
         private void OpenCreateArrayPerpendicularToPathWindow()

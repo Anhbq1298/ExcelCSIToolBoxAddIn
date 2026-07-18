@@ -96,11 +96,6 @@ namespace ExcelCSIToolBoxAddIn
             RunRibbonAction("About", WindowManager.ShowAboutWindow);
         }
 
-        private void buttonDropPanel_Click(object sender, RibbonControlEventArgs e)
-        {
-            RunRibbonAction("Drop Panel", WindowManager.ShowDropPanelWindow);
-        }
-
         private void buttonSap2000_Click(object sender, RibbonControlEventArgs e)
         {
             RunRibbonAction("SAP2000 Toolbox", WindowManager.ShowSap2000Window);

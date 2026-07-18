@@ -306,7 +306,6 @@
     <Compile Include="UI\Modules\ModellingHelpers\DropPanelViewModel.cs" />
     <Compile Include="UI\Modules\ModellingHelpers\DropPanelSettingsStore.cs" />
     <Compile Include="UI\Modules\ModellingHelpers\DropPanelExcelLogExporter.cs" />
-    <Compile Include="UI\Modules\ModellingHelpers\DropPanelPreviewCanvas.cs" />
     <Compile Include="UI\Modules\AnalysisResults\AnalysisResultsViewModel.cs" />
     <Compile Include="UI\Modules\ToolboxShell\CsiRunningInstanceViewModel.cs" />
     <Compile Include="UI\Modules\ToolboxShell\EtabsUnitSystem.cs" />

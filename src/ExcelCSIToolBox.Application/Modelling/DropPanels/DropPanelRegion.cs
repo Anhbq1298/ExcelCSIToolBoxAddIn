@@ -16,8 +16,6 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
 
         public string ResultingSectionProperty { get; set; }
 
-        public string AssignmentSignature { get; set; }
-
         public List<DropPanelPoint3D> Points { get; set; }
 
         public List<string> ColumnNames { get; set; }

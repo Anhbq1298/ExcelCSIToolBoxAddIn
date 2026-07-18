@@ -143,7 +143,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             {
                 "Timestamp", "ETABS Model", "Story", "Column", "Source Area", "New Area", "Region Type",
                 "Original Property", "New Property", "Direct Load Status", "Shell Load Set Status",
-                "Local Axis Status", "Local 3 Status", "Diaphragm Status", "Verification Status", "Message"
+                "Local Axis Status", "Local 3 Status", "Diaphragm Status", "Message"
             };
             object[,] values = new object[entries.Count + 1, headers.Length];
             for (int column = 0; column < headers.Length; column++)
@@ -168,8 +168,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 values[row + 1, 11] = entry.LocalAxisStatus;
                 values[row + 1, 12] = entry.Local3Status;
                 values[row + 1, 13] = entry.DiaphragmStatus;
-                values[row + 1, 14] = entry.VerificationStatus;
-                values[row + 1, 15] = entry.Message;
+                values[row + 1, 14] = entry.Message;
             }
 
             return values;

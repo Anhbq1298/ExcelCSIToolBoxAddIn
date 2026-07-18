@@ -11,6 +11,7 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Contracts.CSI;
 using ExcelCSIToolBox.Core.Models.CSI;
 using ExcelCSIToolBox.Core.Tabular;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling;
 
 namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
 {
@@ -32,8 +33,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
         private readonly IEtabsConnectionService _connectionService;
         private readonly ICsiApiDispatcher _dispatcher;
         private readonly ICsiOperationLogger _operationLogger;
-        private string _lastBackupPath;
-        private string _lastOriginalModelPath;
 
         public EtabsDropPanelService(
             IEtabsConnectionService connectionService,
@@ -45,29 +44,27 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             _operationLogger = operationLogger ?? throw new ArgumentNullException(nameof(operationLogger));
         }
 
-        public bool IsRollbackAvailable
-        {
-            get
-            {
-                return !string.IsNullOrWhiteSpace(_lastBackupPath) &&
-                       !string.IsNullOrWhiteSpace(_lastOriginalModelPath) &&
-                       File.Exists(_lastBackupPath);
-            }
-        }
-
         public OperationResult<DropPanelModelContext> GetModelContext()
         {
             return _dispatcher.Invoke(GetModelContextCore);
         }
 
-        public OperationResult<IReadOnlyList<string>> GetDropPropertyNames()
+        public OperationResult<IReadOnlyList<string>> GetConcreteMaterialNames()
         {
-            return _dispatcher.Invoke(GetDropPropertyNamesCore);
+            return _dispatcher.Invoke(GetConcreteMaterialNamesCore);
         }
 
-        public OperationResult<IReadOnlyList<DropPanelColumnInfo>> ReadSelectedColumns(double verticalRatioTolerance)
+        public OperationResult<IReadOnlyDictionary<string, string>> GetFrameLabels(
+            IReadOnlyList<string> frameUniqueNames)
         {
-            return _dispatcher.Invoke(() => ReadSelectedColumnsCore(verticalRatioTolerance));
+            return _dispatcher.Invoke(() => GetFrameLabelsCore(frameUniqueNames));
+        }
+
+        public OperationResult<IReadOnlyList<DropPanelColumnInfo>> ReadColumns(
+            IReadOnlyList<string> frameNames,
+            double verticalRatioTolerance)
+        {
+            return _dispatcher.Invoke(() => ReadColumnsCore(frameNames, verticalRatioTolerance));
         }
 
         public OperationResult<DropPanelPreparationSnapshot> PrepareSnapshot(
@@ -78,19 +75,9 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             return _dispatcher.Invoke(() => PrepareSnapshotCore(columns, requests, options));
         }
 
-        public OperationResult HighlightAreas(IReadOnlyList<string> areaNames)
-        {
-            return _dispatcher.Invoke(() => HighlightAreasCore(areaNames));
-        }
-
         public OperationResult<DropPanelApplyResult> Apply(DropPanelOperationPlan plan, DropPanelOptions options)
         {
             return _dispatcher.Invoke(() => ApplyCore(plan, options));
-        }
-
-        public OperationResult Rollback()
-        {
-            return _dispatcher.Invoke(RollbackCore);
         }
 
         private OperationResult<DropPanelModelContext> GetModelContextCore()
@@ -112,6 +99,15 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
 
             string modelPath = sapModel.GetModelFilename(true) ?? string.Empty;
             bool isLocked = sapModel.GetModelIsLocked();
+            eForce forceUnit = eForce.kN;
+            eLength lengthUnit = eLength.m;
+            eTemperature temperatureUnit = eTemperature.C;
+            int unitsReturn = sapModel.GetPresentUnits_2(ref forceUnit, ref lengthUnit, ref temperatureUnit);
+            if (unitsReturn != 0)
+            {
+                return OperationResult<DropPanelModelContext>.Failure(ReturnCodeMessage("SapModel.GetPresentUnits_2", unitsReturn));
+            }
+
             string units = sapModel.GetPresentUnits().ToString();
             return OperationResult<DropPanelModelContext>.Success(new DropPanelModelContext
             {
@@ -119,11 +115,12 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                 ModelFileName = Path.GetFileName(modelPath),
                 ModelPath = modelPath,
                 PresentUnits = units,
+                LengthUnit = FormatLengthUnit(lengthUnit),
                 IsLocked = isLocked
             });
         }
 
-        private OperationResult<IReadOnlyList<string>> GetDropPropertyNamesCore()
+        private OperationResult<IReadOnlyList<string>> GetConcreteMaterialNamesCore()
         {
             cSapModel sapModel;
             OperationResult modelResult = TryGetSapModel(out sapModel);
@@ -132,30 +129,60 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                 return OperationResult<IReadOnlyList<string>>.Failure(modelResult.Message);
             }
 
-            int numberNames = 0;
-            string[] names = null;
-            int returnCode = sapModel.PropArea.GetNameList(ref numberNames, ref names);
-            if (returnCode != 0)
+            OperationResult<IReadOnlyList<string>> materialResult =
+                EtabsPileCapCreationService.GetConcreteMaterialNames(sapModel);
+            if (!materialResult.IsSuccess)
             {
-                return OperationResult<IReadOnlyList<string>>.Failure(ReturnCodeMessage("PropArea.GetNameList", returnCode));
+                return OperationResult<IReadOnlyList<string>>.Failure(materialResult.Message);
             }
 
-            if (numberNames > 0 && (names == null || names.Length < numberNames))
-            {
-                return OperationResult<IReadOnlyList<string>>.Failure("PropArea.GetNameList returned an incomplete property-name array.");
-            }
-
-            List<string> result = (names ?? new string[0])
-                .Take(numberNames)
+            List<string> result = (materialResult.Data ?? new string[0])
                 .Where(name => !string.IsNullOrWhiteSpace(name))
-                .Where(name => IsSlabProperty(sapModel, name))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            return OperationResult<IReadOnlyList<string>>.Success(result);
+            return result.Count > 0
+                ? OperationResult<IReadOnlyList<string>>.Success(result)
+                : OperationResult<IReadOnlyList<string>>.Failure("The active ETABS model contains no concrete materials.");
         }
 
-        private OperationResult<IReadOnlyList<DropPanelColumnInfo>> ReadSelectedColumnsCore(double verticalRatioTolerance)
+        private OperationResult<IReadOnlyDictionary<string, string>> GetFrameLabelsCore(
+            IReadOnlyList<string> frameUniqueNames)
+        {
+            cSapModel sapModel;
+            OperationResult modelResult = TryGetSapModel(out sapModel);
+            if (!modelResult.IsSuccess)
+            {
+                return OperationResult<IReadOnlyDictionary<string, string>>.Failure(modelResult.Message);
+            }
+
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (frameUniqueNames == null)
+            {
+                return OperationResult<IReadOnlyDictionary<string, string>>.Success(result);
+            }
+
+            foreach (string uniqueName in frameUniqueNames)
+            {
+                if (string.IsNullOrWhiteSpace(uniqueName) || result.ContainsKey(uniqueName))
+                {
+                    continue;
+                }
+
+                string label = string.Empty;
+                string story = string.Empty;
+                int ret = sapModel.FrameObj.GetLabelFromName(uniqueName, ref label, ref story);
+                result[uniqueName] = ret == 0 && !string.IsNullOrWhiteSpace(label)
+                    ? label
+                    : string.Empty;
+            }
+
+            return OperationResult<IReadOnlyDictionary<string, string>>.Success(result);
+        }
+
+        private OperationResult<IReadOnlyList<DropPanelColumnInfo>> ReadColumnsCore(
+            IReadOnlyList<string> frameNames,
+            double verticalRatioTolerance)
         {
             cSapModel sapModel;
             OperationResult modelResult = TryGetSapModel(out sapModel);
@@ -164,62 +191,30 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                 return OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Failure(modelResult.Message);
             }
 
+            if (frameNames == null || frameNames.Count == 0)
+            {
+                return OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Failure("Select at least one ETABS column.");
+            }
+
             if (verticalRatioTolerance <= 0.0)
             {
                 return OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Failure("Vertical ratio tolerance must be greater than zero.");
             }
 
-            int numberItems = 0;
-            int[] objectTypes = null;
-            string[] objectNames = null;
-            int selectedReturn = sapModel.SelectObj.GetSelected(ref numberItems, ref objectTypes, ref objectNames);
-            if (selectedReturn != 0)
+            var columns = new List<DropPanelColumnInfo>();
+            var seenNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string frameName in frameNames)
             {
-                return OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Failure(ReturnCodeMessage("SelectObj.GetSelected", selectedReturn));
-            }
-
-            if (numberItems == 0)
-            {
-                return OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Failure("No ETABS objects are selected.");
-            }
-
-            if (objectTypes == null || objectNames == null ||
-                objectTypes.Length < numberItems || objectNames.Length < numberItems)
-            {
-                return OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Failure(
-                    "SelectObj.GetSelected returned incomplete object arrays.");
-            }
-
-            List<DropPanelColumnInfo> columns = new List<DropPanelColumnInfo>();
-            for (int index = 0; index < numberItems; index++)
-            {
-                if (string.IsNullOrWhiteSpace(objectNames[index]))
+                if (string.IsNullOrWhiteSpace(frameName) || !seenNames.Add(frameName))
                 {
-                    columns.Add(new DropPanelColumnInfo
-                    {
-                        FrameName = string.Empty,
-                        IsValid = false,
-                        ValidationMessage = "ETABS returned an empty selected-object name."
-                    });
-                    continue;
-                }
-
-                if (objectTypes[index] != CSISapModelObjectTypeIds.Frame)
-                {
-                    columns.Add(new DropPanelColumnInfo
-                    {
-                        FrameName = objectNames[index],
-                        IsValid = false,
-                        ValidationMessage = "The selected object is not a frame object."
-                    });
                     continue;
                 }
 
                 DropPanelColumnInfo column;
-                OperationResult columnResult = TryReadColumn(sapModel, objectNames[index], verticalRatioTolerance, out column);
+                OperationResult columnResult = TryReadColumn(sapModel, frameName, verticalRatioTolerance, out column);
                 if (!columnResult.IsSuccess)
                 {
-                    column = column ?? new DropPanelColumnInfo { FrameName = objectNames[index] };
+                    column = column ?? new DropPanelColumnInfo { FrameName = frameName };
                     column.IsValid = false;
                     column.ValidationMessage = columnResult.Message;
                 }
@@ -227,9 +222,10 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                 columns.Add(column);
             }
 
-            return OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Success(columns);
+            return columns.Count > 0
+                ? OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Success(columns)
+                : OperationResult<IReadOnlyList<DropPanelColumnInfo>>.Failure("No unique ETABS column names were provided.");
         }
-
         private static OperationResult TryReadColumn(
             cSapModel sapModel,
             string frameName,
@@ -333,26 +329,31 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             Dictionary<string, List<string>> loadSetsByArea = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             if (options.PreserveShellUniformLoadSetAssignments)
             {
-                OperationResult loadSetResult = ReadLoadSetAssignments(sapModel, out loadSetsByArea);
+                bool loadSetAssignmentTableAvailable;
+                OperationResult loadSetResult = ReadLoadSetAssignments(
+                    sapModel, out loadSetsByArea, out loadSetAssignmentTableAvailable);
                 if (!loadSetResult.IsSuccess)
                 {
                     return OperationResult<DropPanelPreparationSnapshot>.Failure(loadSetResult.Message);
                 }
 
-                TableSnapshot editableLoadSetTable;
-                OperationResult editableResult = ReadEditingTable(sapModel, LoadSetAssignmentTableKey, out editableLoadSetTable);
-                TryCancelTableEditing(sapModel);
-                if (!editableResult.IsSuccess)
+                if (loadSetAssignmentTableAvailable)
                 {
-                    return OperationResult<DropPanelPreparationSnapshot>.Failure(
-                        "Shell Uniform Load Set assignments can be read, but cannot be restored through the ETABS database table: " + editableResult.Message);
-                }
+                    TableSnapshot editableLoadSetTable;
+                    OperationResult editableResult = ReadEditingTable(sapModel, LoadSetAssignmentTableKey, out editableLoadSetTable);
+                    TryCancelTableEditing(sapModel);
+                    if (!editableResult.IsSuccess)
+                    {
+                        return OperationResult<DropPanelPreparationSnapshot>.Failure(
+                            "Shell Uniform Load Set assignments can be read, but cannot be restored through the ETABS database table: " + editableResult.Message);
+                    }
 
-                if (FindLoadSetFieldIndex(editableLoadSetTable.FieldKeys) < 0 ||
-                    !FindObjectFieldIndexes(editableLoadSetTable.FieldKeys).CanResolveObject)
-                {
-                    return OperationResult<DropPanelPreparationSnapshot>.Failure(
-                        "The editable Shell Uniform Load Set assignment table schema is not recognized, so assignments cannot be restored safely.");
+                    if (FindLoadSetFieldIndex(editableLoadSetTable.FieldKeys) < 0 ||
+                        !FindObjectFieldIndexes(editableLoadSetTable.FieldKeys).CanResolveObject)
+                    {
+                        return OperationResult<DropPanelPreparationSnapshot>.Failure(
+                            "The editable Shell Uniform Load Set assignment table schema is not recognized, so assignments cannot be restored safely.");
+                    }
                 }
             }
 
@@ -429,7 +430,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
 
             foreach (DropPanelAreaInfo area in readableAreas.Where(item => !item.IsOpening))
             {
-                if (!IsAreaRelevant(area, requests, connectedColumnsByArea, options) ||
+                if (!IsAreaDirectlyConnectedToRequest(area, requests, connectedColumnsByArea, options) ||
                     !IsSlabProperty(sapModel, area.SectionProperty))
                 {
                     continue;
@@ -471,7 +472,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             if (snapshot.Areas.Count == 0)
             {
                 return OperationResult<DropPanelPreparationSnapshot>.Failure(
-                    "No slab area candidates were found near the selected column heads. Verify connectivity, elevations, and drop dimensions.");
+                    "No slab area objects are directly connected to the selected column heads. Only areas returned by ETABS point connectivity are eligible for splitting.");
             }
 
             return OperationResult<DropPanelPreparationSnapshot>.Success(snapshot, "ETABS slab geometry and assignments were backed up.");
@@ -519,17 +520,27 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     ref pointNumbers);
                 if (returnCode != 0)
                 {
-                    continue;
+                    return OperationResult.Failure(
+                        ReturnCodeMessage("PointObj.GetConnectivity", returnCode, column.TopPointName));
+                }
+                if (numberItems > 0 &&
+                    (objectTypes == null || objectNames == null ||
+                     objectTypes.Length < numberItems || objectNames.Length < numberItems))
+                {
+                    return OperationResult.Failure(
+                        "PointObj.GetConnectivity returned incomplete object data for column head point '" +
+                        column.TopPointName + "'.");
                 }
 
+                bool foundConnectedArea = false;
                 for (int index = 0; index < numberItems; index++)
                 {
-                    if (objectTypes == null || objectNames == null || index >= objectTypes.Length || index >= objectNames.Length ||
-                        objectTypes[index] != ConnectivityAreaObjectType || string.IsNullOrWhiteSpace(objectNames[index]))
+                    if (objectTypes[index] != ConnectivityAreaObjectType || string.IsNullOrWhiteSpace(objectNames[index]))
                     {
                         continue;
                     }
 
+                    foundConnectedArea = true;
                     HashSet<string> connectedColumns;
                     if (!connectedColumnsByArea.TryGetValue(objectNames[index], out connectedColumns))
                     {
@@ -538,6 +549,13 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     }
 
                     connectedColumns.Add(column.FrameName);
+                }
+
+                if (!foundConnectedArea)
+                {
+                    return OperationResult.Failure(
+                        "No area object is directly connected to top point '" + column.TopPointName +
+                        "' of column '" + column.FrameName + "'.");
                 }
             }
 
@@ -617,107 +635,16 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             return OperationResult.Success();
         }
 
-        private static bool IsAreaRelevant(
+        private static bool IsAreaDirectlyConnectedToRequest(
             DropPanelAreaInfo area,
             IReadOnlyList<DropPanelRequest> requests,
             IDictionary<string, HashSet<string>> connectedColumnsByArea,
             DropPanelOptions options)
         {
             HashSet<string> connectedColumns;
-            if (connectedColumnsByArea.TryGetValue(area.AreaName, out connectedColumns) &&
-                requests.Any(request => connectedColumns.Contains(request.ColumnName) &&
-                                        Math.Abs(request.Elevation - area.Elevation) <= options.ElevationTolerance))
-            {
-                return true;
-            }
-
-            double minX = area.Points.Min(point => point.X) - options.GeometryTolerance;
-            double maxX = area.Points.Max(point => point.X) + options.GeometryTolerance;
-            double minY = area.Points.Min(point => point.Y) - options.GeometryTolerance;
-            double maxY = area.Points.Max(point => point.Y) + options.GeometryTolerance;
-            foreach (DropPanelRequest request in requests)
-            {
-                if (Math.Abs(request.Elevation - area.Elevation) > options.ElevationTolerance || request.Points.Count == 0)
-                {
-                    continue;
-                }
-
-                double requestMinX = request.Points.Min(point => point.X);
-                double requestMaxX = request.Points.Max(point => point.X);
-                double requestMinY = request.Points.Min(point => point.Y);
-                double requestMaxY = request.Points.Max(point => point.Y);
-                DropPanelPoint3D requestCenter = new DropPanelPoint3D(
-                    request.Points.Average(point => point.X),
-                    request.Points.Average(point => point.Y),
-                    request.Elevation);
-                if (PointInPolygonOrNearBoundary(requestCenter, area.Points, options.GeometryTolerance))
-                {
-                    return true;
-                }
-
-                if (minX <= requestMaxX && maxX >= requestMinX && minY <= requestMaxY && maxY >= requestMinY)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool PointInPolygonOrNearBoundary(
-            DropPanelPoint3D point,
-            IReadOnlyList<DropPanelPoint3D> polygon,
-            double tolerance)
-        {
-            if (point == null || polygon == null || polygon.Count < 3)
-            {
-                return false;
-            }
-
-            bool inside = false;
-            for (int index = 0, previousIndex = polygon.Count - 1; index < polygon.Count; previousIndex = index++)
-            {
-                DropPanelPoint3D current = polygon[index];
-                DropPanelPoint3D previous = polygon[previousIndex];
-                if (DistanceToSegment(point, previous, current) <= tolerance)
-                {
-                    return true;
-                }
-
-                bool crosses = (current.Y > point.Y) != (previous.Y > point.Y) &&
-                               point.X < (previous.X - current.X) * (point.Y - current.Y) /
-                               (previous.Y - current.Y) + current.X;
-                if (crosses)
-                {
-                    inside = !inside;
-                }
-            }
-
-            return inside;
-        }
-
-        private static double DistanceToSegment(
-            DropPanelPoint3D point,
-            DropPanelPoint3D start,
-            DropPanelPoint3D end)
-        {
-            double dx = end.X - start.X;
-            double dy = end.Y - start.Y;
-            double lengthSquared = dx * dx + dy * dy;
-            if (lengthSquared <= NumericTolerance * NumericTolerance)
-            {
-                double pointDx = point.X - start.X;
-                double pointDy = point.Y - start.Y;
-                return Math.Sqrt(pointDx * pointDx + pointDy * pointDy);
-            }
-
-            double parameter = ((point.X - start.X) * dx + (point.Y - start.Y) * dy) / lengthSquared;
-            parameter = Math.Max(0.0, Math.Min(1.0, parameter));
-            double closestX = start.X + parameter * dx;
-            double closestY = start.Y + parameter * dy;
-            double closestDx = point.X - closestX;
-            double closestDy = point.Y - closestY;
-            return Math.Sqrt(closestDx * closestDx + closestDy * closestDy);
+            return connectedColumnsByArea.TryGetValue(area.AreaName, out connectedColumns) &&
+                   requests.Any(request => connectedColumns.Contains(request.ColumnName) &&
+                                           Math.Abs(request.Elevation - area.Elevation) <= options.ElevationTolerance);
         }
 
         private static bool IsSlabProperty(cSapModel sapModel, string propertyName)
@@ -736,6 +663,147 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
 
             eDeckType deckType = eDeckType.Filled;
             return sapModel.PropArea.GetDeck(propertyName, ref deckType, ref shellType, ref material, ref thickness, ref color, ref notes, ref guid) == 0;
+        }
+
+        private OperationResult<DropPanelPropertyProvisionResult> EnsureDropAreaProperty(
+            cSapModel sapModel,
+            DropPanelOptions options)
+        {
+            if (options == null)
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure("Drop panel options are required.");
+            }
+
+            eForce forceUnit = eForce.kN;
+            eLength lengthUnit = eLength.m;
+            eTemperature temperatureUnit = eTemperature.C;
+            int unitsReturn = sapModel.GetPresentUnits_2(ref forceUnit, ref lengthUnit, ref temperatureUnit);
+            if (unitsReturn != 0)
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                    ReturnCodeMessage("SapModel.GetPresentUnits_2", unitsReturn));
+            }
+
+            string currentLengthUnit = FormatLengthUnit(lengthUnit);
+            if (!string.Equals(currentLengthUnit, options.LengthUnit, StringComparison.Ordinal))
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                    "The ETABS length unit changed from '" + options.LengthUnit + "' to '" + currentLengthUnit +
+                    "'. Review the drop thickness and run the operation again.");
+            }
+
+            OperationResult<IReadOnlyList<string>> materialsResult = GetConcreteMaterialNamesCore();
+            if (!materialsResult.IsSuccess)
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(materialsResult.Message);
+            }
+
+            string materialName = materialsResult.Data.FirstOrDefault(name =>
+                string.Equals(name, options.DropMaterial, StringComparison.Ordinal));
+            if (string.IsNullOrWhiteSpace(materialName))
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                    "Concrete material '" + (options.DropMaterial ?? string.Empty) + "' no longer exists in ETABS.");
+            }
+
+            var converter = new ExcelCSIToolBox.Application.Modelling.PileCaps.EtabsUnitConverter();
+            double thicknessInMm = Math.Round(options.DropThickness * converter.GetMillimetersPerUnit((int)lengthUnit), 4);
+
+            OperationResult<string> nameResult = DropPanelPropertyNameBuilder.Build(thicknessInMm, materialName);
+            if (!nameResult.IsSuccess)
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(nameResult.Message);
+            }
+
+            string requestedName = nameResult.Data;
+            int numberNames = 0;
+            string[] propertyNames = null;
+            int listReturn = sapModel.PropArea.GetNameList(ref numberNames, ref propertyNames);
+            if (listReturn != 0)
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                    ReturnCodeMessage("PropArea.GetNameList", listReturn));
+            }
+
+            if (numberNames > 0 && (propertyNames == null || propertyNames.Length < numberNames))
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                    "PropArea.GetNameList returned an incomplete area-property array.");
+            }
+
+            string existingName = (propertyNames ?? new string[0])
+                .Take(numberNames)
+                .FirstOrDefault(name => string.Equals(name, requestedName, StringComparison.OrdinalIgnoreCase));
+            if (string.IsNullOrWhiteSpace(existingName))
+            {
+                int createReturn = sapModel.PropArea.SetSlab(
+                    requestedName,
+                    eSlabType.Drop,
+                    eShellType.ShellThick,
+                    materialName,
+                    options.DropThickness,
+                    -1,
+                    string.Empty,
+                    string.Empty);
+                if (createReturn != 0)
+                {
+                    return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                        ReturnCodeMessage("PropArea.SetSlab", createReturn, requestedName));
+                }
+
+                return OperationResult<DropPanelPropertyProvisionResult>.Success(
+                    new DropPanelPropertyProvisionResult
+                    {
+                        PropertyName = requestedName,
+                        WasCreated = true
+                    });
+            }
+
+            eSlabType slabType = eSlabType.Slab;
+            eShellType existingShellType = eShellType.ShellThin;
+            string existingMaterial = string.Empty;
+            double existingThickness = 0.0;
+            int color = 0;
+            string notes = string.Empty;
+            string guid = string.Empty;
+            int slabReturn = sapModel.PropArea.GetSlab(
+                existingName,
+                ref slabType,
+                ref existingShellType,
+                ref existingMaterial,
+                ref existingThickness,
+                ref color,
+                ref notes,
+                ref guid);
+            if (slabReturn != 0)
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                    "Property conflict: existing area property '" + existingName +
+                    "' is not a readable ETABS slab/drop property.");
+            }
+
+            double thicknessTolerance = Math.Max(1e-9, Math.Abs(options.DropThickness) * 1e-9);
+            if (slabType != eSlabType.Drop ||
+                existingShellType != eShellType.ShellThick ||
+                !string.Equals(existingMaterial, materialName, StringComparison.Ordinal) ||
+                Math.Abs(existingThickness - options.DropThickness) > thicknessTolerance)
+            {
+                return OperationResult<DropPanelPropertyProvisionResult>.Failure(
+                    "Property conflict: existing area property '" + existingName +
+                    "' has slab type '" + slabType + "', shell type '" + existingShellType +
+                    "', material '" + existingMaterial + "', and thickness " +
+                    existingThickness.ToString("0.################", CultureInfo.InvariantCulture) +
+                    ". The requested definition is Drop, ShellThick, material '" + materialName +
+                    "', and thickness " + options.DropThickness.ToString("0.################", CultureInfo.InvariantCulture) +
+                    " " + currentLengthUnit + ". The existing property was not modified.");
+            }
+
+            return OperationResult<DropPanelPropertyProvisionResult>.Success(
+                new DropPanelPropertyProvisionResult
+                {
+                    PropertyName = existingName,
+                    WasCreated = false
+                });
         }
 
         private static OperationResult ReadAreaAssignment(
@@ -918,41 +986,11 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             return OperationResult.Success();
         }
 
-        private OperationResult HighlightAreasCore(IReadOnlyList<string> areaNames)
-        {
-            cSapModel sapModel;
-            OperationResult modelResult = TryGetSapModel(out sapModel);
-            if (!modelResult.IsSuccess)
-            {
-                return modelResult;
-            }
-
-            int clearReturn = sapModel.SelectObj.ClearSelection();
-            if (clearReturn != 0)
-            {
-                return OperationResult.Failure(ReturnCodeMessage("SelectObj.ClearSelection", clearReturn));
-            }
-
-            foreach (string areaName in areaNames ?? new string[0])
-            {
-                int selectReturn = sapModel.AreaObj.SetSelected(areaName, true, eItemType.Objects);
-                if (selectReturn != 0)
-                {
-                    return OperationResult.Failure(ReturnCodeMessage("AreaObj.SetSelected", selectReturn, areaName));
-                }
-            }
-
-            int refreshReturn = sapModel.View.RefreshView(0, false);
-            return refreshReturn == 0
-                ? OperationResult.Success("Affected ETABS areas highlighted.")
-                : OperationResult.Failure(ReturnCodeMessage("View.RefreshView", refreshReturn));
-        }
-
         private OperationResult<DropPanelApplyResult> ApplyCore(DropPanelOperationPlan plan, DropPanelOptions options)
         {
             if (plan == null || !plan.IsValid || options == null)
             {
-                return OperationResult<DropPanelApplyResult>.Failure("A valid preview plan is required before applying changes.");
+                return OperationResult<DropPanelApplyResult>.Failure("Valid drop panel regions are required before applying changes.");
             }
 
             cSapModel sapModel;
@@ -967,31 +1005,47 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                 return OperationResult<DropPanelApplyResult>.Failure("The ETABS model is locked. Unlock it before applying drop panels.");
             }
 
-            // A new Apply must never use a backup created by an earlier operation.
-            _lastBackupPath = null;
-            _lastOriginalModelPath = null;
-
             OperationResult revalidation = RevalidateSources(sapModel, plan, options);
             if (!revalidation.IsSuccess)
             {
                 return OperationResult<DropPanelApplyResult>.Failure(revalidation.Message);
             }
 
-            string backupPath = string.Empty;
-            if (options.SaveEtabsBackupBeforeApply)
+            OperationResult<DropPanelPropertyProvisionResult> propertyResult =
+                EnsureDropAreaProperty(sapModel, options);
+            if (!propertyResult.IsSuccess)
             {
-                OperationResult backupResult = CreateBackup(sapModel, out backupPath);
-                if (!backupResult.IsSuccess)
-                {
-                    return OperationResult<DropPanelApplyResult>.Failure(backupResult.Message);
-                }
+                return OperationResult<DropPanelApplyResult>.Failure(propertyResult.Message);
             }
+
+            options.DropProperty = propertyResult.Data.PropertyName;
 
             List<string> sourceAreaNames = plan.SourceAreas.Select(area => area.AreaName).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             List<CreatedRegion> createdRegions = new List<CreatedRegion>();
             bool deletionStarted = false;
             try
             {
+                int regionIndex = 0;
+                string areaNamePrefix = "DP_" + DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture);
+                foreach (DropPanelRegion region in plan.Regions)
+                {
+                    regionIndex++;
+                    string createdAreaName = CreateAreaRegion(sapModel, region, regionIndex, options, areaNamePrefix);
+                    createdRegions.Add(new CreatedRegion(region, createdAreaName));
+                }
+
+                foreach (CreatedRegion createdRegion in createdRegions)
+                {
+                    RestoreDirectAreaLoadsAndDiaphragm(sapModel, createdRegion, options);
+                }
+
+                foreach (CreatedRegion createdRegion in createdRegions)
+                {
+                    RestoreModifiersGroupsAndLabels(sapModel, createdRegion, options);
+                }
+
+                // Create and populate every replacement first. The source shells are deleted only
+                // after all API-based assignments have been copied successfully.
                 foreach (string sourceAreaName in sourceAreaNames)
                 {
                     int deleteReturn = sapModel.AreaObj.Delete(sourceAreaName, eItemType.Objects);
@@ -1003,27 +1057,14 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     deletionStarted = true;
                 }
 
-                int regionIndex = 0;
-                string areaNamePrefix = "DP_" + DateTime.Now.ToString("yyyyMMddHHmmssfff", CultureInfo.InvariantCulture);
-                foreach (DropPanelRegion region in plan.Regions)
-                {
-                    regionIndex++;
-                    string createdAreaName = CreateAreaRegion(sapModel, region, regionIndex, options, areaNamePrefix);
-                    createdRegions.Add(new CreatedRegion(region, createdAreaName));
-                }
-
-                if (options.PreserveShellUniformLoadSetAssignments)
+                if (options.PreserveShellUniformLoadSetAssignments &&
+                    createdRegions.Any(item => item.Region.Assignment.ShellUniformLoadSetNames.Count > 0))
                 {
                     OperationResult loadSetRestore = RestoreLoadSetAssignments(sapModel, sourceAreaNames, createdRegions);
                     if (!loadSetRestore.IsSuccess)
                     {
                         throw new InvalidOperationException(loadSetRestore.Message);
                     }
-                }
-
-                foreach (CreatedRegion createdRegion in createdRegions)
-                {
-                    RestoreDirectAreaLoadsAndDiaphragm(sapModel, createdRegion, options);
                 }
 
                 if (options.PreserveMeshAssignments)
@@ -1035,17 +1076,13 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     }
                 }
 
-                foreach (CreatedRegion createdRegion in createdRegions)
-                {
-                    RestoreModifiersGroupsAndLabels(sapModel, createdRegion, options);
-                }
-
-                DropPanelApplyResult result = VerifyAndBuildResult(sapModel, plan, createdRegions, options, backupPath);
+                DropPanelApplyResult result = BuildResult(
+                    sapModel,
+                    plan,
+                    createdRegions,
+                    options,
+                    propertyResult.Data.WasCreated);
                 int refreshReturn = sapModel.View.RefreshView(0, false);
-                if (refreshReturn != 0)
-                {
-                    AddIssue(result, string.Empty, string.Empty, "ETABS View", "Refreshed", refreshReturn.ToString(CultureInfo.InvariantCulture), ReturnCodeMessage("View.RefreshView", refreshReturn));
-                }
 
                 _operationLogger.Log(
                     "ETABS",
@@ -1056,24 +1093,30 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     "Created " + createdRegions.Count.ToString(CultureInfo.InvariantCulture) + " region(s) from " + sourceAreaNames.Count.ToString(CultureInfo.InvariantCulture) + " source area(s).",
                     sourceAreaNames,
                     true,
-                    result.VerificationPassed,
-                    result.VerificationPassed ? "Drop panel batch applied and verified." : "Drop panel batch applied, but verification failed.");
+                    true,
+                    refreshReturn == 0
+                        ? "Drop panel shells were split and assignments were copied."
+                        : "Drop panel shells were split and assignments were copied; the ETABS view refresh returned code " +
+                          refreshReturn.ToString(CultureInfo.InvariantCulture) + ".");
 
                 return OperationResult<DropPanelApplyResult>.Success(
                     result,
-                    result.VerificationPassed
-                        ? "Drop panels were applied and verified."
-                        : "Drop panels were applied, but read-back verification failed. Use Rollback or review the verification log.");
+                    "Drop panels were created. Inside regions use the drop property; outside regions keep their source property.");
             }
             catch (Exception ex)
             {
-                string rollbackMessage = string.Empty;
-                if (deletionStarted && IsRollbackAvailable)
+                string cleanupMessage = string.Empty;
+                if (!deletionStarted && createdRegions.Count > 0)
                 {
-                    OperationResult rollbackResult = RollbackCore();
-                    rollbackMessage = rollbackResult.IsSuccess
-                        ? " The saved model backup was restored automatically."
-                        : " Automatic rollback failed: " + rollbackResult.Message;
+                    bool cleanupFailed = false;
+                    foreach (CreatedRegion createdRegion in createdRegions)
+                    {
+                        cleanupFailed |= sapModel.AreaObj.Delete(createdRegion.AreaName, eItemType.Objects) != 0;
+                    }
+
+                    cleanupMessage = cleanupFailed
+                        ? " Some temporary replacement shells could not be removed."
+                        : " Temporary replacement shells were removed; the source shells were not changed.";
                 }
 
                 _operationLogger.Log(
@@ -1086,8 +1129,8 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     sourceAreaNames,
                     true,
                     false,
-                    ex.Message + rollbackMessage);
-                return OperationResult<DropPanelApplyResult>.Failure("Drop panel apply failed: " + ex.Message + rollbackMessage);
+                    ex.Message + cleanupMessage);
+                return OperationResult<DropPanelApplyResult>.Failure("Drop panel apply failed: " + ex.Message + cleanupMessage);
             }
         }
 
@@ -1100,7 +1143,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             if (!string.IsNullOrWhiteSpace(plan.ModelPath) &&
                 !string.Equals(Path.GetFullPath(plan.ModelPath), Path.GetFullPath(currentModelPath), StringComparison.OrdinalIgnoreCase))
             {
-                return OperationResult.Failure("The active ETABS model changed after Preview. Run Preview again.");
+                return OperationResult.Failure("The active ETABS model changed while preparing the drop panels. Run the operation again.");
             }
 
             string currentUnits = sapModel.GetPresentUnits().ToString();
@@ -1108,20 +1151,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                 !string.Equals(plan.PresentUnits, currentUnits, StringComparison.Ordinal))
             {
                 return OperationResult.Failure(
-                    "ETABS present units changed from '" + plan.PresentUnits + "' to '" + currentUnits + "' after Preview. Restore the units or run Preview again.");
-            }
-
-            int propertyCount = 0;
-            string[] propertyNames = null;
-            int propertiesReturn = sapModel.PropArea.GetNameList(ref propertyCount, ref propertyNames);
-            if (propertiesReturn != 0)
-            {
-                return OperationResult.Failure(ReturnCodeMessage("PropArea.GetNameList", propertiesReturn));
-            }
-
-            if (!(propertyNames ?? new string[0]).Contains(options.DropProperty, StringComparer.OrdinalIgnoreCase))
-            {
-                return OperationResult.Failure("The selected drop property no longer exists. Run Preview again.");
+                    "ETABS present units changed from '" + plan.PresentUnits + "' to '" + currentUnits + "' while preparing the drop panels. Run the operation again.");
             }
 
             foreach (DropPanelAreaInfo sourceArea in plan.SourceAreas)
@@ -1135,7 +1165,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
 
                 if (!string.Equals(property, sourceArea.SectionProperty, StringComparison.OrdinalIgnoreCase))
                 {
-                    return OperationResult.Failure("Source area '" + sourceArea.AreaName + "' changed after Preview. Run Preview again.");
+                    return OperationResult.Failure("Source area '" + sourceArea.AreaName + "' changed while preparing the drop panels. Run the operation again.");
                 }
 
                 DropPanelAreaInfo currentArea;
@@ -1145,7 +1175,7 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     !PolygonPointsEqual(sourceArea.Points, currentArea.Points, options.GeometryTolerance))
                 {
                     return OperationResult.Failure(
-                        "Source area '" + sourceArea.AreaName + "' geometry changed after Preview. Run Preview again.");
+                        "Source area '" + sourceArea.AreaName + "' geometry changed while preparing the drop panels. Run the operation again.");
                 }
             }
 
@@ -1192,46 +1222,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                    Math.Abs(left.X - right.X) <= tolerance &&
                    Math.Abs(left.Y - right.Y) <= tolerance &&
                    Math.Abs(left.Z - right.Z) <= tolerance;
-        }
-
-        private OperationResult CreateBackup(cSapModel sapModel, out string backupPath)
-        {
-            backupPath = string.Empty;
-            string modelPath = sapModel.GetModelFilename(true) ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(modelPath))
-            {
-                return OperationResult.Failure("Save the ETABS model before applying drop panels so a backup can be created.");
-            }
-
-            int saveReturn = sapModel.File.Save(modelPath);
-            if (saveReturn != 0)
-            {
-                return OperationResult.Failure(ReturnCodeMessage("File.Save", saveReturn, modelPath));
-            }
-
-            try
-            {
-                string directory = Path.GetDirectoryName(modelPath);
-                string fileName = Path.GetFileNameWithoutExtension(modelPath);
-                string extension = Path.GetExtension(modelPath);
-                string timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture);
-                backupPath = Path.Combine(directory, fileName + ".drop-panel-backup-" + timestamp + extension);
-                int suffix = 2;
-                while (File.Exists(backupPath))
-                {
-                    backupPath = Path.Combine(directory, fileName + ".drop-panel-backup-" + timestamp + "-" + suffix.ToString(CultureInfo.InvariantCulture) + extension);
-                    suffix++;
-                }
-
-                File.Copy(modelPath, backupPath, false);
-                _lastOriginalModelPath = modelPath;
-                _lastBackupPath = backupPath;
-                return OperationResult.Success("ETABS backup created at " + backupPath + ".");
-            }
-            catch (Exception ex)
-            {
-                return OperationResult.Failure("Could not create the ETABS backup: " + ex.Message);
-            }
         }
 
         private static string CreateAreaRegion(
@@ -1484,77 +1474,30 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             return WriteEditingTable(sapModel, snapshot, records);
         }
 
-        private static DropPanelApplyResult VerifyAndBuildResult(
+        private static DropPanelApplyResult BuildResult(
             cSapModel sapModel,
             DropPanelOperationPlan plan,
             IReadOnlyList<CreatedRegion> createdRegions,
             DropPanelOptions options,
-            string backupPath)
+            bool propertyWasCreated)
         {
-            DropPanelApplyResult result = new DropPanelApplyResult { BackupFilePath = backupPath };
+            DropPanelApplyResult result = new DropPanelApplyResult
+            {
+                ProcessedColumnCount = plan.Columns.Count(column => column != null && column.IsValid),
+                CreatedDropAreaCount = createdRegions.Count(item => item.Region.IsDrop),
+                DropPropertyName = options.DropProperty,
+                DropPropertyCreated = propertyWasCreated,
+                DropThickness = options.DropThickness,
+                LengthUnit = options.LengthUnit,
+                MaterialName = options.DropMaterial
+            };
             result.CreatedAreaNames.AddRange(createdRegions.Select(item => item.AreaName));
-
-            Dictionary<string, List<string>> loadSetsByArea = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
-            if (options.VerifyAssignmentsAfterApply && options.PreserveShellUniformLoadSetAssignments)
-            {
-                OperationResult loadSetRead = ReadLoadSetAssignments(sapModel, out loadSetsByArea);
-                if (!loadSetRead.IsSuccess)
-                {
-                    AddIssue(result, string.Empty, string.Empty, "Shell Uniform Load Set", "Readable", "Unreadable", loadSetRead.Message);
-                }
-            }
-
-
-            TableSnapshot meshVerificationTable = null;
-            string meshVerificationError = string.Empty;
-            if (options.VerifyAssignmentsAfterApply && options.PreserveMeshAssignments)
-            {
-                DropPanelMeshAssignment firstMesh = createdRegions
-                    .Select(item => item.Region.Assignment.MeshAssignment)
-                    .FirstOrDefault(item => item != null && !string.IsNullOrWhiteSpace(item.TableKey));
-                if (firstMesh == null)
-                {
-                    meshVerificationError = "Mesh assignment backup is missing.";
-                }
-                else
-                {
-                    OperationResult meshRead = ReadDisplayTable(sapModel, firstMesh.TableKey, out meshVerificationTable);
-                    if (!meshRead.IsSuccess)
-                    {
-                        meshVerificationError = meshRead.Message;
-                    }
-                }
-            }
 
             foreach (CreatedRegion createdRegion in createdRegions)
             {
                 DropPanelRegion region = createdRegion.Region;
                 DropPanelAreaAssignmentBackup expected = region.Assignment;
                 string areaName = createdRegion.AreaName;
-                if (options.VerifyAssignmentsAfterApply)
-                {
-                    VerifyProperty(sapModel, result, region, areaName);
-                    VerifyLocalAxes(sapModel, result, region, areaName, options);
-                    VerifyDirectLoads(sapModel, result, region, areaName, options);
-                    VerifyDiaphragm(sapModel, result, region, areaName, options);
-                    VerifyModifiers(sapModel, result, region, areaName, options);
-                    VerifyGroups(sapModel, result, region, areaName, options);
-                    VerifyLabels(sapModel, result, region, areaName, options);
-                    VerifyMeshAssignment(
-                        sapModel, result, region, areaName, options, meshVerificationTable, meshVerificationError);
-
-                    if (options.PreserveShellUniformLoadSetAssignments)
-                    {
-                        List<string> actualLoadSets;
-                        loadSetsByArea.TryGetValue(areaName, out actualLoadSets);
-                        if (!SetEquals(expected.ShellUniformLoadSetNames, actualLoadSets))
-                        {
-                            AddIssue(result, region.SourceAreaName, areaName, "Shell Uniform Load Set",
-                                Join(expected.ShellUniformLoadSetNames), Join(actualLoadSets), "Shell Uniform Load Set assignments do not match.");
-                        }
-                    }
-                }
-
                 DropPanelLogEntry entry = new DropPanelLogEntry
                 {
                     Timestamp = DateTimeOffset.Now.ToString("o"),
@@ -1566,58 +1509,19 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
                     RegionType = region.IsDrop ? "Drop" : "Normal slab",
                     OriginalProperty = expected.SectionProperty,
                     NewProperty = region.ResultingSectionProperty,
-                    DirectLoadStatus = HasIssue(result, areaName, "Direct Area Load") ? "Failed" : "Passed",
-                    ShellLoadSetStatus = HasIssue(result, areaName, "Shell Uniform Load Set") ? "Failed" : "Passed",
-                    LocalAxisStatus = HasIssue(result, areaName, "Local Axis") ? "Failed" : "Passed",
-                    Local3Status = HasIssue(result, areaName, "Local 3") ? "Failed" : "Passed",
-                    DiaphragmStatus = HasIssue(result, areaName, "Diaphragm") ? "Failed" : "Passed",
-                    VerificationStatus = result.VerificationIssues.Any(issue => string.Equals(issue.NewAreaName, areaName, StringComparison.OrdinalIgnoreCase)) ? "Failed" : "Passed",
-                    Message = result.VerificationIssues.Any(issue => string.Equals(issue.NewAreaName, areaName, StringComparison.OrdinalIgnoreCase))
-                        ? "One or more read-back checks failed."
-                        : "Assignments restored and verified."
+                    DirectLoadStatus = options.PreserveDirectAreaLoads ? "Copied" : "Skipped",
+                    ShellLoadSetStatus = options.PreserveShellUniformLoadSetAssignments ? "Copied" : "Skipped",
+                    LocalAxisStatus = options.PreserveLocalAxes ? "Copied" : "Skipped",
+                    Local3Status = options.PreserveLocal3Orientation ? "Copied" : "Skipped",
+                    DiaphragmStatus = options.PreserveDiaphragm ? "Copied" : "Skipped",
+                    Message = region.IsDrop
+                        ? "Inside boundary; drop property assigned."
+                        : "Outside boundary; source property retained."
                 };
                 result.LogEntries.Add(entry);
             }
 
             return result;
-        }
-
-        private OperationResult RollbackCore()
-        {
-            if (!IsRollbackAvailable)
-            {
-                return OperationResult.Failure("No Drop Panel backup is available for rollback.");
-            }
-
-            cSapModel sapModel;
-            OperationResult modelResult = TryGetSapModel(out sapModel);
-            if (!modelResult.IsSuccess)
-            {
-                return modelResult;
-            }
-
-            if (sapModel.GetModelIsLocked())
-            {
-                return OperationResult.Failure("The ETABS model is locked. Unlock it before rollback.");
-            }
-
-            int openReturn = sapModel.File.OpenFile(_lastBackupPath);
-            if (openReturn != 0)
-            {
-                return OperationResult.Failure(ReturnCodeMessage("File.OpenFile", openReturn, _lastBackupPath));
-            }
-
-            int saveReturn = sapModel.File.Save(_lastOriginalModelPath);
-            if (saveReturn != 0)
-            {
-                return OperationResult.Failure(ReturnCodeMessage("File.Save", saveReturn, _lastOriginalModelPath));
-            }
-
-            _operationLogger.Log(
-                "ETABS", "Drop Panel Rollback", "Model", "Backup Restore", CsiMethodRiskLevel.High,
-                "Restored " + _lastBackupPath + " to " + _lastOriginalModelPath + ".",
-                new string[0], true, true, "Drop panel rollback completed.");
-            return OperationResult.Success("The ETABS model was restored from " + _lastBackupPath + ".");
         }
 
         private OperationResult TryGetSapModel(out cSapModel sapModel)
@@ -1647,9 +1551,26 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             return OperationResult.Success();
         }
 
-        private static OperationResult ReadLoadSetAssignments(cSapModel sapModel, out Dictionary<string, List<string>> assignments)
+        private static OperationResult ReadLoadSetAssignments(
+            cSapModel sapModel,
+            out Dictionary<string, List<string>> assignments,
+            out bool tableAvailable)
         {
             assignments = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            tableAvailable = false;
+            OperationResult<bool> availabilityResult = IsTableAvailable(sapModel, LoadSetAssignmentTableKey);
+            if (!availabilityResult.IsSuccess)
+            {
+                return OperationResult.Failure(availabilityResult.Message);
+            }
+
+            tableAvailable = availabilityResult.Data;
+            if (!tableAvailable)
+            {
+                return OperationResult.Success(
+                    "The Shell Uniform Load Set assignment table is unavailable because the model contains no such assignments.");
+            }
+
             TableSnapshot snapshot;
             OperationResult readResult = ReadDisplayTable(sapModel, LoadSetAssignmentTableKey, out snapshot);
             if (!readResult.IsSuccess)
@@ -1693,6 +1614,28 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             }
 
             return OperationResult.Success();
+        }
+
+        private static OperationResult<bool> IsTableAvailable(cSapModel sapModel, string targetTableKey)
+        {
+            int numberTables = 0;
+            string[] tableKeys = null;
+            string[] tableNames = null;
+            int[] importTypes = null;
+            int returnCode = sapModel.DatabaseTables.GetAvailableTables(
+                ref numberTables,
+                ref tableKeys,
+                ref tableNames,
+                ref importTypes);
+            if (returnCode != 0)
+            {
+                return OperationResult<bool>.Failure(ReturnCodeMessage("DatabaseTables.GetAvailableTables", returnCode));
+            }
+
+            bool isAvailable = (tableKeys ?? new string[0])
+                .Take(numberTables)
+                .Any(key => string.Equals(key, targetTableKey, StringComparison.OrdinalIgnoreCase));
+            return OperationResult<bool>.Success(isAvailable);
         }
 
         private static OperationResult ResolveMeshTableKey(cSapModel sapModel, out string tableKey)
@@ -2084,314 +2027,6 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             return record.TryGetValue(fields[index], out value) ? value ?? string.Empty : string.Empty;
         }
 
-        private static void VerifyProperty(cSapModel sapModel, DropPanelApplyResult result, DropPanelRegion region, string areaName)
-        {
-            string actual = string.Empty;
-            int returnCode = sapModel.AreaObj.GetProperty(areaName, ref actual);
-            if (returnCode != 0 || !string.Equals(actual, region.ResultingSectionProperty, StringComparison.OrdinalIgnoreCase))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Area Property", region.ResultingSectionProperty, actual,
-                    returnCode == 0 ? "Area property does not match." : ReturnCodeMessage("AreaObj.GetProperty", returnCode, areaName));
-            }
-        }
-
-        private static void VerifyLocalAxes(cSapModel sapModel, DropPanelApplyResult result, DropPanelRegion region, string areaName, DropPanelOptions options)
-        {
-            if (options.PreserveLocalAxes)
-            {
-                double angle = 0.0;
-                bool advanced = false;
-                int axesReturn = sapModel.AreaObj.GetLocalAxes(areaName, ref angle, ref advanced);
-                if (axesReturn != 0 || !NearlyEqual(angle, region.Assignment.LocalAxisAngle))
-                {
-                    AddIssue(result, region.SourceAreaName, areaName, "Local Axis",
-                        Format(region.Assignment.LocalAxisAngle), Format(angle),
-                        axesReturn == 0 ? "Local axis angle does not match." : ReturnCodeMessage("AreaObj.GetLocalAxes", axesReturn, areaName));
-                }
-            }
-
-            if (options.PreserveLocal3Orientation)
-            {
-                double[] transformation = null;
-                int returnCode = sapModel.AreaObj.GetTransformationMatrix(areaName, ref transformation, true);
-                DropPanelVector3D actual = transformation != null && transformation.Length >= 9
-                    ? NormalizeVector(new DropPanelVector3D(transformation[6], transformation[7], transformation[8]))
-                    : new DropPanelVector3D();
-                if (returnCode != 0 || Dot(actual, region.Assignment.Local3Direction) < 1.0 - 1e-5)
-                {
-                    AddIssue(result, region.SourceAreaName, areaName, "Local 3",
-                        VectorText(region.Assignment.Local3Direction), VectorText(actual),
-                        returnCode == 0 ? "Local 3 orientation does not match." : ReturnCodeMessage("AreaObj.GetTransformationMatrix", returnCode, areaName));
-                }
-            }
-        }
-
-        private static void VerifyDirectLoads(cSapModel sapModel, DropPanelApplyResult result, DropPanelRegion region, string areaName, DropPanelOptions options)
-        {
-            if (!options.PreserveDirectAreaLoads)
-            {
-                return;
-            }
-
-            List<DropPanelDirectAreaLoad> actual = new List<DropPanelDirectAreaLoad>();
-            OperationResult readResult = ReadDirectAreaLoads(sapModel, areaName, actual);
-            if (!readResult.IsSuccess || !LoadsEqual(region.Assignment.DirectAreaLoads, actual))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Direct Area Load",
-                    LoadsText(region.Assignment.DirectAreaLoads), LoadsText(actual),
-                    readResult.IsSuccess ? "Direct area loads do not match." : readResult.Message);
-            }
-        }
-
-        private static void VerifyDiaphragm(cSapModel sapModel, DropPanelApplyResult result, DropPanelRegion region, string areaName, DropPanelOptions options)
-        {
-            if (!options.PreserveDiaphragm)
-            {
-                return;
-            }
-
-            string actual = string.Empty;
-            int returnCode = sapModel.AreaObj.GetDiaphragm(areaName, ref actual);
-            if (returnCode != 0 || !string.Equals(actual ?? string.Empty, region.Assignment.Diaphragm ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Diaphragm", region.Assignment.Diaphragm, actual,
-                    returnCode == 0 ? "Diaphragm assignment does not match." : ReturnCodeMessage("AreaObj.GetDiaphragm", returnCode, areaName));
-            }
-        }
-
-        private static void VerifyModifiers(cSapModel sapModel, DropPanelApplyResult result, DropPanelRegion region, string areaName, DropPanelOptions options)
-        {
-            if (!options.PreserveAreaModifiers)
-            {
-                return;
-            }
-
-            double[] actual = null;
-            int returnCode = sapModel.AreaObj.GetModifiers(areaName, ref actual);
-            if (returnCode != 0 || !NumbersEqual(region.Assignment.Modifiers, actual))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Area Modifiers",
-                    NumbersText(region.Assignment.Modifiers), NumbersText(actual),
-                    returnCode == 0 ? "Area modifiers do not match." : ReturnCodeMessage("AreaObj.GetModifiers", returnCode, areaName));
-            }
-        }
-
-        private static void VerifyGroups(cSapModel sapModel, DropPanelApplyResult result, DropPanelRegion region, string areaName, DropPanelOptions options)
-        {
-            if (!options.PreserveGroupAssignments)
-            {
-                return;
-            }
-
-            int count = 0;
-            string[] groups = null;
-            int returnCode = sapModel.AreaObj.GetGroupAssign(areaName, ref count, ref groups);
-            List<string> actual = (groups ?? new string[0]).Where(group => !IsImplicitAllGroup(group)).ToList();
-            if (returnCode != 0 || !SetEquals(region.Assignment.Groups, actual))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Group Assignment", Join(region.Assignment.Groups), Join(actual),
-                    returnCode == 0 ? "Group assignments do not match." : ReturnCodeMessage("AreaObj.GetGroupAssign", returnCode, areaName));
-            }
-        }
-
-        private static void VerifyLabels(cSapModel sapModel, DropPanelApplyResult result, DropPanelRegion region, string areaName, DropPanelOptions options)
-        {
-            if (!options.PreservePierAndSpandrelLabels)
-            {
-                return;
-            }
-
-            string pier = string.Empty;
-            int pierReturn = sapModel.AreaObj.GetPier(areaName, ref pier);
-            if (pierReturn != 0 || !string.Equals(pier ?? string.Empty, region.Assignment.PierLabel ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Pier Label", region.Assignment.PierLabel, pier,
-                    pierReturn == 0 ? "Pier label does not match." : ReturnCodeMessage("AreaObj.GetPier", pierReturn, areaName));
-            }
-
-            string spandrel = string.Empty;
-            int spandrelReturn = sapModel.AreaObj.GetSpandrel(areaName, ref spandrel);
-            if (spandrelReturn != 0 || !string.Equals(spandrel ?? string.Empty, region.Assignment.SpandrelLabel ?? string.Empty, StringComparison.OrdinalIgnoreCase))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Spandrel Label", region.Assignment.SpandrelLabel, spandrel,
-                    spandrelReturn == 0 ? "Spandrel label does not match." : ReturnCodeMessage("AreaObj.GetSpandrel", spandrelReturn, areaName));
-            }
-        }
-
-        private static void VerifyMeshAssignment(
-            cSapModel sapModel,
-            DropPanelApplyResult result,
-            DropPanelRegion region,
-            string areaName,
-            DropPanelOptions options,
-            TableSnapshot actualTable,
-            string readError)
-        {
-            if (!options.PreserveMeshAssignments)
-            {
-                return;
-            }
-
-            DropPanelMeshAssignment expected = region.Assignment.MeshAssignment;
-            if (expected == null)
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Mesh Assignment", "Backed up", "Missing",
-                    "Mesh assignment backup is missing.");
-                return;
-            }
-
-            if (!string.IsNullOrWhiteSpace(readError) || actualTable == null)
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Mesh Assignment", "Readable", "Unreadable",
-                    string.IsNullOrWhiteSpace(readError) ? "The mesh assignment table could not be read." : readError);
-                return;
-            }
-
-            ObjectFieldIndexes indexes = FindObjectFieldIndexes(actualTable.FieldKeys);
-            if (!indexes.CanResolveObject)
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Mesh Assignment", "Recognized schema", "Unsupported schema",
-                    "The ETABS mesh assignment table does not expose recognizable area identity fields.");
-                return;
-            }
-
-            string label = string.Empty;
-            string story = string.Empty;
-            int labelReturn = sapModel.AreaObj.GetLabelFromName(areaName, ref label, ref story);
-            if (labelReturn != 0)
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Mesh Assignment", "Readable identity", "Unreadable identity",
-                    ReturnCodeMessage("AreaObj.GetLabelFromName", labelReturn, areaName));
-                return;
-            }
-
-            List<string> expectedRecords = expected.Records
-                .Select(record => CanonicalizeTableRecord(record.Values, actualTable.FieldKeys, indexes))
-                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            List<string> actualRecords = actualTable.Records
-                .Where(record => RecordMatchesObject(record, actualTable.FieldKeys, indexes, areaName, label, story))
-                .Select(record => CanonicalizeTableRecord(record, actualTable.FieldKeys, indexes))
-                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            if (!expectedRecords.SequenceEqual(actualRecords, StringComparer.OrdinalIgnoreCase))
-            {
-                AddIssue(result, region.SourceAreaName, areaName, "Mesh Assignment",
-                    expectedRecords.Count.ToString(CultureInfo.InvariantCulture) + " matching row(s)",
-                    actualRecords.Count.ToString(CultureInfo.InvariantCulture) + " matching row(s)",
-                    "Mesh assignment table rows do not match the source assignment.");
-            }
-        }
-
-        private static string CanonicalizeTableRecord(
-            IDictionary<string, string> record,
-            IReadOnlyList<string> fields,
-            ObjectFieldIndexes indexes)
-        {
-            List<string> values = new List<string>();
-            for (int index = 0; index < fields.Count; index++)
-            {
-                if (index == indexes.UniqueNameIndex || index == indexes.LabelIndex || index == indexes.StoryIndex)
-                {
-                    continue;
-                }
-
-                values.Add(fields[index].Trim().ToUpperInvariant() + "=" + NormalizeTableValue(ReadField(record, fields, index)));
-            }
-
-            return string.Join("\u001e", values);
-        }
-
-        private static string NormalizeTableValue(string value)
-        {
-            string trimmed = (value ?? string.Empty).Trim();
-            double number;
-            if (double.TryParse(trimmed, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
-            {
-                return number.ToString("G17", CultureInfo.InvariantCulture);
-            }
-
-            return trimmed.ToUpperInvariant();
-        }
-
-        private static bool LoadsEqual(IReadOnlyList<DropPanelDirectAreaLoad> expected, IReadOnlyList<DropPanelDirectAreaLoad> actual)
-        {
-            List<DropPanelDirectAreaLoad> remaining = new List<DropPanelDirectAreaLoad>(actual ?? new DropPanelDirectAreaLoad[0]);
-            foreach (DropPanelDirectAreaLoad expectedLoad in expected ?? new DropPanelDirectAreaLoad[0])
-            {
-                int index = remaining.FindIndex(item =>
-                    string.Equals(item.LoadPattern, expectedLoad.LoadPattern, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(item.LoadType, expectedLoad.LoadType, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(item.CoordinateSystem, expectedLoad.CoordinateSystem, StringComparison.OrdinalIgnoreCase) &&
-                    item.Direction == expectedLoad.Direction && NearlyEqual(item.Value, expectedLoad.Value));
-                if (index < 0)
-                {
-                    return false;
-                }
-
-                remaining.RemoveAt(index);
-            }
-
-            return remaining.Count == 0;
-        }
-
-        private static bool NumbersEqual(IReadOnlyList<double> expected, IReadOnlyList<double> actual)
-        {
-            if ((expected == null ? 0 : expected.Count) != (actual == null ? 0 : actual.Count))
-            {
-                return false;
-            }
-
-            for (int index = 0; index < (expected == null ? 0 : expected.Count); index++)
-            {
-                if (!NearlyEqual(expected[index], actual[index]))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static bool SetEquals(IEnumerable<string> expected, IEnumerable<string> actual)
-        {
-            HashSet<string> expectedSet = new HashSet<string>(expected ?? new string[0], StringComparer.OrdinalIgnoreCase);
-            HashSet<string> actualSet = new HashSet<string>(actual ?? new string[0], StringComparer.OrdinalIgnoreCase);
-            return expectedSet.SetEquals(actualSet);
-        }
-
-        private static bool NearlyEqual(double left, double right)
-        {
-            return Math.Abs(left - right) <= NumericTolerance * Math.Max(1.0, Math.Max(Math.Abs(left), Math.Abs(right)));
-        }
-
-        private static void AddIssue(
-            DropPanelApplyResult result,
-            string sourceArea,
-            string newArea,
-            string assignmentType,
-            string expected,
-            string actual,
-            string message)
-        {
-            result.VerificationIssues.Add(new DropPanelVerificationIssue
-            {
-                SourceAreaName = sourceArea,
-                NewAreaName = newArea,
-                AssignmentType = assignmentType,
-                ExpectedValue = expected,
-                ActualValue = actual,
-                ErrorMessage = message
-            });
-        }
-
-        private static bool HasIssue(DropPanelApplyResult result, string areaName, string assignmentType)
-        {
-            return result.VerificationIssues.Any(issue =>
-                string.Equals(issue.NewAreaName, areaName, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(issue.AssignmentType, assignmentType, StringComparison.OrdinalIgnoreCase));
-        }
-
         private static DropPanelVector3D ComputeNormal(IReadOnlyList<DropPanelPoint3D> points)
         {
             double x = 0.0;
@@ -2451,31 +2086,30 @@ namespace ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels
             return method + " failed" + target + " (return code " + returnCode.ToString(CultureInfo.InvariantCulture) + ").";
         }
 
+        private static string FormatLengthUnit(eLength lengthUnit)
+        {
+            switch (lengthUnit)
+            {
+                case eLength.inch:
+                    return "in";
+                case eLength.ft:
+                    return "ft";
+                case eLength.micron:
+                    return "micron";
+                case eLength.mm:
+                    return "mm";
+                case eLength.cm:
+                    return "cm";
+                case eLength.m:
+                    return "m";
+                default:
+                    return lengthUnit.ToString();
+            }
+        }
+
         private static string Format(double value)
         {
             return value.ToString("G17", CultureInfo.InvariantCulture);
-        }
-
-        private static string VectorText(DropPanelVector3D vector)
-        {
-            return vector == null ? string.Empty : Format(vector.X) + ", " + Format(vector.Y) + ", " + Format(vector.Z);
-        }
-
-        private static string Join(IEnumerable<string> values)
-        {
-            return string.Join(", ", (values ?? new string[0]).OrderBy(value => value, StringComparer.OrdinalIgnoreCase));
-        }
-
-        private static string NumbersText(IEnumerable<double> values)
-        {
-            return string.Join(", ", (values ?? new double[0]).Select(Format));
-        }
-
-        private static string LoadsText(IEnumerable<DropPanelDirectAreaLoad> loads)
-        {
-            return string.Join("; ", (loads ?? new DropPanelDirectAreaLoad[0])
-                .Select(load => load.LoadPattern + "|" + load.LoadType + "|" + load.Direction.ToString(CultureInfo.InvariantCulture) + "|" + load.CoordinateSystem + "|" + Format(load.Value))
-                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase));
         }
 
         private sealed class CreatedRegion

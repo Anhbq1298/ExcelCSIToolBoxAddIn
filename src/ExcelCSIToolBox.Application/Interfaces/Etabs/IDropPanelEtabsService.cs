@@ -8,21 +8,26 @@ namespace ExcelCSIToolBox.Application.Interfaces.Etabs
     {
         OperationResult<DropPanelModelContext> GetModelContext();
 
-        OperationResult<IReadOnlyList<string>> GetDropPropertyNames();
+        OperationResult<IReadOnlyList<string>> GetConcreteMaterialNames();
 
-        OperationResult<IReadOnlyList<DropPanelColumnInfo>> ReadSelectedColumns(double verticalRatioTolerance);
+        /// <summary>
+        /// Resolves the ETABS user-friendly label for each supplied frame unique name.
+        /// Returns a dictionary mapping unique name → label. Unknown names map to an
+        /// empty string. Used by callers that need to pre-filter by label prefix before
+        /// invoking ReadColumns.
+        /// </summary>
+        OperationResult<IReadOnlyDictionary<string, string>> GetFrameLabels(
+            IReadOnlyList<string> frameUniqueNames);
+
+        OperationResult<IReadOnlyList<DropPanelColumnInfo>> ReadColumns(
+            IReadOnlyList<string> frameNames,
+            double verticalRatioTolerance);
 
         OperationResult<DropPanelPreparationSnapshot> PrepareSnapshot(
             IReadOnlyList<DropPanelColumnInfo> columns,
             IReadOnlyList<DropPanelRequest> requests,
             DropPanelOptions options);
 
-        OperationResult HighlightAreas(IReadOnlyList<string> areaNames);
-
         OperationResult<DropPanelApplyResult> Apply(DropPanelOperationPlan plan, DropPanelOptions options);
-
-        OperationResult Rollback();
-
-        bool IsRollbackAvailable { get; }
     }
 }

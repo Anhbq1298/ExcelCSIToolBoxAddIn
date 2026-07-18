@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms.Integration;
 using System.Windows.Interop;
@@ -10,6 +11,9 @@ namespace ExcelCSIToolBoxAddIn.AddIn
     {
         private static readonly HashSet<Window> ConfiguredWindows = new HashSet<Window>();
         private static readonly object ConfigurationLock = new object();
+
+        [DllImport("user32.dll")]
+        private static extern bool IsChild(IntPtr hWndParent, IntPtr hWnd);
 
         public static void Show(Window window)
         {
@@ -78,8 +82,14 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                     return;
                 }
 
-                AssignExcelOwner(window);
                 ElementHost.EnableModelessKeyboardInterop(window);
+                AssignExcelOwner(window);
+
+                if (ConfiguredWindows.Count == 0)
+                {
+                    ComponentDispatcher.ThreadFilterMessage += OnThreadFilterMessage;
+                }
+
                 window.Closed += OnWindowClosed;
                 ConfiguredWindows.Add(window);
             }
@@ -97,6 +107,66 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             lock (ConfigurationLock)
             {
                 ConfiguredWindows.Remove(window);
+
+                if (ConfiguredWindows.Count == 0)
+                {
+                    ComponentDispatcher.ThreadFilterMessage -= OnThreadFilterMessage;
+                }
+            }
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool TranslateMessage(ref MSG lpMsg);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr DispatchMessage(ref MSG lpMsg);
+
+        private static void OnThreadFilterMessage(ref MSG msg, ref bool handled)
+        {
+            if (handled)
+            {
+                return;
+            }
+
+            // Keyboard messages (WM_KEYFIRST to WM_KEYLAST)
+            const int WM_KEYFIRST = 0x0100;
+            const int WM_KEYLAST = 0x0109;
+
+            if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
+            {
+                lock (ConfigurationLock)
+                {
+                    foreach (Window window in ConfiguredWindows)
+                    {
+                        try
+                        {
+                            IntPtr windowHandle = new WindowInteropHelper(window).Handle;
+                            if (windowHandle != IntPtr.Zero)
+                            {
+                                bool isTargetedToWpf = msg.hwnd == windowHandle || IsChild(windowHandle, msg.hwnd);
+                                if (isTargetedToWpf || window.IsActive || window.IsKeyboardFocusWithin)
+                                {
+                                    // Call ComponentDispatcher.RaiseThreadMessage to let WPF controls process key events (Tab, Arrows, typing)
+                                    handled = ComponentDispatcher.RaiseThreadMessage(ref msg);
+                                    if (!handled && isTargetedToWpf)
+                                    {
+                                        TranslateMessage(ref msg);
+                                        DispatchMessage(ref msg);
+                                        handled = true;
+                                    }
+                                    if (handled)
+                                    {
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // Safeguard against disposed window states
+                        }
+                    }
+                }
             }
         }
 

@@ -40,11 +40,20 @@
                            Style="{StaticResource BodyTextStyle}"
                            TextWrapping="Wrap"/>
 
-                <Button Grid.Row="4"
-                        Content="Cancel"
-                        Style="{StaticResource SecondaryButtonStyle}"
-                        HorizontalAlignment="Right"
-                        Click="CancelButton_Click"/>
+                <StackPanel Grid.Row="4"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button x:Name="ConfirmButton"
+                            Content="OK"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            MinWidth="92"
+                            Margin="0,0,8,0"
+                            Click="ConfirmButton_Click"/>
+                    <Button Content="Cancel"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            MinWidth="84"
+                            Click="CancelButton_Click"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

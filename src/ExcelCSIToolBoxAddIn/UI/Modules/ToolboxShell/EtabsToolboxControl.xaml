@@ -257,9 +257,9 @@
                         Padding="{StaticResource Inset.Small}">
                     <TabControl x:Name="WorkspaceTabs"
                                 Style="{StaticResource WorkspaceContentTabControlStyle}"
-                                IsEnabled="{Binding CanUseActiveModel}"
                                 SelectedIndex="{Binding ActiveWorkspacePage, Mode=TwoWay}">
-                        <TabItem Header="Section Property">
+                        <TabItem Header="Section Property"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <Grid Margin="{StaticResource Inset.Small}">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="1.35*"/>
@@ -427,7 +427,8 @@
                             </Grid>
                         </TabItem>
 
-                        <TabItem Header="Point">
+                        <TabItem Header="Point"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           CanContentScroll="True">
@@ -468,7 +469,8 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="Frame">
+                        <TabItem Header="Frame"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           CanContentScroll="True">
@@ -532,7 +534,8 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="Shell">
+                        <TabItem Header="Shell"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           CanContentScroll="True">
@@ -543,7 +546,8 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="LoadPattern">
+                        <TabItem Header="LoadPattern"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled"
                                           CanContentScroll="True">
@@ -604,7 +608,8 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="LoadCombination">
+                        <TabItem Header="LoadCombination"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <Border Style="{StaticResource CompactCardBorderStyle}"
                                     Margin="{StaticResource Inset.Small}">
                                 <Grid MinHeight="320">
@@ -668,7 +673,8 @@
                             </Border>
                         </TabItem>
 
-                        <TabItem Header="ETABS Tables">
+                        <TabItem Header="ETABS Tables"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto"
                                           HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Margin="{StaticResource Inset.Small}">
@@ -699,7 +705,8 @@
                             </ScrollViewer>
                         </TabItem>
 
-                        <TabItem Header="Section Property - Stiffness Modifier">
+                        <TabItem Header="Section Property - Stiffness Modifier"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <TabControl Margin="{StaticResource Inset.Small}">
                                 <TabItem Header="Frame Object">
                                     <Grid Margin="{StaticResource Inset.Small}">
@@ -1041,7 +1048,7 @@
                                                 Margin="0,8,0,0"
                                                 HorizontalAlignment="Stretch"
                                                 Command="{Binding CreateShellAreasFromSelectedFramesCommand}"
-                                                ToolTip="Create shell area objects from the currently selected frame boundary."
+                                                ToolTip="Pick frame boundary objects interactively, then create shell area objects."
                                                 ToolTipService.ShowOnDisabled="True">
                                             <TextBlock Text="Create Shell Area From Selected Frames"
                                                        TextWrapping="Wrap"/>
@@ -1087,7 +1094,8 @@
                             </Border>
                         </TabItem>
 
-                        <TabItem Header="Shell Uniform Load Set">
+                        <TabItem Header="Shell Uniform Load Set"
+                                 IsEnabled="{Binding CanUseActiveModel}">
                             <Border Style="{StaticResource CompactCardBorderStyle}"
                                     Margin="{StaticResource Inset.Small}">
                                 <Grid MinHeight="220">

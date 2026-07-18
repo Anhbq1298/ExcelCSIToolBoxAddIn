@@ -30,8 +30,6 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
 
         public string DiaphragmStatus { get; set; }
 
-        public string VerificationStatus { get; set; }
-
         public string Message { get; set; }
     }
 }

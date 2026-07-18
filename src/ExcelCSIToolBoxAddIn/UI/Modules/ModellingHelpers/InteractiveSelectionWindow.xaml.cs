@@ -14,6 +14,11 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
         private readonly string _wrongTypeMessage;
         private readonly string _requiredObjectType;
         private readonly Func<OperationResult<IReadOnlyList<CsiSelectedObjectDto>>> _readSelection;
+        private readonly bool _requiresManualConfirmation;
+        private readonly int _minimumMatchingCount;
+        private readonly string _readyMessageFormat;
+        private readonly string _mixedSelectionMessage;
+        private readonly bool _ignoreNonMatchingObjects;
         private readonly DispatcherTimer _timer;
 
         public InteractiveSelectionWindow(
@@ -23,19 +28,40 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             string multipleSelectionMessage,
             string wrongTypeMessage,
             string requiredObjectType,
-            Func<OperationResult<IReadOnlyList<CsiSelectedObjectDto>>> readSelection)
+            Func<OperationResult<IReadOnlyList<CsiSelectedObjectDto>>> readSelection,
+            bool requiresManualConfirmation = false,
+            string confirmButtonText = null,
+            int minimumMatchingCount = 1,
+            string readyMessageFormat = null,
+            string mixedSelectionMessage = null,
+            bool ignoreNonMatchingObjects = false)
         {
             InitializeComponent();
 
             Title = string.IsNullOrWhiteSpace(title) ? "Pick Object" : title;
             InstructionTextBlock.Text = instruction;
             StatusTextBlock.Text = waitingMessage;
+            ConfirmButton.Visibility = requiresManualConfirmation ? Visibility.Visible : Visibility.Collapsed;
+            ConfirmButton.IsEnabled = false;
+            if (!string.IsNullOrWhiteSpace(confirmButtonText))
+            {
+                ConfirmButton.Content = confirmButtonText;
+            }
 
             _waitingMessage = waitingMessage;
             _multipleSelectionMessage = multipleSelectionMessage;
             _wrongTypeMessage = wrongTypeMessage;
             _requiredObjectType = requiredObjectType;
             _readSelection = readSelection ?? throw new ArgumentNullException(nameof(readSelection));
+            _requiresManualConfirmation = requiresManualConfirmation;
+            _minimumMatchingCount = Math.Max(1, minimumMatchingCount);
+            _readyMessageFormat = string.IsNullOrWhiteSpace(readyMessageFormat)
+                ? "{0} object(s) selected."
+                : readyMessageFormat;
+            _mixedSelectionMessage = string.IsNullOrWhiteSpace(mixedSelectionMessage)
+                ? wrongTypeMessage
+                : mixedSelectionMessage;
+            _ignoreNonMatchingObjects = ignoreNonMatchingObjects;
 
             _timer = new DispatcherTimer
             {
@@ -49,11 +75,15 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         public CsiSelectedObjectDto SelectedObject { get; private set; }
 
+        public IReadOnlyList<CsiSelectedObjectDto> SelectedObjects { get; private set; }
+
         private void Timer_Tick(object sender, EventArgs e)
         {
             OperationResult<IReadOnlyList<CsiSelectedObjectDto>> result = _readSelection();
             if (!result.IsSuccess)
             {
+                SelectedObjects = null;
+                ConfirmButton.IsEnabled = false;
                 StatusTextBlock.Text = string.IsNullOrWhiteSpace(result.Message)
                     ? _waitingMessage
                     : result.Message;
@@ -63,16 +93,21 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             IReadOnlyList<CsiSelectedObjectDto> selectedObjects = result.Data;
             if (selectedObjects == null || selectedObjects.Count == 0)
             {
+                SelectedObjects = null;
+                ConfirmButton.IsEnabled = false;
                 StatusTextBlock.Text = _waitingMessage;
                 return;
             }
 
             int matchingCount = 0;
+            int nonMatchingCount = 0;
             CsiSelectedObjectDto matchingObject = null;
+            var matchingObjects = new List<CsiSelectedObjectDto>();
             foreach (CsiSelectedObjectDto selectedObject in selectedObjects)
             {
                 if (selectedObject == null)
                 {
+                    nonMatchingCount++;
                     continue;
                 }
 
@@ -80,7 +115,17 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 {
                     matchingCount++;
                     matchingObject = selectedObject;
+                    matchingObjects.Add(selectedObject);
+                    continue;
                 }
+
+                nonMatchingCount++;
+            }
+
+            if (_requiresManualConfirmation)
+            {
+                UpdateManualConfirmationState(matchingObjects, matchingCount, nonMatchingCount);
+                return;
             }
 
             if (matchingCount == 1)
@@ -92,6 +137,48 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             }
 
             StatusTextBlock.Text = matchingCount > 1 ? _multipleSelectionMessage : _wrongTypeMessage;
+        }
+
+        private void UpdateManualConfirmationState(
+            IReadOnlyList<CsiSelectedObjectDto> matchingObjects,
+            int matchingCount,
+            int nonMatchingCount)
+        {
+            if (nonMatchingCount > 0 && !_ignoreNonMatchingObjects)
+            {
+                SelectedObjects = null;
+                ConfirmButton.IsEnabled = false;
+                StatusTextBlock.Text = _mixedSelectionMessage;
+                return;
+            }
+
+            if (matchingCount < _minimumMatchingCount)
+            {
+                SelectedObjects = null;
+                ConfirmButton.IsEnabled = false;
+                StatusTextBlock.Text = _waitingMessage;
+                return;
+            }
+
+            SelectedObjects = matchingObjects;
+            ConfirmButton.IsEnabled = true;
+            StatusTextBlock.Text = string.Format(_readyMessageFormat, matchingCount) +
+                                   (nonMatchingCount > 0
+                                       ? " " + nonMatchingCount + " non-matching object(s) will be ignored."
+                                       : string.Empty);
+        }
+
+        private void ConfirmButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_requiresManualConfirmation ||
+                SelectedObjects == null ||
+                SelectedObjects.Count < _minimumMatchingCount)
+            {
+                return;
+            }
+
+            DialogResult = true;
+            Close();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

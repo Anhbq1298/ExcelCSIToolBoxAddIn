@@ -11,6 +11,7 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
             ElevationTolerance = 0.01;
             MinimumPolygonArea = 0.001;
             VerticalRatioTolerance = 4.0;
+            DropThickness = 0.0;
             PreserveDirectAreaLoads = true;
             PreserveShellUniformLoadSetAssignments = true;
             PreserveLocalAxes = true;
@@ -20,12 +21,15 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
             PreserveAreaModifiers = true;
             PreserveGroupAssignments = true;
             PreservePierAndSpandrelLabels = true;
-            SaveEtabsBackupBeforeApply = true;
-            MergeAdjacentRegionsOnlyWhenAssignmentSignaturesMatch = true;
-            VerifyAssignmentsAfterApply = true;
         }
 
         public string DropProperty { get; set; }
+
+        public double DropThickness { get; set; }
+
+        public string DropMaterial { get; set; }
+
+        public string LengthUnit { get; set; }
 
         public double DropSizeX { get; set; }
 
@@ -60,11 +64,5 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
         public bool PreserveGroupAssignments { get; set; }
 
         public bool PreservePierAndSpandrelLabels { get; set; }
-
-        public bool SaveEtabsBackupBeforeApply { get; set; }
-
-        public bool MergeAdjacentRegionsOnlyWhenAssignmentSignaturesMatch { get; set; }
-
-        public bool VerifyAssignmentsAfterApply { get; set; }
     }
 }

@@ -1,8 +1,15 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using ExcelCSIToolBox.Application.Composition;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
+using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBoxAddIn.AddIn.Composition;
 using ExcelCSIToolBoxAddIn.AddIn.Diagnostics;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
@@ -32,6 +39,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static GetMassSummaryByStoryWindow _massSummaryByStoryWindow;
         private static AboutWindow _aboutWindow;
         private static DropPanelWindow _dropPanelWindow;
+
 
         internal static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
@@ -172,6 +180,60 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             ModelessWpfWindowService.Show(window);
         }
 
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr windowHandle);
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr windowHandle, int command);
+
+        private const int ShowWindowRestore = 9;
+
+        private static void ActivateConnectedCsiWindow()
+        {
+            try
+            {
+                OperationResult<ExcelCSIToolBox.Core.Contracts.CSI.CSISapModelConnectionInfoDTO> connectionResult =
+                    _etabsConnectionService.GetCurrentConnection();
+                if (!connectionResult.IsSuccess ||
+                    connectionResult.Data == null ||
+                    !connectionResult.Data.ProcessId.HasValue)
+                {
+                    return;
+                }
+
+                Process process = Process.GetProcessById(connectionResult.Data.ProcessId.Value);
+                if (process.MainWindowHandle == IntPtr.Zero)
+                {
+                    return;
+                }
+
+                ShowWindow(process.MainWindowHandle, ShowWindowRestore);
+                SetForegroundWindow(process.MainWindowHandle);
+            }
+            catch
+            {
+                // Selection polling remains available if native window activation is unavailable.
+            }
+        }
+
+        private static Window GetActiveOwnerWindow()
+        {
+            if (System.Windows.Application.Current == null)
+            {
+                return null;
+            }
+
+            foreach (Window window in System.Windows.Application.Current.Windows)
+            {
+                if (window != null && window.IsActive)
+                {
+                    return window;
+                }
+            }
+
+            return System.Windows.Application.Current.MainWindow;
+        }
+
         internal static void ShowDropPanelWindow()
         {
             EnsureConfigured(_etabsConnectionService);
@@ -184,12 +246,15 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             var dropPanelService = AppServiceFactory.CreateDropPanelService(_etabsConnectionService);
             var settingsStore = new DropPanelSettingsStore();
             var logExporter = new DropPanelExcelLogExporter();
+            
             DropPanelWindow window = null;
-            var viewModel = new DropPanelViewModel(
+            DropPanelViewModel viewModel = null;
+            viewModel = new DropPanelViewModel(
                 _etabsConnectionService,
                 dropPanelService,
                 settingsStore,
                 logExporter,
+                delegate { return window; },
                 delegate
                 {
                     if (window != null)
@@ -197,6 +262,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                         window.Close();
                     }
                 });
+
             window = new DropPanelWindow(viewModel);
             window.Closed += delegate { _dropPanelWindow = null; };
             _dropPanelWindow = window;

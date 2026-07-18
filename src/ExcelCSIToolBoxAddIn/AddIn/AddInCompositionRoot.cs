@@ -120,13 +120,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         public static void RefreshPlugin()
         {
-            AddInDiagnostics.Log("Refresh Plugin requested. Hot reload was not attempted because unloading a running VSTO add-in can crash Excel.");
-            System.Windows.Forms.MessageBox.Show(
-                "Excel cannot safely reload this VSTO add-in while it is running.\r\n\r\n" +
-                "Save your work, close all Excel windows, and reopen Excel to load the latest build.",
-                "Restart Excel to Refresh Plugin",
-                System.Windows.Forms.MessageBoxButtons.OK,
-                System.Windows.Forms.MessageBoxIcon.Information);
+            RefreshPluginUsingComReconnect();
         }
 
         // Retained temporarily for reference while the refresh workflow is replaced.

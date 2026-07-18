@@ -7,21 +7,25 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
         public DropPanelApplyResult()
         {
             CreatedAreaNames = new List<string>();
-            VerificationIssues = new List<DropPanelVerificationIssue>();
             LogEntries = new List<DropPanelLogEntry>();
         }
 
-        public string BackupFilePath { get; set; }
-
         public List<string> CreatedAreaNames { get; set; }
-
-        public List<DropPanelVerificationIssue> VerificationIssues { get; set; }
 
         public List<DropPanelLogEntry> LogEntries { get; set; }
 
-        public bool VerificationPassed
-        {
-            get { return VerificationIssues.Count == 0; }
-        }
+        public int ProcessedColumnCount { get; set; }
+
+        public int CreatedDropAreaCount { get; set; }
+
+        public string DropPropertyName { get; set; }
+
+        public bool DropPropertyCreated { get; set; }
+
+        public double DropThickness { get; set; }
+
+        public string LengthUnit { get; set; }
+
+        public string MaterialName { get; set; }
     }
 }

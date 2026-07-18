@@ -119,11 +119,22 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
                     continue;
                 }
 
+                HashSet<string> connectedColumnNames = new HashSet<string>(
+                    sourceArea.ConnectedColumnNames ?? new List<string>(),
+                    StringComparer.OrdinalIgnoreCase);
+                if (connectedColumnNames.Count == 0)
+                {
+                    plan.ValidationMessages.Add(
+                        "Source area '" + sourceArea.AreaName + "' has no direct column-head connectivity mapping.");
+                    continue;
+                }
+
                 List<KeyValuePair<DropPanelRequest, Geometry>> relevantRequests = new List<KeyValuePair<DropPanelRequest, Geometry>>();
                 foreach (DropPanelRequest request in requests)
                 {
                     Geometry requestGeometry;
-                    if (!requestGeometries.TryGetValue(request.ColumnName, out requestGeometry) ||
+                    if (!connectedColumnNames.Contains(request.ColumnName) ||
+                        !requestGeometries.TryGetValue(request.ColumnName, out requestGeometry) ||
                         Math.Abs(request.Elevation - sourceArea.Elevation) > options.ElevationTolerance ||
                         !sourceGeometry.EnvelopeInternal.Intersects(requestGeometry.EnvelopeInternal))
                     {
@@ -143,7 +154,6 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
                     continue;
                 }
 
-                // Keep affected source geometry in an invalid plan so Preview can explain the problem visually.
                 plan.SourceAreas.Add(sourceArea);
 
                 if (sourceArea.Assignment == null)
@@ -182,11 +192,8 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
                     continue;
                 }
 
-                DropPanelAssignmentSignatureBuilder signatureBuilder = new DropPanelAssignmentSignatureBuilder();
-                string normalSignature = signatureBuilder.Build(sourceArea.SectionProperty, sourceArea.Assignment);
-                string dropSignature = signatureBuilder.Build(options.DropProperty, sourceArea.Assignment);
-                AddRegions(plan, sourceArea, normalPolygons, false, relevantRequests, options, normalSignature);
-                AddRegions(plan, sourceArea, dropPolygons, true, relevantRequests, options, dropSignature);
+                AddRegions(plan, sourceArea, normalPolygons, false, relevantRequests, options);
+                AddRegions(plan, sourceArea, dropPolygons, true, relevantRequests, options);
             }
 
             foreach (DropPanelRequest request in requests)
@@ -210,7 +217,7 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
 
             return OperationResult<DropPanelOperationPlan>.Success(
                 plan,
-                plan.IsValid ? "Drop panel preview prepared." : "Drop panel preview contains validation errors.");
+                plan.IsValid ? "Drop panel regions prepared." : "Drop panel geometry contains validation errors.");
         }
 
         private static void AddRegions(
@@ -219,17 +226,9 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
             IReadOnlyList<Polygon> polygons,
             bool isDrop,
             IReadOnlyList<KeyValuePair<DropPanelRequest, Geometry>> relevantRequests,
-            DropPanelOptions options,
-            string assignmentSignature)
+            DropPanelOptions options)
         {
-            List<Polygon> compatiblePolygons = polygons.ToList();
-            if (options.MergeAdjacentRegionsOnlyWhenAssignmentSignaturesMatch && !string.IsNullOrWhiteSpace(assignmentSignature))
-            {
-                // This list contains one source, one result property, and one complete assignment signature.
-                MergeCompatiblePolygons(compatiblePolygons, options.GeometryTolerance);
-            }
-
-            foreach (Polygon polygon in compatiblePolygons)
+            foreach (Polygon polygon in polygons)
             {
                 List<DropPanelPoint3D> points = ToPoints(polygon, sourceArea.Elevation, options.GeometryTolerance);
                 if (points.Count < 3)
@@ -243,7 +242,6 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
                     SourceAreaName = sourceArea.AreaName,
                     IsDrop = isDrop,
                     ResultingSectionProperty = isDrop ? options.DropProperty : sourceArea.SectionProperty,
-                    AssignmentSignature = assignmentSignature,
                     Points = points,
                     Assignment = sourceArea.Assignment
                 };
@@ -332,40 +330,6 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
                 .ThenBy(item => item.Centroid.X)
                 .ThenBy(item => item.Area)
                 .ToList();
-        }
-
-        private static void MergeCompatiblePolygons(List<Polygon> polygons, double tolerance)
-        {
-            bool changed = true;
-            while (changed)
-            {
-                changed = false;
-                for (int leftIndex = 0; leftIndex < polygons.Count && !changed; leftIndex++)
-                {
-                    for (int rightIndex = leftIndex + 1; rightIndex < polygons.Count; rightIndex++)
-                    {
-                        Polygon left = polygons[leftIndex];
-                        Polygon right = polygons[rightIndex];
-                        if (!left.EnvelopeInternal.Intersects(right.EnvelopeInternal) || !left.Touches(right))
-                        {
-                            continue;
-                        }
-
-                        Geometry union = GeometryFixer.Fix(left.Union(right));
-                        Polygon merged = union as Polygon;
-                        if (merged == null || merged.NumInteriorRings != 0 || !merged.IsValid ||
-                            Math.Abs(merged.Area - left.Area - right.Area) > Math.Max(tolerance * tolerance, 1e-10))
-                        {
-                            continue;
-                        }
-
-                        polygons[leftIndex] = merged;
-                        polygons.RemoveAt(rightIndex);
-                        changed = true;
-                        break;
-                    }
-                }
-            }
         }
 
         private static IEnumerable<Polygon> EnumeratePolygons(Geometry geometry)

@@ -21,27 +21,30 @@ namespace ExcelCSIToolBox.Tests.Application.Modelling.DropPanels
                 Column("C3", 8.0, 4.2, 30.0, -12.0)
             };
             DropPanelPreparationSnapshot snapshot = new DropPanelPreparationSnapshot();
-            snapshot.Areas.Add(Area(
+            snapshot.Areas.Add(Connect(Area(
                 "S1",
                 "SLAB-A",
                 0.0,
                 "DEAD",
                 "SET-A",
-                Point(0, 0), Point(6, 0), Point(6, 6), Point(4, 6), Point(4, 4), Point(0, 4)));
-            snapshot.Areas.Add(Area(
+                Point(0, 0), Point(6, 0), Point(6, 6), Point(4, 6), Point(4, 4), Point(0, 4)),
+                "C1", "C2"));
+            snapshot.Areas.Add(Connect(Area(
                 "S2",
                 "SLAB-B",
                 12.0,
                 "LIVE",
                 "SET-B",
-                Point(6, 0), Point(12, 0), Point(12, 6), Point(6, 6)));
-            snapshot.Areas.Add(Area(
+                Point(6, 0), Point(12, 0), Point(12, 6), Point(6, 6)),
+                "C1", "C3"));
+            snapshot.Areas.Add(Connect(Area(
                 "S3",
                 "SLAB-C",
                 -20.0,
                 "SUPER",
                 "SET-C",
-                Point(0, 4), Point(4, 4), Point(4, 6), Point(6, 6), Point(6, 10), Point(0, 10)));
+                Point(0, 4), Point(4, 4), Point(4, 6), Point(6, 6), Point(6, 10), Point(0, 10)),
+                "C2"));
             snapshot.Openings.Add(new DropPanelAreaInfo
             {
                 AreaName = "O1",
@@ -77,7 +80,6 @@ namespace ExcelCSIToolBox.Tests.Application.Modelling.DropPanels
             plan.SourceAreas.Select(area => area.AreaName).Should().BeEquivalentTo("S1", "S2", "S3");
             plan.Regions.Should().OnlyContain(region => !string.IsNullOrWhiteSpace(region.SourceAreaName));
             plan.Regions.Should().OnlyContain(region => region.Assignment != null);
-            plan.Regions.Should().OnlyContain(region => !string.IsNullOrWhiteSpace(region.AssignmentSignature));
             plan.Regions.Where(region => region.IsDrop).Should().OnlyContain(region => region.ResultingSectionProperty == "DROP-300");
             plan.Regions.Where(region => !region.IsDrop).Should().OnlyContain(region =>
                 region.ResultingSectionProperty == region.Assignment.SectionProperty);
@@ -104,36 +106,28 @@ namespace ExcelCSIToolBox.Tests.Application.Modelling.DropPanels
                     "generated regions must not fill an opening, including openings away from the drop rectangle");
             }
 
-            DropPanelAssignmentSignatureBuilder signatureBuilder = new DropPanelAssignmentSignatureBuilder();
-            string s1 = signatureBuilder.Build("DROP-300", snapshot.Areas[0].Assignment);
-            string s2 = signatureBuilder.Build("DROP-300", snapshot.Areas[1].Assignment);
-            string s3 = signatureBuilder.Build("DROP-300", snapshot.Areas[2].Assignment);
-            new[] { s1, s2, s3 }.Should().OnlyHaveUniqueItems("different loads, load sets, and local axes must not merge");
-            plan.Regions.Where(region => region.IsDrop && region.SourceAreaName == "S1")
-                .Should().OnlyContain(region => region.AssignmentSignature == s1);
-            plan.Regions.Where(region => region.IsDrop && region.SourceAreaName == "S2")
-                .Should().OnlyContain(region => region.AssignmentSignature == s2);
         }
 
         [Fact]
-        public void BuildPlan_returns_an_invalid_preview_plan_for_a_self_intersecting_source_ring()
+        public void BuildPlan_returns_invalid_geometry_for_a_self_intersecting_source_ring()
         {
             DropPanelOptions options = CreateOptions();
             DropPanelColumnInfo column = Column("C1", 2.0, 2.0, 30.0, 0.0);
             DropPanelPreparationSnapshot snapshot = new DropPanelPreparationSnapshot();
-            snapshot.Areas.Add(Area(
+            snapshot.Areas.Add(Connect(Area(
                 "S1",
                 "SLAB-A",
                 0.0,
                 "DEAD",
                 "SET-A",
-                Point(0, 0), Point(4, 4), Point(0, 4), Point(4, 0)));
+                Point(0, 0), Point(4, 4), Point(0, 4), Point(4, 0)),
+                "C1"));
             DropPanelGeometryProcessor processor = new DropPanelGeometryProcessor();
             var requests = processor.BuildDropRequests(new[] { column }, options);
 
             var result = processor.BuildPlan(new[] { column }, snapshot, requests.Data, options);
 
-            result.IsSuccess.Should().BeTrue("Preview should retain validation details without modifying ETABS");
+            result.IsSuccess.Should().BeTrue("geometry validation details should be returned before ETABS is modified");
             result.Data.IsValid.Should().BeFalse();
             result.Data.ValidationMessages.Should().Contain(message => message.Contains("self-intersecting"));
         }
@@ -155,6 +149,84 @@ namespace ExcelCSIToolBox.Tests.Application.Modelling.DropPanels
             options.UserDefinedRotationAngle = -17.5;
             var userResult = processor.BuildDropRequests(new[] { column }, options);
             userResult.Data[0].RotationDegrees.Should().Be(-17.5);
+        }
+
+        [Fact]
+        public void BuildPlan_only_applies_requests_to_areas_connected_to_their_column_heads()
+        {
+            DropPanelOptions options = CreateOptions();
+            List<DropPanelColumnInfo> columns = new List<DropPanelColumnInfo>
+            {
+                Column("C1", 4.0, 2.0, 30.0, 0.0),
+                Column("C2", 7.0, 2.0, 30.0, 0.0)
+            };
+            DropPanelPreparationSnapshot snapshot = new DropPanelPreparationSnapshot();
+            snapshot.Areas.Add(Connect(Area(
+                "S1", "SLAB-A", 0.0, "DEAD", "SET-A",
+                Point(0, 0), Point(4, 0), Point(4, 4), Point(0, 4)),
+                "C1"));
+            snapshot.Areas.Add(Connect(Area(
+                "S2", "SLAB-B", 0.0, "LIVE", "SET-B",
+                Point(4, 0), Point(8, 0), Point(8, 4), Point(4, 4)),
+                "C2"));
+
+            DropPanelGeometryProcessor processor = new DropPanelGeometryProcessor();
+            var requests = processor.BuildDropRequests(columns, options);
+            var result = processor.BuildPlan(columns, snapshot, requests.Data, options);
+
+            result.IsSuccess.Should().BeTrue(result.Message);
+            result.Data.IsValid.Should().BeTrue(string.Join(Environment.NewLine, result.Data.ValidationMessages));
+            result.Data.Regions
+                .Where(region => region.IsDrop && region.SourceAreaName == "S1")
+                .SelectMany(region => region.ColumnNames)
+                .Distinct()
+                .Should().BeEquivalentTo("C1");
+            result.Data.Regions
+                .Where(region => region.IsDrop && region.SourceAreaName == "S2")
+                .SelectMany(region => region.ColumnNames)
+                .Distinct()
+                .Should().BeEquivalentTo("C2");
+        }
+
+        [Fact]
+        public void BuildPlan_splits_all_four_shells_connected_to_one_column_head()
+        {
+            DropPanelOptions options = CreateOptions();
+            DropPanelColumnInfo column = Column("C1", 0.0, 0.0, 30.0, 0.0);
+            DropPanelPreparationSnapshot snapshot = new DropPanelPreparationSnapshot();
+            snapshot.Areas.Add(Connect(Area(
+                "S1", "SLAB-1", 0.0, "DEAD", "SET-1",
+                Point(-4, -4), Point(0, -4), Point(0, 0), Point(-4, 0)), "C1"));
+            snapshot.Areas.Add(Connect(Area(
+                "S2", "SLAB-2", 0.0, "LIVE", "SET-2",
+                Point(0, -4), Point(4, -4), Point(4, 0), Point(0, 0)), "C1"));
+            snapshot.Areas.Add(Connect(Area(
+                "S3", "SLAB-3", 0.0, "SUPER", "SET-3",
+                Point(-4, 0), Point(0, 0), Point(0, 4), Point(-4, 4)), "C1"));
+            snapshot.Areas.Add(Connect(Area(
+                "S4", "SLAB-4", 0.0, "WIND", "SET-4",
+                Point(0, 0), Point(4, 0), Point(4, 4), Point(0, 4)), "C1"));
+
+            DropPanelGeometryProcessor processor = new DropPanelGeometryProcessor();
+            var requests = processor.BuildDropRequests(new[] { column }, options);
+            var result = processor.BuildPlan(new[] { column }, snapshot, requests.Data, options);
+
+            result.IsSuccess.Should().BeTrue(result.Message);
+            result.Data.IsValid.Should().BeTrue(string.Join(Environment.NewLine, result.Data.ValidationMessages));
+            result.Data.SourceAreas.Select(area => area.AreaName)
+                .Should().BeEquivalentTo("S1", "S2", "S3", "S4");
+
+            foreach (DropPanelAreaInfo source in snapshot.Areas)
+            {
+                List<DropPanelRegion> regions = result.Data.Regions
+                    .Where(region => region.SourceAreaName == source.AreaName)
+                    .ToList();
+                regions.Should().Contain(region => region.IsDrop && region.ResultingSectionProperty == "DROP-300");
+                regions.Should().Contain(region => !region.IsDrop && region.ResultingSectionProperty == source.SectionProperty);
+                regions.Should().OnlyContain(region => ReferenceEquals(region.Assignment, source.Assignment));
+                regions.Where(region => region.IsDrop).Sum(region => ToPolygon(region.Points).Area).Should().BeApproximately(1.0, 0.0001);
+                regions.Where(region => !region.IsDrop).Sum(region => ToPolygon(region.Points).Area).Should().BeApproximately(15.0, 0.0001);
+            }
         }
 
         private static DropPanelOptions CreateOptions()
@@ -229,6 +301,12 @@ namespace ExcelCSIToolBox.Tests.Application.Modelling.DropPanels
                 Points = points.ToList(),
                 Assignment = assignment
             };
+        }
+
+        private static DropPanelAreaInfo Connect(DropPanelAreaInfo area, params string[] columnNames)
+        {
+            area.ConnectedColumnNames.AddRange(columnNames);
+            return area;
         }
 
         private static DropPanelPoint3D Point(double x, double y)

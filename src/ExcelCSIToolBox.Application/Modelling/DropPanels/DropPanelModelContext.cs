@@ -10,6 +10,8 @@ namespace ExcelCSIToolBox.Application.Modelling.DropPanels
 
         public string PresentUnits { get; set; }
 
+        public string LengthUnit { get; set; }
+
         public bool IsLocked { get; set; }
     }
 }

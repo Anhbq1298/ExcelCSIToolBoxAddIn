@@ -1,14 +1,14 @@
 <Window x:Class="ExcelCSIToolBoxAddIn.UI.Views.DropPanelWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:views="clr-namespace:ExcelCSIToolBoxAddIn.UI.Views"
-        Title="Drop Panel"
-        Width="1260"
-        Height="820"
-        MinWidth="1080"
-        MinHeight="680"
+        Title="Column Drop Tool"
+        Width="580"
+        Height="620"
+        MinWidth="520"
+        MinHeight="580"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
+        KeyboardNavigation.TabNavigation="Cycle"
         FontFamily="{DynamicResource FontFamily.Primary}"
         FontSize="{DynamicResource FontSize.Body}"
         Background="{DynamicResource AppBackgroundBrush}">
@@ -17,204 +17,287 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/ExcelCSIToolBoxAddIn;component/UI/Shared/Themes/EtabsToolboxTheme.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid Margin="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="10"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="10"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <Border Grid.Row="0" Style="{StaticResource CardBorderStyle}">
+    <Grid Margin="{StaticResource Inset.Medium}">
+        <Border Style="{StaticResource CardBorderStyle}">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Drop Panel" Style="{StaticResource HeadingTextStyle}"/>
-                    <TextBlock Text="Create ETABS drop panels while preserving slab assignments."
-                               Style="{StaticResource MutedTextStyle}" Margin="0,3,0,0"/>
-                </StackPanel>
-                <TextBlock Grid.Column="1" Text="{Binding StatusMessage}" MaxWidth="620"
-                           TextWrapping="Wrap" VerticalAlignment="Center" Foreground="{StaticResource TextBrush.Secondary}"/>
-            </Grid>
-        </Border>
-
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="390"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="330"/>
-                <ColumnDefinition Width="10"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="10"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/> <!-- 0: Title -->
+                    <RowDefinition Height="6"/>    <!-- 1: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 2: Description -->
+                    <RowDefinition Height="10"/>   <!-- 3: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 4: Section Column Selection -->
+                    <RowDefinition Height="6"/>    <!-- 5: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 6: Selection Controls -->
+                    <RowDefinition Height="6"/>    <!-- 7: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 8: ListBox -->
+                    <RowDefinition Height="10"/>   <!-- 9: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 10: Section Drop Parameters -->
+                    <RowDefinition Height="6"/>    <!-- 11: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 12: Parameters Grid -->
+                    <RowDefinition Height="10"/>   <!-- 13: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 14: Section Orientation -->
+                    <RowDefinition Height="6"/>    <!-- 15: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 16: Orientation Grid -->
+                    <RowDefinition Height="10"/>   <!-- 17: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 18: Feedback -->
+                    <RowDefinition Height="10"/>   <!-- 19: Spacing -->
+                    <RowDefinition Height="Auto"/> <!-- 20: Action Buttons -->
                 </Grid.RowDefinitions>
 
-                <Border Style="{StaticResource CompactCardBorderStyle}">
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="ETABS Model" Style="{StaticResource SectionHeadingTextStyle}"/>
-                            <Button Grid.Column="1" Content="Attach to ETABS" Style="{StaticResource SmallButtonStyle}"
-                                    Command="{Binding AttachCommand}"/>
-                        </Grid>
-                        <Grid Margin="0,8,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="105"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="Status" Style="{StaticResource MutedTextStyle}"/>
-                            <TextBlock Grid.Column="1" Text="{Binding ConnectionStatus}"/>
-                            <TextBlock Grid.Row="1" Text="Version" Style="{StaticResource MutedTextStyle}"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding EtabsVersion}"/>
-                            <TextBlock Grid.Row="2" Text="Model" Style="{StaticResource MutedTextStyle}"/>
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ModelFileName}" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Grid.Row="3" Text="Units" Style="{StaticResource MutedTextStyle}"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CurrentUnits}"/>
-                            <TextBlock Grid.Row="4" Text="Lock status" Style="{StaticResource MutedTextStyle}"/>
-                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding ModelLockStatus}"/>
-                        </Grid>
-                    </StackPanel>
+                <!-- Window Title -->
+                <TextBlock Grid.Row="0"
+                           Text="Column Drop Tool"
+                           Style="{StaticResource HeadingTextStyle}"/>
+
+                <!-- Description -->
+                <TextBlock Grid.Row="2"
+                           Text="Create column drops by splitting the connected slab shells at each selected column."
+                           Style="{StaticResource MutedTextStyle}"
+                           TextWrapping="Wrap"/>
+
+                <!-- ── Column Selection ────────────────────────────────── -->
+                <TextBlock Grid.Row="4"
+                           Text="Column Selection"
+                           Style="{StaticResource SectionHeadingTextStyle}"/>
+
+                <Grid Grid.Row="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="Select Columns"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            MinWidth="120"
+                            Command="{Binding SelectColumnsCommand}"/>
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding SelectedColumnCountText}"
+                               Style="{StaticResource LabelTextStyle}"
+                               VerticalAlignment="Center"/>
+                </Grid>
+
+                <Border Grid.Row="8"
+                        BorderBrush="{StaticResource BorderBrush.Light}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Background="{StaticResource PanelBackgroundBrush}"
+                        Height="70">
+                    <ListBox ItemsSource="{Binding SelectedColumns}"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             Padding="6,4"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FrameName}"
+                                           Style="{StaticResource BodyTextStyle}"
+                                           Margin="2"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
                 </Border>
 
-                <Border Grid.Row="2" Style="{StaticResource CompactCardBorderStyle}">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="Column Selection" Style="{StaticResource SectionHeadingTextStyle}"/>
-                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,8">
-                            <Button Content="Clear ETABS Selection" Style="{StaticResource SmallButtonStyle}"
-                                    Margin="0,0,6,0" Command="{Binding ClearSelectionCommand}"/>
-                            <Button Content="Read Selected Columns" Style="{StaticResource PrimaryButtonStyle}"
-                                    Command="{Binding ReadSelectedColumnsCommand}"/>
-                        </StackPanel>
-                        <DataGrid Grid.Row="2" ItemsSource="{Binding SelectedColumns}" AutoGenerateColumns="False"
-                                  IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False"
-                                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Column Name" Binding="{Binding FrameName}" Width="90"/>
-                                <DataGridTextColumn Header="Bottom Point" Binding="{Binding BottomPointName}" Width="85"/>
-                                <DataGridTextColumn Header="Top Point" Binding="{Binding TopPointName}" Width="85"/>
-                                <DataGridTextColumn Header="Story" Binding="{Binding StoryName}" Width="75"/>
-                                <DataGridTextColumn Header="X" Binding="{Binding X, StringFormat=G8}" Width="70"/>
-                                <DataGridTextColumn Header="Y" Binding="{Binding Y, StringFormat=G8}" Width="70"/>
-                                <DataGridTextColumn Header="Z" Binding="{Binding Z, StringFormat=G8}" Width="70"/>
-                                <DataGridTextColumn Header="Section Property" Binding="{Binding SectionProperty}" Width="105"/>
-                                <DataGridTextColumn Header="Validation Status" Binding="{Binding ValidationStatus}" Width="90"/>
-                                <DataGridTextColumn Header="Validation Message" Binding="{Binding ValidationMessage}" Width="240"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </Border>
-            </Grid>
+                <!-- ── Drop Parameters ────────────────────────────────── -->
+                <TextBlock Grid.Row="10"
+                           Text="Drop Parameters"
+                           Style="{StaticResource SectionHeadingTextStyle}"/>
 
-            <Border Grid.Column="2" Style="{StaticResource CompactCardBorderStyle}">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel>
-                        <TextBlock Text="Drop Parameters" Style="{StaticResource SectionHeadingTextStyle}"/>
-                        <Grid Margin="0,8,0,0">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="145"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="Drop Property" VerticalAlignment="Center"/>
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding DropProperties}" SelectedItem="{Binding DropProperty}" MinHeight="26"/>
-                            <TextBlock Grid.Row="1" Text="Drop Size X" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding DropSizeXText, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock Grid.Row="2" Text="Drop Size Y" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding DropSizeYText, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock Grid.Row="3" Text="Rotation Mode" VerticalAlignment="Center"/>
-                            <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding RotationModes}" SelectedItem="{Binding SelectedRotationMode}" MinHeight="26"/>
-                            <TextBlock Grid.Row="4" Text="User-Defined Angle" VerticalAlignment="Center"
-                                       Visibility="{Binding IsUserDefinedRotation, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding UserDefinedAngleText, UpdateSourceTrigger=PropertyChanged}"
-                                     Visibility="{Binding IsUserDefinedRotation, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <TextBlock Grid.Row="5" Text="Geometry Tolerance" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding GeometryToleranceText, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock Grid.Row="6" Text="Elevation Tolerance" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding ElevationToleranceText, UpdateSourceTrigger=PropertyChanged}"/>
-                            <TextBlock Grid.Row="7" Text="Minimum Polygon Area" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding MinimumPolygonAreaText, UpdateSourceTrigger=PropertyChanged}"/>
-                        </Grid>
-
-                        <Separator Margin="0,12"/>
-                        <TextBlock Text="Preservation Options" Style="{StaticResource SectionHeadingTextStyle}"/>
-                        <CheckBox Content="Preserve Direct Area Loads" IsChecked="{Binding PreserveDirectAreaLoads}" Margin="0,6,0,0"/>
-                        <CheckBox Content="Preserve Shell Uniform Load Set Assignments" IsChecked="{Binding PreserveShellUniformLoadSetAssignments}"/>
-                        <CheckBox Content="Preserve Local Axes" IsChecked="{Binding PreserveLocalAxes}"/>
-                        <CheckBox Content="Preserve Local 3 Orientation" IsChecked="{Binding PreserveLocal3Orientation}"/>
-                        <CheckBox Content="Preserve Diaphragm" IsChecked="{Binding PreserveDiaphragm}"/>
-                        <CheckBox Content="Preserve Mesh Assignments" IsChecked="{Binding PreserveMeshAssignments}"/>
-                        <CheckBox Content="Preserve Area Modifiers" IsChecked="{Binding PreserveAreaModifiers}"/>
-                        <CheckBox Content="Preserve Group Assignments" IsChecked="{Binding PreserveGroupAssignments}"/>
-                        <CheckBox Content="Preserve Pier and Spandrel Labels" IsChecked="{Binding PreservePierAndSpandrelLabels}"/>
-                        <CheckBox Content="Save ETABS Backup Before Apply" IsChecked="{Binding SaveEtabsBackupBeforeApply}"/>
-                        <CheckBox Content="Merge Adjacent Regions Only When Assignment Signatures Match"
-                                  IsChecked="{Binding MergeAdjacentRegionsOnlyWhenAssignmentSignaturesMatch}"/>
-                        <CheckBox Content="Verify Assignments After Apply" IsChecked="{Binding VerifyAssignmentsAfterApply}"/>
-                    </StackPanel>
-                </ScrollViewer>
-            </Border>
-
-            <Border Grid.Column="4" Style="{StaticResource CompactCardBorderStyle}">
-                <Grid>
+                <Grid Grid.Row="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="8"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="8"/>
+                        <RowDefinition Height="6"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="6"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="6"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="6"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="6"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="Preview" Style="{StaticResource SectionHeadingTextStyle}"/>
-                    <Border Grid.Row="2" BorderBrush="{StaticResource BorderBrush.Light}" BorderThickness="1" Background="White">
-                        <views:DropPanelPreviewCanvas Plan="{Binding PreviewPlan}"/>
-                    </Border>
-                    <TextBlock Grid.Row="4" Text="{Binding PreviewSummary}" TextWrapping="Wrap"
-                               Style="{StaticResource MutedTextStyle}"/>
-                    <TextBlock Grid.Row="5" Text="{Binding ValidationSummary}" TextWrapping="Wrap"
-                               Foreground="#B42318" Margin="0,4,0,0"/>
-                </Grid>
-            </Border>
-        </Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="55"/>
+                    </Grid.ColumnDefinitions>
 
-        <Grid Grid.Row="4">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal">
-                <Button Content="Preview" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding PreviewCommand}" Margin="0,0,6,0"/>
-                <Button Content="Highlight Affected Areas" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding HighlightAffectedAreasCommand}" Margin="0,0,6,0"/>
-                <Button Content="Apply to ETABS" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding ApplyCommand}" Margin="0,0,6,0"/>
-                <Button Content="Rollback" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding RollbackCommand}" Margin="0,0,6,0"/>
-                <Button Content="Export Log" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding ExportLogCommand}"/>
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Content="Cancel" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding CancelCommand}" Margin="0,0,6,0"/>
-                <Button Content="Close" Style="{StaticResource SecondaryButtonStyle}" Command="{Binding CloseCommand}"/>
-            </StackPanel>
-        </Grid>
+                    <!-- Unit System -->
+                    <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Unit System"
+                               Style="{StaticResource LabelTextStyle}"/>
+                    <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                              ItemsSource="{Binding UnitSystems}"
+                              DisplayMemberPath="DisplayName"
+                              SelectedItem="{Binding SelectedUnitSystem, Mode=TwoWay}"
+                              Height="26"
+                              VerticalContentAlignment="Center"/>
+
+                    <!-- Drop Thickness -->
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="Drop Thickness"
+                               Style="{StaticResource LabelTextStyle}"/>
+                    <TextBox x:Name="DropThicknessTextBox"
+                             Grid.Row="2" Grid.Column="1"
+                             Text="{Binding DropThicknessText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             HorizontalContentAlignment="Right"/>
+                    <TextBlock Grid.Row="2" Grid.Column="3"
+                               Text="{Binding SelectedUnitSystem.LengthUnitText}"
+                               Style="{StaticResource BodyTextStyle}"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Drop Width -->
+                    <TextBlock Grid.Row="4" Grid.Column="0"
+                               Text="Drop Width"
+                               Style="{StaticResource LabelTextStyle}"/>
+                    <TextBox Grid.Row="4" Grid.Column="1"
+                             Text="{Binding DropWidthText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             HorizontalContentAlignment="Right"/>
+                    <TextBlock Grid.Row="4" Grid.Column="3"
+                               Text="{Binding SelectedUnitSystem.LengthUnitText}"
+                               Style="{StaticResource BodyTextStyle}"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Drop Length -->
+                    <TextBlock Grid.Row="6" Grid.Column="0"
+                               Text="Drop Length"
+                               Style="{StaticResource LabelTextStyle}"/>
+                    <TextBox Grid.Row="6" Grid.Column="1"
+                             Text="{Binding DropLengthText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             HorizontalContentAlignment="Right"/>
+                    <TextBlock Grid.Row="6" Grid.Column="3"
+                               Text="{Binding SelectedUnitSystem.LengthUnitText}"
+                               Style="{StaticResource BodyTextStyle}"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Material -->
+                    <TextBlock Grid.Row="8" Grid.Column="0"
+                               Text="Material"
+                               Style="{StaticResource LabelTextStyle}"/>
+                    <ComboBox Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="3"
+                              ItemsSource="{Binding ConcreteMaterials}"
+                              SelectedItem="{Binding SelectedMaterial, Mode=TwoWay}"
+                              Height="26"
+                              VerticalContentAlignment="Center"/>
+
+                    <!-- Property Name -->
+                    <TextBlock Grid.Row="10" Grid.Column="0"
+                               Text="Property Name"
+                               Style="{StaticResource LabelTextStyle}"/>
+                    <TextBox Grid.Row="10" Grid.Column="1" Grid.ColumnSpan="3"
+                             Text="{Binding PropertyNamePreview, Mode=OneWay}"
+                             IsReadOnly="True"
+                             IsTabStop="False"
+                             Background="{StaticResource PanelBackgroundBrush}"/>
+                </Grid>
+
+                <!-- ── Orientation ─────────────────────────────────────── -->
+                <TextBlock Grid.Row="14"
+                           Text="Orientation"
+                           Style="{StaticResource SectionHeadingTextStyle}"/>
+
+                <Grid Grid.Row="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="6"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="140"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="55"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4"
+                                Orientation="Horizontal">
+                        <RadioButton Content="Align with Column Axes"
+                                     GroupName="DropOrientation"
+                                     IsChecked="{Binding IsAlignWithColumnAxes, Mode=TwoWay}"
+                                     FontFamily="{DynamicResource FontFamily.Primary}"
+                                     FontSize="{DynamicResource FontSize.Body}"
+                                     Foreground="{DynamicResource TextBrush.Primary}"/>
+                        <RadioButton Content="Specified Rotation"
+                                     GroupName="DropOrientation"
+                                     Margin="24,0,0,0"
+                                     IsChecked="{Binding IsSpecifiedRotation, Mode=TwoWay}"
+                                     FontFamily="{DynamicResource FontFamily.Primary}"
+                                     FontSize="{DynamicResource FontSize.Body}"
+                                     Foreground="{DynamicResource TextBrush.Primary}"/>
+                    </StackPanel>
+
+                    <!-- Rotation Angle -->
+                    <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="Rotation Angle">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource LabelTextStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSpecifiedRotation}" Value="False">
+                                        <Setter Property="Foreground" Value="#98A2B3" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBox Grid.Row="2" Grid.Column="1"
+                             IsEnabled="{Binding IsSpecifiedRotation}"
+                             Text="{Binding RotationAngleText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             HorizontalContentAlignment="Right"/>
+                    <TextBlock Grid.Row="2" Grid.Column="3"
+                               Text="deg">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource BodyTextStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSpecifiedRotation}" Value="False">
+                                        <Setter Property="Foreground" Value="#98A2B3" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <!-- ── Feedback ────────────────────────────────────────── -->
+                <StackPanel Grid.Row="18">
+                    <TextBlock Text="{Binding ValidationMessage}"
+                               Foreground="#B42318"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,4"/>
+                    <TextBlock Text="{Binding StatusMessage}"
+                               Style="{StaticResource MutedTextStyle}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+
+                <!-- ── Action buttons ──────────────────────────────────── -->
+                <Grid Grid.Row="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Content="Export Log"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            MinWidth="92"
+                            HorizontalAlignment="Left"
+                            Command="{Binding ExportLogCommand}"/>
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal">
+                        <Button Content="Create Drop"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                MinWidth="110"
+                                Margin="{StaticResource Gap.Right}"
+                                Command="{Binding ApplyCommand}"/>
+                        <Button Content="Close"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                MinWidth="76"
+                                Command="{Binding CloseCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

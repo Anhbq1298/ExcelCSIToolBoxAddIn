@@ -50,17 +50,40 @@ namespace ExcelCSIToolBoxAddIn
 
                 try
                 {
-                    if (Globals.ExcelCSIToolBoxAddin == null ||
-                        Globals.ExcelCSIToolBoxAddin.Application == null ||
-                        Globals.ExcelCSIToolBoxAddin.Application.Workbooks.Count == 0)
+                    if (_startupPaneAttempts > 60)
                     {
-                        LogStartup("Waiting for an Excel workbook before opening ETABS Toolbox pane. Attempt " + _startupPaneAttempts + ".");
+                        LogStartup("Startup timer timed out after 60 seconds without active workbook/window.");
+                        if (_startupPaneTimer != null)
+                        {
+                            _startupPaneTimer.Stop();
+                            _startupPaneTimer.Dispose();
+                            _startupPaneTimer = null;
+                        }
                         return;
                     }
 
-                    _startupPaneTimer.Stop();
-                    _startupPaneTimer.Dispose();
-                    _startupPaneTimer = null;
+                    if (Globals.ExcelCSIToolBoxAddin == null ||
+                        Globals.ExcelCSIToolBoxAddin.Application == null ||
+                        Globals.ExcelCSIToolBoxAddin.Application.ActiveWindow == null ||
+                        Globals.ExcelCSIToolBoxAddin.Application.Workbooks.Count == 0)
+                    {
+                        LogStartup("Waiting for an Excel window and workbook before opening ETABS Toolbox pane. Attempt " + _startupPaneAttempts + ".");
+                        return;
+                    }
+
+                    // Enforce a minimum delay of 3 attempts (3 seconds) to ensure Excel window is fully painted and stable.
+                    if (_startupPaneAttempts < 3)
+                    {
+                        LogStartup("Waiting for Excel startup stabilization before opening ETABS Toolbox pane. Attempt " + _startupPaneAttempts + ".");
+                        return;
+                    }
+
+                    if (_startupPaneTimer != null)
+                    {
+                        _startupPaneTimer.Stop();
+                        _startupPaneTimer.Dispose();
+                        _startupPaneTimer = null;
+                    }
 
                     LogStartup("Opening ETABS Toolbox pane.");
                     WindowManager.ShowEtabsWindow();

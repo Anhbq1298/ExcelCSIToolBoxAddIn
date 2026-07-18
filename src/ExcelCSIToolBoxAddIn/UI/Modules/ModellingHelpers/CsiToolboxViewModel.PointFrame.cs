@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using ExcelCSIToolBox.Core.Abstractions.CSI;
+using ExcelCSIToolBox.Core.Common.Results;
+using ExcelCSIToolBoxAddIn.UI.Views;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -43,6 +47,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 
         private void CreateShellAreasFromSelectedFrames()
         {
+            if (!TryPickShellBoundaryFramesInteractively())
+            {
+                return;
+            }
+
             var propertyName = PromptForShellPropertyName();
             if (propertyName == null)
             {
@@ -50,6 +59,63 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             ShowOperationResult(_useCases.CreateShellAreasFromSelectedFrames.Execute(propertyName));
+        }
+
+        private bool TryPickShellBoundaryFramesInteractively()
+        {
+            OperationResult clearResult = _csiConnectionService.ClearSelection();
+            if (!clearResult.IsSuccess)
+            {
+                ShowWarning(clearResult.Message);
+                return false;
+            }
+
+            var window = new InteractiveSelectionWindow(
+                "Create Shell Area",
+                "Select the frame boundary objects in ETABS, then click Create Shell.",
+                "Waiting for at least three frame objects...",
+                "Select frame objects only.",
+                "Selected objects must be frame objects.",
+                "Frame",
+                () => _csiConnectionService.GetSelectedObjectsFromActiveModel(),
+                true,
+                "Create Shell",
+                3,
+                "{0} frame object(s) selected. Click Create Shell to continue.",
+                "Only frame objects can be used for shell area creation.");
+
+            Window owner = GetActiveOwnerWindow();
+            if (owner != null && !ReferenceEquals(owner, window))
+            {
+                window.Owner = owner;
+                window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            }
+
+            ActivateConnectedCsiWindow();
+            bool? result = window.ShowDialog();
+            return result == true &&
+                   window.SelectedObjects != null &&
+                   window.SelectedObjects.Count >= 3 &&
+                   AllSelectedObjectsAreFrames(window.SelectedObjects);
+        }
+
+        private static bool AllSelectedObjectsAreFrames(IReadOnlyList<CsiSelectedObjectDto> selectedObjects)
+        {
+            if (selectedObjects == null || selectedObjects.Count == 0)
+            {
+                return false;
+            }
+
+            foreach (CsiSelectedObjectDto selectedObject in selectedObjects)
+            {
+                if (selectedObject == null ||
+                    !string.Equals(selectedObject.ObjectType, "Frame", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static string PromptForShellPropertyName()

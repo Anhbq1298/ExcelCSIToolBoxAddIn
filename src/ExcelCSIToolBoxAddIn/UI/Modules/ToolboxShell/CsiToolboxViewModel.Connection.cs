@@ -83,6 +83,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 OpenCreateArrayPerpendicularToPathWindowCommand,
                 OpenArrayBetweenTwoLinesWindowCommand,
                 OpenQuickCreatePileCapWindowCommand,
+                OpenDropPanelWindowCommand,
                 PickPoint1Command,
                 PickPoint2Command,
                 PickReferenceFrameCommand,
