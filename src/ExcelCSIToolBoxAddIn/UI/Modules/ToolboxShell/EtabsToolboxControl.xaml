@@ -1029,6 +1029,17 @@
                                                 MinHeight="44"
                                                 Margin="0,8,0,0"
                                                 HorizontalAlignment="Stretch"
+                                                Command="{Binding OpenDropPanelWindowCommand}"
+                                                ToolTip="Create ETABS drop panels while preserving slab assignments."
+                                                ToolTipService.ShowOnDisabled="True">
+                                            <TextBlock Text="Drop Panel" TextWrapping="Wrap"/>
+                                        </Button>
+                                        <Button Style="{StaticResource ToolButtonStyle}"
+                                                MinWidth="180"
+                                                MaxWidth="320"
+                                                MinHeight="44"
+                                                Margin="0,8,0,0"
+                                                HorizontalAlignment="Stretch"
                                                 Command="{Binding CreateShellAreasFromSelectedFramesCommand}"
                                                 ToolTip="Create shell area objects from the currently selected frame boundary."
                                                 ToolTipService.ShowOnDisabled="True">

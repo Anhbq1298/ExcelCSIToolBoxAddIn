@@ -31,6 +31,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static GetStoryResultsWindow _storyMaxOverAverageDriftsWindow;
         private static GetMassSummaryByStoryWindow _massSummaryByStoryWindow;
         private static AboutWindow _aboutWindow;
+        private static DropPanelWindow _dropPanelWindow;
 
         internal static void Configure(
             ICSISapModelConnectionService etabsConnectionService,
@@ -168,6 +169,37 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             var window = new AboutWindow();
             window.Closed += delegate { _aboutWindow = null; };
             _aboutWindow = window;
+            ModelessWpfWindowService.Show(window);
+        }
+
+        internal static void ShowDropPanelWindow()
+        {
+            EnsureConfigured(_etabsConnectionService);
+            if (_dropPanelWindow != null)
+            {
+                ModelessWpfWindowService.Show(_dropPanelWindow);
+                return;
+            }
+
+            var dropPanelService = AppServiceFactory.CreateDropPanelService(_etabsConnectionService);
+            var settingsStore = new DropPanelSettingsStore();
+            var logExporter = new DropPanelExcelLogExporter();
+            DropPanelWindow window = null;
+            var viewModel = new DropPanelViewModel(
+                _etabsConnectionService,
+                dropPanelService,
+                settingsStore,
+                logExporter,
+                delegate
+                {
+                    if (window != null)
+                    {
+                        window.Close();
+                    }
+                });
+            window = new DropPanelWindow(viewModel);
+            window.Closed += delegate { _dropPanelWindow = null; };
+            _dropPanelWindow = window;
             ModelessWpfWindowService.Show(window);
         }
 

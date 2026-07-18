@@ -22,6 +22,18 @@ namespace ExcelCSIToolBoxAddIn.Properties {
                 return defaultInstance;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string DropPanelSettingsXml {
+            get {
+                return ((string)(this["DropPanelSettingsXml"]));
+            }
+            set {
+                this["DropPanelSettingsXml"] = value;
+            }
+        }
     }
 }
 

@@ -5,6 +5,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Modules.ModellingHelpers
         public const string OpenCreateArrayPerpendicularToPath = "OpenCreateArrayPerpendicularToPath";
         public const string OpenArrayBetweenTwoLines = "OpenArrayBetweenTwoLines";
         public const string OpenQuickCreatePileCap = "OpenQuickCreatePileCap";
+        public const string OpenDropPanel = "OpenDropPanel";
         public const string PickPoint1 = "PickPoint1";
         public const string PickPoint2 = "PickPoint2";
         public const string PickReferenceFrame = "PickReferenceFrame";

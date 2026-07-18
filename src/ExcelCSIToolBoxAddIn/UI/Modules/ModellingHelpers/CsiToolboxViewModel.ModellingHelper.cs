@@ -13,6 +13,7 @@ using ExcelCSIToolBox.Core.Contracts.CSI.FrameObject;
 using ExcelCSIToolBox.Core.Contracts.CSI.PointObject;
 using ExcelCSIToolBoxAddIn.AddIn.Modules.ModellingHelpers;
 using ExcelCSIToolBoxAddIn.UI.Views;
+using ExcelCSIToolBoxAddIn.AddIn;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -69,6 +70,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 .Register(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath, OpenCreateArrayPerpendicularToPathWindow)
                 .Register(ModellingHelperActionKeys.OpenArrayBetweenTwoLines, OpenArrayBetweenTwoLinesWindow)
                 .Register(ModellingHelperActionKeys.OpenQuickCreatePileCap, OpenQuickCreatePileCapWindow)
+                .Register(ModellingHelperActionKeys.OpenDropPanel, OpenDropPanelWindow)
                 .Register(ModellingHelperActionKeys.PickPoint1, PickPoint1)
                 .Register(ModellingHelperActionKeys.PickPoint2, PickPoint2)
                 .Register(ModellingHelperActionKeys.PickReferenceFrame, PickReferenceFrame)
@@ -80,6 +82,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             OpenCreateArrayPerpendicularToPathWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenCreateArrayPerpendicularToPath), CanExecuteCsiAction);
             OpenArrayBetweenTwoLinesWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenArrayBetweenTwoLines), CanExecuteCsiAction);
             OpenQuickCreatePileCapWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenQuickCreatePileCap), CanExecuteCsiAction);
+            OpenDropPanelWindowCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.OpenDropPanel), CanExecuteCsiAction);
             PickPoint1Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint1), CanExecuteCsiAction);
             PickPoint2Command = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickPoint2), CanExecuteCsiAction);
             PickReferenceFrameCommand = new RelayCommand(() => ExecuteModellingHelperAction(ModellingHelperActionKeys.PickReferenceFrame), CanExecuteCsiAction);
@@ -402,6 +405,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand OpenCreateArrayPerpendicularToPathWindowCommand { get; private set; }
         public ICommand OpenArrayBetweenTwoLinesWindowCommand { get; private set; }
         public ICommand OpenQuickCreatePileCapWindowCommand { get; private set; }
+        public ICommand OpenDropPanelWindowCommand { get; private set; }
         public ICommand PickPoint1Command { get; private set; }
         public ICommand PickPoint2Command { get; private set; }
         public ICommand PickReferenceFrameCommand { get; private set; }
@@ -410,6 +414,11 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
         public ICommand CreateFramesCommand { get; private set; }
         public ICommand CreateArrayBetweenTwoLinesFramesCommand { get; private set; }
         public ICommand CloseWindowCommand { get; private set; }
+
+        private void OpenDropPanelWindow()
+        {
+            WindowManager.ShowDropPanelWindow();
+        }
 
         private void OpenCreateArrayPerpendicularToPathWindow()
         {

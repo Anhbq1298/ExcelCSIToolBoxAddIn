@@ -16,6 +16,7 @@ using ExcelCSIToolBox.Infrastructure.CSI.Etabs.DatabaseTables.MiscellaneousData;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Loadings.ShellUniformLoadSets;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Units;
 using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Selection;
+using ExcelCSIToolBox.Infrastructure.CSI.Etabs.Modelling.DropPanels;
 using ExcelCSIToolBox.Infrastructure.Excel.Interop.Writing;
 
 namespace ExcelCSIToolBoxAddIn.AddIn.Composition
@@ -99,6 +100,16 @@ namespace ExcelCSIToolBoxAddIn.AddIn.Composition
         {
             IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
             return new EtabsShellUniformLoadSetSelectionService(connectionService, CsiApiDispatcher);
+        }
+
+        public static IDropPanelEtabsService CreateDropPanelService(
+            ICSISapModelConnectionService csiConnectionService)
+        {
+            IEtabsConnectionService connectionService = new EtabsConnectionService(csiConnectionService);
+            return new EtabsDropPanelService(
+                connectionService,
+                CsiApiDispatcher,
+                new CsiOperationLogger());
         }
     }
 }

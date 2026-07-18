@@ -303,6 +303,10 @@
     <Compile Include="UI\Modules\ModellingHelpers\QuickCreatePileCapWindowService.cs" />
     <Compile Include="UI\Modules\ModellingHelpers\PileCapArrangementPreviewControl.cs" />
     <Compile Include="UI\Modules\ModellingHelpers\PileCapPreviewCanvas.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\DropPanelViewModel.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\DropPanelSettingsStore.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\DropPanelExcelLogExporter.cs" />
+    <Compile Include="UI\Modules\ModellingHelpers\DropPanelPreviewCanvas.cs" />
     <Compile Include="UI\Modules\AnalysisResults\AnalysisResultsViewModel.cs" />
     <Compile Include="UI\Modules\ToolboxShell\CsiRunningInstanceViewModel.cs" />
     <Compile Include="UI\Modules\ToolboxShell\EtabsUnitSystem.cs" />
@@ -386,6 +390,10 @@
       <DependentUpon>QuickCreatePileCapWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\Modules\ModellingHelpers\DropPanelWindow.xaml.cs">
+      <DependentUpon>DropPanelWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="UI\Modules\ModellingHelpers\InteractiveSelectionWindow.xaml.cs">
       <DependentUpon>InteractiveSelectionWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -457,6 +465,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Modules\ModellingHelpers\QuickCreatePileCapWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Modules\ModellingHelpers\DropPanelWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

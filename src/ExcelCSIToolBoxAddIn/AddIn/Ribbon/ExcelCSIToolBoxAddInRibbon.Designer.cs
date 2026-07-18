@@ -46,6 +46,8 @@ namespace ExcelCSIToolBoxAddIn
             this.buttonStoryMaxOverAverageDisplacements = this.Factory.CreateRibbonButton();
             this.buttonStoryMaxOverAverageDrifts = this.Factory.CreateRibbonButton();
             this.buttonMassSummaryByStory = this.Factory.CreateRibbonButton();
+            this.groupModellingHelpers = this.Factory.CreateRibbonGroup();
+            this.buttonDropPanel = this.Factory.CreateRibbonButton();
             this.groupAiAssistant = this.Factory.CreateRibbonGroup();
             this.buttonAiAgent = this.Factory.CreateRibbonButton();
             this.buttonRefreshPlugin = this.Factory.CreateRibbonButton();
@@ -54,6 +56,7 @@ namespace ExcelCSIToolBoxAddIn
             this.tabExcelCSIToolBox.SuspendLayout();
             this.group1.SuspendLayout();
             this.groupEtabsPostprocessing.SuspendLayout();
+            this.groupModellingHelpers.SuspendLayout();
             this.groupAiAssistant.SuspendLayout();
             this.groupSystem.SuspendLayout();
             this.SuspendLayout();
@@ -62,6 +65,7 @@ namespace ExcelCSIToolBoxAddIn
             // 
             this.tabExcelCSIToolBox.Groups.Add(this.group1);
             this.tabExcelCSIToolBox.Groups.Add(this.groupEtabsPostprocessing);
+            this.tabExcelCSIToolBox.Groups.Add(this.groupModellingHelpers);
             this.tabExcelCSIToolBox.Groups.Add(this.groupAiAssistant);
             this.tabExcelCSIToolBox.Groups.Add(this.groupSystem);
             this.tabExcelCSIToolBox.Label = "ExcelCSIToolBox";
@@ -178,6 +182,23 @@ namespace ExcelCSIToolBoxAddIn
             this.buttonMassSummaryByStory.ShowImage = true;
             this.buttonMassSummaryByStory.SuperTip = "Extract ETABS Mass Summary by Story to Excel.";
             this.buttonMassSummaryByStory.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonMassSummaryByStory_Click);
+            //
+            // groupModellingHelpers
+            //
+            this.groupModellingHelpers.Items.Add(this.buttonDropPanel);
+            this.groupModellingHelpers.Label = "Modelling Helpers";
+            this.groupModellingHelpers.Name = "groupModellingHelpers";
+            //
+            // buttonDropPanel
+            //
+            this.buttonDropPanel.ControlSize = Microsoft.Office.Core.RibbonControlSize.RibbonControlSizeLarge;
+            this.buttonDropPanel.Label = "Drop Panel";
+            this.buttonDropPanel.Name = "buttonDropPanel";
+            this.buttonDropPanel.OfficeImageId = "ObjectBringForward";
+            this.buttonDropPanel.ScreenTip = "Drop Panel";
+            this.buttonDropPanel.ShowImage = true;
+            this.buttonDropPanel.SuperTip = "Create ETABS drop panels while preserving slab assignments.";
+            this.buttonDropPanel.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonDropPanel_Click);
             // 
             // groupAiAssistant
             // 
@@ -238,6 +259,8 @@ namespace ExcelCSIToolBoxAddIn
             this.group1.PerformLayout();
             this.groupEtabsPostprocessing.ResumeLayout(false);
             this.groupEtabsPostprocessing.PerformLayout();
+            this.groupModellingHelpers.ResumeLayout(false);
+            this.groupModellingHelpers.PerformLayout();
             this.groupAiAssistant.ResumeLayout(false);
             this.groupAiAssistant.PerformLayout();
             this.groupSystem.ResumeLayout(false);
@@ -252,6 +275,7 @@ namespace ExcelCSIToolBoxAddIn
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupEtabsPostprocessing;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupAiAssistant;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupModellingHelpers;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonEtabs;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonGetBaseReactions;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonModalMassParticipationRatios;
@@ -265,6 +289,7 @@ namespace ExcelCSIToolBoxAddIn
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupSystem;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAbout;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonSap2000;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonDropPanel;
     }
 
     partial class ThisRibbonCollection

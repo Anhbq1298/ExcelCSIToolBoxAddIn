@@ -10,6 +10,7 @@ The add-in adds an Excel ribbon tab with tool windows for ETABS and SAP2000, all
 - Launch ETABS/SAP2000 toolboxes directly from the Excel ribbon.
 - Import/export result tables such as base reactions, modal mass participation ratios, story forces, story drifts, and mass summaries by story.
 - Create and update model objects from Excel data.
+- Create ETABS drop panels from selected column heads with batch geometry preview, assignment preservation, verification, backup, rollback, and Excel logging. See [Drop Panel Modelling Helper](docs/drop-panel.md).
 - WPF-based tool windows following MVVM patterns.
 - Experimental AI/MCP layer for assistant-style interactions with models.
 
