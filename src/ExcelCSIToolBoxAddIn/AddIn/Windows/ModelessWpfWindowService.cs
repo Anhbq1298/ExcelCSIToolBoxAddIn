@@ -73,6 +73,30 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             }
         }
 
+        private static HookProc _hookProc;
+        private static IntPtr _hookHandle = IntPtr.Zero;
+
+        [DllImport("user32.dll")]
+        private static extern bool TranslateMessage(ref MSG lpMsg);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr DispatchMessage(ref MSG lpMsg);
+
+        private delegate IntPtr HookProc(int nCode, IntPtr wParam, ref MSG lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, HookProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, ref MSG lParam);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern uint GetCurrentThreadId();
+
         private static void EnsureConfigured(Window window)
         {
             lock (ConfigurationLock)
@@ -87,7 +111,8 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
                 if (ConfiguredWindows.Count == 0)
                 {
-                    ComponentDispatcher.ThreadFilterMessage += OnThreadFilterMessage;
+                    _hookProc = GetMessageHookProc;
+                    _hookHandle = SetWindowsHookEx(3, _hookProc, IntPtr.Zero, GetCurrentThreadId());
                 }
 
                 window.Closed += OnWindowClosed;
@@ -110,64 +135,60 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
                 if (ConfiguredWindows.Count == 0)
                 {
-                    ComponentDispatcher.ThreadFilterMessage -= OnThreadFilterMessage;
+                    if (_hookHandle != IntPtr.Zero)
+                    {
+                        UnhookWindowsHookEx(_hookHandle);
+                        _hookHandle = IntPtr.Zero;
+                        _hookProc = null;
+                    }
                 }
             }
         }
 
-        [DllImport("user32.dll")]
-        private static extern bool TranslateMessage(ref MSG lpMsg);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr DispatchMessage(ref MSG lpMsg);
-
-        private static void OnThreadFilterMessage(ref MSG msg, ref bool handled)
+        private static IntPtr GetMessageHookProc(int code, IntPtr wParam, ref MSG msg)
         {
-            if (handled)
+            if (code >= 0)
             {
-                return;
-            }
+                // Keyboard messages (WM_KEYFIRST to WM_KEYLAST)
+                const int WM_KEYFIRST = 0x0100;
+                const int WM_KEYLAST = 0x0109;
 
-            // Keyboard messages (WM_KEYFIRST to WM_KEYLAST)
-            const int WM_KEYFIRST = 0x0100;
-            const int WM_KEYLAST = 0x0109;
-
-            if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
-            {
-                lock (ConfigurationLock)
+                if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
                 {
-                    foreach (Window window in ConfiguredWindows)
+                    lock (ConfigurationLock)
                     {
-                        try
+                        foreach (Window window in ConfiguredWindows)
                         {
-                            IntPtr windowHandle = new WindowInteropHelper(window).Handle;
-                            if (windowHandle != IntPtr.Zero)
+                            try
                             {
-                                bool isTargetedToWpf = msg.hwnd == windowHandle || IsChild(windowHandle, msg.hwnd);
-                                if (isTargetedToWpf || window.IsActive || window.IsKeyboardFocusWithin)
+                                IntPtr windowHandle = new WindowInteropHelper(window).Handle;
+                                if (windowHandle != IntPtr.Zero)
                                 {
-                                    // Call ComponentDispatcher.RaiseThreadMessage to let WPF controls process key events (Tab, Arrows, typing)
-                                    handled = ComponentDispatcher.RaiseThreadMessage(ref msg);
-                                    if (!handled && isTargetedToWpf)
+                                    bool isTargetedToWpf = msg.hwnd == windowHandle || IsChild(windowHandle, msg.hwnd);
+                                    if (isTargetedToWpf)
                                     {
-                                        TranslateMessage(ref msg);
-                                        DispatchMessage(ref msg);
-                                        handled = true;
-                                    }
-                                    if (handled)
-                                    {
-                                        return;
+                                        bool handled = ComponentDispatcher.RaiseThreadMessage(ref msg);
+                                        if (!handled)
+                                        {
+                                            TranslateMessage(ref msg);
+                                            DispatchMessage(ref msg);
+                                        }
+
+                                        // Set to WM_NULL to discard from Excel's message loop
+                                        msg.message = 0x0000;
+                                        break;
                                     }
                                 }
                             }
-                        }
-                        catch
-                        {
-                            // Safeguard against disposed window states
+                            catch
+                            {
+                                // Safeguard against disposed states
+                            }
                         }
                     }
                 }
             }
+            return CallNextHookEx(_hookHandle, code, wParam, ref msg);
         }
 
         private static void AssignExcelOwner(Window window)
