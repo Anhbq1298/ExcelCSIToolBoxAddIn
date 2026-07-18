@@ -76,11 +76,17 @@ namespace ExcelCSIToolBoxAddIn.AddIn
         private static HookProc _hookProc;
         private static IntPtr _hookHandle = IntPtr.Zero;
 
+        [ThreadStatic]
+        private static bool _isProcessingHook;
+
         [DllImport("user32.dll")]
         private static extern bool TranslateMessage(ref MSG lpMsg);
 
         [DllImport("user32.dll")]
         private static extern IntPtr DispatchMessage(ref MSG lpMsg);
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr lpdwProcessId);
 
         private delegate IntPtr HookProc(int nCode, IntPtr wParam, ref MSG lParam);
 
@@ -147,45 +153,55 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
         private static IntPtr GetMessageHookProc(int code, IntPtr wParam, ref MSG msg)
         {
-            if (code >= 0)
+            if (code >= 0 && !_isProcessingHook)
             {
-                // Keyboard messages (WM_KEYFIRST to WM_KEYLAST)
-                const int WM_KEYFIRST = 0x0100;
-                const int WM_KEYLAST = 0x0109;
-
-                if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
+                _isProcessingHook = true;
+                try
                 {
-                    lock (ConfigurationLock)
-                    {
-                        foreach (Window window in ConfiguredWindows)
-                        {
-                            try
-                            {
-                                IntPtr windowHandle = new WindowInteropHelper(window).Handle;
-                                if (windowHandle != IntPtr.Zero)
-                                {
-                                    bool isTargetedToWpf = msg.hwnd == windowHandle || IsChild(windowHandle, msg.hwnd);
-                                    if (isTargetedToWpf)
-                                    {
-                                        bool handled = ComponentDispatcher.RaiseThreadMessage(ref msg);
-                                        if (!handled)
-                                        {
-                                            TranslateMessage(ref msg);
-                                            DispatchMessage(ref msg);
-                                        }
+                    // Keyboard messages (WM_KEYFIRST to WM_KEYLAST)
+                    const int WM_KEYFIRST = 0x0100;
+                    const int WM_KEYLAST = 0x0109;
 
-                                        // Set to WM_NULL to discard from Excel's message loop
-                                        msg.message = 0x0000;
-                                        break;
+                    if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
+                    {
+                        // Safely check if target window belongs to current thread before executing heavy operations or IsChild
+                        uint windowThreadId = GetWindowThreadProcessId(msg.hwnd, IntPtr.Zero);
+                        if (windowThreadId == GetCurrentThreadId())
+                        {
+                            foreach (Window window in ConfiguredWindows)
+                            {
+                                try
+                                {
+                                    IntPtr windowHandle = new WindowInteropHelper(window).Handle;
+                                    if (windowHandle != IntPtr.Zero)
+                                    {
+                                        bool isTargetedToWpf = msg.hwnd == windowHandle || IsChild(windowHandle, msg.hwnd);
+                                        if (isTargetedToWpf)
+                                        {
+                                            bool handled = ComponentDispatcher.RaiseThreadMessage(ref msg);
+                                            if (!handled)
+                                            {
+                                                TranslateMessage(ref msg);
+                                                DispatchMessage(ref msg);
+                                            }
+
+                                            // Set to WM_NULL to discard from Excel's message loop
+                                            msg.message = 0x0000;
+                                            break;
+                                        }
                                     }
                                 }
-                            }
-                            catch
-                            {
-                                // Safeguard against disposed states
+                                catch
+                                {
+                                    // Safeguard against disposed states
+                                }
                             }
                         }
                     }
+                }
+                finally
+                {
+                    _isProcessingHook = false;
                 }
             }
             return CallNextHookEx(_hookHandle, code, wParam, ref msg);

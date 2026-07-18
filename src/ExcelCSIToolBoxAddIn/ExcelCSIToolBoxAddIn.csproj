@@ -44,7 +44,7 @@
     <SupportUrl />
     <FriendlyName>ExcelCSIToolBoxAddIn</FriendlyName>
     <OfficeApplicationDescription />
-    <LoadBehavior>1</LoadBehavior>
+    <LoadBehavior>3</LoadBehavior>
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">
