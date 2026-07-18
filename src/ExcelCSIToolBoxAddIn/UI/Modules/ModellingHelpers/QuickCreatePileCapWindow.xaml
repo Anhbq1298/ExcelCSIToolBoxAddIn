@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:ExcelCSIToolBoxAddIn.UI.Views"
         Title="Quick Create Pile Cap and Pile"
-        Width="1080"
-        Height="720"
-        MinWidth="920"
+        Width="900"
+        Height="700"
+        MinWidth="820"
         MinHeight="620"
         WindowStartupLocation="CenterScreen"
         FontFamily="{DynamicResource FontFamily.Primary}"
@@ -112,14 +112,7 @@
                 </Grid>
 
                 <Grid Grid.Row="2">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.18*"/>
-                        <ColumnDefinition Width="12"/>
-                        <ColumnDefinition Width="0.82*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <ScrollViewer Grid.Column="0"
-                                  VerticalScrollBarVisibility="Auto"
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   HorizontalScrollBarVisibility="Disabled"
                                   CanContentScroll="False">
                         <StackPanel>
@@ -141,7 +134,7 @@
                                         <views:PileCapArrangementPreviewControl Grid.Row="0"
                                                                                 Height="96"
                                                                                 Geometry="{Binding MonoCardGeometry}"
-                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                PileDiameter="800"
                                                                                 BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
                                                                                 PileStroke="{StaticResource PileCircleStroke}"
                                                                                 CentrelineStroke="{StaticResource PileCentrelineStroke}"
@@ -169,7 +162,7 @@
                                         <views:PileCapArrangementPreviewControl Grid.Row="0"
                                                                                 Height="96"
                                                                                 Geometry="{Binding TwoPileCardGeometry}"
-                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                PileDiameter="800"
                                                                                 BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
                                                                                 PileStroke="{StaticResource PileCircleStroke}"
                                                                                 CentrelineStroke="{StaticResource PileCentrelineStroke}"
@@ -197,7 +190,7 @@
                                         <views:PileCapArrangementPreviewControl Grid.Row="0"
                                                                                 Height="96"
                                                                                 Geometry="{Binding ThreePileCardGeometry}"
-                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                PileDiameter="800"
                                                                                 BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
                                                                                 PileStroke="{StaticResource PileCircleStroke}"
                                                                                 CentrelineStroke="{StaticResource PileCentrelineStroke}"
@@ -225,7 +218,7 @@
                                         <views:PileCapArrangementPreviewControl Grid.Row="0"
                                                                                 Height="96"
                                                                                 Geometry="{Binding FourPileCardGeometry}"
-                                                                                PileDiameter="{Binding PreviewPileDiameter}"
+                                                                                PileDiameter="800"
                                                                                 BoundaryStroke="{StaticResource PileCapBoundaryStroke}"
                                                                                 PileStroke="{StaticResource PileCircleStroke}"
                                                                                 CentrelineStroke="{StaticResource PileCentrelineStroke}"
@@ -286,7 +279,7 @@
                                             <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Text="{Binding SpacingDescriptionText}" Style="{StaticResource MutedTextStyle}" Margin="0,4,0,0" Visibility="{Binding MonoSpacingVisibility}"/>
 
                                             <TextBlock Grid.Row="6" Text="Pile Spacing" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0" Visibility="{Binding SingleSpacingVisibility}"/>
-                                            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding PileSpacingText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right" Margin="0,6,0,0" Visibility="{Binding SingleSpacingVisibility}"/>
+                                            <TextBox x:Name="PileSpacingTextBox" Grid.Row="6" Grid.Column="1" Text="{Binding PileSpacingText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right" Margin="0,6,0,0" Visibility="{Binding SingleSpacingVisibility}" ToolTip="Click to switch to manual spacing." ToolTipService.ShowOnDisabled="True"/>
                                             <TextBlock Grid.Row="6" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0" Visibility="{Binding SingleSpacingVisibility}"/>
 
                                             <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="3" Visibility="{Binding FourSpacingVisibility}">
@@ -302,10 +295,10 @@
                                                         <RowDefinition Height="Auto"/>
                                                     </Grid.RowDefinitions>
                                                     <TextBlock Grid.Row="0" Text="Spacing X" Style="{StaticResource LabelTextStyle}"/>
-                                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding SpacingXText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right"/>
+                                                    <TextBox x:Name="SpacingXTextBox" Grid.Row="0" Grid.Column="1" Text="{Binding SpacingXText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right" ToolTip="Click to switch to manual spacing." ToolTipService.ShowOnDisabled="True"/>
                                                     <TextBlock Grid.Row="0" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,0,0,0"/>
                                                     <TextBlock Grid.Row="1" Text="Spacing Y" Style="{StaticResource LabelTextStyle}" Margin="0,6,0,0"/>
-                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SpacingYText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right" Margin="0,6,0,0"/>
+                                                    <TextBox x:Name="SpacingYTextBox" Grid.Row="1" Grid.Column="1" Text="{Binding SpacingYText, UpdateSourceTrigger=PropertyChanged, Delay=200}" IsEnabled="{Binding SpacingFieldsEnabled}" HorizontalContentAlignment="Right" Margin="0,6,0,0" ToolTip="Click to switch to manual spacing." ToolTipService.ShowOnDisabled="True"/>
                                                     <TextBlock Grid.Row="1" Grid.Column="2" Text="mm" Style="{StaticResource MutedTextStyle}" Margin="6,6,0,0"/>
                                                 </Grid>
                                             </StackPanel>
@@ -345,27 +338,8 @@
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                        </StackPanel>
-                    </ScrollViewer>
 
-                    <Border Grid.Column="2" Style="{StaticResource PreviewPanelBorderStyle}">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="5. Live Preview" Style="{StaticResource SectionHeadingTextStyle}" Margin="{StaticResource Gap.Card}"/>
-                            <views:PileCapPreviewCanvas Grid.Row="1"
-                                                        MinHeight="330"
-                                                        Geometry="{Binding PreviewGeometry}"
-                                                        PileDiameter="{Binding PreviewPileDiameter}"
-                                                        PileCapThickness="{Binding PreviewPileCapThickness}"
-                                                        EdgeDistance="{Binding PreviewEdgeDistance}"
-                                                        ShowDimensions="True"
-                                                        ShowMesh="False"
-                                                        ShowAxes="False"/>
-                            <StackPanel Grid.Row="2" Margin="0,10,0,0">
+                            <StackPanel Margin="0,10,0,0">
                                 <Border Background="#FFF8E1"
                                         BorderBrush="#E0C36A"
                                         BorderThickness="1"
@@ -381,14 +355,14 @@
                                         BorderThickness="1"
                                         CornerRadius="4"
                                         Padding="8"
-                                        MinHeight="72"
+                                        MinHeight="64"
                                         Margin="0,8,0,0">
                                     <TextBlock Text="{Binding StatusMessage}"
                                                TextWrapping="Wrap"/>
                                 </Border>
                             </StackPanel>
-                        </Grid>
-                    </Border>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
 
                 <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">

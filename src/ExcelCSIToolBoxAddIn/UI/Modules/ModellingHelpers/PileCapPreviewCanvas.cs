@@ -171,6 +171,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 DrawMesh(drawingContext, map);
             }
 
+            DrawThreePileEqualRadiusGuides(drawingContext, selectedPoint, piles, boundary, map);
+
             double pileRadius = Math.Max(3.0, Math.Min(18.0, PileDiameter * scale / 2.0));
             foreach (PileCapPoint2D pile in piles)
             {
@@ -195,6 +197,46 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 DrawDimensionLines(drawingContext, geometryBounds, piles, map);
                 DrawDimensionReadout(drawingContext);
             }
+        }
+
+        private void DrawThreePileEqualRadiusGuides(
+            DrawingContext drawingContext,
+            PileCapPoint2D selectedPoint,
+            IReadOnlyList<PileCapPoint2D> piles,
+            IReadOnlyList<PileCapPoint2D> boundary,
+            Func<PileCapPoint2D, Point> map)
+        {
+            if (Geometry.ArrangementType != PileCapArrangementType.ThreePile ||
+                piles == null ||
+                piles.Count < 3 ||
+                boundary == null ||
+                boundary.Count < 3)
+            {
+                return;
+            }
+
+            Point center = map(selectedPoint);
+            Point firstPile = map(piles[0]);
+            double radius = (firstPile - center).Length;
+            if (radius <= 0)
+            {
+                return;
+            }
+
+            var guideBrush = new SolidColorBrush(Color.FromRgb(37, 99, 235));
+            guideBrush.Opacity = 0.36;
+            var guidePen = new Pen(guideBrush, 1.0)
+            {
+                DashStyle = new DashStyle(new[] { 5.0, 4.0 }, 0)
+            };
+
+            drawingContext.PushClip(CreatePolygonGeometry(boundary, map, true));
+            drawingContext.DrawEllipse(null, guidePen, center, radius, radius);
+            foreach (PileCapPoint2D pile in piles)
+            {
+                drawingContext.DrawLine(guidePen, center, map(pile));
+            }
+            drawingContext.Pop();
         }
 
         private void DrawTemporaryMonoCaps(DrawingContext drawingContext, Func<PileCapPoint2D, Point> map)
@@ -312,6 +354,10 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (Geometry.ArrangementType == PileCapArrangementType.ThreePile)
             {
                 lines.Add("S " + Format(Geometry.SpacingXMillimeters) + " mm");
+                if (Geometry.PileCenters != null && Geometry.PileCenters.Count > 0)
+                {
+                    lines.Add("R " + Format(Distance(Geometry.SelectedPoint, Geometry.PileCenters[0])) + " mm");
+                }
             }
             else
             {
@@ -359,10 +405,19 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 return;
             }
 
+            StreamGeometry geometry = CreatePolygonGeometry(points, map, true);
+            drawingContext.DrawGeometry(fill, stroke, geometry);
+        }
+
+        private static StreamGeometry CreatePolygonGeometry(
+            IReadOnlyList<PileCapPoint2D> points,
+            Func<PileCapPoint2D, Point> map,
+            bool filled)
+        {
             var geometry = new StreamGeometry();
             using (StreamGeometryContext context = geometry.Open())
             {
-                context.BeginFigure(map(points[0]), true, true);
+                context.BeginFigure(map(points[0]), filled, true);
                 for (int i = 1; i < points.Count; i++)
                 {
                     context.LineTo(map(points[i]), true, false);
@@ -370,7 +425,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             }
 
             geometry.Freeze();
-            drawingContext.DrawGeometry(fill, stroke, geometry);
+            return geometry;
         }
 
         private static void DrawPolyline(
@@ -505,6 +560,13 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
                 brush,
                 1.0);
             drawingContext.DrawText(formattedText, point);
+        }
+
+        private static double Distance(PileCapPoint2D left, PileCapPoint2D right)
+        {
+            double dx = left.X - right.X;
+            double dy = left.Y - right.Y;
+            return Math.Sqrt(dx * dx + dy * dy);
         }
 
         private static string Format(double value)

@@ -1045,16 +1045,27 @@
                                                 ToolTipService.ShowOnDisabled="True"
                                                 ToolTipService.ShowDuration="20000">
                                             <Button.ToolTip>
-                                                <ToolTip MaxWidth="320">
-                                                    <StackPanel>
+                                                <ToolTip Style="{StaticResource RichToolTipStyle}">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="108"/>
+                                                            <ColumnDefinition Width="12"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
                                                         <Image Source="{StaticResource OffsetSetOfLinesGuideImage}"
-                                                               Width="240"
-                                                               Height="118"
-                                                               Stretch="Uniform"
-                                                               Margin="0,0,0,8"/>
-                                                        <TextBlock Text="Open the offset tool for selected ETABS frame objects that form one closed boundary."
-                                                                   TextWrapping="Wrap"/>
-                                                    </StackPanel>
+                                                               Width="108"
+                                                               Height="54"
+                                                               Stretch="Uniform"/>
+                                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                            <TextBlock Text="Offset from Set of Lines"
+                                                                       Style="{StaticResource LabelTextStyle}"
+                                                                       FontWeight="SemiBold"
+                                                                       Margin="0,0,0,4"/>
+                                                            <TextBlock Text="Create an offset from selected ETABS frames forming a closed boundary."
+                                                                       Style="{StaticResource MutedTextStyle}"
+                                                                       TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Grid>
                                                 </ToolTip>
                                             </Button.ToolTip>
                                             <TextBlock Text="Offset from Set of Lines"

@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.Windows;
-using System.Windows.Forms.Integration;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
@@ -44,10 +43,8 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             AssignExcelOwner(window);
             window.Closed += OnWindowClosed;
             _activeWindow = window;
-            ElementHost.EnableModelessKeyboardInterop(window);
 
-            window.Show();
-            ActivateWindow(window);
+            window.ShowDialog();
         }
 
         public void RestoreFocusToActiveWindow()
@@ -110,7 +107,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             helper.EnsureHandle();
         }
 
-        private void ActivateWindow(Window window)
+        private void ActivateWindow(QuickCreatePileCapWindow window)
         {
             if (window == null)
             {
@@ -120,11 +117,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             if (window.WindowState == WindowState.Minimized)
             {
                 window.WindowState = WindowState.Normal;
-            }
-
-            if (!window.IsVisible)
-            {
-                window.Show();
             }
 
             window.Activate();

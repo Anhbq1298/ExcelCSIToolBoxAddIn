@@ -89,6 +89,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             SelectArrangementCommand = new RelayCommand<object>(SelectArrangement);
 
             RefreshContext();
+            InitializeCardGeometries();
             RefreshGeneratedPropertiesAndPreview();
         }
 
@@ -894,7 +895,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 try
                 {
                     PreviewGeometry = _geometryCalculator.Calculate(input);
-                    RefreshCardGeometries(input);
                 }
                 catch (Exception ex)
                 {
@@ -908,7 +908,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
                 SetHasValidInputs(false);
                 ValidationMessage = message;
                 PreviewGeometry = null;
-                RefreshCardGeometries(CreateFallbackPreviewInput());
             }
 
             RaiseAssignCanExecuteChanged();
@@ -925,12 +924,20 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             RaiseAssignCanExecuteChanged();
         }
 
-        private void RefreshCardGeometries(PileCapInputParameters sourceInput)
+        private void InitializeCardGeometries()
         {
-            if (sourceInput == null)
+            var sourceInput = new PileCapInputParameters
             {
-                return;
-            }
+                PileDiameterMillimeters = 800,
+                PileLengthMillimeters = 30000,
+                RotationDegrees = 0,
+                AutoSpacing = true,
+                PileSpacingMillimeters = 2400,
+                SpacingXMillimeters = 2400,
+                SpacingYMillimeters = 2400,
+                PileCapThicknessMillimeters = 1500,
+                EdgeDistanceMillimeters = 150
+            };
 
             MonoCardGeometry = CalculateCardGeometry(sourceInput, PileCapArrangementType.Mono);
             TwoPileCardGeometry = CalculateCardGeometry(sourceInput, PileCapArrangementType.TwoPile);
@@ -972,25 +979,6 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             return _geometryCalculator.Calculate(input);
-        }
-
-        private PileCapInputParameters CreateFallbackPreviewInput()
-        {
-            return new PileCapInputParameters
-            {
-                ArrangementType = SelectedArrangementType,
-                PileDiameterMillimeters = PreviewPileDiameter <= 0 ? 800 : PreviewPileDiameter,
-                PileLengthMillimeters = 30000,
-                RotationDegrees = 0,
-                AutoSpacing = true,
-                PileSpacingMillimeters = 2400,
-                SpacingXMillimeters = 2400,
-                SpacingYMillimeters = 2400,
-                PileCapThicknessMillimeters = PreviewPileCapThickness <= 0 ? 1500 : PreviewPileCapThickness,
-                EdgeDistanceMillimeters = PreviewEdgeDistance < 0 ? 150 : PreviewEdgeDistance,
-                PileMaterial = SelectedPileMaterial,
-                PileCapMaterial = SelectedPileCapMaterial
-            };
         }
 
         private void UpdateAutomaticSpacing()

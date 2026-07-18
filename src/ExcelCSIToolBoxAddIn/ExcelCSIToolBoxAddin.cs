@@ -28,6 +28,7 @@ namespace ExcelCSIToolBoxAddIn
 
         private void ExcelCSIToolBoxAddin_Shutdown(object sender, System.EventArgs e)
         {
+            ModelessWpfWindowService.CloseAll();
             WindowManager.DisposePanes();
             AiTaskPaneManager.DisposePane();
         }

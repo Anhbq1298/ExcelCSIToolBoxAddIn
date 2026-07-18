@@ -125,6 +125,30 @@
                       Opacity="0.18"
                       Color="#0B1F3A"/>
 
+    <Style x:Key="RichToolTipStyle" TargetType="ToolTip">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="HasDropShadow" Value="False"/>
+        <Setter Property="Placement" Value="Left"/>
+        <Setter Property="HorizontalOffset" Value="-8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Width="300"
+                            Padding="10"
+                            Background="{StaticResource CardBackgroundBrush}"
+                            BorderBrush="{StaticResource BorderBrush.Medium}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource CornerRadius.Card}"
+                            Effect="{StaticResource CardShadow}">
+                        <ContentPresenter/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="HeadingTextStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource FontFamily.Primary}"/>
         <Setter Property="FontSize" Value="{StaticResource FontSize.PageHeading}"/>

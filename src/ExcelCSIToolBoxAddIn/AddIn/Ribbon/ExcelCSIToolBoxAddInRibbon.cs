@@ -1,4 +1,6 @@
+using System;
 using ExcelCSIToolBoxAddIn.AddIn;
+using ExcelCSIToolBoxAddIn.AddIn.Diagnostics;
 using Microsoft.Office.Tools.Ribbon;
 
 namespace ExcelCSIToolBoxAddIn
@@ -41,62 +43,78 @@ namespace ExcelCSIToolBoxAddIn
 
         private void buttonEtabs_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowEtabsWindow();
+            RunRibbonAction("ETABS Toolbox", WindowManager.ShowEtabsWindow);
         }
 
         private void buttonGetBaseReactions_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowGetBaseReactionsWindow();
+            RunRibbonAction("Get Base Reactions", WindowManager.ShowGetBaseReactionsWindow);
         }
 
         private void buttonModalMassParticipationRatios_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowModalMassParticipationRatiosWindow();
+            RunRibbonAction("Modal Mass Participation Ratios", WindowManager.ShowModalMassParticipationRatiosWindow);
         }
 
         private void buttonStoryForces_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowStoryForcesWindow();
+            RunRibbonAction("Story Forces", WindowManager.ShowStoryForcesWindow);
         }
 
         private void buttonStoryDrifts_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowStoryDriftsWindow();
+            RunRibbonAction("Story Drifts", WindowManager.ShowStoryDriftsWindow);
         }
 
         private void buttonStoryMaxOverAverageDisplacements_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowStoryMaxOverAverageDisplacementsWindow();
+            RunRibbonAction("Story Max/Avg Displacements", WindowManager.ShowStoryMaxOverAverageDisplacementsWindow);
         }
 
         private void buttonStoryMaxOverAverageDrifts_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowStoryMaxOverAverageDriftsWindow();
+            RunRibbonAction("Story Max/Avg Drifts", WindowManager.ShowStoryMaxOverAverageDriftsWindow);
         }
 
         private void buttonMassSummaryByStory_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowMassSummaryByStoryWindow();
+            RunRibbonAction("Mass Summary by Story", WindowManager.ShowMassSummaryByStoryWindow);
         }
 
         private void buttonAiAgent_Click(object sender, RibbonControlEventArgs e)
         {
-            AiTaskPaneManager.TogglePane();
+            RunRibbonAction("MHT AI Assistant", AiTaskPaneManager.TogglePane);
         }
 
         private void buttonRefreshPlugin_Click(object sender, RibbonControlEventArgs e)
         {
-            AddInCompositionRoot.RefreshPlugin();
+            RunRibbonAction("Refresh Plugin", AddInCompositionRoot.RefreshPlugin);
         }
 
         private void buttonAbout_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowAboutWindow();
+            RunRibbonAction("About", WindowManager.ShowAboutWindow);
         }
 
         private void buttonSap2000_Click(object sender, RibbonControlEventArgs e)
         {
-            WindowManager.ShowSap2000Window();
+            RunRibbonAction("SAP2000 Toolbox", WindowManager.ShowSap2000Window);
+        }
+
+        private static void RunRibbonAction(string actionName, Action action)
+        {
+            AddInDiagnostics.Log("Ribbon click received: " + actionName + ".");
+
+            try
+            {
+                action();
+                AddInDiagnostics.Log("Ribbon action completed: " + actionName + ".");
+            }
+            catch (Exception ex)
+            {
+                AddInDiagnostics.LogException("Ribbon action " + actionName, ex);
+                AddInDiagnostics.ShowError("Excel CSI ToolBox", actionName, ex);
+            }
         }
     }
 }

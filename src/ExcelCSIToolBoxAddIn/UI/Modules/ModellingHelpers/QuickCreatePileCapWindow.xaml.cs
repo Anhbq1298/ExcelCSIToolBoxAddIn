@@ -17,7 +17,6 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             Loaded += OnLoaded;
             Closed += OnClosed;
             PreviewMouseDown += OnPreviewMouseDown;
-            PreviewKeyDown += OnPreviewKeyDown;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs e)
@@ -34,33 +33,36 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             Loaded -= OnLoaded;
             Closed -= OnClosed;
             PreviewMouseDown -= OnPreviewMouseDown;
-            PreviewKeyDown -= OnPreviewKeyDown;
         }
 
         private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             IInputElement input = FindTextInputAncestor(e.OriginalSource as DependencyObject);
-            if (input != null && !HasKeyboardFocusWithin(input))
-            {
-                Keyboard.Focus(input);
-            }
+            EnableManualSpacingIfNeeded(input);
         }
 
-        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        private bool EnableManualSpacingIfNeeded(IInputElement input)
         {
-            if (IsTextInputFocused())
+            TextBox textBox = input as TextBox;
+            if (textBox == null || textBox.IsEnabled ||
+                (textBox != PileSpacingTextBox && textBox != SpacingXTextBox && textBox != SpacingYTextBox))
             {
-                return;
+                return false;
             }
-        }
 
-        private static bool IsTextInputFocused()
-        {
-            IInputElement focusedElement = Keyboard.FocusedElement;
-            return focusedElement is TextBox ||
-                   focusedElement is PasswordBox ||
-                   focusedElement is ComboBox ||
-                   focusedElement is DatePicker;
+            QuickCreatePileCapViewModel viewModel = DataContext as QuickCreatePileCapViewModel;
+            if (viewModel != null && viewModel.IsAutomaticSpacing)
+            {
+                viewModel.IsAutomaticSpacing = false;
+                Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    FocusTextInput(textBox);
+                    textBox.SelectAll();
+                }), DispatcherPriority.Input);
+                return true;
+            }
+
+            return false;
         }
 
         private static IInputElement FindTextInputAncestor(DependencyObject source)
@@ -82,21 +84,15 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             return null;
         }
 
-        private static bool HasKeyboardFocusWithin(IInputElement input)
+        private void FocusTextInput(IInputElement input)
         {
-            UIElement uiElement = input as UIElement;
-            if (uiElement != null)
+            Control control = input as Control;
+            if (control != null)
             {
-                return uiElement.IsKeyboardFocusWithin;
+                control.Focus();
             }
 
-            ContentElement contentElement = input as ContentElement;
-            if (contentElement != null)
-            {
-                return contentElement.IsKeyboardFocusWithin;
-            }
-
-            return input.IsKeyboardFocused;
+            Keyboard.Focus(input);
         }
     }
 }

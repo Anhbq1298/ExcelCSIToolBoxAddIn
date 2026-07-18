@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using ExcelCSIToolBoxAddIn.AddIn;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
@@ -52,8 +53,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
 
         private void ViewModel_RequestShow(object sender, EventArgs e)
         {
-            this.Show();
-            this.Activate();
+            ModelessWpfWindowService.Show(this);
         }
 
         private void ModalLoadCasesGrid_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)

@@ -4,6 +4,7 @@ using ExcelCSIToolBox.Application.Composition;
 using ExcelCSIToolBox.Core.Abstractions.CSI;
 using ExcelCSIToolBox.Core.Abstractions.Excel;
 using ExcelCSIToolBoxAddIn.AddIn.Composition;
+using ExcelCSIToolBoxAddIn.AddIn.Diagnostics;
 using ExcelCSIToolBoxAddIn.UI.ViewModels;
 using ExcelCSIToolBoxAddIn.UI.Views;
 using Microsoft.Office.Core;
@@ -12,6 +13,8 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 {
     internal static class WindowManager
     {
+        private const int CsiPaneWidth = 560;
+
         private static ICSISapModelConnectionService _etabsConnectionService;
         private static ICSISapModelConnectionService _sap2000ConnectionService;
         private static IExcelSelectionService _excelSelectionService;
@@ -87,7 +90,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
             if (_modalMassParticipationRatiosWindow != null)
             {
-                _modalMassParticipationRatiosWindow.Activate();
+                ModelessWpfWindowService.Show(_modalMassParticipationRatiosWindow);
                 return;
             }
 
@@ -99,8 +102,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             var window = new GetModalMassParticipationRatiosWindow(viewModel);
             window.Closed += delegate { _modalMassParticipationRatiosWindow = null; };
             _modalMassParticipationRatiosWindow = window;
-            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
-            window.Show();
+            ModelessWpfWindowService.Show(window);
         }
 
         internal static void ShowStoryForcesWindow()
@@ -143,7 +145,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             EnsureConfigured(_etabsConnectionService);
             if (_massSummaryByStoryWindow != null)
             {
-                _massSummaryByStoryWindow.Activate();
+                ModelessWpfWindowService.Show(_massSummaryByStoryWindow);
                 return;
             }
 
@@ -152,23 +154,21 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             var window = new GetMassSummaryByStoryWindow(viewModel);
             window.Closed += delegate { _massSummaryByStoryWindow = null; };
             _massSummaryByStoryWindow = window;
-            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
-            window.Show();
+            ModelessWpfWindowService.Show(window);
         }
 
         internal static void ShowAboutWindow()
         {
             if (_aboutWindow != null)
             {
-                _aboutWindow.Activate();
+                ModelessWpfWindowService.Show(_aboutWindow);
                 return;
             }
 
             var window = new AboutWindow();
             window.Closed += delegate { _aboutWindow = null; };
             _aboutWindow = window;
-            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
-            window.Show();
+            ModelessWpfWindowService.Show(window);
         }
 
         private static void ShowStoryResultsWindow(
@@ -179,7 +179,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
 
             if (existingWindow != null)
             {
-                existingWindow.Activate();
+                ModelessWpfWindowService.Show(existingWindow);
                 return;
             }
 
@@ -212,8 +212,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 _storyMaxOverAverageDriftsWindow = window;
             }
 
-            System.Windows.Forms.Integration.ElementHost.EnableModelessKeyboardInterop(window);
-            window.Show();
+            ModelessWpfWindowService.Show(window);
         }
 
         internal static void DisposePanes()
@@ -230,10 +229,13 @@ namespace ExcelCSIToolBoxAddIn.AddIn
             Func<UserControl> createControl)
         {
             EnsureConfigured(connectionService);
+            CollapseExpandedFormulaBar();
 
             if (pane == null)
             {
+                AddInDiagnostics.Log("Creating task pane: " + title + ".");
                 UserControl control = createControl();
+                AddInDiagnostics.Log("Created WPF control for task pane: " + title + ".");
                 var useCases = new CsiToolboxUseCaseBundle(connectionService, _excelSelectionService, _excelOutputService);
                 var analysisResultServices = AppServiceFactory.CreateAnalysisResultServices(connectionService);
                 control.DataContext = new CsiToolboxViewModel(
@@ -242,14 +244,46 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                     _excelSelectionService,
                     _excelOutputService,
                     analysisResultServices);
+                AddInDiagnostics.Log("Assigned DataContext for task pane: " + title + ".");
 
                 host = new WpfTaskPaneHost(control);
                 pane = Globals.ExcelCSIToolBoxAddin.CustomTaskPanes.Add(host, title);
-                pane.DockPosition = MsoCTPDockPosition.msoCTPDockPositionRight;
-                pane.Width = 820;
+                ApplyCsiPaneLayout(pane, title);
+                AddInDiagnostics.Log("Task pane created: " + title + ".");
             }
 
+            ApplyCsiPaneLayout(pane, title);
             pane.Visible = true;
+            ApplyCsiPaneLayout(pane, title);
+            AddInDiagnostics.Log("Task pane visible: " + title + ".");
+        }
+
+        private static void CollapseExpandedFormulaBar()
+        {
+            try
+            {
+                var application = Globals.ExcelCSIToolBoxAddin.Application;
+                if (application != null && application.FormulaBarHeight > 1)
+                {
+                    application.FormulaBarHeight = 1;
+                    AddInDiagnostics.Log("Excel formula bar height collapsed to 1.");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddInDiagnostics.Log("Could not collapse Excel formula bar: " + ex.Message);
+            }
+        }
+
+        private static void ApplyCsiPaneLayout(Microsoft.Office.Tools.CustomTaskPane pane, string title)
+        {
+            pane.DockPosition = MsoCTPDockPosition.msoCTPDockPositionRight;
+            pane.DockPositionRestrict = MsoCTPDockPositionRestrict.msoCTPDockPositionRestrictNoHorizontal;
+            pane.Width = CsiPaneWidth;
+            AddInDiagnostics.Log(
+                "Task pane layout applied: " + title +
+                ", DockPosition=" + pane.DockPosition +
+                ", Width=" + pane.Width + ".");
         }
 
         private static void EnsureConfigured(ICSISapModelConnectionService connectionService)

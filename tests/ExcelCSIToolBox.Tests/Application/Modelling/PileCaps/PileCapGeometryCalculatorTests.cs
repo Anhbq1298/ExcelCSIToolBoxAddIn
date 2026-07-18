@@ -78,6 +78,10 @@ namespace ExcelCSIToolBox.Tests.Application.Modelling.PileCaps
             Distance(geometry.PileCenters[1], geometry.PileCenters[2]).Should().BeApproximately(2400, 0.0001);
             Distance(geometry.PileCenters[2], geometry.PileCenters[0]).Should().BeApproximately(2400, 0.0001);
 
+            double radius = Distance(geometry.SelectedPoint, geometry.PileCenters[0]);
+            Distance(geometry.SelectedPoint, geometry.PileCenters[1]).Should().BeApproximately(radius, 0.0001);
+            Distance(geometry.SelectedPoint, geometry.PileCenters[2]).Should().BeApproximately(radius, 0.0001);
+
             foreach (Rectangle2D temporaryMonoCap in geometry.TemporaryMonoCaps)
             {
                 temporaryMonoCap.Width.Should().BeApproximately(1100, 0.0001);

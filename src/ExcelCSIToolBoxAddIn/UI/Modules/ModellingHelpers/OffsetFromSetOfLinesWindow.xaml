@@ -58,16 +58,27 @@
                                         ToolTipService.ShowOnDisabled="True"
                                         ToolTipService.ShowDuration="20000">
                                     <Button.ToolTip>
-                                        <ToolTip MaxWidth="320">
-                                            <StackPanel>
+                                        <ToolTip Style="{StaticResource RichToolTipStyle}">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="108"/>
+                                                    <ColumnDefinition Width="12"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
                                                 <Image Source="{StaticResource OffsetSetOfLinesGuideImage}"
-                                                       Width="240"
-                                                       Height="118"
-                                                       Stretch="Uniform"
-                                                       Margin="0,0,0,8"/>
-                                                <TextBlock Text="Reads the selected ETABS frame objects and checks that they form one closed boundary."
-                                                           TextWrapping="Wrap"/>
-                                            </StackPanel>
+                                                       Width="108"
+                                                       Height="54"
+                                                       Stretch="Uniform"/>
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                    <TextBlock Text="Get Selected Lines"
+                                                               Style="{StaticResource LabelTextStyle}"
+                                                               FontWeight="SemiBold"
+                                                               Margin="0,0,0,4"/>
+                                                    <TextBlock Text="Read selected ETABS frames and validate the closed boundary."
+                                                               Style="{StaticResource MutedTextStyle}"
+                                                               TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Grid>
                                         </ToolTip>
                                     </Button.ToolTip>
                                 </Button>

@@ -44,7 +44,7 @@
     <SupportUrl />
     <FriendlyName>ExcelCSIToolBoxAddIn</FriendlyName>
     <OfficeApplicationDescription />
-    <LoadBehavior>3</LoadBehavior>
+    <LoadBehavior>1</LoadBehavior>
   </PropertyGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">
@@ -251,6 +251,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AddIn\AddInCompositionRoot.cs" />
+    <Compile Include="AddIn\Diagnostics\AddInDiagnostics.cs" />
     <Compile Include="AddIn\TaskPanes\AiAgent\AiChatSessionService.cs" />
     <Compile Include="AddIn\Host\Progress\BatchProgressReporter.cs" />
     <Compile Include="AddIn\TaskPanes\AiAgent\IAiChatSessionService.cs" />
@@ -266,6 +267,7 @@
     <Compile Include="AddIn\Composition\AppServiceFactory.cs" />
     <Compile Include="AddIn\Modules\ModellingHelpers\ModellingHelperActionKeys.cs" />
     <Compile Include="AddIn\Modules\ModellingHelpers\ModellingHelperActionRouter.cs" />
+    <Compile Include="AddIn\Windows\ModelessWpfWindowService.cs" />
     <Compile Include="AddIn\Windows\WindowManager.cs" />
     <Content Include="icon\etabs.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

@@ -98,7 +98,7 @@ namespace ExcelCSIToolBoxAddIn.AddIn
                 }
             };
 
-            _window.Show();
+            ModelessWpfWindowService.Show(_window);
         }
 
         private void InvokeOnDispatcher(Action action)

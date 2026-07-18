@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using ExcelCSIToolBox.Infrastructure.CSI.Common;
+using ExcelCSIToolBoxAddIn.AddIn;
 
 namespace ExcelCSIToolBoxAddIn.UI.Views
 {
@@ -36,7 +37,7 @@ namespace ExcelCSIToolBoxAddIn.UI.Views
             var context = new BatchProgressContext(totalItems, window);
             window._context = context;
 
-            window.Show();
+            ModelessWpfWindowService.Show(window);
 
             try
             {

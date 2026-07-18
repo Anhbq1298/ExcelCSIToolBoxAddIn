@@ -8,6 +8,7 @@ using ExcelCSIToolBox.Core.Common.Results;
 using ExcelCSIToolBox.Core.Models.AnalysisResults;
 using ExcelCSIToolBox.Core.Models.ElementConnectivity;
 using ExcelCSIToolBox.Core.Models.MiscellaneousData;
+using ExcelCSIToolBoxAddIn.AddIn;
 
 namespace ExcelCSIToolBoxAddIn.UI.ViewModels
 {
@@ -458,7 +459,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             var viewModel = new GetModalMassParticipationRatiosViewModel(_useCases, _csiConnectionService, _excelOutputService);
-            new ExcelCSIToolBoxAddIn.UI.Views.GetModalMassParticipationRatiosWindow(viewModel).Show();
+            ModelessWpfWindowService.Show(new ExcelCSIToolBoxAddIn.UI.Views.GetModalMassParticipationRatiosWindow(viewModel));
         }
 
         private void OpenStoryForcesDialog()
@@ -489,7 +490,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             var viewModel = new GetStoryResultsViewModel(kind, _useCases, _csiConnectionService, _excelOutputService, CreateExportUnitOption());
-            new ExcelCSIToolBoxAddIn.UI.Views.GetStoryResultsWindow(viewModel).Show();
+            ModelessWpfWindowService.Show(new ExcelCSIToolBoxAddIn.UI.Views.GetStoryResultsWindow(viewModel));
         }
 
         private void OpenMassSummaryByStoryDialog()
@@ -500,7 +501,7 @@ namespace ExcelCSIToolBoxAddIn.UI.ViewModels
             }
 
             var viewModel = new GetMassSummaryByStoryViewModel(_useCases, _csiConnectionService, _excelOutputService);
-            new ExcelCSIToolBoxAddIn.UI.Views.GetMassSummaryByStoryWindow(viewModel).Show();
+            ModelessWpfWindowService.Show(new ExcelCSIToolBoxAddIn.UI.Views.GetMassSummaryByStoryWindow(viewModel));
         }
     }
 }
