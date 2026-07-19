@@ -1,12 +1,13 @@
 name: Inspect SAP2000 Cable API
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/sap2000-cable-pretension-setter
+      - master
     paths:
       - ".github/workflows/sap2000-cable-api-inspect.yml"
       - "lib/SAP2000v1.dll"
+      - "tools/Sap2000CablePretensionSetter/**"
   workflow_dispatch:
 
 jobs:
