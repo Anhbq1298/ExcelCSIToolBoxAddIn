@@ -17,19 +17,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Print cable API signatures
+      - name: Export cable API signatures
         shell: powershell
         run: |
           $assemblyPath = Join-Path $env:GITHUB_WORKSPACE "lib\SAP2000v1.dll"
+          $outputPath = Join-Path $env:GITHUB_WORKSPACE "cable-api-signatures.txt"
           $assembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
           $type = $assembly.GetType("SAP2000v1.cCableObj", $true)
           $methodNames = @("GetCableData", "SetCableData", "GetNameList", "GetPoints")
-          foreach ($method in $type.GetMethods() | Where-Object { $methodNames -contains $_.Name } | Sort-Object Name) {
+          $lines = foreach ($method in $type.GetMethods() | Where-Object { $methodNames -contains $_.Name } | Sort-Object Name) {
             $parameters = $method.GetParameters() | ForEach-Object {
               $parameterType = $_.ParameterType
               $suffix = if ($parameterType.IsByRef) { "&" } else { "" }
               $elementType = if ($parameterType.IsByRef) { $parameterType.GetElementType() } else { $parameterType }
               "{0} {1}{2}" -f $elementType.FullName, $_.Name, $suffix
             }
-            Write-Host ("SIGNATURE: {0} {1}({2})" -f $method.ReturnType.FullName, $method.Name, ($parameters -join ", "))
+            "{0} {1}({2})" -f $method.ReturnType.FullName, $method.Name, ($parameters -join ", ")
           }
+          $lines | Set-Content -Path $outputPath -Encoding UTF8
+          $lines | ForEach-Object { Write-Host "SIGNATURE: $_" }
+
+      - name: Upload signature artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cable-api-signatures
+          path: cable-api-signatures.txt
