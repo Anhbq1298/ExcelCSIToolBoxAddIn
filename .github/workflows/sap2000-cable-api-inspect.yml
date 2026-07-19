@@ -1,0 +1,34 @@
+name: Inspect SAP2000 Cable API
+
+on:
+  push:
+    branches:
+      - agent/sap2000-cable-pretension-setter
+    paths:
+      - ".github/workflows/sap2000-cable-api-inspect.yml"
+      - "lib/SAP2000v1.dll"
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Print cable API signatures
+        shell: powershell
+        run: |
+          $assemblyPath = Join-Path $env:GITHUB_WORKSPACE "lib\SAP2000v1.dll"
+          $assembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
+          $type = $assembly.GetType("SAP2000v1.cCableObj", $true)
+          $methodNames = @("GetCableData", "SetCableData", "GetNameList", "GetPoints")
+          foreach ($method in $type.GetMethods() | Where-Object { $methodNames -contains $_.Name } | Sort-Object Name) {
+            $parameters = $method.GetParameters() | ForEach-Object {
+              $parameterType = $_.ParameterType
+              $suffix = if ($parameterType.IsByRef) { "&" } else { "" }
+              $elementType = if ($parameterType.IsByRef) { $parameterType.GetElementType() } else { $parameterType }
+              "{0} {1}{2}" -f $elementType.FullName, $_.Name, $suffix
+            }
+            Write-Host ("SIGNATURE: {0} {1}({2})" -f $method.ReturnType.FullName, $method.Name, ($parameters -join ", "))
+          }
