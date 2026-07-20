@@ -1,0 +1,54 @@
+name: Inspect SAP2000 Cable API
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/sap2000-cable-api-inspect.yml"
+      - "lib/SAP2000v1.dll"
+      - "tools/Sap2000CablePretensionSetter/**"
+  workflow_dispatch:
+
+jobs:
+  inspect:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Export cable and result API signatures
+        shell: powershell
+        run: |
+          $assemblyPath = Join-Path $env:GITHUB_WORKSPACE "lib\SAP2000v1.dll"
+          $outputPath = Join-Path $env:GITHUB_WORKSPACE "cable-api-signatures.txt"
+          $assembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
+
+          $requests = @(
+            @{ Type = "SAP2000v1.cCableObj"; Names = @("GetCableData", "SetCableData", "GetNameList", "GetPoints", "GetElm") },
+            @{ Type = "SAP2000v1.cAnalysisResults"; Names = @("FrameForce", "CableForce") },
+            @{ Type = "SAP2000v1.cAnalysisResultsSetup"; Names = @("DeselectAllCasesAndCombosForOutput", "SetCaseSelectedForOutput", "SetComboSelectedForOutput") }
+          )
+
+          $lines = foreach ($request in $requests) {
+            $type = $assembly.GetType($request.Type, $true)
+            "TYPE: $($request.Type)"
+            foreach ($method in $type.GetMethods() | Where-Object { $request.Names -contains $_.Name } | Sort-Object Name) {
+              $parameters = $method.GetParameters() | ForEach-Object {
+                $parameterType = $_.ParameterType
+                $suffix = if ($parameterType.IsByRef) { "&" } else { "" }
+                $elementType = if ($parameterType.IsByRef) { $parameterType.GetElementType() } else { $parameterType }
+                "{0} {1}{2}" -f $elementType.FullName, $_.Name, $suffix
+              }
+              "{0} {1}({2})" -f $method.ReturnType.FullName, $method.Name, ($parameters -join ", ")
+            }
+          }
+
+          $lines | Set-Content -Path $outputPath -Encoding UTF8
+          $lines | ForEach-Object { Write-Host "SIGNATURE: $_" }
+
+      - name: Upload signature artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cable-api-signatures
+          path: cable-api-signatures.txt
