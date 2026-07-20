@@ -17,23 +17,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Export cable API signatures
+      - name: Export cable and result API signatures
         shell: powershell
         run: |
           $assemblyPath = Join-Path $env:GITHUB_WORKSPACE "lib\SAP2000v1.dll"
           $outputPath = Join-Path $env:GITHUB_WORKSPACE "cable-api-signatures.txt"
           $assembly = [System.Reflection.Assembly]::LoadFrom($assemblyPath)
-          $type = $assembly.GetType("SAP2000v1.cCableObj", $true)
-          $methodNames = @("GetCableData", "SetCableData", "GetNameList", "GetPoints")
-          $lines = foreach ($method in $type.GetMethods() | Where-Object { $methodNames -contains $_.Name } | Sort-Object Name) {
-            $parameters = $method.GetParameters() | ForEach-Object {
-              $parameterType = $_.ParameterType
-              $suffix = if ($parameterType.IsByRef) { "&" } else { "" }
-              $elementType = if ($parameterType.IsByRef) { $parameterType.GetElementType() } else { $parameterType }
-              "{0} {1}{2}" -f $elementType.FullName, $_.Name, $suffix
+
+          $requests = @(
+            @{ Type = "SAP2000v1.cCableObj"; Names = @("GetCableData", "SetCableData", "GetNameList", "GetPoints", "GetElm") },
+            @{ Type = "SAP2000v1.cAnalysisResults"; Names = @("FrameForce", "CableForce") },
+            @{ Type = "SAP2000v1.cAnalysisResultsSetup"; Names = @("DeselectAllCasesAndCombosForOutput", "SetCaseSelectedForOutput", "SetComboSelectedForOutput") }
+          )
+
+          $lines = foreach ($request in $requests) {
+            $type = $assembly.GetType($request.Type, $true)
+            "TYPE: $($request.Type)"
+            foreach ($method in $type.GetMethods() | Where-Object { $request.Names -contains $_.Name } | Sort-Object Name) {
+              $parameters = $method.GetParameters() | ForEach-Object {
+                $parameterType = $_.ParameterType
+                $suffix = if ($parameterType.IsByRef) { "&" } else { "" }
+                $elementType = if ($parameterType.IsByRef) { $parameterType.GetElementType() } else { $parameterType }
+                "{0} {1}{2}" -f $elementType.FullName, $_.Name, $suffix
+              }
+              "{0} {1}({2})" -f $method.ReturnType.FullName, $method.Name, ($parameters -join ", ")
             }
-            "{0} {1}({2})" -f $method.ReturnType.FullName, $method.Name, ($parameters -join ", ")
           }
+
           $lines | Set-Content -Path $outputPath -Encoding UTF8
           $lines | ForEach-Object { Write-Host "SIGNATURE: $_" }
 
